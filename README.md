@@ -10,10 +10,6 @@ npm install -g github:avanderhoorn/tunnel-proxy-release
 
 **Prerequisites:**
 - Node.js 20+
-- A C++ build toolchain (for the `keytar` native dependency)
-  - macOS: Xcode Command Line Tools (`xcode-select --install`)
-  - Windows: Visual Studio Build Tools
-  - Linux: `build-essential` package
 
 ## Usage
 
