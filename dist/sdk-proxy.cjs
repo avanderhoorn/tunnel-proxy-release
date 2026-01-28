@@ -45511,7 +45511,7 @@ function createLogCallback(logger) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.1.1";
+var CURRENT_VERSION = "0.1.2";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";
@@ -45545,7 +45545,7 @@ async function fetchLatestVersion() {
   }
 }
 async function checkForUpdates() {
-  if (CURRENT_VERSION === "0.1.1") {
+  if (CURRENT_VERSION.startsWith("__")) {
     return;
   }
   const latestVersion = await fetchLatestVersion();
@@ -45572,7 +45572,7 @@ var DIM2 = "\x1B[2m";
 var RESET2 = "\x1B[0m";
 var BOLD2 = "\x1B[1m";
 function printBanner() {
-  const version = CURRENT_VERSION === "0.1.1" ? "dev" : `v${CURRENT_VERSION}`;
+  const version = CURRENT_VERSION.startsWith("__") ? "dev" : `v${CURRENT_VERSION}`;
   const url = "https://gh.io/copilot-tunnel";
   const iconL1 = `${CYAN}\u256D\u2500\u256E\u256D\u2500\u256E${RESET2}`;
   const iconL2 = `${CYAN}\u2570\u2500\u256F\u2570\u2500\u256F${RESET2}`;
