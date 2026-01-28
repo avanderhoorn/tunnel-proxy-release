@@ -1,0 +1,268 @@
+import { Duplex } from 'node:stream';
+
+/**
+ * Type definitions for the Copilot Tunnel Host.
+ *
+ * This package provides a simple JSON-RPC proxy that exposes the Copilot CLI
+ * over Dev Tunnels. Remote clients can use the standard @github/copilot-sdk
+ * with cliUrl pointing to the tunnel.
+ */
+
+interface TunnelInfo {
+    tunnelId: string;
+    clusterId: string;
+    /** Port for JSON-RPC protocol */
+    port: number;
+    /** GitHub username of the authenticated user */
+    username?: string;
+}
+type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
+interface TunnelHostAdapterConfig {
+    /** Port to expose through the tunnel */
+    port: number;
+    /** Minimum log level to emit (default: 'info') */
+    logLevel?: 'debug' | 'info';
+    /** Callback for status changes with optional disconnect reason */
+    onStatusChange?: (status: ConnectionStatus, reason?: string) => void;
+    /** Callback for authentication prompts (device flow) */
+    onAuth?: (message: string, uri?: string, userCode?: string) => void;
+    /** Logging callback */
+    onLog?: (level: 'debug' | 'info' | 'warn' | 'error', message: string) => void;
+}
+interface TunnelHostAdapter {
+    /** Start the tunnel and begin accepting connections */
+    start(): Promise<TunnelInfo>;
+    /** Stop the tunnel and disconnect all clients */
+    stop(): Promise<void>;
+    /** Register handler for client connections */
+    onClientConnected(handler: (stream: Duplex, clientId: string) => void): () => void;
+    /** Register handler for client disconnections */
+    onClientDisconnected(handler: (clientId: string) => void): () => void;
+    /** Clear stored token (call when server reports auth error) */
+    clearStoredToken(): Promise<void>;
+}
+type Unsubscribe = () => void;
+
+/**
+ * Tunnel adapter that wraps the Dev Tunnels SDK for hosting.
+ *
+ * Creates a local TCP server and uses Dev Tunnels to expose it.
+ * Clients connect via the tunnel relay, which proxies to the local server.
+ */
+
+declare class DevTunnelHostAdapter implements TunnelHostAdapter {
+    private config;
+    private server;
+    private tunnel;
+    private host;
+    private managementClient;
+    private clientHandlers;
+    private disconnectHandlers;
+    private clientCounter;
+    private clients;
+    private isDisposed;
+    private username;
+    private lastNetworkInterfaces;
+    private networkCheckTimer;
+    private isNetworkAvailable;
+    private retryCount;
+    private readonly logLevel;
+    constructor(config: TunnelHostAdapterConfig);
+    private log;
+    /**
+     * Get a fingerprint of current network interfaces.
+     * Changes indicate network state changed (e.g., wifi reconnected).
+     */
+    private getNetworkFingerprint;
+    /**
+     * Check if network is available by attempting DNS resolution with timeout.
+     */
+    private checkNetworkAvailable;
+    /**
+     * Start monitoring network for changes.
+     * When network is restored, sets isNetworkAvailable=true and resets retryCount
+     * so the next SDK retry will happen faster.
+     */
+    private startNetworkMonitoring;
+    /**
+     * Handle detected network interface change.
+     */
+    private handleNetworkChange;
+    /**
+     * Stop network monitoring.
+     */
+    private stopNetworkMonitoring;
+    /**
+     * Handle connection status change from SDK.
+     */
+    private handleConnectionStatusChange;
+    /**
+     * Handle SDK retry event - speed up the first retry after network restoration.
+     */
+    private handleRetryEvent;
+    /**
+     * Check if an error indicates the tunnel doesn't exist (404).
+     */
+    private isTunnelNotFoundError;
+    /**
+     * Connect to the tunnel relay and set up event handlers.
+     */
+    private connectToTunnel;
+    start(): Promise<TunnelInfo>;
+    stop(): Promise<void>;
+    onClientConnected(handler: (stream: Duplex, clientId: string) => void): () => void;
+    onClientDisconnected(handler: (clientId: string) => void): () => void;
+    private createServer;
+    private connectWithTimeout;
+    /**
+     * Get a valid GitHub token, either from cache, refresh, or device flow.
+     * Checks token expiration before use and refreshes if needed.
+     * Also sets this.username for display purposes.
+     */
+    private getOrRefreshToken;
+    /**
+     * Refresh an access token using a refresh token.
+     */
+    private refreshAccessToken;
+    /**
+     * Validate a GitHub token by making a test API call.
+     * Returns true if the token is valid, false otherwise.
+     */
+    private validateToken;
+    /**
+     * Fetch the GitHub username for the given token.
+     * Returns undefined if the fetch fails.
+     */
+    private fetchGitHubUsername;
+    /**
+     * Clear the stored token. Call this when the server reports an auth error.
+     */
+    clearStoredToken(): Promise<void>;
+    /**
+     * Authenticate using GitHub device code flow.
+     * This allows users to authenticate without providing a token upfront.
+     */
+    private authenticateWithDeviceFlow;
+    private sleep;
+}
+/**
+ * Create a tunnel host adapter.
+ */
+declare function createTunnelHostAdapter(config: TunnelHostAdapterConfig): TunnelHostAdapter;
+
+/**
+ * Tunnel configuration persistence.
+ *
+ * Stores tunnel info in ~/.copilot/agent-tunnels/host-config.json
+ * This allows the host to reuse the same tunnel across restarts.
+ */
+/**
+ * Stored tunnel configuration.
+ */
+interface StoredTunnelConfig {
+    tunnelId: string;
+    clusterId: string;
+    /** ISO timestamp when tunnel was created */
+    createdAt: string;
+}
+/**
+ * Get the full path to the config file.
+ */
+declare function getConfigPath(): string;
+/**
+ * Load stored tunnel config.
+ * Returns null if no config exists or read fails.
+ */
+declare function loadTunnelConfig(): Promise<StoredTunnelConfig | null>;
+/**
+ * Save tunnel config to disk.
+ * Creates the config directory if it doesn't exist.
+ */
+declare function saveTunnelConfig(config: StoredTunnelConfig): Promise<void>;
+/**
+ * Clear stored tunnel config.
+ */
+declare function clearTunnelConfig(): Promise<void>;
+
+/**
+ * JSON-RPC Proxy for Copilot SDK
+ *
+ * This module proxies JSON-RPC messages between tunnel clients and the Copilot SDK.
+ * The protocol is designed to be a 1:1 mapping of the @github/copilot-sdk API.
+ *
+ * Architecture:
+ * - Each tunnel client connection gets a ClientConnection
+ * - A single CopilotClient is shared across all sessions for that connection
+ * - Each createSession creates a new CopilotSession via the SDK
+ * - Messages are routed to the correct session based on sessionId
+ *
+ * Protocol Methods (matching SDK):
+ *
+ * Client methods (CopilotClient):
+ * - ping(message?: string) -> { message, timestamp, protocolVersion? }
+ * - getState() -> ConnectionState
+ * - createSession(config?: SessionConfig) -> { sessionId }
+ * - resumeSession(sessionId, config?: ResumeSessionConfig) -> { sessionId }
+ * - listSessions() -> SessionMetadata[]
+ * - getLastSessionId() -> string | undefined
+ * - deleteSession(sessionId) -> void
+ *
+ * Session methods (CopilotSession):
+ * - session.send(sessionId, options: MessageOptions) -> { messageId }
+ * - session.sendAndWait(sessionId, options: MessageOptions, timeout?) -> AssistantMessageEvent | undefined
+ * - session.getMessages(sessionId) -> SessionEvent[]
+ * - session.abort(sessionId) -> void
+ * - session.destroy(sessionId) -> void
+ *
+ * Notifications (server -> client):
+ * - session.event(sessionId, event: SessionEvent)
+ *
+ * Callbacks (server -> client, expecting response):
+ * - tool.call(sessionId, toolCallId, toolName, arguments) -> ToolResult
+ * - permission.request(sessionId, permissionRequest) -> PermissionRequestResult
+ */
+
+interface JsonRpcProxyOptions {
+    /** Path to the copilot CLI executable (default: "copilot") */
+    cliPath?: string;
+    /** Default working directory for the CLI (used if not specified in session.create) */
+    cwd?: string;
+    /** Log level for the CLI subprocess */
+    cliLogLevel?: 'none' | 'error' | 'warning' | 'info' | 'debug' | 'all';
+    /** Minimum log level to emit to onLog (default: 'info') */
+    logLevel?: 'debug' | 'info';
+    /** Logging callback */
+    onLog?: (level: 'debug' | 'info' | 'warn' | 'error', message: string) => void;
+    /**
+     * GitHub token for Copilot authentication.
+     * If provided, this token is passed to the CLI via COPILOT_GITHUB_TOKEN env var,
+     * bypassing the keychain. This is useful when running headlessly or when you want
+     * to use a specific token instead of stored credentials.
+     */
+    copilotToken?: string;
+}
+/**
+ * JSON-RPC Proxy Host
+ *
+ * Accepts tunnel connections and manages client connections.
+ * Uses the Copilot SDK for session management.
+ */
+declare class JsonRpcProxyHost {
+    private clients;
+    private readonly options;
+    constructor(options?: JsonRpcProxyOptions);
+    /**
+     * Handle a new client connection from the tunnel.
+     */
+    handleClient(stream: Duplex, clientId: string): Promise<void>;
+    /**
+     * Handle client disconnection.
+     */
+    handleClientDisconnect(clientId: string): void;
+    /**
+     * Stop all client connections and CLI processes.
+     */
+    stop(): Promise<void>;
+}
+
+export { type ConnectionStatus, DevTunnelHostAdapter, JsonRpcProxyHost, type JsonRpcProxyOptions, type StoredTunnelConfig, type TunnelHostAdapter, type TunnelHostAdapterConfig, type TunnelInfo, type Unsubscribe, clearTunnelConfig, createTunnelHostAdapter, getConfigPath, loadTunnelConfig, saveTunnelConfig };
