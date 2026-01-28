@@ -1,16 +1,12 @@
+#!/usr/bin/env node
+"use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __require = /* @__PURE__ */ ((x) => typeof require !== "undefined" ? require : typeof Proxy !== "undefined" ? new Proxy(x, {
-  get: (a, b) => (typeof require !== "undefined" ? require : a)[b]
-}) : x)(function(x) {
-  if (typeof require !== "undefined") return require.apply(this, arguments);
-  throw Error('Dynamic require of "' + x + '" is not supported');
-});
-var __commonJS = (cb, mod) => function __require2() {
+var __commonJS = (cb, mod) => function __require() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
 var __copyProps = (to, from, except, desc) => {
@@ -30,28 +26,3028 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
+// node_modules/commander/lib/error.js
+var require_error = __commonJS({
+  "node_modules/commander/lib/error.js"(exports2) {
+    "use strict";
+    var CommanderError2 = class extends Error {
+      /**
+       * Constructs the CommanderError class
+       * @param {number} exitCode suggested exit code which could be used with process.exit
+       * @param {string} code an id string representing the error
+       * @param {string} message human-readable description of the error
+       */
+      constructor(exitCode, code, message) {
+        super(message);
+        Error.captureStackTrace(this, this.constructor);
+        this.name = this.constructor.name;
+        this.code = code;
+        this.exitCode = exitCode;
+        this.nestedError = void 0;
+      }
+    };
+    var InvalidArgumentError2 = class extends CommanderError2 {
+      /**
+       * Constructs the InvalidArgumentError class
+       * @param {string} [message] explanation of why argument is invalid
+       */
+      constructor(message) {
+        super(1, "commander.invalidArgument", message);
+        Error.captureStackTrace(this, this.constructor);
+        this.name = this.constructor.name;
+      }
+    };
+    exports2.CommanderError = CommanderError2;
+    exports2.InvalidArgumentError = InvalidArgumentError2;
+  }
+});
+
+// node_modules/commander/lib/argument.js
+var require_argument = __commonJS({
+  "node_modules/commander/lib/argument.js"(exports2) {
+    "use strict";
+    var { InvalidArgumentError: InvalidArgumentError2 } = require_error();
+    var Argument2 = class {
+      /**
+       * Initialize a new command argument with the given name and description.
+       * The default is that the argument is required, and you can explicitly
+       * indicate this with <> around the name. Put [] around the name for an optional argument.
+       *
+       * @param {string} name
+       * @param {string} [description]
+       */
+      constructor(name, description) {
+        this.description = description || "";
+        this.variadic = false;
+        this.parseArg = void 0;
+        this.defaultValue = void 0;
+        this.defaultValueDescription = void 0;
+        this.argChoices = void 0;
+        switch (name[0]) {
+          case "<":
+            this.required = true;
+            this._name = name.slice(1, -1);
+            break;
+          case "[":
+            this.required = false;
+            this._name = name.slice(1, -1);
+            break;
+          default:
+            this.required = true;
+            this._name = name;
+            break;
+        }
+        if (this._name.length > 3 && this._name.slice(-3) === "...") {
+          this.variadic = true;
+          this._name = this._name.slice(0, -3);
+        }
+      }
+      /**
+       * Return argument name.
+       *
+       * @return {string}
+       */
+      name() {
+        return this._name;
+      }
+      /**
+       * @package
+       */
+      _concatValue(value, previous) {
+        if (previous === this.defaultValue || !Array.isArray(previous)) {
+          return [value];
+        }
+        return previous.concat(value);
+      }
+      /**
+       * Set the default value, and optionally supply the description to be displayed in the help.
+       *
+       * @param {*} value
+       * @param {string} [description]
+       * @return {Argument}
+       */
+      default(value, description) {
+        this.defaultValue = value;
+        this.defaultValueDescription = description;
+        return this;
+      }
+      /**
+       * Set the custom handler for processing CLI command arguments into argument values.
+       *
+       * @param {Function} [fn]
+       * @return {Argument}
+       */
+      argParser(fn) {
+        this.parseArg = fn;
+        return this;
+      }
+      /**
+       * Only allow argument value to be one of choices.
+       *
+       * @param {string[]} values
+       * @return {Argument}
+       */
+      choices(values) {
+        this.argChoices = values.slice();
+        this.parseArg = (arg, previous) => {
+          if (!this.argChoices.includes(arg)) {
+            throw new InvalidArgumentError2(
+              `Allowed choices are ${this.argChoices.join(", ")}.`
+            );
+          }
+          if (this.variadic) {
+            return this._concatValue(arg, previous);
+          }
+          return arg;
+        };
+        return this;
+      }
+      /**
+       * Make argument required.
+       *
+       * @returns {Argument}
+       */
+      argRequired() {
+        this.required = true;
+        return this;
+      }
+      /**
+       * Make argument optional.
+       *
+       * @returns {Argument}
+       */
+      argOptional() {
+        this.required = false;
+        return this;
+      }
+    };
+    function humanReadableArgName(arg) {
+      const nameOutput = arg.name() + (arg.variadic === true ? "..." : "");
+      return arg.required ? "<" + nameOutput + ">" : "[" + nameOutput + "]";
+    }
+    exports2.Argument = Argument2;
+    exports2.humanReadableArgName = humanReadableArgName;
+  }
+});
+
+// node_modules/commander/lib/help.js
+var require_help = __commonJS({
+  "node_modules/commander/lib/help.js"(exports2) {
+    "use strict";
+    var { humanReadableArgName } = require_argument();
+    var Help2 = class {
+      constructor() {
+        this.helpWidth = void 0;
+        this.sortSubcommands = false;
+        this.sortOptions = false;
+        this.showGlobalOptions = false;
+      }
+      /**
+       * Get an array of the visible subcommands. Includes a placeholder for the implicit help command, if there is one.
+       *
+       * @param {Command} cmd
+       * @returns {Command[]}
+       */
+      visibleCommands(cmd) {
+        const visibleCommands = cmd.commands.filter((cmd2) => !cmd2._hidden);
+        const helpCommand = cmd._getHelpCommand();
+        if (helpCommand && !helpCommand._hidden) {
+          visibleCommands.push(helpCommand);
+        }
+        if (this.sortSubcommands) {
+          visibleCommands.sort((a, b) => {
+            return a.name().localeCompare(b.name());
+          });
+        }
+        return visibleCommands;
+      }
+      /**
+       * Compare options for sort.
+       *
+       * @param {Option} a
+       * @param {Option} b
+       * @returns {number}
+       */
+      compareOptions(a, b) {
+        const getSortKey = (option) => {
+          return option.short ? option.short.replace(/^-/, "") : option.long.replace(/^--/, "");
+        };
+        return getSortKey(a).localeCompare(getSortKey(b));
+      }
+      /**
+       * Get an array of the visible options. Includes a placeholder for the implicit help option, if there is one.
+       *
+       * @param {Command} cmd
+       * @returns {Option[]}
+       */
+      visibleOptions(cmd) {
+        const visibleOptions = cmd.options.filter((option) => !option.hidden);
+        const helpOption = cmd._getHelpOption();
+        if (helpOption && !helpOption.hidden) {
+          const removeShort = helpOption.short && cmd._findOption(helpOption.short);
+          const removeLong = helpOption.long && cmd._findOption(helpOption.long);
+          if (!removeShort && !removeLong) {
+            visibleOptions.push(helpOption);
+          } else if (helpOption.long && !removeLong) {
+            visibleOptions.push(
+              cmd.createOption(helpOption.long, helpOption.description)
+            );
+          } else if (helpOption.short && !removeShort) {
+            visibleOptions.push(
+              cmd.createOption(helpOption.short, helpOption.description)
+            );
+          }
+        }
+        if (this.sortOptions) {
+          visibleOptions.sort(this.compareOptions);
+        }
+        return visibleOptions;
+      }
+      /**
+       * Get an array of the visible global options. (Not including help.)
+       *
+       * @param {Command} cmd
+       * @returns {Option[]}
+       */
+      visibleGlobalOptions(cmd) {
+        if (!this.showGlobalOptions) return [];
+        const globalOptions = [];
+        for (let ancestorCmd = cmd.parent; ancestorCmd; ancestorCmd = ancestorCmd.parent) {
+          const visibleOptions = ancestorCmd.options.filter(
+            (option) => !option.hidden
+          );
+          globalOptions.push(...visibleOptions);
+        }
+        if (this.sortOptions) {
+          globalOptions.sort(this.compareOptions);
+        }
+        return globalOptions;
+      }
+      /**
+       * Get an array of the arguments if any have a description.
+       *
+       * @param {Command} cmd
+       * @returns {Argument[]}
+       */
+      visibleArguments(cmd) {
+        if (cmd._argsDescription) {
+          cmd.registeredArguments.forEach((argument) => {
+            argument.description = argument.description || cmd._argsDescription[argument.name()] || "";
+          });
+        }
+        if (cmd.registeredArguments.find((argument) => argument.description)) {
+          return cmd.registeredArguments;
+        }
+        return [];
+      }
+      /**
+       * Get the command term to show in the list of subcommands.
+       *
+       * @param {Command} cmd
+       * @returns {string}
+       */
+      subcommandTerm(cmd) {
+        const args = cmd.registeredArguments.map((arg) => humanReadableArgName(arg)).join(" ");
+        return cmd._name + (cmd._aliases[0] ? "|" + cmd._aliases[0] : "") + (cmd.options.length ? " [options]" : "") + // simplistic check for non-help option
+        (args ? " " + args : "");
+      }
+      /**
+       * Get the option term to show in the list of options.
+       *
+       * @param {Option} option
+       * @returns {string}
+       */
+      optionTerm(option) {
+        return option.flags;
+      }
+      /**
+       * Get the argument term to show in the list of arguments.
+       *
+       * @param {Argument} argument
+       * @returns {string}
+       */
+      argumentTerm(argument) {
+        return argument.name();
+      }
+      /**
+       * Get the longest command term length.
+       *
+       * @param {Command} cmd
+       * @param {Help} helper
+       * @returns {number}
+       */
+      longestSubcommandTermLength(cmd, helper) {
+        return helper.visibleCommands(cmd).reduce((max, command) => {
+          return Math.max(max, helper.subcommandTerm(command).length);
+        }, 0);
+      }
+      /**
+       * Get the longest option term length.
+       *
+       * @param {Command} cmd
+       * @param {Help} helper
+       * @returns {number}
+       */
+      longestOptionTermLength(cmd, helper) {
+        return helper.visibleOptions(cmd).reduce((max, option) => {
+          return Math.max(max, helper.optionTerm(option).length);
+        }, 0);
+      }
+      /**
+       * Get the longest global option term length.
+       *
+       * @param {Command} cmd
+       * @param {Help} helper
+       * @returns {number}
+       */
+      longestGlobalOptionTermLength(cmd, helper) {
+        return helper.visibleGlobalOptions(cmd).reduce((max, option) => {
+          return Math.max(max, helper.optionTerm(option).length);
+        }, 0);
+      }
+      /**
+       * Get the longest argument term length.
+       *
+       * @param {Command} cmd
+       * @param {Help} helper
+       * @returns {number}
+       */
+      longestArgumentTermLength(cmd, helper) {
+        return helper.visibleArguments(cmd).reduce((max, argument) => {
+          return Math.max(max, helper.argumentTerm(argument).length);
+        }, 0);
+      }
+      /**
+       * Get the command usage to be displayed at the top of the built-in help.
+       *
+       * @param {Command} cmd
+       * @returns {string}
+       */
+      commandUsage(cmd) {
+        let cmdName = cmd._name;
+        if (cmd._aliases[0]) {
+          cmdName = cmdName + "|" + cmd._aliases[0];
+        }
+        let ancestorCmdNames = "";
+        for (let ancestorCmd = cmd.parent; ancestorCmd; ancestorCmd = ancestorCmd.parent) {
+          ancestorCmdNames = ancestorCmd.name() + " " + ancestorCmdNames;
+        }
+        return ancestorCmdNames + cmdName + " " + cmd.usage();
+      }
+      /**
+       * Get the description for the command.
+       *
+       * @param {Command} cmd
+       * @returns {string}
+       */
+      commandDescription(cmd) {
+        return cmd.description();
+      }
+      /**
+       * Get the subcommand summary to show in the list of subcommands.
+       * (Fallback to description for backwards compatibility.)
+       *
+       * @param {Command} cmd
+       * @returns {string}
+       */
+      subcommandDescription(cmd) {
+        return cmd.summary() || cmd.description();
+      }
+      /**
+       * Get the option description to show in the list of options.
+       *
+       * @param {Option} option
+       * @return {string}
+       */
+      optionDescription(option) {
+        const extraInfo = [];
+        if (option.argChoices) {
+          extraInfo.push(
+            // use stringify to match the display of the default value
+            `choices: ${option.argChoices.map((choice) => JSON.stringify(choice)).join(", ")}`
+          );
+        }
+        if (option.defaultValue !== void 0) {
+          const showDefault = option.required || option.optional || option.isBoolean() && typeof option.defaultValue === "boolean";
+          if (showDefault) {
+            extraInfo.push(
+              `default: ${option.defaultValueDescription || JSON.stringify(option.defaultValue)}`
+            );
+          }
+        }
+        if (option.presetArg !== void 0 && option.optional) {
+          extraInfo.push(`preset: ${JSON.stringify(option.presetArg)}`);
+        }
+        if (option.envVar !== void 0) {
+          extraInfo.push(`env: ${option.envVar}`);
+        }
+        if (extraInfo.length > 0) {
+          return `${option.description} (${extraInfo.join(", ")})`;
+        }
+        return option.description;
+      }
+      /**
+       * Get the argument description to show in the list of arguments.
+       *
+       * @param {Argument} argument
+       * @return {string}
+       */
+      argumentDescription(argument) {
+        const extraInfo = [];
+        if (argument.argChoices) {
+          extraInfo.push(
+            // use stringify to match the display of the default value
+            `choices: ${argument.argChoices.map((choice) => JSON.stringify(choice)).join(", ")}`
+          );
+        }
+        if (argument.defaultValue !== void 0) {
+          extraInfo.push(
+            `default: ${argument.defaultValueDescription || JSON.stringify(argument.defaultValue)}`
+          );
+        }
+        if (extraInfo.length > 0) {
+          const extraDescripton = `(${extraInfo.join(", ")})`;
+          if (argument.description) {
+            return `${argument.description} ${extraDescripton}`;
+          }
+          return extraDescripton;
+        }
+        return argument.description;
+      }
+      /**
+       * Generate the built-in help text.
+       *
+       * @param {Command} cmd
+       * @param {Help} helper
+       * @returns {string}
+       */
+      formatHelp(cmd, helper) {
+        const termWidth = helper.padWidth(cmd, helper);
+        const helpWidth = helper.helpWidth || 80;
+        const itemIndentWidth = 2;
+        const itemSeparatorWidth = 2;
+        function formatItem(term, description) {
+          if (description) {
+            const fullText = `${term.padEnd(termWidth + itemSeparatorWidth)}${description}`;
+            return helper.wrap(
+              fullText,
+              helpWidth - itemIndentWidth,
+              termWidth + itemSeparatorWidth
+            );
+          }
+          return term;
+        }
+        function formatList(textArray) {
+          return textArray.join("\n").replace(/^/gm, " ".repeat(itemIndentWidth));
+        }
+        let output = [`Usage: ${helper.commandUsage(cmd)}`, ""];
+        const commandDescription = helper.commandDescription(cmd);
+        if (commandDescription.length > 0) {
+          output = output.concat([
+            helper.wrap(commandDescription, helpWidth, 0),
+            ""
+          ]);
+        }
+        const argumentList = helper.visibleArguments(cmd).map((argument) => {
+          return formatItem(
+            helper.argumentTerm(argument),
+            helper.argumentDescription(argument)
+          );
+        });
+        if (argumentList.length > 0) {
+          output = output.concat(["Arguments:", formatList(argumentList), ""]);
+        }
+        const optionList = helper.visibleOptions(cmd).map((option) => {
+          return formatItem(
+            helper.optionTerm(option),
+            helper.optionDescription(option)
+          );
+        });
+        if (optionList.length > 0) {
+          output = output.concat(["Options:", formatList(optionList), ""]);
+        }
+        if (this.showGlobalOptions) {
+          const globalOptionList = helper.visibleGlobalOptions(cmd).map((option) => {
+            return formatItem(
+              helper.optionTerm(option),
+              helper.optionDescription(option)
+            );
+          });
+          if (globalOptionList.length > 0) {
+            output = output.concat([
+              "Global Options:",
+              formatList(globalOptionList),
+              ""
+            ]);
+          }
+        }
+        const commandList = helper.visibleCommands(cmd).map((cmd2) => {
+          return formatItem(
+            helper.subcommandTerm(cmd2),
+            helper.subcommandDescription(cmd2)
+          );
+        });
+        if (commandList.length > 0) {
+          output = output.concat(["Commands:", formatList(commandList), ""]);
+        }
+        return output.join("\n");
+      }
+      /**
+       * Calculate the pad width from the maximum term length.
+       *
+       * @param {Command} cmd
+       * @param {Help} helper
+       * @returns {number}
+       */
+      padWidth(cmd, helper) {
+        return Math.max(
+          helper.longestOptionTermLength(cmd, helper),
+          helper.longestGlobalOptionTermLength(cmd, helper),
+          helper.longestSubcommandTermLength(cmd, helper),
+          helper.longestArgumentTermLength(cmd, helper)
+        );
+      }
+      /**
+       * Wrap the given string to width characters per line, with lines after the first indented.
+       * Do not wrap if insufficient room for wrapping (minColumnWidth), or string is manually formatted.
+       *
+       * @param {string} str
+       * @param {number} width
+       * @param {number} indent
+       * @param {number} [minColumnWidth=40]
+       * @return {string}
+       *
+       */
+      wrap(str, width, indent, minColumnWidth = 40) {
+        const indents = " \\f\\t\\v\xA0\u1680\u2000-\u200A\u202F\u205F\u3000\uFEFF";
+        const manualIndent = new RegExp(`[\\n][${indents}]+`);
+        if (str.match(manualIndent)) return str;
+        const columnWidth = width - indent;
+        if (columnWidth < minColumnWidth) return str;
+        const leadingStr = str.slice(0, indent);
+        const columnText = str.slice(indent).replace("\r\n", "\n");
+        const indentString = " ".repeat(indent);
+        const zeroWidthSpace = "\u200B";
+        const breaks = `\\s${zeroWidthSpace}`;
+        const regex = new RegExp(
+          `
+|.{1,${columnWidth - 1}}([${breaks}]|$)|[^${breaks}]+?([${breaks}]|$)`,
+          "g"
+        );
+        const lines = columnText.match(regex) || [];
+        return leadingStr + lines.map((line, i) => {
+          if (line === "\n") return "";
+          return (i > 0 ? indentString : "") + line.trimEnd();
+        }).join("\n");
+      }
+    };
+    exports2.Help = Help2;
+  }
+});
+
+// node_modules/commander/lib/option.js
+var require_option = __commonJS({
+  "node_modules/commander/lib/option.js"(exports2) {
+    "use strict";
+    var { InvalidArgumentError: InvalidArgumentError2 } = require_error();
+    var Option2 = class {
+      /**
+       * Initialize a new `Option` with the given `flags` and `description`.
+       *
+       * @param {string} flags
+       * @param {string} [description]
+       */
+      constructor(flags, description) {
+        this.flags = flags;
+        this.description = description || "";
+        this.required = flags.includes("<");
+        this.optional = flags.includes("[");
+        this.variadic = /\w\.\.\.[>\]]$/.test(flags);
+        this.mandatory = false;
+        const optionFlags = splitOptionFlags(flags);
+        this.short = optionFlags.shortFlag;
+        this.long = optionFlags.longFlag;
+        this.negate = false;
+        if (this.long) {
+          this.negate = this.long.startsWith("--no-");
+        }
+        this.defaultValue = void 0;
+        this.defaultValueDescription = void 0;
+        this.presetArg = void 0;
+        this.envVar = void 0;
+        this.parseArg = void 0;
+        this.hidden = false;
+        this.argChoices = void 0;
+        this.conflictsWith = [];
+        this.implied = void 0;
+      }
+      /**
+       * Set the default value, and optionally supply the description to be displayed in the help.
+       *
+       * @param {*} value
+       * @param {string} [description]
+       * @return {Option}
+       */
+      default(value, description) {
+        this.defaultValue = value;
+        this.defaultValueDescription = description;
+        return this;
+      }
+      /**
+       * Preset to use when option used without option-argument, especially optional but also boolean and negated.
+       * The custom processing (parseArg) is called.
+       *
+       * @example
+       * new Option('--color').default('GREYSCALE').preset('RGB');
+       * new Option('--donate [amount]').preset('20').argParser(parseFloat);
+       *
+       * @param {*} arg
+       * @return {Option}
+       */
+      preset(arg) {
+        this.presetArg = arg;
+        return this;
+      }
+      /**
+       * Add option name(s) that conflict with this option.
+       * An error will be displayed if conflicting options are found during parsing.
+       *
+       * @example
+       * new Option('--rgb').conflicts('cmyk');
+       * new Option('--js').conflicts(['ts', 'jsx']);
+       *
+       * @param {(string | string[])} names
+       * @return {Option}
+       */
+      conflicts(names) {
+        this.conflictsWith = this.conflictsWith.concat(names);
+        return this;
+      }
+      /**
+       * Specify implied option values for when this option is set and the implied options are not.
+       *
+       * The custom processing (parseArg) is not called on the implied values.
+       *
+       * @example
+       * program
+       *   .addOption(new Option('--log', 'write logging information to file'))
+       *   .addOption(new Option('--trace', 'log extra details').implies({ log: 'trace.txt' }));
+       *
+       * @param {object} impliedOptionValues
+       * @return {Option}
+       */
+      implies(impliedOptionValues) {
+        let newImplied = impliedOptionValues;
+        if (typeof impliedOptionValues === "string") {
+          newImplied = { [impliedOptionValues]: true };
+        }
+        this.implied = Object.assign(this.implied || {}, newImplied);
+        return this;
+      }
+      /**
+       * Set environment variable to check for option value.
+       *
+       * An environment variable is only used if when processed the current option value is
+       * undefined, or the source of the current value is 'default' or 'config' or 'env'.
+       *
+       * @param {string} name
+       * @return {Option}
+       */
+      env(name) {
+        this.envVar = name;
+        return this;
+      }
+      /**
+       * Set the custom handler for processing CLI option arguments into option values.
+       *
+       * @param {Function} [fn]
+       * @return {Option}
+       */
+      argParser(fn) {
+        this.parseArg = fn;
+        return this;
+      }
+      /**
+       * Whether the option is mandatory and must have a value after parsing.
+       *
+       * @param {boolean} [mandatory=true]
+       * @return {Option}
+       */
+      makeOptionMandatory(mandatory = true) {
+        this.mandatory = !!mandatory;
+        return this;
+      }
+      /**
+       * Hide option in help.
+       *
+       * @param {boolean} [hide=true]
+       * @return {Option}
+       */
+      hideHelp(hide = true) {
+        this.hidden = !!hide;
+        return this;
+      }
+      /**
+       * @package
+       */
+      _concatValue(value, previous) {
+        if (previous === this.defaultValue || !Array.isArray(previous)) {
+          return [value];
+        }
+        return previous.concat(value);
+      }
+      /**
+       * Only allow option value to be one of choices.
+       *
+       * @param {string[]} values
+       * @return {Option}
+       */
+      choices(values) {
+        this.argChoices = values.slice();
+        this.parseArg = (arg, previous) => {
+          if (!this.argChoices.includes(arg)) {
+            throw new InvalidArgumentError2(
+              `Allowed choices are ${this.argChoices.join(", ")}.`
+            );
+          }
+          if (this.variadic) {
+            return this._concatValue(arg, previous);
+          }
+          return arg;
+        };
+        return this;
+      }
+      /**
+       * Return option name.
+       *
+       * @return {string}
+       */
+      name() {
+        if (this.long) {
+          return this.long.replace(/^--/, "");
+        }
+        return this.short.replace(/^-/, "");
+      }
+      /**
+       * Return option name, in a camelcase format that can be used
+       * as a object attribute key.
+       *
+       * @return {string}
+       */
+      attributeName() {
+        return camelcase(this.name().replace(/^no-/, ""));
+      }
+      /**
+       * Check if `arg` matches the short or long flag.
+       *
+       * @param {string} arg
+       * @return {boolean}
+       * @package
+       */
+      is(arg) {
+        return this.short === arg || this.long === arg;
+      }
+      /**
+       * Return whether a boolean option.
+       *
+       * Options are one of boolean, negated, required argument, or optional argument.
+       *
+       * @return {boolean}
+       * @package
+       */
+      isBoolean() {
+        return !this.required && !this.optional && !this.negate;
+      }
+    };
+    var DualOptions = class {
+      /**
+       * @param {Option[]} options
+       */
+      constructor(options) {
+        this.positiveOptions = /* @__PURE__ */ new Map();
+        this.negativeOptions = /* @__PURE__ */ new Map();
+        this.dualOptions = /* @__PURE__ */ new Set();
+        options.forEach((option) => {
+          if (option.negate) {
+            this.negativeOptions.set(option.attributeName(), option);
+          } else {
+            this.positiveOptions.set(option.attributeName(), option);
+          }
+        });
+        this.negativeOptions.forEach((value, key) => {
+          if (this.positiveOptions.has(key)) {
+            this.dualOptions.add(key);
+          }
+        });
+      }
+      /**
+       * Did the value come from the option, and not from possible matching dual option?
+       *
+       * @param {*} value
+       * @param {Option} option
+       * @returns {boolean}
+       */
+      valueFromOption(value, option) {
+        const optionKey = option.attributeName();
+        if (!this.dualOptions.has(optionKey)) return true;
+        const preset = this.negativeOptions.get(optionKey).presetArg;
+        const negativeValue = preset !== void 0 ? preset : false;
+        return option.negate === (negativeValue === value);
+      }
+    };
+    function camelcase(str) {
+      return str.split("-").reduce((str2, word) => {
+        return str2 + word[0].toUpperCase() + word.slice(1);
+      });
+    }
+    function splitOptionFlags(flags) {
+      let shortFlag;
+      let longFlag;
+      const flagParts = flags.split(/[ |,]+/);
+      if (flagParts.length > 1 && !/^[[<]/.test(flagParts[1]))
+        shortFlag = flagParts.shift();
+      longFlag = flagParts.shift();
+      if (!shortFlag && /^-[^-]$/.test(longFlag)) {
+        shortFlag = longFlag;
+        longFlag = void 0;
+      }
+      return { shortFlag, longFlag };
+    }
+    exports2.Option = Option2;
+    exports2.DualOptions = DualOptions;
+  }
+});
+
+// node_modules/commander/lib/suggestSimilar.js
+var require_suggestSimilar = __commonJS({
+  "node_modules/commander/lib/suggestSimilar.js"(exports2) {
+    "use strict";
+    var maxDistance = 3;
+    function editDistance(a, b) {
+      if (Math.abs(a.length - b.length) > maxDistance)
+        return Math.max(a.length, b.length);
+      const d = [];
+      for (let i = 0; i <= a.length; i++) {
+        d[i] = [i];
+      }
+      for (let j = 0; j <= b.length; j++) {
+        d[0][j] = j;
+      }
+      for (let j = 1; j <= b.length; j++) {
+        for (let i = 1; i <= a.length; i++) {
+          let cost = 1;
+          if (a[i - 1] === b[j - 1]) {
+            cost = 0;
+          } else {
+            cost = 1;
+          }
+          d[i][j] = Math.min(
+            d[i - 1][j] + 1,
+            // deletion
+            d[i][j - 1] + 1,
+            // insertion
+            d[i - 1][j - 1] + cost
+            // substitution
+          );
+          if (i > 1 && j > 1 && a[i - 1] === b[j - 2] && a[i - 2] === b[j - 1]) {
+            d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + 1);
+          }
+        }
+      }
+      return d[a.length][b.length];
+    }
+    function suggestSimilar(word, candidates) {
+      if (!candidates || candidates.length === 0) return "";
+      candidates = Array.from(new Set(candidates));
+      const searchingOptions = word.startsWith("--");
+      if (searchingOptions) {
+        word = word.slice(2);
+        candidates = candidates.map((candidate) => candidate.slice(2));
+      }
+      let similar = [];
+      let bestDistance = maxDistance;
+      const minSimilarity = 0.4;
+      candidates.forEach((candidate) => {
+        if (candidate.length <= 1) return;
+        const distance = editDistance(word, candidate);
+        const length = Math.max(word.length, candidate.length);
+        const similarity = (length - distance) / length;
+        if (similarity > minSimilarity) {
+          if (distance < bestDistance) {
+            bestDistance = distance;
+            similar = [candidate];
+          } else if (distance === bestDistance) {
+            similar.push(candidate);
+          }
+        }
+      });
+      similar.sort((a, b) => a.localeCompare(b));
+      if (searchingOptions) {
+        similar = similar.map((candidate) => `--${candidate}`);
+      }
+      if (similar.length > 1) {
+        return `
+(Did you mean one of ${similar.join(", ")}?)`;
+      }
+      if (similar.length === 1) {
+        return `
+(Did you mean ${similar[0]}?)`;
+      }
+      return "";
+    }
+    exports2.suggestSimilar = suggestSimilar;
+  }
+});
+
+// node_modules/commander/lib/command.js
+var require_command = __commonJS({
+  "node_modules/commander/lib/command.js"(exports2) {
+    "use strict";
+    var EventEmitter = require("events").EventEmitter;
+    var childProcess = require("child_process");
+    var path2 = require("path");
+    var fs2 = require("fs");
+    var process2 = require("process");
+    var { Argument: Argument2, humanReadableArgName } = require_argument();
+    var { CommanderError: CommanderError2 } = require_error();
+    var { Help: Help2 } = require_help();
+    var { Option: Option2, DualOptions } = require_option();
+    var { suggestSimilar } = require_suggestSimilar();
+    var Command2 = class _Command extends EventEmitter {
+      /**
+       * Initialize a new `Command`.
+       *
+       * @param {string} [name]
+       */
+      constructor(name) {
+        super();
+        this.commands = [];
+        this.options = [];
+        this.parent = null;
+        this._allowUnknownOption = false;
+        this._allowExcessArguments = true;
+        this.registeredArguments = [];
+        this._args = this.registeredArguments;
+        this.args = [];
+        this.rawArgs = [];
+        this.processedArgs = [];
+        this._scriptPath = null;
+        this._name = name || "";
+        this._optionValues = {};
+        this._optionValueSources = {};
+        this._storeOptionsAsProperties = false;
+        this._actionHandler = null;
+        this._executableHandler = false;
+        this._executableFile = null;
+        this._executableDir = null;
+        this._defaultCommandName = null;
+        this._exitCallback = null;
+        this._aliases = [];
+        this._combineFlagAndOptionalValue = true;
+        this._description = "";
+        this._summary = "";
+        this._argsDescription = void 0;
+        this._enablePositionalOptions = false;
+        this._passThroughOptions = false;
+        this._lifeCycleHooks = {};
+        this._showHelpAfterError = false;
+        this._showSuggestionAfterError = true;
+        this._outputConfiguration = {
+          writeOut: (str) => process2.stdout.write(str),
+          writeErr: (str) => process2.stderr.write(str),
+          getOutHelpWidth: () => process2.stdout.isTTY ? process2.stdout.columns : void 0,
+          getErrHelpWidth: () => process2.stderr.isTTY ? process2.stderr.columns : void 0,
+          outputError: (str, write) => write(str)
+        };
+        this._hidden = false;
+        this._helpOption = void 0;
+        this._addImplicitHelpCommand = void 0;
+        this._helpCommand = void 0;
+        this._helpConfiguration = {};
+      }
+      /**
+       * Copy settings that are useful to have in common across root command and subcommands.
+       *
+       * (Used internally when adding a command using `.command()` so subcommands inherit parent settings.)
+       *
+       * @param {Command} sourceCommand
+       * @return {Command} `this` command for chaining
+       */
+      copyInheritedSettings(sourceCommand) {
+        this._outputConfiguration = sourceCommand._outputConfiguration;
+        this._helpOption = sourceCommand._helpOption;
+        this._helpCommand = sourceCommand._helpCommand;
+        this._helpConfiguration = sourceCommand._helpConfiguration;
+        this._exitCallback = sourceCommand._exitCallback;
+        this._storeOptionsAsProperties = sourceCommand._storeOptionsAsProperties;
+        this._combineFlagAndOptionalValue = sourceCommand._combineFlagAndOptionalValue;
+        this._allowExcessArguments = sourceCommand._allowExcessArguments;
+        this._enablePositionalOptions = sourceCommand._enablePositionalOptions;
+        this._showHelpAfterError = sourceCommand._showHelpAfterError;
+        this._showSuggestionAfterError = sourceCommand._showSuggestionAfterError;
+        return this;
+      }
+      /**
+       * @returns {Command[]}
+       * @private
+       */
+      _getCommandAndAncestors() {
+        const result = [];
+        for (let command = this; command; command = command.parent) {
+          result.push(command);
+        }
+        return result;
+      }
+      /**
+       * Define a command.
+       *
+       * There are two styles of command: pay attention to where to put the description.
+       *
+       * @example
+       * // Command implemented using action handler (description is supplied separately to `.command`)
+       * program
+       *   .command('clone <source> [destination]')
+       *   .description('clone a repository into a newly created directory')
+       *   .action((source, destination) => {
+       *     console.log('clone command called');
+       *   });
+       *
+       * // Command implemented using separate executable file (description is second parameter to `.command`)
+       * program
+       *   .command('start <service>', 'start named service')
+       *   .command('stop [service]', 'stop named service, or all if no name supplied');
+       *
+       * @param {string} nameAndArgs - command name and arguments, args are `<required>` or `[optional]` and last may also be `variadic...`
+       * @param {(object | string)} [actionOptsOrExecDesc] - configuration options (for action), or description (for executable)
+       * @param {object} [execOpts] - configuration options (for executable)
+       * @return {Command} returns new command for action handler, or `this` for executable command
+       */
+      command(nameAndArgs, actionOptsOrExecDesc, execOpts) {
+        let desc = actionOptsOrExecDesc;
+        let opts = execOpts;
+        if (typeof desc === "object" && desc !== null) {
+          opts = desc;
+          desc = null;
+        }
+        opts = opts || {};
+        const [, name, args] = nameAndArgs.match(/([^ ]+) *(.*)/);
+        const cmd = this.createCommand(name);
+        if (desc) {
+          cmd.description(desc);
+          cmd._executableHandler = true;
+        }
+        if (opts.isDefault) this._defaultCommandName = cmd._name;
+        cmd._hidden = !!(opts.noHelp || opts.hidden);
+        cmd._executableFile = opts.executableFile || null;
+        if (args) cmd.arguments(args);
+        this._registerCommand(cmd);
+        cmd.parent = this;
+        cmd.copyInheritedSettings(this);
+        if (desc) return this;
+        return cmd;
+      }
+      /**
+       * Factory routine to create a new unattached command.
+       *
+       * See .command() for creating an attached subcommand, which uses this routine to
+       * create the command. You can override createCommand to customise subcommands.
+       *
+       * @param {string} [name]
+       * @return {Command} new command
+       */
+      createCommand(name) {
+        return new _Command(name);
+      }
+      /**
+       * You can customise the help with a subclass of Help by overriding createHelp,
+       * or by overriding Help properties using configureHelp().
+       *
+       * @return {Help}
+       */
+      createHelp() {
+        return Object.assign(new Help2(), this.configureHelp());
+      }
+      /**
+       * You can customise the help by overriding Help properties using configureHelp(),
+       * or with a subclass of Help by overriding createHelp().
+       *
+       * @param {object} [configuration] - configuration options
+       * @return {(Command | object)} `this` command for chaining, or stored configuration
+       */
+      configureHelp(configuration) {
+        if (configuration === void 0) return this._helpConfiguration;
+        this._helpConfiguration = configuration;
+        return this;
+      }
+      /**
+       * The default output goes to stdout and stderr. You can customise this for special
+       * applications. You can also customise the display of errors by overriding outputError.
+       *
+       * The configuration properties are all functions:
+       *
+       *     // functions to change where being written, stdout and stderr
+       *     writeOut(str)
+       *     writeErr(str)
+       *     // matching functions to specify width for wrapping help
+       *     getOutHelpWidth()
+       *     getErrHelpWidth()
+       *     // functions based on what is being written out
+       *     outputError(str, write) // used for displaying errors, and not used for displaying help
+       *
+       * @param {object} [configuration] - configuration options
+       * @return {(Command | object)} `this` command for chaining, or stored configuration
+       */
+      configureOutput(configuration) {
+        if (configuration === void 0) return this._outputConfiguration;
+        Object.assign(this._outputConfiguration, configuration);
+        return this;
+      }
+      /**
+       * Display the help or a custom message after an error occurs.
+       *
+       * @param {(boolean|string)} [displayHelp]
+       * @return {Command} `this` command for chaining
+       */
+      showHelpAfterError(displayHelp = true) {
+        if (typeof displayHelp !== "string") displayHelp = !!displayHelp;
+        this._showHelpAfterError = displayHelp;
+        return this;
+      }
+      /**
+       * Display suggestion of similar commands for unknown commands, or options for unknown options.
+       *
+       * @param {boolean} [displaySuggestion]
+       * @return {Command} `this` command for chaining
+       */
+      showSuggestionAfterError(displaySuggestion = true) {
+        this._showSuggestionAfterError = !!displaySuggestion;
+        return this;
+      }
+      /**
+       * Add a prepared subcommand.
+       *
+       * See .command() for creating an attached subcommand which inherits settings from its parent.
+       *
+       * @param {Command} cmd - new subcommand
+       * @param {object} [opts] - configuration options
+       * @return {Command} `this` command for chaining
+       */
+      addCommand(cmd, opts) {
+        if (!cmd._name) {
+          throw new Error(`Command passed to .addCommand() must have a name
+- specify the name in Command constructor or using .name()`);
+        }
+        opts = opts || {};
+        if (opts.isDefault) this._defaultCommandName = cmd._name;
+        if (opts.noHelp || opts.hidden) cmd._hidden = true;
+        this._registerCommand(cmd);
+        cmd.parent = this;
+        cmd._checkForBrokenPassThrough();
+        return this;
+      }
+      /**
+       * Factory routine to create a new unattached argument.
+       *
+       * See .argument() for creating an attached argument, which uses this routine to
+       * create the argument. You can override createArgument to return a custom argument.
+       *
+       * @param {string} name
+       * @param {string} [description]
+       * @return {Argument} new argument
+       */
+      createArgument(name, description) {
+        return new Argument2(name, description);
+      }
+      /**
+       * Define argument syntax for command.
+       *
+       * The default is that the argument is required, and you can explicitly
+       * indicate this with <> around the name. Put [] around the name for an optional argument.
+       *
+       * @example
+       * program.argument('<input-file>');
+       * program.argument('[output-file]');
+       *
+       * @param {string} name
+       * @param {string} [description]
+       * @param {(Function|*)} [fn] - custom argument processing function
+       * @param {*} [defaultValue]
+       * @return {Command} `this` command for chaining
+       */
+      argument(name, description, fn, defaultValue) {
+        const argument = this.createArgument(name, description);
+        if (typeof fn === "function") {
+          argument.default(defaultValue).argParser(fn);
+        } else {
+          argument.default(fn);
+        }
+        this.addArgument(argument);
+        return this;
+      }
+      /**
+       * Define argument syntax for command, adding multiple at once (without descriptions).
+       *
+       * See also .argument().
+       *
+       * @example
+       * program.arguments('<cmd> [env]');
+       *
+       * @param {string} names
+       * @return {Command} `this` command for chaining
+       */
+      arguments(names) {
+        names.trim().split(/ +/).forEach((detail) => {
+          this.argument(detail);
+        });
+        return this;
+      }
+      /**
+       * Define argument syntax for command, adding a prepared argument.
+       *
+       * @param {Argument} argument
+       * @return {Command} `this` command for chaining
+       */
+      addArgument(argument) {
+        const previousArgument = this.registeredArguments.slice(-1)[0];
+        if (previousArgument && previousArgument.variadic) {
+          throw new Error(
+            `only the last argument can be variadic '${previousArgument.name()}'`
+          );
+        }
+        if (argument.required && argument.defaultValue !== void 0 && argument.parseArg === void 0) {
+          throw new Error(
+            `a default value for a required argument is never used: '${argument.name()}'`
+          );
+        }
+        this.registeredArguments.push(argument);
+        return this;
+      }
+      /**
+       * Customise or override default help command. By default a help command is automatically added if your command has subcommands.
+       *
+       * @example
+       *    program.helpCommand('help [cmd]');
+       *    program.helpCommand('help [cmd]', 'show help');
+       *    program.helpCommand(false); // suppress default help command
+       *    program.helpCommand(true); // add help command even if no subcommands
+       *
+       * @param {string|boolean} enableOrNameAndArgs - enable with custom name and/or arguments, or boolean to override whether added
+       * @param {string} [description] - custom description
+       * @return {Command} `this` command for chaining
+       */
+      helpCommand(enableOrNameAndArgs, description) {
+        if (typeof enableOrNameAndArgs === "boolean") {
+          this._addImplicitHelpCommand = enableOrNameAndArgs;
+          return this;
+        }
+        enableOrNameAndArgs = enableOrNameAndArgs ?? "help [command]";
+        const [, helpName, helpArgs] = enableOrNameAndArgs.match(/([^ ]+) *(.*)/);
+        const helpDescription = description ?? "display help for command";
+        const helpCommand = this.createCommand(helpName);
+        helpCommand.helpOption(false);
+        if (helpArgs) helpCommand.arguments(helpArgs);
+        if (helpDescription) helpCommand.description(helpDescription);
+        this._addImplicitHelpCommand = true;
+        this._helpCommand = helpCommand;
+        return this;
+      }
+      /**
+       * Add prepared custom help command.
+       *
+       * @param {(Command|string|boolean)} helpCommand - custom help command, or deprecated enableOrNameAndArgs as for `.helpCommand()`
+       * @param {string} [deprecatedDescription] - deprecated custom description used with custom name only
+       * @return {Command} `this` command for chaining
+       */
+      addHelpCommand(helpCommand, deprecatedDescription) {
+        if (typeof helpCommand !== "object") {
+          this.helpCommand(helpCommand, deprecatedDescription);
+          return this;
+        }
+        this._addImplicitHelpCommand = true;
+        this._helpCommand = helpCommand;
+        return this;
+      }
+      /**
+       * Lazy create help command.
+       *
+       * @return {(Command|null)}
+       * @package
+       */
+      _getHelpCommand() {
+        const hasImplicitHelpCommand = this._addImplicitHelpCommand ?? (this.commands.length && !this._actionHandler && !this._findCommand("help"));
+        if (hasImplicitHelpCommand) {
+          if (this._helpCommand === void 0) {
+            this.helpCommand(void 0, void 0);
+          }
+          return this._helpCommand;
+        }
+        return null;
+      }
+      /**
+       * Add hook for life cycle event.
+       *
+       * @param {string} event
+       * @param {Function} listener
+       * @return {Command} `this` command for chaining
+       */
+      hook(event, listener) {
+        const allowedValues = ["preSubcommand", "preAction", "postAction"];
+        if (!allowedValues.includes(event)) {
+          throw new Error(`Unexpected value for event passed to hook : '${event}'.
+Expecting one of '${allowedValues.join("', '")}'`);
+        }
+        if (this._lifeCycleHooks[event]) {
+          this._lifeCycleHooks[event].push(listener);
+        } else {
+          this._lifeCycleHooks[event] = [listener];
+        }
+        return this;
+      }
+      /**
+       * Register callback to use as replacement for calling process.exit.
+       *
+       * @param {Function} [fn] optional callback which will be passed a CommanderError, defaults to throwing
+       * @return {Command} `this` command for chaining
+       */
+      exitOverride(fn) {
+        if (fn) {
+          this._exitCallback = fn;
+        } else {
+          this._exitCallback = (err) => {
+            if (err.code !== "commander.executeSubCommandAsync") {
+              throw err;
+            } else {
+            }
+          };
+        }
+        return this;
+      }
+      /**
+       * Call process.exit, and _exitCallback if defined.
+       *
+       * @param {number} exitCode exit code for using with process.exit
+       * @param {string} code an id string representing the error
+       * @param {string} message human-readable description of the error
+       * @return never
+       * @private
+       */
+      _exit(exitCode, code, message) {
+        if (this._exitCallback) {
+          this._exitCallback(new CommanderError2(exitCode, code, message));
+        }
+        process2.exit(exitCode);
+      }
+      /**
+       * Register callback `fn` for the command.
+       *
+       * @example
+       * program
+       *   .command('serve')
+       *   .description('start service')
+       *   .action(function() {
+       *      // do work here
+       *   });
+       *
+       * @param {Function} fn
+       * @return {Command} `this` command for chaining
+       */
+      action(fn) {
+        const listener = (args) => {
+          const expectedArgsCount = this.registeredArguments.length;
+          const actionArgs = args.slice(0, expectedArgsCount);
+          if (this._storeOptionsAsProperties) {
+            actionArgs[expectedArgsCount] = this;
+          } else {
+            actionArgs[expectedArgsCount] = this.opts();
+          }
+          actionArgs.push(this);
+          return fn.apply(this, actionArgs);
+        };
+        this._actionHandler = listener;
+        return this;
+      }
+      /**
+       * Factory routine to create a new unattached option.
+       *
+       * See .option() for creating an attached option, which uses this routine to
+       * create the option. You can override createOption to return a custom option.
+       *
+       * @param {string} flags
+       * @param {string} [description]
+       * @return {Option} new option
+       */
+      createOption(flags, description) {
+        return new Option2(flags, description);
+      }
+      /**
+       * Wrap parseArgs to catch 'commander.invalidArgument'.
+       *
+       * @param {(Option | Argument)} target
+       * @param {string} value
+       * @param {*} previous
+       * @param {string} invalidArgumentMessage
+       * @private
+       */
+      _callParseArg(target, value, previous, invalidArgumentMessage) {
+        try {
+          return target.parseArg(value, previous);
+        } catch (err) {
+          if (err.code === "commander.invalidArgument") {
+            const message = `${invalidArgumentMessage} ${err.message}`;
+            this.error(message, { exitCode: err.exitCode, code: err.code });
+          }
+          throw err;
+        }
+      }
+      /**
+       * Check for option flag conflicts.
+       * Register option if no conflicts found, or throw on conflict.
+       *
+       * @param {Option} option
+       * @private
+       */
+      _registerOption(option) {
+        const matchingOption = option.short && this._findOption(option.short) || option.long && this._findOption(option.long);
+        if (matchingOption) {
+          const matchingFlag = option.long && this._findOption(option.long) ? option.long : option.short;
+          throw new Error(`Cannot add option '${option.flags}'${this._name && ` to command '${this._name}'`} due to conflicting flag '${matchingFlag}'
+-  already used by option '${matchingOption.flags}'`);
+        }
+        this.options.push(option);
+      }
+      /**
+       * Check for command name and alias conflicts with existing commands.
+       * Register command if no conflicts found, or throw on conflict.
+       *
+       * @param {Command} command
+       * @private
+       */
+      _registerCommand(command) {
+        const knownBy = (cmd) => {
+          return [cmd.name()].concat(cmd.aliases());
+        };
+        const alreadyUsed = knownBy(command).find(
+          (name) => this._findCommand(name)
+        );
+        if (alreadyUsed) {
+          const existingCmd = knownBy(this._findCommand(alreadyUsed)).join("|");
+          const newCmd = knownBy(command).join("|");
+          throw new Error(
+            `cannot add command '${newCmd}' as already have command '${existingCmd}'`
+          );
+        }
+        this.commands.push(command);
+      }
+      /**
+       * Add an option.
+       *
+       * @param {Option} option
+       * @return {Command} `this` command for chaining
+       */
+      addOption(option) {
+        this._registerOption(option);
+        const oname = option.name();
+        const name = option.attributeName();
+        if (option.negate) {
+          const positiveLongFlag = option.long.replace(/^--no-/, "--");
+          if (!this._findOption(positiveLongFlag)) {
+            this.setOptionValueWithSource(
+              name,
+              option.defaultValue === void 0 ? true : option.defaultValue,
+              "default"
+            );
+          }
+        } else if (option.defaultValue !== void 0) {
+          this.setOptionValueWithSource(name, option.defaultValue, "default");
+        }
+        const handleOptionValue = (val, invalidValueMessage, valueSource) => {
+          if (val == null && option.presetArg !== void 0) {
+            val = option.presetArg;
+          }
+          const oldValue = this.getOptionValue(name);
+          if (val !== null && option.parseArg) {
+            val = this._callParseArg(option, val, oldValue, invalidValueMessage);
+          } else if (val !== null && option.variadic) {
+            val = option._concatValue(val, oldValue);
+          }
+          if (val == null) {
+            if (option.negate) {
+              val = false;
+            } else if (option.isBoolean() || option.optional) {
+              val = true;
+            } else {
+              val = "";
+            }
+          }
+          this.setOptionValueWithSource(name, val, valueSource);
+        };
+        this.on("option:" + oname, (val) => {
+          const invalidValueMessage = `error: option '${option.flags}' argument '${val}' is invalid.`;
+          handleOptionValue(val, invalidValueMessage, "cli");
+        });
+        if (option.envVar) {
+          this.on("optionEnv:" + oname, (val) => {
+            const invalidValueMessage = `error: option '${option.flags}' value '${val}' from env '${option.envVar}' is invalid.`;
+            handleOptionValue(val, invalidValueMessage, "env");
+          });
+        }
+        return this;
+      }
+      /**
+       * Internal implementation shared by .option() and .requiredOption()
+       *
+       * @return {Command} `this` command for chaining
+       * @private
+       */
+      _optionEx(config, flags, description, fn, defaultValue) {
+        if (typeof flags === "object" && flags instanceof Option2) {
+          throw new Error(
+            "To add an Option object use addOption() instead of option() or requiredOption()"
+          );
+        }
+        const option = this.createOption(flags, description);
+        option.makeOptionMandatory(!!config.mandatory);
+        if (typeof fn === "function") {
+          option.default(defaultValue).argParser(fn);
+        } else if (fn instanceof RegExp) {
+          const regex = fn;
+          fn = (val, def) => {
+            const m = regex.exec(val);
+            return m ? m[0] : def;
+          };
+          option.default(defaultValue).argParser(fn);
+        } else {
+          option.default(fn);
+        }
+        return this.addOption(option);
+      }
+      /**
+       * Define option with `flags`, `description`, and optional argument parsing function or `defaultValue` or both.
+       *
+       * The `flags` string contains the short and/or long flags, separated by comma, a pipe or space. A required
+       * option-argument is indicated by `<>` and an optional option-argument by `[]`.
+       *
+       * See the README for more details, and see also addOption() and requiredOption().
+       *
+       * @example
+       * program
+       *     .option('-p, --pepper', 'add pepper')
+       *     .option('-p, --pizza-type <TYPE>', 'type of pizza') // required option-argument
+       *     .option('-c, --cheese [CHEESE]', 'add extra cheese', 'mozzarella') // optional option-argument with default
+       *     .option('-t, --tip <VALUE>', 'add tip to purchase cost', parseFloat) // custom parse function
+       *
+       * @param {string} flags
+       * @param {string} [description]
+       * @param {(Function|*)} [parseArg] - custom option processing function or default value
+       * @param {*} [defaultValue]
+       * @return {Command} `this` command for chaining
+       */
+      option(flags, description, parseArg, defaultValue) {
+        return this._optionEx({}, flags, description, parseArg, defaultValue);
+      }
+      /**
+       * Add a required option which must have a value after parsing. This usually means
+       * the option must be specified on the command line. (Otherwise the same as .option().)
+       *
+       * The `flags` string contains the short and/or long flags, separated by comma, a pipe or space.
+       *
+       * @param {string} flags
+       * @param {string} [description]
+       * @param {(Function|*)} [parseArg] - custom option processing function or default value
+       * @param {*} [defaultValue]
+       * @return {Command} `this` command for chaining
+       */
+      requiredOption(flags, description, parseArg, defaultValue) {
+        return this._optionEx(
+          { mandatory: true },
+          flags,
+          description,
+          parseArg,
+          defaultValue
+        );
+      }
+      /**
+       * Alter parsing of short flags with optional values.
+       *
+       * @example
+       * // for `.option('-f,--flag [value]'):
+       * program.combineFlagAndOptionalValue(true);  // `-f80` is treated like `--flag=80`, this is the default behaviour
+       * program.combineFlagAndOptionalValue(false) // `-fb` is treated like `-f -b`
+       *
+       * @param {boolean} [combine] - if `true` or omitted, an optional value can be specified directly after the flag.
+       * @return {Command} `this` command for chaining
+       */
+      combineFlagAndOptionalValue(combine = true) {
+        this._combineFlagAndOptionalValue = !!combine;
+        return this;
+      }
+      /**
+       * Allow unknown options on the command line.
+       *
+       * @param {boolean} [allowUnknown] - if `true` or omitted, no error will be thrown for unknown options.
+       * @return {Command} `this` command for chaining
+       */
+      allowUnknownOption(allowUnknown = true) {
+        this._allowUnknownOption = !!allowUnknown;
+        return this;
+      }
+      /**
+       * Allow excess command-arguments on the command line. Pass false to make excess arguments an error.
+       *
+       * @param {boolean} [allowExcess] - if `true` or omitted, no error will be thrown for excess arguments.
+       * @return {Command} `this` command for chaining
+       */
+      allowExcessArguments(allowExcess = true) {
+        this._allowExcessArguments = !!allowExcess;
+        return this;
+      }
+      /**
+       * Enable positional options. Positional means global options are specified before subcommands which lets
+       * subcommands reuse the same option names, and also enables subcommands to turn on passThroughOptions.
+       * The default behaviour is non-positional and global options may appear anywhere on the command line.
+       *
+       * @param {boolean} [positional]
+       * @return {Command} `this` command for chaining
+       */
+      enablePositionalOptions(positional = true) {
+        this._enablePositionalOptions = !!positional;
+        return this;
+      }
+      /**
+       * Pass through options that come after command-arguments rather than treat them as command-options,
+       * so actual command-options come before command-arguments. Turning this on for a subcommand requires
+       * positional options to have been enabled on the program (parent commands).
+       * The default behaviour is non-positional and options may appear before or after command-arguments.
+       *
+       * @param {boolean} [passThrough] for unknown options.
+       * @return {Command} `this` command for chaining
+       */
+      passThroughOptions(passThrough = true) {
+        this._passThroughOptions = !!passThrough;
+        this._checkForBrokenPassThrough();
+        return this;
+      }
+      /**
+       * @private
+       */
+      _checkForBrokenPassThrough() {
+        if (this.parent && this._passThroughOptions && !this.parent._enablePositionalOptions) {
+          throw new Error(
+            `passThroughOptions cannot be used for '${this._name}' without turning on enablePositionalOptions for parent command(s)`
+          );
+        }
+      }
+      /**
+       * Whether to store option values as properties on command object,
+       * or store separately (specify false). In both cases the option values can be accessed using .opts().
+       *
+       * @param {boolean} [storeAsProperties=true]
+       * @return {Command} `this` command for chaining
+       */
+      storeOptionsAsProperties(storeAsProperties = true) {
+        if (this.options.length) {
+          throw new Error("call .storeOptionsAsProperties() before adding options");
+        }
+        if (Object.keys(this._optionValues).length) {
+          throw new Error(
+            "call .storeOptionsAsProperties() before setting option values"
+          );
+        }
+        this._storeOptionsAsProperties = !!storeAsProperties;
+        return this;
+      }
+      /**
+       * Retrieve option value.
+       *
+       * @param {string} key
+       * @return {object} value
+       */
+      getOptionValue(key) {
+        if (this._storeOptionsAsProperties) {
+          return this[key];
+        }
+        return this._optionValues[key];
+      }
+      /**
+       * Store option value.
+       *
+       * @param {string} key
+       * @param {object} value
+       * @return {Command} `this` command for chaining
+       */
+      setOptionValue(key, value) {
+        return this.setOptionValueWithSource(key, value, void 0);
+      }
+      /**
+       * Store option value and where the value came from.
+       *
+       * @param {string} key
+       * @param {object} value
+       * @param {string} source - expected values are default/config/env/cli/implied
+       * @return {Command} `this` command for chaining
+       */
+      setOptionValueWithSource(key, value, source) {
+        if (this._storeOptionsAsProperties) {
+          this[key] = value;
+        } else {
+          this._optionValues[key] = value;
+        }
+        this._optionValueSources[key] = source;
+        return this;
+      }
+      /**
+       * Get source of option value.
+       * Expected values are default | config | env | cli | implied
+       *
+       * @param {string} key
+       * @return {string}
+       */
+      getOptionValueSource(key) {
+        return this._optionValueSources[key];
+      }
+      /**
+       * Get source of option value. See also .optsWithGlobals().
+       * Expected values are default | config | env | cli | implied
+       *
+       * @param {string} key
+       * @return {string}
+       */
+      getOptionValueSourceWithGlobals(key) {
+        let source;
+        this._getCommandAndAncestors().forEach((cmd) => {
+          if (cmd.getOptionValueSource(key) !== void 0) {
+            source = cmd.getOptionValueSource(key);
+          }
+        });
+        return source;
+      }
+      /**
+       * Get user arguments from implied or explicit arguments.
+       * Side-effects: set _scriptPath if args included script. Used for default program name, and subcommand searches.
+       *
+       * @private
+       */
+      _prepareUserArgs(argv, parseOptions) {
+        if (argv !== void 0 && !Array.isArray(argv)) {
+          throw new Error("first parameter to parse must be array or undefined");
+        }
+        parseOptions = parseOptions || {};
+        if (argv === void 0 && parseOptions.from === void 0) {
+          if (process2.versions?.electron) {
+            parseOptions.from = "electron";
+          }
+          const execArgv = process2.execArgv ?? [];
+          if (execArgv.includes("-e") || execArgv.includes("--eval") || execArgv.includes("-p") || execArgv.includes("--print")) {
+            parseOptions.from = "eval";
+          }
+        }
+        if (argv === void 0) {
+          argv = process2.argv;
+        }
+        this.rawArgs = argv.slice();
+        let userArgs;
+        switch (parseOptions.from) {
+          case void 0:
+          case "node":
+            this._scriptPath = argv[1];
+            userArgs = argv.slice(2);
+            break;
+          case "electron":
+            if (process2.defaultApp) {
+              this._scriptPath = argv[1];
+              userArgs = argv.slice(2);
+            } else {
+              userArgs = argv.slice(1);
+            }
+            break;
+          case "user":
+            userArgs = argv.slice(0);
+            break;
+          case "eval":
+            userArgs = argv.slice(1);
+            break;
+          default:
+            throw new Error(
+              `unexpected parse option { from: '${parseOptions.from}' }`
+            );
+        }
+        if (!this._name && this._scriptPath)
+          this.nameFromFilename(this._scriptPath);
+        this._name = this._name || "program";
+        return userArgs;
+      }
+      /**
+       * Parse `argv`, setting options and invoking commands when defined.
+       *
+       * Use parseAsync instead of parse if any of your action handlers are async.
+       *
+       * Call with no parameters to parse `process.argv`. Detects Electron and special node options like `node --eval`. Easy mode!
+       *
+       * Or call with an array of strings to parse, and optionally where the user arguments start by specifying where the arguments are `from`:
+       * - `'node'`: default, `argv[0]` is the application and `argv[1]` is the script being run, with user arguments after that
+       * - `'electron'`: `argv[0]` is the application and `argv[1]` varies depending on whether the electron application is packaged
+       * - `'user'`: just user arguments
+       *
+       * @example
+       * program.parse(); // parse process.argv and auto-detect electron and special node flags
+       * program.parse(process.argv); // assume argv[0] is app and argv[1] is script
+       * program.parse(my-args, { from: 'user' }); // just user supplied arguments, nothing special about argv[0]
+       *
+       * @param {string[]} [argv] - optional, defaults to process.argv
+       * @param {object} [parseOptions] - optionally specify style of options with from: node/user/electron
+       * @param {string} [parseOptions.from] - where the args are from: 'node', 'user', 'electron'
+       * @return {Command} `this` command for chaining
+       */
+      parse(argv, parseOptions) {
+        const userArgs = this._prepareUserArgs(argv, parseOptions);
+        this._parseCommand([], userArgs);
+        return this;
+      }
+      /**
+       * Parse `argv`, setting options and invoking commands when defined.
+       *
+       * Call with no parameters to parse `process.argv`. Detects Electron and special node options like `node --eval`. Easy mode!
+       *
+       * Or call with an array of strings to parse, and optionally where the user arguments start by specifying where the arguments are `from`:
+       * - `'node'`: default, `argv[0]` is the application and `argv[1]` is the script being run, with user arguments after that
+       * - `'electron'`: `argv[0]` is the application and `argv[1]` varies depending on whether the electron application is packaged
+       * - `'user'`: just user arguments
+       *
+       * @example
+       * await program.parseAsync(); // parse process.argv and auto-detect electron and special node flags
+       * await program.parseAsync(process.argv); // assume argv[0] is app and argv[1] is script
+       * await program.parseAsync(my-args, { from: 'user' }); // just user supplied arguments, nothing special about argv[0]
+       *
+       * @param {string[]} [argv]
+       * @param {object} [parseOptions]
+       * @param {string} parseOptions.from - where the args are from: 'node', 'user', 'electron'
+       * @return {Promise}
+       */
+      async parseAsync(argv, parseOptions) {
+        const userArgs = this._prepareUserArgs(argv, parseOptions);
+        await this._parseCommand([], userArgs);
+        return this;
+      }
+      /**
+       * Execute a sub-command executable.
+       *
+       * @private
+       */
+      _executeSubCommand(subcommand, args) {
+        args = args.slice();
+        let launchWithNode = false;
+        const sourceExt = [".js", ".ts", ".tsx", ".mjs", ".cjs"];
+        function findFile(baseDir, baseName) {
+          const localBin = path2.resolve(baseDir, baseName);
+          if (fs2.existsSync(localBin)) return localBin;
+          if (sourceExt.includes(path2.extname(baseName))) return void 0;
+          const foundExt = sourceExt.find(
+            (ext) => fs2.existsSync(`${localBin}${ext}`)
+          );
+          if (foundExt) return `${localBin}${foundExt}`;
+          return void 0;
+        }
+        this._checkForMissingMandatoryOptions();
+        this._checkForConflictingOptions();
+        let executableFile = subcommand._executableFile || `${this._name}-${subcommand._name}`;
+        let executableDir = this._executableDir || "";
+        if (this._scriptPath) {
+          let resolvedScriptPath;
+          try {
+            resolvedScriptPath = fs2.realpathSync(this._scriptPath);
+          } catch (err) {
+            resolvedScriptPath = this._scriptPath;
+          }
+          executableDir = path2.resolve(
+            path2.dirname(resolvedScriptPath),
+            executableDir
+          );
+        }
+        if (executableDir) {
+          let localFile = findFile(executableDir, executableFile);
+          if (!localFile && !subcommand._executableFile && this._scriptPath) {
+            const legacyName = path2.basename(
+              this._scriptPath,
+              path2.extname(this._scriptPath)
+            );
+            if (legacyName !== this._name) {
+              localFile = findFile(
+                executableDir,
+                `${legacyName}-${subcommand._name}`
+              );
+            }
+          }
+          executableFile = localFile || executableFile;
+        }
+        launchWithNode = sourceExt.includes(path2.extname(executableFile));
+        let proc;
+        if (process2.platform !== "win32") {
+          if (launchWithNode) {
+            args.unshift(executableFile);
+            args = incrementNodeInspectorPort(process2.execArgv).concat(args);
+            proc = childProcess.spawn(process2.argv[0], args, { stdio: "inherit" });
+          } else {
+            proc = childProcess.spawn(executableFile, args, { stdio: "inherit" });
+          }
+        } else {
+          args.unshift(executableFile);
+          args = incrementNodeInspectorPort(process2.execArgv).concat(args);
+          proc = childProcess.spawn(process2.execPath, args, { stdio: "inherit" });
+        }
+        if (!proc.killed) {
+          const signals = ["SIGUSR1", "SIGUSR2", "SIGTERM", "SIGINT", "SIGHUP"];
+          signals.forEach((signal) => {
+            process2.on(signal, () => {
+              if (proc.killed === false && proc.exitCode === null) {
+                proc.kill(signal);
+              }
+            });
+          });
+        }
+        const exitCallback = this._exitCallback;
+        proc.on("close", (code) => {
+          code = code ?? 1;
+          if (!exitCallback) {
+            process2.exit(code);
+          } else {
+            exitCallback(
+              new CommanderError2(
+                code,
+                "commander.executeSubCommandAsync",
+                "(close)"
+              )
+            );
+          }
+        });
+        proc.on("error", (err) => {
+          if (err.code === "ENOENT") {
+            const executableDirMessage = executableDir ? `searched for local subcommand relative to directory '${executableDir}'` : "no directory for search for local subcommand, use .executableDir() to supply a custom directory";
+            const executableMissing = `'${executableFile}' does not exist
+ - if '${subcommand._name}' is not meant to be an executable command, remove description parameter from '.command()' and use '.description()' instead
+ - if the default executable name is not suitable, use the executableFile option to supply a custom name or path
+ - ${executableDirMessage}`;
+            throw new Error(executableMissing);
+          } else if (err.code === "EACCES") {
+            throw new Error(`'${executableFile}' not executable`);
+          }
+          if (!exitCallback) {
+            process2.exit(1);
+          } else {
+            const wrappedError = new CommanderError2(
+              1,
+              "commander.executeSubCommandAsync",
+              "(error)"
+            );
+            wrappedError.nestedError = err;
+            exitCallback(wrappedError);
+          }
+        });
+        this.runningCommand = proc;
+      }
+      /**
+       * @private
+       */
+      _dispatchSubcommand(commandName, operands, unknown) {
+        const subCommand = this._findCommand(commandName);
+        if (!subCommand) this.help({ error: true });
+        let promiseChain;
+        promiseChain = this._chainOrCallSubCommandHook(
+          promiseChain,
+          subCommand,
+          "preSubcommand"
+        );
+        promiseChain = this._chainOrCall(promiseChain, () => {
+          if (subCommand._executableHandler) {
+            this._executeSubCommand(subCommand, operands.concat(unknown));
+          } else {
+            return subCommand._parseCommand(operands, unknown);
+          }
+        });
+        return promiseChain;
+      }
+      /**
+       * Invoke help directly if possible, or dispatch if necessary.
+       * e.g. help foo
+       *
+       * @private
+       */
+      _dispatchHelpCommand(subcommandName) {
+        if (!subcommandName) {
+          this.help();
+        }
+        const subCommand = this._findCommand(subcommandName);
+        if (subCommand && !subCommand._executableHandler) {
+          subCommand.help();
+        }
+        return this._dispatchSubcommand(
+          subcommandName,
+          [],
+          [this._getHelpOption()?.long ?? this._getHelpOption()?.short ?? "--help"]
+        );
+      }
+      /**
+       * Check this.args against expected this.registeredArguments.
+       *
+       * @private
+       */
+      _checkNumberOfArguments() {
+        this.registeredArguments.forEach((arg, i) => {
+          if (arg.required && this.args[i] == null) {
+            this.missingArgument(arg.name());
+          }
+        });
+        if (this.registeredArguments.length > 0 && this.registeredArguments[this.registeredArguments.length - 1].variadic) {
+          return;
+        }
+        if (this.args.length > this.registeredArguments.length) {
+          this._excessArguments(this.args);
+        }
+      }
+      /**
+       * Process this.args using this.registeredArguments and save as this.processedArgs!
+       *
+       * @private
+       */
+      _processArguments() {
+        const myParseArg = (argument, value, previous) => {
+          let parsedValue = value;
+          if (value !== null && argument.parseArg) {
+            const invalidValueMessage = `error: command-argument value '${value}' is invalid for argument '${argument.name()}'.`;
+            parsedValue = this._callParseArg(
+              argument,
+              value,
+              previous,
+              invalidValueMessage
+            );
+          }
+          return parsedValue;
+        };
+        this._checkNumberOfArguments();
+        const processedArgs = [];
+        this.registeredArguments.forEach((declaredArg, index) => {
+          let value = declaredArg.defaultValue;
+          if (declaredArg.variadic) {
+            if (index < this.args.length) {
+              value = this.args.slice(index);
+              if (declaredArg.parseArg) {
+                value = value.reduce((processed, v) => {
+                  return myParseArg(declaredArg, v, processed);
+                }, declaredArg.defaultValue);
+              }
+            } else if (value === void 0) {
+              value = [];
+            }
+          } else if (index < this.args.length) {
+            value = this.args[index];
+            if (declaredArg.parseArg) {
+              value = myParseArg(declaredArg, value, declaredArg.defaultValue);
+            }
+          }
+          processedArgs[index] = value;
+        });
+        this.processedArgs = processedArgs;
+      }
+      /**
+       * Once we have a promise we chain, but call synchronously until then.
+       *
+       * @param {(Promise|undefined)} promise
+       * @param {Function} fn
+       * @return {(Promise|undefined)}
+       * @private
+       */
+      _chainOrCall(promise, fn) {
+        if (promise && promise.then && typeof promise.then === "function") {
+          return promise.then(() => fn());
+        }
+        return fn();
+      }
+      /**
+       *
+       * @param {(Promise|undefined)} promise
+       * @param {string} event
+       * @return {(Promise|undefined)}
+       * @private
+       */
+      _chainOrCallHooks(promise, event) {
+        let result = promise;
+        const hooks = [];
+        this._getCommandAndAncestors().reverse().filter((cmd) => cmd._lifeCycleHooks[event] !== void 0).forEach((hookedCommand) => {
+          hookedCommand._lifeCycleHooks[event].forEach((callback) => {
+            hooks.push({ hookedCommand, callback });
+          });
+        });
+        if (event === "postAction") {
+          hooks.reverse();
+        }
+        hooks.forEach((hookDetail) => {
+          result = this._chainOrCall(result, () => {
+            return hookDetail.callback(hookDetail.hookedCommand, this);
+          });
+        });
+        return result;
+      }
+      /**
+       *
+       * @param {(Promise|undefined)} promise
+       * @param {Command} subCommand
+       * @param {string} event
+       * @return {(Promise|undefined)}
+       * @private
+       */
+      _chainOrCallSubCommandHook(promise, subCommand, event) {
+        let result = promise;
+        if (this._lifeCycleHooks[event] !== void 0) {
+          this._lifeCycleHooks[event].forEach((hook) => {
+            result = this._chainOrCall(result, () => {
+              return hook(this, subCommand);
+            });
+          });
+        }
+        return result;
+      }
+      /**
+       * Process arguments in context of this command.
+       * Returns action result, in case it is a promise.
+       *
+       * @private
+       */
+      _parseCommand(operands, unknown) {
+        const parsed = this.parseOptions(unknown);
+        this._parseOptionsEnv();
+        this._parseOptionsImplied();
+        operands = operands.concat(parsed.operands);
+        unknown = parsed.unknown;
+        this.args = operands.concat(unknown);
+        if (operands && this._findCommand(operands[0])) {
+          return this._dispatchSubcommand(operands[0], operands.slice(1), unknown);
+        }
+        if (this._getHelpCommand() && operands[0] === this._getHelpCommand().name()) {
+          return this._dispatchHelpCommand(operands[1]);
+        }
+        if (this._defaultCommandName) {
+          this._outputHelpIfRequested(unknown);
+          return this._dispatchSubcommand(
+            this._defaultCommandName,
+            operands,
+            unknown
+          );
+        }
+        if (this.commands.length && this.args.length === 0 && !this._actionHandler && !this._defaultCommandName) {
+          this.help({ error: true });
+        }
+        this._outputHelpIfRequested(parsed.unknown);
+        this._checkForMissingMandatoryOptions();
+        this._checkForConflictingOptions();
+        const checkForUnknownOptions = () => {
+          if (parsed.unknown.length > 0) {
+            this.unknownOption(parsed.unknown[0]);
+          }
+        };
+        const commandEvent = `command:${this.name()}`;
+        if (this._actionHandler) {
+          checkForUnknownOptions();
+          this._processArguments();
+          let promiseChain;
+          promiseChain = this._chainOrCallHooks(promiseChain, "preAction");
+          promiseChain = this._chainOrCall(
+            promiseChain,
+            () => this._actionHandler(this.processedArgs)
+          );
+          if (this.parent) {
+            promiseChain = this._chainOrCall(promiseChain, () => {
+              this.parent.emit(commandEvent, operands, unknown);
+            });
+          }
+          promiseChain = this._chainOrCallHooks(promiseChain, "postAction");
+          return promiseChain;
+        }
+        if (this.parent && this.parent.listenerCount(commandEvent)) {
+          checkForUnknownOptions();
+          this._processArguments();
+          this.parent.emit(commandEvent, operands, unknown);
+        } else if (operands.length) {
+          if (this._findCommand("*")) {
+            return this._dispatchSubcommand("*", operands, unknown);
+          }
+          if (this.listenerCount("command:*")) {
+            this.emit("command:*", operands, unknown);
+          } else if (this.commands.length) {
+            this.unknownCommand();
+          } else {
+            checkForUnknownOptions();
+            this._processArguments();
+          }
+        } else if (this.commands.length) {
+          checkForUnknownOptions();
+          this.help({ error: true });
+        } else {
+          checkForUnknownOptions();
+          this._processArguments();
+        }
+      }
+      /**
+       * Find matching command.
+       *
+       * @private
+       * @return {Command | undefined}
+       */
+      _findCommand(name) {
+        if (!name) return void 0;
+        return this.commands.find(
+          (cmd) => cmd._name === name || cmd._aliases.includes(name)
+        );
+      }
+      /**
+       * Return an option matching `arg` if any.
+       *
+       * @param {string} arg
+       * @return {Option}
+       * @package
+       */
+      _findOption(arg) {
+        return this.options.find((option) => option.is(arg));
+      }
+      /**
+       * Display an error message if a mandatory option does not have a value.
+       * Called after checking for help flags in leaf subcommand.
+       *
+       * @private
+       */
+      _checkForMissingMandatoryOptions() {
+        this._getCommandAndAncestors().forEach((cmd) => {
+          cmd.options.forEach((anOption) => {
+            if (anOption.mandatory && cmd.getOptionValue(anOption.attributeName()) === void 0) {
+              cmd.missingMandatoryOptionValue(anOption);
+            }
+          });
+        });
+      }
+      /**
+       * Display an error message if conflicting options are used together in this.
+       *
+       * @private
+       */
+      _checkForConflictingLocalOptions() {
+        const definedNonDefaultOptions = this.options.filter((option) => {
+          const optionKey = option.attributeName();
+          if (this.getOptionValue(optionKey) === void 0) {
+            return false;
+          }
+          return this.getOptionValueSource(optionKey) !== "default";
+        });
+        const optionsWithConflicting = definedNonDefaultOptions.filter(
+          (option) => option.conflictsWith.length > 0
+        );
+        optionsWithConflicting.forEach((option) => {
+          const conflictingAndDefined = definedNonDefaultOptions.find(
+            (defined) => option.conflictsWith.includes(defined.attributeName())
+          );
+          if (conflictingAndDefined) {
+            this._conflictingOption(option, conflictingAndDefined);
+          }
+        });
+      }
+      /**
+       * Display an error message if conflicting options are used together.
+       * Called after checking for help flags in leaf subcommand.
+       *
+       * @private
+       */
+      _checkForConflictingOptions() {
+        this._getCommandAndAncestors().forEach((cmd) => {
+          cmd._checkForConflictingLocalOptions();
+        });
+      }
+      /**
+       * Parse options from `argv` removing known options,
+       * and return argv split into operands and unknown arguments.
+       *
+       * Examples:
+       *
+       *     argv => operands, unknown
+       *     --known kkk op => [op], []
+       *     op --known kkk => [op], []
+       *     sub --unknown uuu op => [sub], [--unknown uuu op]
+       *     sub -- --unknown uuu op => [sub --unknown uuu op], []
+       *
+       * @param {string[]} argv
+       * @return {{operands: string[], unknown: string[]}}
+       */
+      parseOptions(argv) {
+        const operands = [];
+        const unknown = [];
+        let dest = operands;
+        const args = argv.slice();
+        function maybeOption(arg) {
+          return arg.length > 1 && arg[0] === "-";
+        }
+        let activeVariadicOption = null;
+        while (args.length) {
+          const arg = args.shift();
+          if (arg === "--") {
+            if (dest === unknown) dest.push(arg);
+            dest.push(...args);
+            break;
+          }
+          if (activeVariadicOption && !maybeOption(arg)) {
+            this.emit(`option:${activeVariadicOption.name()}`, arg);
+            continue;
+          }
+          activeVariadicOption = null;
+          if (maybeOption(arg)) {
+            const option = this._findOption(arg);
+            if (option) {
+              if (option.required) {
+                const value = args.shift();
+                if (value === void 0) this.optionMissingArgument(option);
+                this.emit(`option:${option.name()}`, value);
+              } else if (option.optional) {
+                let value = null;
+                if (args.length > 0 && !maybeOption(args[0])) {
+                  value = args.shift();
+                }
+                this.emit(`option:${option.name()}`, value);
+              } else {
+                this.emit(`option:${option.name()}`);
+              }
+              activeVariadicOption = option.variadic ? option : null;
+              continue;
+            }
+          }
+          if (arg.length > 2 && arg[0] === "-" && arg[1] !== "-") {
+            const option = this._findOption(`-${arg[1]}`);
+            if (option) {
+              if (option.required || option.optional && this._combineFlagAndOptionalValue) {
+                this.emit(`option:${option.name()}`, arg.slice(2));
+              } else {
+                this.emit(`option:${option.name()}`);
+                args.unshift(`-${arg.slice(2)}`);
+              }
+              continue;
+            }
+          }
+          if (/^--[^=]+=/.test(arg)) {
+            const index = arg.indexOf("=");
+            const option = this._findOption(arg.slice(0, index));
+            if (option && (option.required || option.optional)) {
+              this.emit(`option:${option.name()}`, arg.slice(index + 1));
+              continue;
+            }
+          }
+          if (maybeOption(arg)) {
+            dest = unknown;
+          }
+          if ((this._enablePositionalOptions || this._passThroughOptions) && operands.length === 0 && unknown.length === 0) {
+            if (this._findCommand(arg)) {
+              operands.push(arg);
+              if (args.length > 0) unknown.push(...args);
+              break;
+            } else if (this._getHelpCommand() && arg === this._getHelpCommand().name()) {
+              operands.push(arg);
+              if (args.length > 0) operands.push(...args);
+              break;
+            } else if (this._defaultCommandName) {
+              unknown.push(arg);
+              if (args.length > 0) unknown.push(...args);
+              break;
+            }
+          }
+          if (this._passThroughOptions) {
+            dest.push(arg);
+            if (args.length > 0) dest.push(...args);
+            break;
+          }
+          dest.push(arg);
+        }
+        return { operands, unknown };
+      }
+      /**
+       * Return an object containing local option values as key-value pairs.
+       *
+       * @return {object}
+       */
+      opts() {
+        if (this._storeOptionsAsProperties) {
+          const result = {};
+          const len = this.options.length;
+          for (let i = 0; i < len; i++) {
+            const key = this.options[i].attributeName();
+            result[key] = key === this._versionOptionName ? this._version : this[key];
+          }
+          return result;
+        }
+        return this._optionValues;
+      }
+      /**
+       * Return an object containing merged local and global option values as key-value pairs.
+       *
+       * @return {object}
+       */
+      optsWithGlobals() {
+        return this._getCommandAndAncestors().reduce(
+          (combinedOptions, cmd) => Object.assign(combinedOptions, cmd.opts()),
+          {}
+        );
+      }
+      /**
+       * Display error message and exit (or call exitOverride).
+       *
+       * @param {string} message
+       * @param {object} [errorOptions]
+       * @param {string} [errorOptions.code] - an id string representing the error
+       * @param {number} [errorOptions.exitCode] - used with process.exit
+       */
+      error(message, errorOptions) {
+        this._outputConfiguration.outputError(
+          `${message}
+`,
+          this._outputConfiguration.writeErr
+        );
+        if (typeof this._showHelpAfterError === "string") {
+          this._outputConfiguration.writeErr(`${this._showHelpAfterError}
+`);
+        } else if (this._showHelpAfterError) {
+          this._outputConfiguration.writeErr("\n");
+          this.outputHelp({ error: true });
+        }
+        const config = errorOptions || {};
+        const exitCode = config.exitCode || 1;
+        const code = config.code || "commander.error";
+        this._exit(exitCode, code, message);
+      }
+      /**
+       * Apply any option related environment variables, if option does
+       * not have a value from cli or client code.
+       *
+       * @private
+       */
+      _parseOptionsEnv() {
+        this.options.forEach((option) => {
+          if (option.envVar && option.envVar in process2.env) {
+            const optionKey = option.attributeName();
+            if (this.getOptionValue(optionKey) === void 0 || ["default", "config", "env"].includes(
+              this.getOptionValueSource(optionKey)
+            )) {
+              if (option.required || option.optional) {
+                this.emit(`optionEnv:${option.name()}`, process2.env[option.envVar]);
+              } else {
+                this.emit(`optionEnv:${option.name()}`);
+              }
+            }
+          }
+        });
+      }
+      /**
+       * Apply any implied option values, if option is undefined or default value.
+       *
+       * @private
+       */
+      _parseOptionsImplied() {
+        const dualHelper = new DualOptions(this.options);
+        const hasCustomOptionValue = (optionKey) => {
+          return this.getOptionValue(optionKey) !== void 0 && !["default", "implied"].includes(this.getOptionValueSource(optionKey));
+        };
+        this.options.filter(
+          (option) => option.implied !== void 0 && hasCustomOptionValue(option.attributeName()) && dualHelper.valueFromOption(
+            this.getOptionValue(option.attributeName()),
+            option
+          )
+        ).forEach((option) => {
+          Object.keys(option.implied).filter((impliedKey) => !hasCustomOptionValue(impliedKey)).forEach((impliedKey) => {
+            this.setOptionValueWithSource(
+              impliedKey,
+              option.implied[impliedKey],
+              "implied"
+            );
+          });
+        });
+      }
+      /**
+       * Argument `name` is missing.
+       *
+       * @param {string} name
+       * @private
+       */
+      missingArgument(name) {
+        const message = `error: missing required argument '${name}'`;
+        this.error(message, { code: "commander.missingArgument" });
+      }
+      /**
+       * `Option` is missing an argument.
+       *
+       * @param {Option} option
+       * @private
+       */
+      optionMissingArgument(option) {
+        const message = `error: option '${option.flags}' argument missing`;
+        this.error(message, { code: "commander.optionMissingArgument" });
+      }
+      /**
+       * `Option` does not have a value, and is a mandatory option.
+       *
+       * @param {Option} option
+       * @private
+       */
+      missingMandatoryOptionValue(option) {
+        const message = `error: required option '${option.flags}' not specified`;
+        this.error(message, { code: "commander.missingMandatoryOptionValue" });
+      }
+      /**
+       * `Option` conflicts with another option.
+       *
+       * @param {Option} option
+       * @param {Option} conflictingOption
+       * @private
+       */
+      _conflictingOption(option, conflictingOption) {
+        const findBestOptionFromValue = (option2) => {
+          const optionKey = option2.attributeName();
+          const optionValue = this.getOptionValue(optionKey);
+          const negativeOption = this.options.find(
+            (target) => target.negate && optionKey === target.attributeName()
+          );
+          const positiveOption = this.options.find(
+            (target) => !target.negate && optionKey === target.attributeName()
+          );
+          if (negativeOption && (negativeOption.presetArg === void 0 && optionValue === false || negativeOption.presetArg !== void 0 && optionValue === negativeOption.presetArg)) {
+            return negativeOption;
+          }
+          return positiveOption || option2;
+        };
+        const getErrorMessage = (option2) => {
+          const bestOption = findBestOptionFromValue(option2);
+          const optionKey = bestOption.attributeName();
+          const source = this.getOptionValueSource(optionKey);
+          if (source === "env") {
+            return `environment variable '${bestOption.envVar}'`;
+          }
+          return `option '${bestOption.flags}'`;
+        };
+        const message = `error: ${getErrorMessage(option)} cannot be used with ${getErrorMessage(conflictingOption)}`;
+        this.error(message, { code: "commander.conflictingOption" });
+      }
+      /**
+       * Unknown option `flag`.
+       *
+       * @param {string} flag
+       * @private
+       */
+      unknownOption(flag) {
+        if (this._allowUnknownOption) return;
+        let suggestion = "";
+        if (flag.startsWith("--") && this._showSuggestionAfterError) {
+          let candidateFlags = [];
+          let command = this;
+          do {
+            const moreFlags = command.createHelp().visibleOptions(command).filter((option) => option.long).map((option) => option.long);
+            candidateFlags = candidateFlags.concat(moreFlags);
+            command = command.parent;
+          } while (command && !command._enablePositionalOptions);
+          suggestion = suggestSimilar(flag, candidateFlags);
+        }
+        const message = `error: unknown option '${flag}'${suggestion}`;
+        this.error(message, { code: "commander.unknownOption" });
+      }
+      /**
+       * Excess arguments, more than expected.
+       *
+       * @param {string[]} receivedArgs
+       * @private
+       */
+      _excessArguments(receivedArgs) {
+        if (this._allowExcessArguments) return;
+        const expected = this.registeredArguments.length;
+        const s = expected === 1 ? "" : "s";
+        const forSubcommand = this.parent ? ` for '${this.name()}'` : "";
+        const message = `error: too many arguments${forSubcommand}. Expected ${expected} argument${s} but got ${receivedArgs.length}.`;
+        this.error(message, { code: "commander.excessArguments" });
+      }
+      /**
+       * Unknown command.
+       *
+       * @private
+       */
+      unknownCommand() {
+        const unknownName = this.args[0];
+        let suggestion = "";
+        if (this._showSuggestionAfterError) {
+          const candidateNames = [];
+          this.createHelp().visibleCommands(this).forEach((command) => {
+            candidateNames.push(command.name());
+            if (command.alias()) candidateNames.push(command.alias());
+          });
+          suggestion = suggestSimilar(unknownName, candidateNames);
+        }
+        const message = `error: unknown command '${unknownName}'${suggestion}`;
+        this.error(message, { code: "commander.unknownCommand" });
+      }
+      /**
+       * Get or set the program version.
+       *
+       * This method auto-registers the "-V, --version" option which will print the version number.
+       *
+       * You can optionally supply the flags and description to override the defaults.
+       *
+       * @param {string} [str]
+       * @param {string} [flags]
+       * @param {string} [description]
+       * @return {(this | string | undefined)} `this` command for chaining, or version string if no arguments
+       */
+      version(str, flags, description) {
+        if (str === void 0) return this._version;
+        this._version = str;
+        flags = flags || "-V, --version";
+        description = description || "output the version number";
+        const versionOption = this.createOption(flags, description);
+        this._versionOptionName = versionOption.attributeName();
+        this._registerOption(versionOption);
+        this.on("option:" + versionOption.name(), () => {
+          this._outputConfiguration.writeOut(`${str}
+`);
+          this._exit(0, "commander.version", str);
+        });
+        return this;
+      }
+      /**
+       * Set the description.
+       *
+       * @param {string} [str]
+       * @param {object} [argsDescription]
+       * @return {(string|Command)}
+       */
+      description(str, argsDescription) {
+        if (str === void 0 && argsDescription === void 0)
+          return this._description;
+        this._description = str;
+        if (argsDescription) {
+          this._argsDescription = argsDescription;
+        }
+        return this;
+      }
+      /**
+       * Set the summary. Used when listed as subcommand of parent.
+       *
+       * @param {string} [str]
+       * @return {(string|Command)}
+       */
+      summary(str) {
+        if (str === void 0) return this._summary;
+        this._summary = str;
+        return this;
+      }
+      /**
+       * Set an alias for the command.
+       *
+       * You may call more than once to add multiple aliases. Only the first alias is shown in the auto-generated help.
+       *
+       * @param {string} [alias]
+       * @return {(string|Command)}
+       */
+      alias(alias) {
+        if (alias === void 0) return this._aliases[0];
+        let command = this;
+        if (this.commands.length !== 0 && this.commands[this.commands.length - 1]._executableHandler) {
+          command = this.commands[this.commands.length - 1];
+        }
+        if (alias === command._name)
+          throw new Error("Command alias can't be the same as its name");
+        const matchingCommand = this.parent?._findCommand(alias);
+        if (matchingCommand) {
+          const existingCmd = [matchingCommand.name()].concat(matchingCommand.aliases()).join("|");
+          throw new Error(
+            `cannot add alias '${alias}' to command '${this.name()}' as already have command '${existingCmd}'`
+          );
+        }
+        command._aliases.push(alias);
+        return this;
+      }
+      /**
+       * Set aliases for the command.
+       *
+       * Only the first alias is shown in the auto-generated help.
+       *
+       * @param {string[]} [aliases]
+       * @return {(string[]|Command)}
+       */
+      aliases(aliases) {
+        if (aliases === void 0) return this._aliases;
+        aliases.forEach((alias) => this.alias(alias));
+        return this;
+      }
+      /**
+       * Set / get the command usage `str`.
+       *
+       * @param {string} [str]
+       * @return {(string|Command)}
+       */
+      usage(str) {
+        if (str === void 0) {
+          if (this._usage) return this._usage;
+          const args = this.registeredArguments.map((arg) => {
+            return humanReadableArgName(arg);
+          });
+          return [].concat(
+            this.options.length || this._helpOption !== null ? "[options]" : [],
+            this.commands.length ? "[command]" : [],
+            this.registeredArguments.length ? args : []
+          ).join(" ");
+        }
+        this._usage = str;
+        return this;
+      }
+      /**
+       * Get or set the name of the command.
+       *
+       * @param {string} [str]
+       * @return {(string|Command)}
+       */
+      name(str) {
+        if (str === void 0) return this._name;
+        this._name = str;
+        return this;
+      }
+      /**
+       * Set the name of the command from script filename, such as process.argv[1],
+       * or require.main.filename, or __filename.
+       *
+       * (Used internally and public although not documented in README.)
+       *
+       * @example
+       * program.nameFromFilename(require.main.filename);
+       *
+       * @param {string} filename
+       * @return {Command}
+       */
+      nameFromFilename(filename) {
+        this._name = path2.basename(filename, path2.extname(filename));
+        return this;
+      }
+      /**
+       * Get or set the directory for searching for executable subcommands of this command.
+       *
+       * @example
+       * program.executableDir(__dirname);
+       * // or
+       * program.executableDir('subcommands');
+       *
+       * @param {string} [path]
+       * @return {(string|null|Command)}
+       */
+      executableDir(path3) {
+        if (path3 === void 0) return this._executableDir;
+        this._executableDir = path3;
+        return this;
+      }
+      /**
+       * Return program help documentation.
+       *
+       * @param {{ error: boolean }} [contextOptions] - pass {error:true} to wrap for stderr instead of stdout
+       * @return {string}
+       */
+      helpInformation(contextOptions) {
+        const helper = this.createHelp();
+        if (helper.helpWidth === void 0) {
+          helper.helpWidth = contextOptions && contextOptions.error ? this._outputConfiguration.getErrHelpWidth() : this._outputConfiguration.getOutHelpWidth();
+        }
+        return helper.formatHelp(this, helper);
+      }
+      /**
+       * @private
+       */
+      _getHelpContext(contextOptions) {
+        contextOptions = contextOptions || {};
+        const context = { error: !!contextOptions.error };
+        let write;
+        if (context.error) {
+          write = (arg) => this._outputConfiguration.writeErr(arg);
+        } else {
+          write = (arg) => this._outputConfiguration.writeOut(arg);
+        }
+        context.write = contextOptions.write || write;
+        context.command = this;
+        return context;
+      }
+      /**
+       * Output help information for this command.
+       *
+       * Outputs built-in help, and custom text added using `.addHelpText()`.
+       *
+       * @param {{ error: boolean } | Function} [contextOptions] - pass {error:true} to write to stderr instead of stdout
+       */
+      outputHelp(contextOptions) {
+        let deprecatedCallback;
+        if (typeof contextOptions === "function") {
+          deprecatedCallback = contextOptions;
+          contextOptions = void 0;
+        }
+        const context = this._getHelpContext(contextOptions);
+        this._getCommandAndAncestors().reverse().forEach((command) => command.emit("beforeAllHelp", context));
+        this.emit("beforeHelp", context);
+        let helpInformation = this.helpInformation(context);
+        if (deprecatedCallback) {
+          helpInformation = deprecatedCallback(helpInformation);
+          if (typeof helpInformation !== "string" && !Buffer.isBuffer(helpInformation)) {
+            throw new Error("outputHelp callback must return a string or a Buffer");
+          }
+        }
+        context.write(helpInformation);
+        if (this._getHelpOption()?.long) {
+          this.emit(this._getHelpOption().long);
+        }
+        this.emit("afterHelp", context);
+        this._getCommandAndAncestors().forEach(
+          (command) => command.emit("afterAllHelp", context)
+        );
+      }
+      /**
+       * You can pass in flags and a description to customise the built-in help option.
+       * Pass in false to disable the built-in help option.
+       *
+       * @example
+       * program.helpOption('-?, --help' 'show help'); // customise
+       * program.helpOption(false); // disable
+       *
+       * @param {(string | boolean)} flags
+       * @param {string} [description]
+       * @return {Command} `this` command for chaining
+       */
+      helpOption(flags, description) {
+        if (typeof flags === "boolean") {
+          if (flags) {
+            this._helpOption = this._helpOption ?? void 0;
+          } else {
+            this._helpOption = null;
+          }
+          return this;
+        }
+        flags = flags ?? "-h, --help";
+        description = description ?? "display help for command";
+        this._helpOption = this.createOption(flags, description);
+        return this;
+      }
+      /**
+       * Lazy create help option.
+       * Returns null if has been disabled with .helpOption(false).
+       *
+       * @returns {(Option | null)} the help option
+       * @package
+       */
+      _getHelpOption() {
+        if (this._helpOption === void 0) {
+          this.helpOption(void 0, void 0);
+        }
+        return this._helpOption;
+      }
+      /**
+       * Supply your own option to use for the built-in help option.
+       * This is an alternative to using helpOption() to customise the flags and description etc.
+       *
+       * @param {Option} option
+       * @return {Command} `this` command for chaining
+       */
+      addHelpOption(option) {
+        this._helpOption = option;
+        return this;
+      }
+      /**
+       * Output help information and exit.
+       *
+       * Outputs built-in help, and custom text added using `.addHelpText()`.
+       *
+       * @param {{ error: boolean }} [contextOptions] - pass {error:true} to write to stderr instead of stdout
+       */
+      help(contextOptions) {
+        this.outputHelp(contextOptions);
+        let exitCode = process2.exitCode || 0;
+        if (exitCode === 0 && contextOptions && typeof contextOptions !== "function" && contextOptions.error) {
+          exitCode = 1;
+        }
+        this._exit(exitCode, "commander.help", "(outputHelp)");
+      }
+      /**
+       * Add additional text to be displayed with the built-in help.
+       *
+       * Position is 'before' or 'after' to affect just this command,
+       * and 'beforeAll' or 'afterAll' to affect this command and all its subcommands.
+       *
+       * @param {string} position - before or after built-in help
+       * @param {(string | Function)} text - string to add, or a function returning a string
+       * @return {Command} `this` command for chaining
+       */
+      addHelpText(position, text) {
+        const allowedValues = ["beforeAll", "before", "after", "afterAll"];
+        if (!allowedValues.includes(position)) {
+          throw new Error(`Unexpected value for position to addHelpText.
+Expecting one of '${allowedValues.join("', '")}'`);
+        }
+        const helpEvent = `${position}Help`;
+        this.on(helpEvent, (context) => {
+          let helpStr;
+          if (typeof text === "function") {
+            helpStr = text({ error: context.error, command: context.command });
+          } else {
+            helpStr = text;
+          }
+          if (helpStr) {
+            context.write(`${helpStr}
+`);
+          }
+        });
+        return this;
+      }
+      /**
+       * Output help information if help flags specified
+       *
+       * @param {Array} args - array of options to search for help flags
+       * @private
+       */
+      _outputHelpIfRequested(args) {
+        const helpOption = this._getHelpOption();
+        const helpRequested = helpOption && args.find((arg) => helpOption.is(arg));
+        if (helpRequested) {
+          this.outputHelp();
+          this._exit(0, "commander.helpDisplayed", "(outputHelp)");
+        }
+      }
+    };
+    function incrementNodeInspectorPort(args) {
+      return args.map((arg) => {
+        if (!arg.startsWith("--inspect")) {
+          return arg;
+        }
+        let debugOption;
+        let debugHost = "127.0.0.1";
+        let debugPort = "9229";
+        let match;
+        if ((match = arg.match(/^(--inspect(-brk)?)$/)) !== null) {
+          debugOption = match[1];
+        } else if ((match = arg.match(/^(--inspect(-brk|-port)?)=([^:]+)$/)) !== null) {
+          debugOption = match[1];
+          if (/^\d+$/.test(match[3])) {
+            debugPort = match[3];
+          } else {
+            debugHost = match[3];
+          }
+        } else if ((match = arg.match(/^(--inspect(-brk|-port)?)=([^:]+):(\d+)$/)) !== null) {
+          debugOption = match[1];
+          debugHost = match[3];
+          debugPort = match[4];
+        }
+        if (debugOption && debugPort !== "0") {
+          return `${debugOption}=${debugHost}:${parseInt(debugPort) + 1}`;
+        }
+        return arg;
+      });
+    }
+    exports2.Command = Command2;
+  }
+});
+
+// node_modules/commander/index.js
+var require_commander = __commonJS({
+  "node_modules/commander/index.js"(exports2) {
+    "use strict";
+    var { Argument: Argument2 } = require_argument();
+    var { Command: Command2 } = require_command();
+    var { CommanderError: CommanderError2, InvalidArgumentError: InvalidArgumentError2 } = require_error();
+    var { Help: Help2 } = require_help();
+    var { Option: Option2 } = require_option();
+    exports2.program = new Command2();
+    exports2.createCommand = (name) => new Command2(name);
+    exports2.createOption = (flags, description) => new Option2(flags, description);
+    exports2.createArgument = (name, description) => new Argument2(name, description);
+    exports2.Command = Command2;
+    exports2.Option = Option2;
+    exports2.Argument = Argument2;
+    exports2.Help = Help2;
+    exports2.CommanderError = CommanderError2;
+    exports2.InvalidArgumentError = InvalidArgumentError2;
+    exports2.InvalidOptionArgumentError = InvalidArgumentError2;
+  }
+});
+
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelClient.js
 var require_tunnelClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelClient.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelClient.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelHost.js
 var require_tunnelHost = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelHost.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelHost.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessScopes.js
 var require_tunnelAccessScopes = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessScopes.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessScopes.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelAccessScopes = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelAccessScopes = void 0;
     var TunnelAccessScopes2;
     (function(TunnelAccessScopes3) {
       TunnelAccessScopes3["Create"] = "create";
@@ -60,16 +3056,16 @@ var require_tunnelAccessScopes = __commonJS({
       TunnelAccessScopes3["Host"] = "host";
       TunnelAccessScopes3["Inspect"] = "inspect";
       TunnelAccessScopes3["Connect"] = "connect";
-    })(TunnelAccessScopes2 = exports.TunnelAccessScopes || (exports.TunnelAccessScopes = {}));
+    })(TunnelAccessScopes2 = exports2.TunnelAccessScopes || (exports2.TunnelAccessScopes = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlStatics.js
 var require_tunnelAccessControlStatics = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlStatics.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlStatics.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.validateScopes = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.validateScopes = void 0;
     var tunnelAccessScopes_1 = require_tunnelAccessScopes();
     var allScopes = [
       tunnelAccessScopes_1.TunnelAccessScopes.Manage,
@@ -100,18 +3096,18 @@ var require_tunnelAccessControlStatics = __commonJS({
         });
       }
     }
-    exports.validateScopes = validateScopes;
+    exports2.validateScopes = validateScopes;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControl.js
 var require_tunnelAccessControl = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControl.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControl.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelAccessControl = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelAccessControl = void 0;
     var tunnelAccessControlStatics_1 = require_tunnelAccessControlStatics();
-    exports.TunnelAccessControl = {
+    exports2.TunnelAccessControl = {
       validateScopes: tunnelAccessControlStatics_1.validateScopes
     };
   }
@@ -119,10 +3115,10 @@ var require_tunnelAccessControl = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntry.js
 var require_tunnelAccessControlEntry = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntry.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntry.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelAccessControlEntry = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelAccessControlEntry = void 0;
     var TunnelAccessControlEntry;
     (function(TunnelAccessControlEntry2) {
       let Providers;
@@ -134,16 +3130,16 @@ var require_tunnelAccessControlEntry = __commonJS({
         Providers2["IPv6"] = "ipv6";
         Providers2["ServiceTag"] = "service-tag";
       })(Providers = TunnelAccessControlEntry2.Providers || (TunnelAccessControlEntry2.Providers = {}));
-    })(TunnelAccessControlEntry = exports.TunnelAccessControlEntry || (exports.TunnelAccessControlEntry = {}));
+    })(TunnelAccessControlEntry = exports2.TunnelAccessControlEntry || (exports2.TunnelAccessControlEntry = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntryType.js
 var require_tunnelAccessControlEntryType = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntryType.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntryType.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelAccessControlEntryType = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelAccessControlEntryType = void 0;
     var TunnelAccessControlEntryType;
     (function(TunnelAccessControlEntryType2) {
       TunnelAccessControlEntryType2["None"] = "None";
@@ -154,30 +3150,30 @@ var require_tunnelAccessControlEntryType = __commonJS({
       TunnelAccessControlEntryType2["Repositories"] = "Repositories";
       TunnelAccessControlEntryType2["PublicKeys"] = "PublicKeys";
       TunnelAccessControlEntryType2["IPAddressRanges"] = "IPAddressRanges";
-    })(TunnelAccessControlEntryType = exports.TunnelAccessControlEntryType || (exports.TunnelAccessControlEntryType = {}));
+    })(TunnelAccessControlEntryType = exports2.TunnelAccessControlEntryType || (exports2.TunnelAccessControlEntryType = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConnectionMode.js
 var require_tunnelConnectionMode = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConnectionMode.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConnectionMode.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelConnectionMode = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelConnectionMode = void 0;
     var TunnelConnectionMode;
     (function(TunnelConnectionMode2) {
       TunnelConnectionMode2["LocalNetwork"] = "LocalNetwork";
       TunnelConnectionMode2["TunnelRelay"] = "TunnelRelay";
-    })(TunnelConnectionMode = exports.TunnelConnectionMode || (exports.TunnelConnectionMode = {}));
+    })(TunnelConnectionMode = exports2.TunnelConnectionMode || (exports2.TunnelConnectionMode = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpointStatics.js
 var require_tunnelEndpointStatics = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpointStatics.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpointStatics.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.getPortSshCommand = exports.getPortUri = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.getPortSshCommand = exports2.getPortUri = void 0;
     var tunnelEndpoint_1 = require_tunnelEndpoint();
     function getPortUri(endpoint, portNumber) {
       if (!endpoint) {
@@ -191,7 +3187,7 @@ var require_tunnelEndpointStatics = __commonJS({
       }
       return endpoint.portUriFormat.replace(tunnelEndpoint_1.portToken, portNumber.toString());
     }
-    exports.getPortUri = getPortUri;
+    exports2.getPortUri = getPortUri;
     function getPortSshCommand(endpoint, portNumber) {
       if (!endpoint) {
         throw new TypeError("A tunnel endpoint is required.");
@@ -204,20 +3200,20 @@ var require_tunnelEndpointStatics = __commonJS({
       }
       return endpoint.portSshCommandFormat.replace(tunnelEndpoint_1.portToken, portNumber.toString());
     }
-    exports.getPortSshCommand = getPortSshCommand;
+    exports2.getPortSshCommand = getPortSshCommand;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpoint.js
 var require_tunnelEndpoint = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpoint.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpoint.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelEndpoint = exports.portToken = void 0;
-    exports.portToken = "{port}";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelEndpoint = exports2.portToken = void 0;
+    exports2.portToken = "{port}";
     var tunnelEndpointStatics_1 = require_tunnelEndpointStatics();
-    exports.TunnelEndpoint = {
-      portToken: exports.portToken,
+    exports2.TunnelEndpoint = {
+      portToken: exports2.portToken,
       getPortUri: tunnelEndpointStatics_1.getPortUri,
       getPortSshCommand: tunnelEndpointStatics_1.getPortSshCommand
     };
@@ -226,43 +3222,43 @@ var require_tunnelEndpoint = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEvent.js
 var require_tunnelEvent = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEvent.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEvent.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelEvent = exports.error = exports.warning = exports.info = void 0;
-    exports.info = "info";
-    exports.warning = "warning";
-    exports.error = "error";
-    exports.TunnelEvent = {
-      info: exports.info,
-      warning: exports.warning,
-      error: exports.error
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelEvent = exports2.error = exports2.warning = exports2.info = void 0;
+    exports2.info = "info";
+    exports2.warning = "warning";
+    exports2.error = "error";
+    exports2.TunnelEvent = {
+      info: exports2.info,
+      warning: exports2.warning,
+      error: exports2.error
     };
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelHeaderNames.js
 var require_tunnelHeaderNames = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelHeaderNames.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelHeaderNames.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelHeaderNames = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelHeaderNames = void 0;
     var TunnelHeaderNames;
     (function(TunnelHeaderNames2) {
       TunnelHeaderNames2["XTunnelAuthorization"] = "X-Tunnel-Authorization";
       TunnelHeaderNames2["XRequestID"] = "X-Request-ID";
       TunnelHeaderNames2["XGithubSshKey"] = "X-Github-Ssh-Key";
       TunnelHeaderNames2["XTunnelSkipAntiPhishingPage"] = "X-Tunnel-Skip-AntiPhishing-Page";
-    })(TunnelHeaderNames = exports.TunnelHeaderNames || (exports.TunnelHeaderNames = {}));
+    })(TunnelHeaderNames = exports2.TunnelHeaderNames || (exports2.TunnelHeaderNames = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProtocol.js
 var require_tunnelProtocol = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProtocol.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProtocol.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelProtocol = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelProtocol = void 0;
     var TunnelProtocol;
     (function(TunnelProtocol2) {
       TunnelProtocol2["Auto"] = "auto";
@@ -272,30 +3268,30 @@ var require_tunnelProtocol = __commonJS({
       TunnelProtocol2["Rdp"] = "rdp";
       TunnelProtocol2["Http"] = "http";
       TunnelProtocol2["Https"] = "https";
-    })(TunnelProtocol = exports.TunnelProtocol || (exports.TunnelProtocol = {}));
+    })(TunnelProtocol = exports2.TunnelProtocol || (exports2.TunnelProtocol = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServicePropertiesStatics.js
 var require_tunnelServicePropertiesStatics = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServicePropertiesStatics.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServicePropertiesStatics.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.environment = exports.development = exports.staging = exports.production = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.environment = exports2.development = exports2.staging = exports2.production = void 0;
     var tunnelServiceProperties_1 = require_tunnelServiceProperties();
-    exports.production = {
+    exports2.production = {
       serviceUri: `https://${tunnelServiceProperties_1.prodDnsName}/`,
       serviceAppId: tunnelServiceProperties_1.prodFirstPartyAppId,
       serviceInternalAppId: tunnelServiceProperties_1.prodThirdPartyAppId,
       gitHubAppClientId: tunnelServiceProperties_1.prodGitHubAppClientId
     };
-    exports.staging = {
+    exports2.staging = {
       serviceUri: `https://${tunnelServiceProperties_1.ppeDnsName}/`,
       serviceAppId: tunnelServiceProperties_1.ppeFirstPartyAppId,
       serviceInternalAppId: tunnelServiceProperties_1.ppeThirdPartyAppId,
       gitHubAppClientId: tunnelServiceProperties_1.nonProdGitHubAppClientId
     };
-    exports.development = {
+    exports2.development = {
       serviceUri: `https://${tunnelServiceProperties_1.devDnsName}/`,
       serviceAppId: tunnelServiceProperties_1.devFirstPartyAppId,
       serviceInternalAppId: tunnelServiceProperties_1.devThirdPartyAppId,
@@ -308,40 +3304,40 @@ var require_tunnelServicePropertiesStatics = __commonJS({
       switch (environmentName.toLowerCase()) {
         case "prod":
         case "production":
-          return exports.production;
+          return exports2.production;
         case "ppe":
         case "preprod":
-          return exports.staging;
+          return exports2.staging;
         case "dev":
         case "development":
-          return exports.development;
+          return exports2.development;
         default:
           throw new Error(`Invalid service environment: ${environmentName}`);
       }
     }
-    exports.environment = environment;
+    exports2.environment = environment;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServiceProperties.js
 var require_tunnelServiceProperties = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServiceProperties.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServiceProperties.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelServiceProperties = exports.nonProdGitHubAppClientId = exports.prodGitHubAppClientId = exports.devThirdPartyAppId = exports.ppeThirdPartyAppId = exports.prodThirdPartyAppId = exports.devFirstPartyAppId = exports.ppeFirstPartyAppId = exports.prodFirstPartyAppId = exports.devDnsName = exports.ppeDnsName = exports.prodDnsName = void 0;
-    exports.prodDnsName = "global.rel.tunnels.api.visualstudio.com";
-    exports.ppeDnsName = "global.rel.tunnels.ppe.api.visualstudio.com";
-    exports.devDnsName = "global.ci.tunnels.dev.api.visualstudio.com";
-    exports.prodFirstPartyAppId = "46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2";
-    exports.ppeFirstPartyAppId = "54c45752-bacd-424a-b928-652f3eca2b18";
-    exports.devFirstPartyAppId = "9c63851a-ba2b-40a5-94bd-890be43b9284";
-    exports.prodThirdPartyAppId = "ce65d243-a913-4cae-a7dd-cb52e9f77647";
-    exports.ppeThirdPartyAppId = "544167a6-f431-4518-aac6-2fd50071928e";
-    exports.devThirdPartyAppId = "a118c979-0249-44bb-8f95-eb0457127aeb";
-    exports.prodGitHubAppClientId = "Iv1.e7b89e013f801f03";
-    exports.nonProdGitHubAppClientId = "Iv1.b231c327f1eaa229";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelServiceProperties = exports2.nonProdGitHubAppClientId = exports2.prodGitHubAppClientId = exports2.devThirdPartyAppId = exports2.ppeThirdPartyAppId = exports2.prodThirdPartyAppId = exports2.devFirstPartyAppId = exports2.ppeFirstPartyAppId = exports2.prodFirstPartyAppId = exports2.devDnsName = exports2.ppeDnsName = exports2.prodDnsName = void 0;
+    exports2.prodDnsName = "global.rel.tunnels.api.visualstudio.com";
+    exports2.ppeDnsName = "global.rel.tunnels.ppe.api.visualstudio.com";
+    exports2.devDnsName = "global.ci.tunnels.dev.api.visualstudio.com";
+    exports2.prodFirstPartyAppId = "46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2";
+    exports2.ppeFirstPartyAppId = "54c45752-bacd-424a-b928-652f3eca2b18";
+    exports2.devFirstPartyAppId = "9c63851a-ba2b-40a5-94bd-890be43b9284";
+    exports2.prodThirdPartyAppId = "ce65d243-a913-4cae-a7dd-cb52e9f77647";
+    exports2.ppeThirdPartyAppId = "544167a6-f431-4518-aac6-2fd50071928e";
+    exports2.devThirdPartyAppId = "a118c979-0249-44bb-8f95-eb0457127aeb";
+    exports2.prodGitHubAppClientId = "Iv1.e7b89e013f801f03";
+    exports2.nonProdGitHubAppClientId = "Iv1.b231c327f1eaa229";
     var tunnelServicePropertiesStatics_1 = require_tunnelServicePropertiesStatics();
-    exports.TunnelServiceProperties = {
+    exports2.TunnelServiceProperties = {
       production: tunnelServicePropertiesStatics_1.production,
       staging: tunnelServicePropertiesStatics_1.staging,
       development: tunnelServicePropertiesStatics_1.development,
@@ -352,10 +3348,10 @@ var require_tunnelServiceProperties = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConstraints.js
 var require_tunnelConstraints = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConstraints.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConstraints.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelConstraints = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelConstraints = void 0;
     var TunnelConstraints;
     (function(TunnelConstraints2) {
       TunnelConstraints2.clusterIdMinLength = 3;
@@ -406,16 +3402,16 @@ var require_tunnelConstraints = __commonJS({
       TunnelConstraints2.accessControlSubjectRegex = new RegExp(TunnelConstraints2.accessControlSubjectPattern);
       TunnelConstraints2.accessControlSubjectNamePattern = `[ \\w\\d-.,/'"_@()<>]{0,200}`;
       TunnelConstraints2.accessControlSubjectNameRegex = new RegExp(TunnelConstraints2.accessControlSubjectNamePattern);
-    })(TunnelConstraints = exports.TunnelConstraints || (exports.TunnelConstraints = {}));
+    })(TunnelConstraints = exports2.TunnelConstraints || (exports2.TunnelConstraints = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProgress.js
 var require_tunnelProgress = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProgress.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProgress.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelProgress = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelProgress = void 0;
     var TunnelProgress;
     (function(TunnelProgress2) {
       TunnelProgress2["StartingRefreshPorts"] = "StartingRefreshPorts";
@@ -428,62 +3424,62 @@ var require_tunnelProgress = __commonJS({
       TunnelProgress2["CompletedCreateTunnelPort"] = "CompletedCreateTunnelPort";
       TunnelProgress2["StartingGetTunnelPort"] = "StartingGetTunnelPort";
       TunnelProgress2["CompletedGetTunnelPort"] = "CompletedGetTunnelPort";
-    })(TunnelProgress = exports.TunnelProgress || (exports.TunnelProgress = {}));
+    })(TunnelProgress = exports2.TunnelProgress || (exports2.TunnelProgress = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-contracts/index.js
 var require_dev_tunnels_contracts = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/index.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-contracts/index.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelProgress = exports.TunnelConstraints = exports.TunnelServiceProperties = exports.TunnelProtocol = exports.TunnelHeaderNames = exports.TunnelEvent = exports.TunnelEndpoint = exports.TunnelConnectionMode = exports.TunnelAccessScopes = exports.TunnelAccessControlEntryType = exports.TunnelAccessControlEntry = exports.TunnelAccessControl = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelProgress = exports2.TunnelConstraints = exports2.TunnelServiceProperties = exports2.TunnelProtocol = exports2.TunnelHeaderNames = exports2.TunnelEvent = exports2.TunnelEndpoint = exports2.TunnelConnectionMode = exports2.TunnelAccessScopes = exports2.TunnelAccessControlEntryType = exports2.TunnelAccessControlEntry = exports2.TunnelAccessControl = void 0;
     var tunnelAccessControl_1 = require_tunnelAccessControl();
-    Object.defineProperty(exports, "TunnelAccessControl", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelAccessControl", { enumerable: true, get: function() {
       return tunnelAccessControl_1.TunnelAccessControl;
     } });
     var tunnelAccessControlEntry_1 = require_tunnelAccessControlEntry();
-    Object.defineProperty(exports, "TunnelAccessControlEntry", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelAccessControlEntry", { enumerable: true, get: function() {
       return tunnelAccessControlEntry_1.TunnelAccessControlEntry;
     } });
     var tunnelAccessControlEntryType_1 = require_tunnelAccessControlEntryType();
-    Object.defineProperty(exports, "TunnelAccessControlEntryType", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelAccessControlEntryType", { enumerable: true, get: function() {
       return tunnelAccessControlEntryType_1.TunnelAccessControlEntryType;
     } });
     var tunnelAccessScopes_1 = require_tunnelAccessScopes();
-    Object.defineProperty(exports, "TunnelAccessScopes", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelAccessScopes", { enumerable: true, get: function() {
       return tunnelAccessScopes_1.TunnelAccessScopes;
     } });
     var tunnelConnectionMode_1 = require_tunnelConnectionMode();
-    Object.defineProperty(exports, "TunnelConnectionMode", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelConnectionMode", { enumerable: true, get: function() {
       return tunnelConnectionMode_1.TunnelConnectionMode;
     } });
     var tunnelEndpoint_1 = require_tunnelEndpoint();
-    Object.defineProperty(exports, "TunnelEndpoint", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelEndpoint", { enumerable: true, get: function() {
       return tunnelEndpoint_1.TunnelEndpoint;
     } });
     var tunnelEvent_1 = require_tunnelEvent();
-    Object.defineProperty(exports, "TunnelEvent", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelEvent", { enumerable: true, get: function() {
       return tunnelEvent_1.TunnelEvent;
     } });
     var tunnelHeaderNames_1 = require_tunnelHeaderNames();
-    Object.defineProperty(exports, "TunnelHeaderNames", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelHeaderNames", { enumerable: true, get: function() {
       return tunnelHeaderNames_1.TunnelHeaderNames;
     } });
     var tunnelProtocol_1 = require_tunnelProtocol();
-    Object.defineProperty(exports, "TunnelProtocol", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelProtocol", { enumerable: true, get: function() {
       return tunnelProtocol_1.TunnelProtocol;
     } });
     var tunnelServiceProperties_1 = require_tunnelServiceProperties();
-    Object.defineProperty(exports, "TunnelServiceProperties", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelServiceProperties", { enumerable: true, get: function() {
       return tunnelServiceProperties_1.TunnelServiceProperties;
     } });
     var tunnelConstraints_1 = require_tunnelConstraints();
-    Object.defineProperty(exports, "TunnelConstraints", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelConstraints", { enumerable: true, get: function() {
       return tunnelConstraints_1.TunnelConstraints;
     } });
     var tunnelProgress_1 = require_tunnelProgress();
-    Object.defineProperty(exports, "TunnelProgress", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TunnelProgress", { enumerable: true, get: function() {
       return tunnelProgress_1.TunnelProgress;
     } });
   }
@@ -491,45 +3487,45 @@ var require_dev_tunnels_contracts = __commonJS({
 
 // ../../node_modules/vscode-jsonrpc/lib/is.js
 var require_is = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/is.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/is.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     function boolean(value) {
       return value === true || value === false;
     }
-    exports.boolean = boolean;
+    exports2.boolean = boolean;
     function string(value) {
       return typeof value === "string" || value instanceof String;
     }
-    exports.string = string;
+    exports2.string = string;
     function number(value) {
       return typeof value === "number" || value instanceof Number;
     }
-    exports.number = number;
+    exports2.number = number;
     function error(value) {
       return value instanceof Error;
     }
-    exports.error = error;
+    exports2.error = error;
     function func(value) {
       return typeof value === "function";
     }
-    exports.func = func;
+    exports2.func = func;
     function array(value) {
       return Array.isArray(value);
     }
-    exports.array = array;
+    exports2.array = array;
     function stringArray(value) {
       return array(value) && value.every((elem) => string(elem));
     }
-    exports.stringArray = stringArray;
+    exports2.stringArray = stringArray;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/messages.js
 var require_messages = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/messages.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/messages.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     var is = require_is();
     var ErrorCodes;
     (function(ErrorCodes2) {
@@ -545,7 +3541,7 @@ var require_messages = __commonJS({
       ErrorCodes2.RequestCancelled = -32800;
       ErrorCodes2.MessageWriteError = 1;
       ErrorCodes2.MessageReadError = 2;
-    })(ErrorCodes = exports.ErrorCodes || (exports.ErrorCodes = {}));
+    })(ErrorCodes = exports2.ErrorCodes || (exports2.ErrorCodes = {}));
     var ResponseError = class _ResponseError extends Error {
       constructor(code, message, data) {
         super(message);
@@ -561,7 +3557,7 @@ var require_messages = __commonJS({
         };
       }
     };
-    exports.ResponseError = ResponseError;
+    exports2.ResponseError = ResponseError;
     var AbstractMessageType = class {
       constructor(_method, _numberOfParams) {
         this._method = _method;
@@ -574,184 +3570,184 @@ var require_messages = __commonJS({
         return this._numberOfParams;
       }
     };
-    exports.AbstractMessageType = AbstractMessageType;
+    exports2.AbstractMessageType = AbstractMessageType;
     var RequestType0 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 0);
         this._ = void 0;
       }
     };
-    exports.RequestType0 = RequestType0;
+    exports2.RequestType0 = RequestType0;
     var RequestType = class extends AbstractMessageType {
       constructor(method) {
         super(method, 1);
         this._ = void 0;
       }
     };
-    exports.RequestType = RequestType;
+    exports2.RequestType = RequestType;
     var RequestType1 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 1);
         this._ = void 0;
       }
     };
-    exports.RequestType1 = RequestType1;
+    exports2.RequestType1 = RequestType1;
     var RequestType2 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 2);
         this._ = void 0;
       }
     };
-    exports.RequestType2 = RequestType2;
+    exports2.RequestType2 = RequestType2;
     var RequestType3 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 3);
         this._ = void 0;
       }
     };
-    exports.RequestType3 = RequestType3;
+    exports2.RequestType3 = RequestType3;
     var RequestType4 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 4);
         this._ = void 0;
       }
     };
-    exports.RequestType4 = RequestType4;
+    exports2.RequestType4 = RequestType4;
     var RequestType5 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 5);
         this._ = void 0;
       }
     };
-    exports.RequestType5 = RequestType5;
+    exports2.RequestType5 = RequestType5;
     var RequestType6 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 6);
         this._ = void 0;
       }
     };
-    exports.RequestType6 = RequestType6;
+    exports2.RequestType6 = RequestType6;
     var RequestType7 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 7);
         this._ = void 0;
       }
     };
-    exports.RequestType7 = RequestType7;
+    exports2.RequestType7 = RequestType7;
     var RequestType8 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 8);
         this._ = void 0;
       }
     };
-    exports.RequestType8 = RequestType8;
+    exports2.RequestType8 = RequestType8;
     var RequestType9 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 9);
         this._ = void 0;
       }
     };
-    exports.RequestType9 = RequestType9;
+    exports2.RequestType9 = RequestType9;
     var NotificationType = class extends AbstractMessageType {
       constructor(method) {
         super(method, 1);
         this._ = void 0;
       }
     };
-    exports.NotificationType = NotificationType;
+    exports2.NotificationType = NotificationType;
     var NotificationType0 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 0);
         this._ = void 0;
       }
     };
-    exports.NotificationType0 = NotificationType0;
+    exports2.NotificationType0 = NotificationType0;
     var NotificationType1 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 1);
         this._ = void 0;
       }
     };
-    exports.NotificationType1 = NotificationType1;
+    exports2.NotificationType1 = NotificationType1;
     var NotificationType2 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 2);
         this._ = void 0;
       }
     };
-    exports.NotificationType2 = NotificationType2;
+    exports2.NotificationType2 = NotificationType2;
     var NotificationType3 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 3);
         this._ = void 0;
       }
     };
-    exports.NotificationType3 = NotificationType3;
+    exports2.NotificationType3 = NotificationType3;
     var NotificationType4 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 4);
         this._ = void 0;
       }
     };
-    exports.NotificationType4 = NotificationType4;
+    exports2.NotificationType4 = NotificationType4;
     var NotificationType5 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 5);
         this._ = void 0;
       }
     };
-    exports.NotificationType5 = NotificationType5;
+    exports2.NotificationType5 = NotificationType5;
     var NotificationType6 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 6);
         this._ = void 0;
       }
     };
-    exports.NotificationType6 = NotificationType6;
+    exports2.NotificationType6 = NotificationType6;
     var NotificationType7 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 7);
         this._ = void 0;
       }
     };
-    exports.NotificationType7 = NotificationType7;
+    exports2.NotificationType7 = NotificationType7;
     var NotificationType8 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 8);
         this._ = void 0;
       }
     };
-    exports.NotificationType8 = NotificationType8;
+    exports2.NotificationType8 = NotificationType8;
     var NotificationType9 = class extends AbstractMessageType {
       constructor(method) {
         super(method, 9);
         this._ = void 0;
       }
     };
-    exports.NotificationType9 = NotificationType9;
+    exports2.NotificationType9 = NotificationType9;
     function isRequestMessage(message) {
       let candidate = message;
       return candidate && is.string(candidate.method) && (is.string(candidate.id) || is.number(candidate.id));
     }
-    exports.isRequestMessage = isRequestMessage;
+    exports2.isRequestMessage = isRequestMessage;
     function isNotificationMessage(message) {
       let candidate = message;
       return candidate && is.string(candidate.method) && message.id === void 0;
     }
-    exports.isNotificationMessage = isNotificationMessage;
+    exports2.isNotificationMessage = isNotificationMessage;
     function isResponseMessage(message) {
       let candidate = message;
       return candidate && (candidate.result !== void 0 || !!candidate.error) && (is.string(candidate.id) || is.number(candidate.id) || candidate.id === null);
     }
-    exports.isResponseMessage = isResponseMessage;
+    exports2.isResponseMessage = isResponseMessage;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/events.js
 var require_events = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/events.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/events.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     var Disposable;
     (function(Disposable2) {
       function create(func) {
@@ -760,7 +3756,7 @@ var require_events = __commonJS({
         };
       }
       Disposable2.create = create;
-    })(Disposable = exports.Disposable || (exports.Disposable = {}));
+    })(Disposable = exports2.Disposable || (exports2.Disposable = {}));
     var Event;
     (function(Event2) {
       const _disposable = { dispose() {
@@ -768,7 +3764,7 @@ var require_events = __commonJS({
       Event2.None = function() {
         return _disposable;
       };
-    })(Event = exports.Event || (exports.Event = {}));
+    })(Event = exports2.Event || (exports2.Event = {}));
     var CallbackList = class {
       add(callback, context = null, bucket) {
         if (!this._callbacks) {
@@ -877,15 +3873,15 @@ var require_events = __commonJS({
     };
     Emitter._noop = function() {
     };
-    exports.Emitter = Emitter;
+    exports2.Emitter = Emitter;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/messageReader.js
 var require_messageReader = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/messageReader.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/messageReader.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     var events_1 = require_events();
     var Is = require_is();
     var DefaultSize = 8192;
@@ -965,7 +3961,7 @@ var require_messageReader = __commonJS({
         return candidate && Is.func(candidate.listen) && Is.func(candidate.dispose) && Is.func(candidate.onError) && Is.func(candidate.onClose) && Is.func(candidate.onPartialMessage);
       }
       MessageReader2.is = is;
-    })(MessageReader = exports.MessageReader || (exports.MessageReader = {}));
+    })(MessageReader = exports2.MessageReader || (exports2.MessageReader = {}));
     var AbstractMessageReader = class {
       constructor() {
         this.errorEmitter = new events_1.Emitter();
@@ -1002,7 +3998,7 @@ var require_messageReader = __commonJS({
         }
       }
     };
-    exports.AbstractMessageReader = AbstractMessageReader;
+    exports2.AbstractMessageReader = AbstractMessageReader;
     var StreamMessageReader2 = class extends AbstractMessageReader {
       constructor(readable, encoding = "utf8") {
         super();
@@ -1077,7 +4073,7 @@ var require_messageReader = __commonJS({
         }, this._partialMessageTimeout, this.messageToken, this._partialMessageTimeout);
       }
     };
-    exports.StreamMessageReader = StreamMessageReader2;
+    exports2.StreamMessageReader = StreamMessageReader2;
     var IPCMessageReader = class extends AbstractMessageReader {
       constructor(process2) {
         super();
@@ -1090,21 +4086,21 @@ var require_messageReader = __commonJS({
         this.process.on("message", callback);
       }
     };
-    exports.IPCMessageReader = IPCMessageReader;
+    exports2.IPCMessageReader = IPCMessageReader;
     var SocketMessageReader = class extends StreamMessageReader2 {
       constructor(socket, encoding = "utf-8") {
         super(socket, encoding);
       }
     };
-    exports.SocketMessageReader = SocketMessageReader;
+    exports2.SocketMessageReader = SocketMessageReader;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/messageWriter.js
 var require_messageWriter = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/messageWriter.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/messageWriter.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     var events_1 = require_events();
     var Is = require_is();
     var ContentLength = "Content-Length: ";
@@ -1116,7 +4112,7 @@ var require_messageWriter = __commonJS({
         return candidate && Is.func(candidate.dispose) && Is.func(candidate.onClose) && Is.func(candidate.onError) && Is.func(candidate.write);
       }
       MessageWriter2.is = is;
-    })(MessageWriter = exports.MessageWriter || (exports.MessageWriter = {}));
+    })(MessageWriter = exports2.MessageWriter || (exports2.MessageWriter = {}));
     var AbstractMessageWriter = class {
       constructor() {
         this.errorEmitter = new events_1.Emitter();
@@ -1146,7 +4142,7 @@ var require_messageWriter = __commonJS({
         }
       }
     };
-    exports.AbstractMessageWriter = AbstractMessageWriter;
+    exports2.AbstractMessageWriter = AbstractMessageWriter;
     var StreamMessageWriter2 = class extends AbstractMessageWriter {
       constructor(writable, encoding = "utf8") {
         super();
@@ -1175,7 +4171,7 @@ var require_messageWriter = __commonJS({
         }
       }
     };
-    exports.StreamMessageWriter = StreamMessageWriter2;
+    exports2.StreamMessageWriter = StreamMessageWriter2;
     var IPCMessageWriter = class extends AbstractMessageWriter {
       constructor(process2) {
         super();
@@ -1217,7 +4213,7 @@ var require_messageWriter = __commonJS({
         }
       }
     };
-    exports.IPCMessageWriter = IPCMessageWriter;
+    exports2.IPCMessageWriter = IPCMessageWriter;
     var SocketMessageWriter = class extends AbstractMessageWriter {
       constructor(socket, encoding = "utf8") {
         super();
@@ -1276,15 +4272,15 @@ var require_messageWriter = __commonJS({
         this.fireError(error, msg, this.errorCount);
       }
     };
-    exports.SocketMessageWriter = SocketMessageWriter;
+    exports2.SocketMessageWriter = SocketMessageWriter;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/cancellation.js
 var require_cancellation = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/cancellation.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/cancellation.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     var events_1 = require_events();
     var Is = require_is();
     var CancellationToken;
@@ -1302,7 +4298,7 @@ var require_cancellation = __commonJS({
         return candidate && (candidate === CancellationToken2.None || candidate === CancellationToken2.Cancelled || Is.boolean(candidate.isCancellationRequested) && !!candidate.onCancellationRequested);
       }
       CancellationToken2.is = is;
-    })(CancellationToken = exports.CancellationToken || (exports.CancellationToken = {}));
+    })(CancellationToken = exports2.CancellationToken || (exports2.CancellationToken = {}));
     var shortcutEvent = Object.freeze(function(callback, context) {
       let handle = setTimeout(callback.bind(context), 0);
       return { dispose() {
@@ -1353,21 +4349,21 @@ var require_cancellation = __commonJS({
         this.cancel();
       }
     };
-    exports.CancellationTokenSource = CancellationTokenSource;
+    exports2.CancellationTokenSource = CancellationTokenSource;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/linkedMap.js
 var require_linkedMap = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/linkedMap.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/linkedMap.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     var Touch;
     (function(Touch2) {
       Touch2.None = 0;
       Touch2.First = 1;
       Touch2.Last = 2;
-    })(Touch = exports.Touch || (exports.Touch = {}));
+    })(Touch = exports2.Touch || (exports2.Touch = {}));
     var LinkedMap = class {
       constructor() {
         this._map = /* @__PURE__ */ new Map();
@@ -1610,19 +4606,19 @@ var require_linkedMap = __commonJS({
         }
       }
     };
-    exports.LinkedMap = LinkedMap;
+    exports2.LinkedMap = LinkedMap;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/pipeSupport.js
 var require_pipeSupport = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/pipeSupport.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/pipeSupport.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var path_1 = __require("path");
-    var os_1 = __require("os");
-    var crypto_1 = __require("crypto");
-    var net_1 = __require("net");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    var path_1 = require("path");
+    var os_1 = require("os");
+    var crypto_1 = require("crypto");
+    var net_1 = require("net");
     var messageReader_1 = require_messageReader();
     var messageWriter_1 = require_messageWriter();
     function generateRandomPipeName() {
@@ -1633,7 +4629,7 @@ var require_pipeSupport = __commonJS({
         return path_1.join(os_1.tmpdir(), `vscode-${randomSuffix}.sock`);
       }
     }
-    exports.generateRandomPipeName = generateRandomPipeName;
+    exports2.generateRandomPipeName = generateRandomPipeName;
     function createClientPipeTransport(pipeName, encoding = "utf-8") {
       let connectResolve;
       let connected = new Promise((resolve2, _reject) => {
@@ -1658,7 +4654,7 @@ var require_pipeSupport = __commonJS({
         });
       });
     }
-    exports.createClientPipeTransport = createClientPipeTransport;
+    exports2.createClientPipeTransport = createClientPipeTransport;
     function createServerPipeTransport(pipeName, encoding = "utf-8") {
       const socket = net_1.createConnection(pipeName);
       return [
@@ -1666,16 +4662,16 @@ var require_pipeSupport = __commonJS({
         new messageWriter_1.SocketMessageWriter(socket, encoding)
       ];
     }
-    exports.createServerPipeTransport = createServerPipeTransport;
+    exports2.createServerPipeTransport = createServerPipeTransport;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/socketSupport.js
 var require_socketSupport = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/socketSupport.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/socketSupport.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var net_1 = __require("net");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    var net_1 = require("net");
     var messageReader_1 = require_messageReader();
     var messageWriter_1 = require_messageWriter();
     function createClientSocketTransport(port, encoding = "utf-8") {
@@ -1702,7 +4698,7 @@ var require_socketSupport = __commonJS({
         });
       });
     }
-    exports.createClientSocketTransport = createClientSocketTransport;
+    exports2.createClientSocketTransport = createClientSocketTransport;
     function createServerSocketTransport(port, encoding = "utf-8") {
       const socket = net_1.createConnection(port, "127.0.0.1");
       return [
@@ -1710,61 +4706,61 @@ var require_socketSupport = __commonJS({
         new messageWriter_1.SocketMessageWriter(socket, encoding)
       ];
     }
-    exports.createServerSocketTransport = createServerSocketTransport;
+    exports2.createServerSocketTransport = createServerSocketTransport;
   }
 });
 
 // ../../node_modules/vscode-jsonrpc/lib/main.js
 var require_main = __commonJS({
-  "../../node_modules/vscode-jsonrpc/lib/main.js"(exports) {
+  "../../node_modules/vscode-jsonrpc/lib/main.js"(exports2) {
     "use strict";
     function __export(m) {
-      for (var p in m) if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+      for (var p in m) if (!exports2.hasOwnProperty(p)) exports2[p] = m[p];
     }
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     var Is = require_is();
     var messages_1 = require_messages();
-    exports.RequestType = messages_1.RequestType;
-    exports.RequestType0 = messages_1.RequestType0;
-    exports.RequestType1 = messages_1.RequestType1;
-    exports.RequestType2 = messages_1.RequestType2;
-    exports.RequestType3 = messages_1.RequestType3;
-    exports.RequestType4 = messages_1.RequestType4;
-    exports.RequestType5 = messages_1.RequestType5;
-    exports.RequestType6 = messages_1.RequestType6;
-    exports.RequestType7 = messages_1.RequestType7;
-    exports.RequestType8 = messages_1.RequestType8;
-    exports.RequestType9 = messages_1.RequestType9;
-    exports.ResponseError = messages_1.ResponseError;
-    exports.ErrorCodes = messages_1.ErrorCodes;
-    exports.NotificationType = messages_1.NotificationType;
-    exports.NotificationType0 = messages_1.NotificationType0;
-    exports.NotificationType1 = messages_1.NotificationType1;
-    exports.NotificationType2 = messages_1.NotificationType2;
-    exports.NotificationType3 = messages_1.NotificationType3;
-    exports.NotificationType4 = messages_1.NotificationType4;
-    exports.NotificationType5 = messages_1.NotificationType5;
-    exports.NotificationType6 = messages_1.NotificationType6;
-    exports.NotificationType7 = messages_1.NotificationType7;
-    exports.NotificationType8 = messages_1.NotificationType8;
-    exports.NotificationType9 = messages_1.NotificationType9;
+    exports2.RequestType = messages_1.RequestType;
+    exports2.RequestType0 = messages_1.RequestType0;
+    exports2.RequestType1 = messages_1.RequestType1;
+    exports2.RequestType2 = messages_1.RequestType2;
+    exports2.RequestType3 = messages_1.RequestType3;
+    exports2.RequestType4 = messages_1.RequestType4;
+    exports2.RequestType5 = messages_1.RequestType5;
+    exports2.RequestType6 = messages_1.RequestType6;
+    exports2.RequestType7 = messages_1.RequestType7;
+    exports2.RequestType8 = messages_1.RequestType8;
+    exports2.RequestType9 = messages_1.RequestType9;
+    exports2.ResponseError = messages_1.ResponseError;
+    exports2.ErrorCodes = messages_1.ErrorCodes;
+    exports2.NotificationType = messages_1.NotificationType;
+    exports2.NotificationType0 = messages_1.NotificationType0;
+    exports2.NotificationType1 = messages_1.NotificationType1;
+    exports2.NotificationType2 = messages_1.NotificationType2;
+    exports2.NotificationType3 = messages_1.NotificationType3;
+    exports2.NotificationType4 = messages_1.NotificationType4;
+    exports2.NotificationType5 = messages_1.NotificationType5;
+    exports2.NotificationType6 = messages_1.NotificationType6;
+    exports2.NotificationType7 = messages_1.NotificationType7;
+    exports2.NotificationType8 = messages_1.NotificationType8;
+    exports2.NotificationType9 = messages_1.NotificationType9;
     var messageReader_1 = require_messageReader();
-    exports.MessageReader = messageReader_1.MessageReader;
-    exports.StreamMessageReader = messageReader_1.StreamMessageReader;
-    exports.IPCMessageReader = messageReader_1.IPCMessageReader;
-    exports.SocketMessageReader = messageReader_1.SocketMessageReader;
+    exports2.MessageReader = messageReader_1.MessageReader;
+    exports2.StreamMessageReader = messageReader_1.StreamMessageReader;
+    exports2.IPCMessageReader = messageReader_1.IPCMessageReader;
+    exports2.SocketMessageReader = messageReader_1.SocketMessageReader;
     var messageWriter_1 = require_messageWriter();
-    exports.MessageWriter = messageWriter_1.MessageWriter;
-    exports.StreamMessageWriter = messageWriter_1.StreamMessageWriter;
-    exports.IPCMessageWriter = messageWriter_1.IPCMessageWriter;
-    exports.SocketMessageWriter = messageWriter_1.SocketMessageWriter;
+    exports2.MessageWriter = messageWriter_1.MessageWriter;
+    exports2.StreamMessageWriter = messageWriter_1.StreamMessageWriter;
+    exports2.IPCMessageWriter = messageWriter_1.IPCMessageWriter;
+    exports2.SocketMessageWriter = messageWriter_1.SocketMessageWriter;
     var events_1 = require_events();
-    exports.Disposable = events_1.Disposable;
-    exports.Event = events_1.Event;
-    exports.Emitter = events_1.Emitter;
+    exports2.Disposable = events_1.Disposable;
+    exports2.Event = events_1.Event;
+    exports2.Emitter = events_1.Emitter;
     var cancellation_1 = require_cancellation();
-    exports.CancellationTokenSource = cancellation_1.CancellationTokenSource;
-    exports.CancellationToken = cancellation_1.CancellationToken;
+    exports2.CancellationTokenSource = cancellation_1.CancellationTokenSource;
+    exports2.CancellationToken = cancellation_1.CancellationToken;
     var linkedMap_1 = require_linkedMap();
     __export(require_pipeSupport());
     __export(require_socketSupport());
@@ -1772,7 +4768,7 @@ var require_main = __commonJS({
     (function(CancelNotification2) {
       CancelNotification2.type = new messages_1.NotificationType("$/cancelRequest");
     })(CancelNotification || (CancelNotification = {}));
-    exports.NullLogger = Object.freeze({
+    exports2.NullLogger = Object.freeze({
       error: () => {
       },
       warn: () => {
@@ -1787,7 +4783,7 @@ var require_main = __commonJS({
       Trace2[Trace2["Off"] = 0] = "Off";
       Trace2[Trace2["Messages"] = 1] = "Messages";
       Trace2[Trace2["Verbose"] = 2] = "Verbose";
-    })(Trace = exports.Trace || (exports.Trace = {}));
+    })(Trace = exports2.Trace || (exports2.Trace = {}));
     (function(Trace2) {
       function fromString(value) {
         value = value.toLowerCase();
@@ -1816,12 +4812,12 @@ var require_main = __commonJS({
         }
       }
       Trace2.toString = toString;
-    })(Trace = exports.Trace || (exports.Trace = {}));
+    })(Trace = exports2.Trace || (exports2.Trace = {}));
     var TraceFormat;
     (function(TraceFormat2) {
       TraceFormat2["Text"] = "text";
       TraceFormat2["JSON"] = "json";
-    })(TraceFormat = exports.TraceFormat || (exports.TraceFormat = {}));
+    })(TraceFormat = exports2.TraceFormat || (exports2.TraceFormat = {}));
     (function(TraceFormat2) {
       function fromString(value) {
         value = value.toLowerCase();
@@ -1832,21 +4828,21 @@ var require_main = __commonJS({
         }
       }
       TraceFormat2.fromString = fromString;
-    })(TraceFormat = exports.TraceFormat || (exports.TraceFormat = {}));
+    })(TraceFormat = exports2.TraceFormat || (exports2.TraceFormat = {}));
     var SetTraceNotification;
     (function(SetTraceNotification2) {
       SetTraceNotification2.type = new messages_1.NotificationType("$/setTraceNotification");
-    })(SetTraceNotification = exports.SetTraceNotification || (exports.SetTraceNotification = {}));
+    })(SetTraceNotification = exports2.SetTraceNotification || (exports2.SetTraceNotification = {}));
     var LogTraceNotification;
     (function(LogTraceNotification2) {
       LogTraceNotification2.type = new messages_1.NotificationType("$/logTraceNotification");
-    })(LogTraceNotification = exports.LogTraceNotification || (exports.LogTraceNotification = {}));
+    })(LogTraceNotification = exports2.LogTraceNotification || (exports2.LogTraceNotification = {}));
     var ConnectionErrors;
     (function(ConnectionErrors2) {
       ConnectionErrors2[ConnectionErrors2["Closed"] = 1] = "Closed";
       ConnectionErrors2[ConnectionErrors2["Disposed"] = 2] = "Disposed";
       ConnectionErrors2[ConnectionErrors2["AlreadyListening"] = 3] = "AlreadyListening";
-    })(ConnectionErrors = exports.ConnectionErrors || (exports.ConnectionErrors = {}));
+    })(ConnectionErrors = exports2.ConnectionErrors || (exports2.ConnectionErrors = {}));
     var ConnectionError = class _ConnectionError extends Error {
       constructor(code, message) {
         super(message);
@@ -1854,7 +4850,7 @@ var require_main = __commonJS({
         Object.setPrototypeOf(this, _ConnectionError.prototype);
       }
     };
-    exports.ConnectionError = ConnectionError;
+    exports2.ConnectionError = ConnectionError;
     var ConnectionStrategy;
     (function(ConnectionStrategy2) {
       function is(value) {
@@ -1862,7 +4858,7 @@ var require_main = __commonJS({
         return candidate && Is.func(candidate.cancelUndispatched);
       }
       ConnectionStrategy2.is = is;
-    })(ConnectionStrategy = exports.ConnectionStrategy || (exports.ConnectionStrategy = {}));
+    })(ConnectionStrategy = exports2.ConnectionStrategy || (exports2.ConnectionStrategy = {}));
     var ConnectionState;
     (function(ConnectionState2) {
       ConnectionState2[ConnectionState2["New"] = 1] = "New";
@@ -2564,22 +5560,22 @@ ${JSON.stringify(message, null, 4)}`);
     }
     function createMessageConnection2(input, output, logger, strategy) {
       if (!logger) {
-        logger = exports.NullLogger;
+        logger = exports2.NullLogger;
       }
       let reader = isMessageReader(input) ? input : new messageReader_1.StreamMessageReader(input);
       let writer = isMessageWriter(output) ? output : new messageWriter_1.StreamMessageWriter(output);
       return _createMessageConnection(reader, writer, logger, strategy);
     }
-    exports.createMessageConnection = createMessageConnection2;
+    exports2.createMessageConnection = createMessageConnection2;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/keyExchangeAlgorithm.js
 var require_keyExchangeAlgorithm = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/keyExchangeAlgorithm.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/keyExchangeAlgorithm.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.KeyExchangeAlgorithm = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.KeyExchangeAlgorithm = void 0;
     var KeyExchangeAlgorithm = class {
       constructor(name, keySizeInBits, hashAlgorithmName, hashDigestLength) {
         this.name = name;
@@ -2588,17 +5584,17 @@ var require_keyExchangeAlgorithm = __commonJS({
         this.hashDigestLength = hashDigestLength;
       }
     };
-    exports.KeyExchangeAlgorithm = KeyExchangeAlgorithm;
+    exports2.KeyExchangeAlgorithm = KeyExchangeAlgorithm;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/io/bigInt.js
 var require_bigInt = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/io/bigInt.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/io/bigInt.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.BigInt = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.BigInt = void 0;
+    var buffer_1 = require("buffer");
     var sshData_1 = require_sshData();
     var BigInt2 = class _BigInt {
       /**
@@ -2734,18 +5730,18 @@ var require_bigInt = __commonJS({
         return (0, sshData_1.formatBuffer)(this.buffer, name !== null && name !== void 0 ? name : "BigInt");
       }
     };
-    exports.BigInt = BigInt2;
+    exports2.BigInt = BigInt2;
     BigInt2.zero = new BigInt2(buffer_1.Buffer.alloc(1));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/io/sshData.js
 var require_sshData = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/io/sshData.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/io/sshData.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.formatBuffer = exports.SshDataWriter = exports.SshDataReader = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.formatBuffer = exports2.SshDataWriter = exports2.SshDataReader = void 0;
+    var buffer_1 = require("buffer");
     var sshAlgorithms_1 = require_sshAlgorithms();
     var bigInt_1 = require_bigInt();
     var SshDataReader = class {
@@ -2829,7 +5825,7 @@ var require_sshData = __commonJS({
         return bigInt_1.BigInt.fromBytes(data);
       }
     };
-    exports.SshDataReader = SshDataReader;
+    exports2.SshDataReader = SshDataReader;
     SshDataReader.mpintZero = buffer_1.Buffer.alloc(1);
     var SshDataWriter = class {
       constructor(buffer) {
@@ -2922,7 +5918,7 @@ var require_sshData = __commonJS({
         return this.buffer.slice(0, this.position);
       }
     };
-    exports.SshDataWriter = SshDataWriter;
+    exports2.SshDataWriter = SshDataWriter;
     function makeCrcTable() {
       let c;
       const table = [];
@@ -2985,17 +5981,17 @@ var require_sshData = __commonJS({
       }
       return s;
     }
-    exports.formatBuffer = formatBuffer;
+    exports2.formatBuffer = formatBuffer;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/publicKeyAlgorithm.js
 var require_publicKeyAlgorithm = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/publicKeyAlgorithm.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/publicKeyAlgorithm.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PublicKeyAlgorithm = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PublicKeyAlgorithm = void 0;
+    var buffer_1 = require("buffer");
     var sshData_1 = require_sshData();
     var PublicKeyAlgorithm = class {
       constructor(name, keyAlgorithmName, hashAlgorithmName) {
@@ -3019,31 +6015,31 @@ var require_publicKeyAlgorithm = __commonJS({
         return writer.toBuffer();
       }
     };
-    exports.PublicKeyAlgorithm = PublicKeyAlgorithm;
+    exports2.PublicKeyAlgorithm = PublicKeyAlgorithm;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/encryptionAlgorithm.js
 var require_encryptionAlgorithm = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/encryptionAlgorithm.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/encryptionAlgorithm.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.EncryptionAlgorithm = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.EncryptionAlgorithm = void 0;
     var EncryptionAlgorithm = class {
       constructor(name) {
         this.name = name;
       }
     };
-    exports.EncryptionAlgorithm = EncryptionAlgorithm;
+    exports2.EncryptionAlgorithm = EncryptionAlgorithm;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/hmacAlgorithm.js
 var require_hmacAlgorithm = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/hmacAlgorithm.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/hmacAlgorithm.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.HmacAlgorithm = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.HmacAlgorithm = void 0;
     var HmacAlgorithm = class {
       constructor(name, algorithmName, keyLength, digestLength) {
         this.name = name;
@@ -3052,30 +6048,30 @@ var require_hmacAlgorithm = __commonJS({
         this.digestLength = digestLength;
       }
     };
-    exports.HmacAlgorithm = HmacAlgorithm;
+    exports2.HmacAlgorithm = HmacAlgorithm;
   }
 });
 
 // ../../node_modules/diffie-hellman/index.js
 var require_diffie_hellman = __commonJS({
-  "../../node_modules/diffie-hellman/index.js"(exports) {
+  "../../node_modules/diffie-hellman/index.js"(exports2) {
     "use strict";
-    var crypto2 = __require("crypto");
-    exports.DiffieHellmanGroup = crypto2.DiffieHellmanGroup;
-    exports.createDiffieHellmanGroup = crypto2.createDiffieHellmanGroup;
-    exports.getDiffieHellman = crypto2.getDiffieHellman;
-    exports.createDiffieHellman = crypto2.createDiffieHellman;
-    exports.DiffieHellman = crypto2.DiffieHellman;
+    var crypto2 = require("crypto");
+    exports2.DiffieHellmanGroup = crypto2.DiffieHellmanGroup;
+    exports2.createDiffieHellmanGroup = crypto2.createDiffieHellmanGroup;
+    exports2.getDiffieHellman = crypto2.getDiffieHellman;
+    exports2.createDiffieHellman = crypto2.createDiffieHellman;
+    exports2.DiffieHellman = crypto2.DiffieHellman;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webHmac.js
 var require_webHmac = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webHmac.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webHmac.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WebHmac = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WebHmac = void 0;
+    var buffer_1 = require("buffer");
     var hmacAlgorithm_1 = require_hmacAlgorithm();
     var WebHmac = class _WebHmac extends hmacAlgorithm_1.HmacAlgorithm {
       constructor(name, algorithmName, encryptThenMac = false) {
@@ -3114,7 +6110,7 @@ var require_webHmac = __commonJS({
         throw new Error(`Unsupported hash algorithm: ${hashAlgorithmName}`);
       }
     };
-    exports.WebHmac = WebHmac;
+    exports2.WebHmac = WebHmac;
     var WebSignerVerifier = class {
       constructor(algorithmName, isSigning, digestLength, encryptThenMac) {
         this.algorithmName = algorithmName;
@@ -3144,11 +6140,11 @@ var require_webHmac = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/ecdsaCurves.js
 var require_ecdsaCurves = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/ecdsaCurves.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/ecdsaCurves.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.curves = void 0;
-    exports.curves = [
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.curves = void 0;
+    exports2.curves = [
       {
         shortName: "P-256",
         name: "nistp256",
@@ -3173,10 +6169,10 @@ var require_ecdsaCurves = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/jsonWebKeyFormatter.js
 var require_jsonWebKeyFormatter = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/jsonWebKeyFormatter.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/jsonWebKeyFormatter.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.JsonWebKeyFormatter = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.JsonWebKeyFormatter = void 0;
     var bigInt_1 = require_bigInt();
     var ecdsaCurves_1 = require_ecdsaCurves();
     var JsonWebKeyFormatter = class _JsonWebKeyFormatter {
@@ -3271,17 +6267,17 @@ var require_jsonWebKeyFormatter = __commonJS({
         return data.toString("base64").replace(/=+$/g, "").replace(/\+/g, "-").replace(/\//g, "_");
       }
     };
-    exports.JsonWebKeyFormatter = JsonWebKeyFormatter;
+    exports2.JsonWebKeyFormatter = JsonWebKeyFormatter;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webKeyExchange.js
 var require_webKeyExchange = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webKeyExchange.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webKeyExchange.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WebECDiffieHellman = exports.WebDiffieHellman = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WebECDiffieHellman = exports2.WebDiffieHellman = void 0;
+    var buffer_1 = require("buffer");
     var diffie_hellman_1 = require_diffie_hellman();
     var keyExchangeAlgorithm_1 = require_keyExchangeAlgorithm();
     var webHmac_1 = require_webHmac();
@@ -3295,7 +6291,7 @@ var require_webKeyExchange = __commonJS({
         return new WebDiffieHellmanKex(this.keySizeInBits, webHmac_1.WebHmac.getWebHashAlgorithmName(this.hashAlgorithmName), this.hashDigestLength);
       }
     };
-    exports.WebDiffieHellman = WebDiffieHellman;
+    exports2.WebDiffieHellman = WebDiffieHellman;
     var WebDiffieHellmanKex = class {
       constructor(bitLength, hashAlgorithmName, digestLength) {
         this.hashAlgorithmName = hashAlgorithmName;
@@ -3339,7 +6335,7 @@ var require_webKeyExchange = __commonJS({
         return new WebECDiffieHellmanKex(this.keySizeInBits, webHmac_1.WebHmac.getWebHashAlgorithmName(this.hashAlgorithmName), this.hashDigestLength);
       }
     };
-    exports.WebECDiffieHellman = WebECDiffieHellman;
+    exports2.WebECDiffieHellman = WebECDiffieHellman;
     var WebECDiffieHellmanKex = class {
       constructor(bitLength, hashAlgorithmName, digestLength) {
         this.bitLength = bitLength;
@@ -3395,11 +6391,11 @@ var require_webKeyExchange = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webRsa.js
 var require_webRsa = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webRsa.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webRsa.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WebRsa = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WebRsa = void 0;
+    var buffer_1 = require("buffer");
     var publicKeyAlgorithm_1 = require_publicKeyAlgorithm();
     var webHmac_1 = require_webHmac();
     var sshData_1 = require_sshData();
@@ -3555,7 +6551,7 @@ var require_webRsa = __commonJS({
         return hashAlgorithmName.replace("SHA2-", "SHA-");
       }
     };
-    exports.WebRsa = WebRsa;
+    exports2.WebRsa = WebRsa;
     WebRsa.keyAlgorithmName = "ssh-rsa";
     WebRsa.rsaWithSha256 = "rsa-sha2-256";
     WebRsa.rsaWithSha512 = "rsa-sha2-512";
@@ -3597,11 +6593,11 @@ var require_webRsa = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webECDsa.js
 var require_webECDsa = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webECDsa.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webECDsa.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WebECDsa = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WebECDsa = void 0;
+    var buffer_1 = require("buffer");
     var publicKeyAlgorithm_1 = require_publicKeyAlgorithm();
     var sshData_1 = require_sshData();
     var ecdsaCurves_1 = require_ecdsaCurves();
@@ -3803,7 +6799,7 @@ var require_webECDsa = __commonJS({
         return (4 + 1 + keySizeInBytes) * 2;
       }
     };
-    exports.WebECDsa = WebECDsa;
+    exports2.WebECDsa = WebECDsa;
     WebECDsa.ecdsaSha2Nistp256 = "ecdsa-sha2-nistp256";
     WebECDsa.ecdsaSha2Nistp384 = "ecdsa-sha2-nistp384";
     WebECDsa.ecdsaSha2Nistp521 = "ecdsa-sha2-nistp521";
@@ -3863,11 +6859,11 @@ var require_webECDsa = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webEncryption.js
 var require_webEncryption = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webEncryption.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webEncryption.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WebEncryption = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WebEncryption = void 0;
+    var buffer_1 = require("buffer");
     var encryptionAlgorithm_1 = require_encryptionAlgorithm();
     var WebEncryption = class _WebEncryption extends encryptionAlgorithm_1.EncryptionAlgorithm {
       constructor(name, algorithmName, cipherMode, keySizeInBits) {
@@ -3896,7 +6892,7 @@ var require_webEncryption = __commonJS({
         }
       }
     };
-    exports.WebEncryption = WebEncryption;
+    exports2.WebEncryption = WebEncryption;
     var WebCipher = class {
       get blockLength() {
         return this.blockSizeInBits / 8;
@@ -4050,27 +7046,27 @@ var require_webEncryption = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webRandom.js
 var require_webRandom = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webRandom.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/web/webRandom.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WebRandom = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WebRandom = void 0;
     var WebRandom = class {
       getBytes(buffer) {
         crypto.getRandomValues(buffer);
       }
     };
-    exports.WebRandom = WebRandom;
+    exports2.WebRandom = WebRandom;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeHmac.js
 var require_nodeHmac = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeHmac.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeHmac.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.NodeHmac = void 0;
-    var crypto2 = __require("crypto");
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.NodeHmac = void 0;
+    var crypto2 = require("crypto");
+    var buffer_1 = require("buffer");
     var hmacAlgorithm_1 = require_hmacAlgorithm();
     var NodeHmac = class _NodeHmac extends hmacAlgorithm_1.HmacAlgorithm {
       constructor(name, algorithmName, encryptThenMac = false) {
@@ -4107,7 +7103,7 @@ var require_nodeHmac = __commonJS({
         throw new Error(`Unsupported hash algorithm: ${hashAlgorithmName}`);
       }
     };
-    exports.NodeHmac = NodeHmac;
+    exports2.NodeHmac = NodeHmac;
     var NodeSignerVerifier = class {
       constructor(algorithmName, digestLength, encryptThenMac, key) {
         this.algorithmName = algorithmName;
@@ -4136,12 +7132,12 @@ var require_nodeHmac = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeKeyExchange.js
 var require_nodeKeyExchange = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeKeyExchange.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeKeyExchange.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.NodeECDiffieHellman = exports.NodeDiffieHellman = void 0;
-    var crypto2 = __require("crypto");
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.NodeECDiffieHellman = exports2.NodeDiffieHellman = void 0;
+    var crypto2 = require("crypto");
+    var buffer_1 = require("buffer");
     var keyExchangeAlgorithm_1 = require_keyExchangeAlgorithm();
     var nodeHmac_1 = require_nodeHmac();
     var bigInt_1 = require_bigInt();
@@ -4153,7 +7149,7 @@ var require_nodeKeyExchange = __commonJS({
         return new NodeDiffieHellmanKex(this.keySizeInBits, nodeHmac_1.NodeHmac.getNodeHashAlgorithmName(this.hashAlgorithmName), this.hashDigestLength);
       }
     };
-    exports.NodeDiffieHellman = NodeDiffieHellman;
+    exports2.NodeDiffieHellman = NodeDiffieHellman;
     var NodeDiffieHellmanKex = class {
       constructor(bitLength, hashAlgorithmName, digestLength) {
         this.hashAlgorithmName = hashAlgorithmName;
@@ -4198,7 +7194,7 @@ var require_nodeKeyExchange = __commonJS({
         return new NodeECDiffieHellmanKex(this.keySizeInBits, nodeHmac_1.NodeHmac.getNodeHashAlgorithmName(this.hashAlgorithmName), this.hashDigestLength);
       }
     };
-    exports.NodeECDiffieHellman = NodeECDiffieHellman;
+    exports2.NodeECDiffieHellman = NodeECDiffieHellman;
     var NodeECDiffieHellmanKex = class {
       constructor(bitLength, hashAlgorithmName, digestLength) {
         this.hashAlgorithmName = hashAlgorithmName;
@@ -4239,11 +7235,11 @@ var require_nodeKeyExchange = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/io/derData.js
 var require_derData = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/io/derData.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/io/derData.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DerWriter = exports.DerReader = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.DerWriter = exports2.DerReader = void 0;
+    var buffer_1 = require("buffer");
     var bigInt_1 = require_bigInt();
     var DerReader = class _DerReader {
       constructor(buffer, dataType = 32 | 16) {
@@ -4405,7 +7401,7 @@ var require_derData = __commonJS({
         }
       }
     };
-    exports.DerReader = DerReader;
+    exports2.DerReader = DerReader;
     var DerWriter = class _DerWriter {
       constructor(buffer, dataType = 32 | 16) {
         this.buffer = buffer;
@@ -4549,17 +7545,17 @@ var require_derData = __commonJS({
         }
       }
     };
-    exports.DerWriter = DerWriter;
+    exports2.DerWriter = DerWriter;
     DerWriter.lengthBuffer = buffer_1.Buffer.alloc(10);
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/keyFormatters.js
 var require_keyFormatters = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/keyFormatters.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/keyFormatters.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Sec1KeyFormatter = exports.Pkcs1KeyFormatter = exports.parsePem = exports.formatPem = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Sec1KeyFormatter = exports2.Pkcs1KeyFormatter = exports2.parsePem = exports2.formatPem = void 0;
     var bigInt_1 = require_bigInt();
     var derData_1 = require_derData();
     var ecdsaCurves_1 = require_ecdsaCurves();
@@ -4570,13 +7566,13 @@ var require_keyFormatters = __commonJS({
 `;
       return key;
     }
-    exports.formatPem = formatPem;
+    exports2.formatPem = formatPem;
     function parsePem(key) {
       const keyBase64 = key.replace(/-+[^-\n]+KEY-+/g, "").replace(/\s/g, "");
       const keyBytes = Buffer.from(keyBase64, "base64");
       return keyBytes;
     }
-    exports.parsePem = parsePem;
+    exports2.parsePem = parsePem;
     var Pkcs1KeyFormatter = class {
       static formatRsaPublic(rsa) {
         const writer = new derData_1.DerWriter(Buffer.alloc(1024));
@@ -4620,7 +7616,7 @@ var require_keyFormatters = __commonJS({
         return { modulus, exponent, d, p, q, dp, dq, qi };
       }
     };
-    exports.Pkcs1KeyFormatter = Pkcs1KeyFormatter;
+    exports2.Pkcs1KeyFormatter = Pkcs1KeyFormatter;
     var Sec1KeyFormatter = class _Sec1KeyFormatter {
       static formatECPublic(ec) {
         const curve = ecdsaCurves_1.curves.find((c) => c.oid === ec.curve.oid);
@@ -4715,19 +7711,19 @@ var require_keyFormatters = __commonJS({
         return ec;
       }
     };
-    exports.Sec1KeyFormatter = Sec1KeyFormatter;
+    exports2.Sec1KeyFormatter = Sec1KeyFormatter;
     Sec1KeyFormatter.ecPublicKeyOid = "1.2.840.10045.2.1";
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeRsa.js
 var require_nodeRsa = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeRsa.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeRsa.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.NodeRsa = void 0;
-    var crypto2 = __require("crypto");
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.NodeRsa = void 0;
+    var crypto2 = require("crypto");
+    var buffer_1 = require("buffer");
     var publicKeyAlgorithm_1 = require_publicKeyAlgorithm();
     var sshData_1 = require_sshData();
     var nodeHmac_1 = require_nodeHmac();
@@ -4803,7 +7799,7 @@ var require_nodeRsa = __commonJS({
         });
       }
       async generateExternalKeyPair(keySizeInBits) {
-        const externRsa = await Promise.resolve().then(() => __require("node-rsa"));
+        const externRsa = await Promise.resolve().then(() => require("node-rsa"));
         const keyPair = new externRsa({ b: keySizeInBits });
         this.publicKey = keyPair.exportKey("pkcs1-public-pem");
         this.privateKey = keyPair.exportKey("pkcs1-private-pem");
@@ -4933,7 +7929,7 @@ var require_nodeRsa = __commonJS({
         return hashAlgorithmName.replace("SHA2-", "SHA");
       }
     };
-    exports.NodeRsa = NodeRsa;
+    exports2.NodeRsa = NodeRsa;
     NodeRsa.keyAlgorithmName = "ssh-rsa";
     NodeRsa.rsaWithSha256 = "rsa-sha2-256";
     NodeRsa.rsaWithSha512 = "rsa-sha2-512";
@@ -4970,12 +7966,12 @@ var require_nodeRsa = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeECDsa.js
 var require_nodeECDsa = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeECDsa.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeECDsa.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.NodeECDsa = void 0;
-    var crypto2 = __require("crypto");
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.NodeECDsa = void 0;
+    var crypto2 = require("crypto");
+    var buffer_1 = require("buffer");
     var publicKeyAlgorithm_1 = require_publicKeyAlgorithm();
     var ecdsaCurves_1 = require_ecdsaCurves();
     var bigInt_1 = require_bigInt();
@@ -5228,7 +8224,7 @@ var require_nodeECDsa = __commonJS({
         return (4 + 1 + keySizeInBytes) * 2;
       }
     };
-    exports.NodeECDsa = NodeECDsa;
+    exports2.NodeECDsa = NodeECDsa;
     NodeECDsa.ecdsaSha2Nistp256 = "ecdsa-sha2-nistp256";
     NodeECDsa.ecdsaSha2Nistp384 = "ecdsa-sha2-nistp384";
     NodeECDsa.ecdsaSha2Nistp521 = "ecdsa-sha2-nistp521";
@@ -5288,12 +8284,12 @@ var require_nodeECDsa = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeEncryption.js
 var require_nodeEncryption = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeEncryption.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeEncryption.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.NodeEncryption = void 0;
-    var crypto2 = __require("crypto");
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.NodeEncryption = void 0;
+    var crypto2 = require("crypto");
+    var buffer_1 = require("buffer");
     var encryptionAlgorithm_1 = require_encryptionAlgorithm();
     var NodeEncryption = class _NodeEncryption extends encryptionAlgorithm_1.EncryptionAlgorithm {
       constructor(name, algorithmName, cipherMode, keySizeInBits) {
@@ -5331,7 +8327,7 @@ var require_nodeEncryption = __commonJS({
         }
       }
     };
-    exports.NodeEncryption = NodeEncryption;
+    exports2.NodeEncryption = NodeEncryption;
     var NodeAesCipher = class {
       constructor(isEncryption, keySizeInBits, blockSizeInBits, key, iv, cipherMode) {
         this.isEncryption = isEncryption;
@@ -5436,41 +8432,41 @@ var require_nodeEncryption = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeRandom.js
 var require_nodeRandom = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeRandom.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/node/nodeRandom.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.NodeRandom = void 0;
-    var crypto2 = __require("crypto");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.NodeRandom = void 0;
+    var crypto2 = require("crypto");
     var NodeRandom = class {
       getBytes(buffer) {
         const randomBytes = crypto2.randomBytes(buffer.length);
         randomBytes.copy(buffer);
       }
     };
-    exports.NodeRandom = NodeRandom;
+    exports2.NodeRandom = NodeRandom;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/sshAlgorithms.js
 var require_sshAlgorithms = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/sshAlgorithms.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/algorithms/sshAlgorithms.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.algorithmNames = exports.SshAlgorithms = exports.Encryption = exports.ECDsa = exports.Rsa = exports.HmacAlgorithm = exports.EncryptionAlgorithm = exports.PublicKeyAlgorithm = exports.KeyExchangeAlgorithm = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.algorithmNames = exports2.SshAlgorithms = exports2.Encryption = exports2.ECDsa = exports2.Rsa = exports2.HmacAlgorithm = exports2.EncryptionAlgorithm = exports2.PublicKeyAlgorithm = exports2.KeyExchangeAlgorithm = void 0;
     var keyExchangeAlgorithm_1 = require_keyExchangeAlgorithm();
-    Object.defineProperty(exports, "KeyExchangeAlgorithm", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "KeyExchangeAlgorithm", { enumerable: true, get: function() {
       return keyExchangeAlgorithm_1.KeyExchangeAlgorithm;
     } });
     var publicKeyAlgorithm_1 = require_publicKeyAlgorithm();
-    Object.defineProperty(exports, "PublicKeyAlgorithm", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PublicKeyAlgorithm", { enumerable: true, get: function() {
       return publicKeyAlgorithm_1.PublicKeyAlgorithm;
     } });
     var encryptionAlgorithm_1 = require_encryptionAlgorithm();
-    Object.defineProperty(exports, "EncryptionAlgorithm", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "EncryptionAlgorithm", { enumerable: true, get: function() {
       return encryptionAlgorithm_1.EncryptionAlgorithm;
     } });
     var hmacAlgorithm_1 = require_hmacAlgorithm();
-    Object.defineProperty(exports, "HmacAlgorithm", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "HmacAlgorithm", { enumerable: true, get: function() {
       return hmacAlgorithm_1.HmacAlgorithm;
     } });
     var useWebCrypto = typeof self === "object" && !!(typeof crypto === "object" && crypto.subtle);
@@ -5483,16 +8479,16 @@ var require_sshAlgorithms = __commonJS({
     var DiffieHellman = useWebCrypto ? webKeyExchange_1.WebDiffieHellman : require_nodeKeyExchange().NodeDiffieHellman;
     var ECDiffieHellman = useWebCrypto ? webKeyExchange_1.WebECDiffieHellman : require_nodeKeyExchange().NodeECDiffieHellman;
     var Rsa = useWebCrypto ? webRsa_1.WebRsa : require_nodeRsa().NodeRsa;
-    exports.Rsa = Rsa;
+    exports2.Rsa = Rsa;
     var ECDsa = useWebCrypto ? webECDsa_1.WebECDsa : require_nodeECDsa().NodeECDsa;
-    exports.ECDsa = ECDsa;
+    exports2.ECDsa = ECDsa;
     var Encryption = useWebCrypto ? webEncryption_1.WebEncryption : require_nodeEncryption().NodeEncryption;
-    exports.Encryption = Encryption;
+    exports2.Encryption = Encryption;
     var Hmac = useWebCrypto ? webHmac_1.WebHmac : require_nodeHmac().NodeHmac;
     var Random = useWebCrypto ? webRandom_1.WebRandom : require_nodeRandom().NodeRandom;
     var SshAlgorithms = class {
     };
-    exports.SshAlgorithms = SshAlgorithms;
+    exports2.SshAlgorithms = SshAlgorithms;
     SshAlgorithms.keyExchange = {
       none: null,
       dhGroup14Sha256: new DiffieHellman("diffie-hellman-group14-sha256", 2048, "SHA2-256"),
@@ -5529,27 +8525,27 @@ var require_sshAlgorithms = __commonJS({
     function algorithmNames(list) {
       return list.map((a) => a ? a.name : "none");
     }
-    exports.algorithmNames = algorithmNames;
+    exports2.algorithmNames = algorithmNames;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/trace.js
 var require_trace = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/trace.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/trace.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshTraceEventIds = exports.TraceLevel = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshTraceEventIds = exports2.TraceLevel = void 0;
     var TraceLevel;
     (function(TraceLevel2) {
       TraceLevel2["Error"] = "error";
       TraceLevel2["Warning"] = "warning";
       TraceLevel2["Info"] = "info";
       TraceLevel2["Verbose"] = "verbose";
-    })(TraceLevel = exports.TraceLevel || (exports.TraceLevel = {}));
+    })(TraceLevel = exports2.TraceLevel || (exports2.TraceLevel = {}));
     var baseEventId = 9e3;
     var SshTraceEventIds = class {
     };
-    exports.SshTraceEventIds = SshTraceEventIds;
+    exports2.SshTraceEventIds = SshTraceEventIds;
     SshTraceEventIds.unknownError = baseEventId + 0;
     SshTraceEventIds.streamReadError = baseEventId + 1;
     SshTraceEventIds.streamWriteError = baseEventId + 2;
@@ -5610,10 +8606,10 @@ var require_trace = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/services/serviceActivation.js
 var require_serviceActivation = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/services/serviceActivation.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/services/serviceActivation.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.findService = exports.serviceActivation = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.findService = exports2.serviceActivation = void 0;
     function serviceActivation(activation) {
       return (constructor) => {
         if (!constructor.activations) {
@@ -5622,7 +8618,7 @@ var require_serviceActivation = __commonJS({
         constructor.activations.push(activation);
       };
     }
-    exports.serviceActivation = serviceActivation;
+    exports2.serviceActivation = serviceActivation;
     function findService(serviceConfigs, predicate) {
       for (const serviceType of serviceConfigs.keys()) {
         const activations = serviceType.activations;
@@ -5639,17 +8635,17 @@ var require_serviceActivation = __commonJS({
       }
       return null;
     }
-    exports.findService = findService;
+    exports2.findService = findService;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/messages/sshMessage.js
 var require_sshMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/sshMessage.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/sshMessage.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshMessage = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshMessage = void 0;
+    var buffer_1 = require("buffer");
     var sshData_1 = require_sshData();
     var SshMessage = class {
       get messageType() {
@@ -5726,22 +8722,22 @@ var require_sshMessage = __commonJS({
         return otherMessage;
       }
     };
-    exports.SshMessage = SshMessage;
+    exports2.SshMessage = SshMessage;
     SshMessage.index = /* @__PURE__ */ new Map();
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/messages/connectionMessages.js
 var require_connectionMessages = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/connectionMessages.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/connectionMessages.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ChannelFailureMessage = exports.ChannelSuccessMessage = exports.ChannelSignalMessage = exports.CommandRequestMessage = exports.ChannelRequestMessage = exports.ChannelRequestType = exports.ChannelCloseMessage = exports.ChannelEofMessage = exports.ChannelExtendedDataMessage = exports.ChannelDataMessage = exports.ChannelWindowAdjustMessage = exports.ChannelOpenFailureMessage = exports.SshChannelOpenFailureReason = exports.ChannelOpenConfirmationMessage = exports.ChannelOpenMessage = exports.ChannelMessage = exports.ConnectionMessage = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ChannelFailureMessage = exports2.ChannelSuccessMessage = exports2.ChannelSignalMessage = exports2.CommandRequestMessage = exports2.ChannelRequestMessage = exports2.ChannelRequestType = exports2.ChannelCloseMessage = exports2.ChannelEofMessage = exports2.ChannelExtendedDataMessage = exports2.ChannelDataMessage = exports2.ChannelWindowAdjustMessage = exports2.ChannelOpenFailureMessage = exports2.SshChannelOpenFailureReason = exports2.ChannelOpenConfirmationMessage = exports2.ChannelOpenMessage = exports2.ChannelMessage = exports2.ConnectionMessage = void 0;
     var sshMessage_1 = require_sshMessage();
     var sshData_1 = require_sshData();
     var ConnectionMessage = class extends sshMessage_1.SshMessage {
     };
-    exports.ConnectionMessage = ConnectionMessage;
+    exports2.ConnectionMessage = ConnectionMessage;
     var ChannelMessage = class extends ConnectionMessage {
       get recipientChannel() {
         return this.recipientChannelValue;
@@ -5764,7 +8760,7 @@ var require_connectionMessages = __commonJS({
         return `${super.toString()} (recipientChannel=${this.recipientChannel})`;
       }
     };
-    exports.ChannelMessage = ChannelMessage;
+    exports2.ChannelMessage = ChannelMessage;
     var ChannelOpenMessage = class _ChannelOpenMessage extends ConnectionMessage {
       get messageType() {
         return 90;
@@ -5796,7 +8792,7 @@ var require_connectionMessages = __commonJS({
         return `${super.toString()}(channelType=${this.channelType}, senderChannel=${this.senderChannel})`;
       }
     };
-    exports.ChannelOpenMessage = ChannelOpenMessage;
+    exports2.ChannelOpenMessage = ChannelOpenMessage;
     ChannelOpenMessage.defaultMaxPacketSize = 32 * 1024;
     ChannelOpenMessage.defaultMaxWindowSize = 1024 * 1024;
     var ChannelOpenConfirmationMessage = class extends ChannelMessage {
@@ -5819,7 +8815,7 @@ var require_connectionMessages = __commonJS({
         return `${super.toString()}(senderChannel=${this.senderChannel})`;
       }
     };
-    exports.ChannelOpenConfirmationMessage = ChannelOpenConfirmationMessage;
+    exports2.ChannelOpenConfirmationMessage = ChannelOpenConfirmationMessage;
     var SshChannelOpenFailureReason;
     (function(SshChannelOpenFailureReason2) {
       SshChannelOpenFailureReason2[SshChannelOpenFailureReason2["none"] = 0] = "none";
@@ -5827,7 +8823,7 @@ var require_connectionMessages = __commonJS({
       SshChannelOpenFailureReason2[SshChannelOpenFailureReason2["connectFailed"] = 2] = "connectFailed";
       SshChannelOpenFailureReason2[SshChannelOpenFailureReason2["unknownChannelType"] = 3] = "unknownChannelType";
       SshChannelOpenFailureReason2[SshChannelOpenFailureReason2["resourceShortage"] = 4] = "resourceShortage";
-    })(SshChannelOpenFailureReason = exports.SshChannelOpenFailureReason || (exports.SshChannelOpenFailureReason = {}));
+    })(SshChannelOpenFailureReason = exports2.SshChannelOpenFailureReason || (exports2.SshChannelOpenFailureReason = {}));
     var ChannelOpenFailureMessage = class extends ChannelMessage {
       get messageType() {
         return 92;
@@ -5848,7 +8844,7 @@ var require_connectionMessages = __commonJS({
         return `${super.toString()} (${SshChannelOpenFailureReason[this.reasonCode || 0]}: ${this.description})`;
       }
     };
-    exports.ChannelOpenFailureMessage = ChannelOpenFailureMessage;
+    exports2.ChannelOpenFailureMessage = ChannelOpenFailureMessage;
     var ChannelWindowAdjustMessage = class extends ChannelMessage {
       get messageType() {
         return 93;
@@ -5865,7 +8861,7 @@ var require_connectionMessages = __commonJS({
         return `${super.toString()} (bytesToAdd=${this.bytesToAdd})`;
       }
     };
-    exports.ChannelWindowAdjustMessage = ChannelWindowAdjustMessage;
+    exports2.ChannelWindowAdjustMessage = ChannelWindowAdjustMessage;
     var ChannelDataMessage = class extends ChannelMessage {
       get messageType() {
         return 94;
@@ -5882,7 +8878,7 @@ var require_connectionMessages = __commonJS({
         return this.data ? (0, sshData_1.formatBuffer)(this.data, "") : "[0]";
       }
     };
-    exports.ChannelDataMessage = ChannelDataMessage;
+    exports2.ChannelDataMessage = ChannelDataMessage;
     var ChannelExtendedDataMessage = class extends ChannelMessage {
       get messageType() {
         return 95;
@@ -5901,19 +8897,19 @@ var require_connectionMessages = __commonJS({
         return `${super.toString()} (dataTypeCode=${this.dataTypeCode}, data=${this.data ? (0, sshData_1.formatBuffer)(this.data, "") : "[0]"})`;
       }
     };
-    exports.ChannelExtendedDataMessage = ChannelExtendedDataMessage;
+    exports2.ChannelExtendedDataMessage = ChannelExtendedDataMessage;
     var ChannelEofMessage = class extends ChannelMessage {
       get messageType() {
         return 96;
       }
     };
-    exports.ChannelEofMessage = ChannelEofMessage;
+    exports2.ChannelEofMessage = ChannelEofMessage;
     var ChannelCloseMessage = class extends ChannelMessage {
       get messageType() {
         return 97;
       }
     };
-    exports.ChannelCloseMessage = ChannelCloseMessage;
+    exports2.ChannelCloseMessage = ChannelCloseMessage;
     var ChannelRequestType;
     (function(ChannelRequestType2) {
       ChannelRequestType2["command"] = "exec";
@@ -5922,7 +8918,7 @@ var require_connectionMessages = __commonJS({
       ChannelRequestType2["signal"] = "signal";
       ChannelRequestType2["exitSignal"] = "exit-signal";
       ChannelRequestType2["exitStatus"] = "exit-status";
-    })(ChannelRequestType = exports.ChannelRequestType || (exports.ChannelRequestType = {}));
+    })(ChannelRequestType = exports2.ChannelRequestType || (exports2.ChannelRequestType = {}));
     var ChannelRequestMessage = class extends ChannelMessage {
       constructor(requestType, wantReply) {
         super();
@@ -5946,7 +8942,7 @@ var require_connectionMessages = __commonJS({
         writer.writeBoolean(this.wantReply);
       }
     };
-    exports.ChannelRequestMessage = ChannelRequestMessage;
+    exports2.ChannelRequestMessage = ChannelRequestMessage;
     var CommandRequestMessage = class extends ChannelRequestMessage {
       constructor() {
         super();
@@ -5964,7 +8960,7 @@ var require_connectionMessages = __commonJS({
         return `${super.toString()} (requestType=${this.requestType})`;
       }
     };
-    exports.CommandRequestMessage = CommandRequestMessage;
+    exports2.CommandRequestMessage = CommandRequestMessage;
     var ChannelSignalMessage = class extends ChannelRequestMessage {
       constructor() {
         super();
@@ -6042,19 +9038,19 @@ var require_connectionMessages = __commonJS({
         }
       }
     };
-    exports.ChannelSignalMessage = ChannelSignalMessage;
+    exports2.ChannelSignalMessage = ChannelSignalMessage;
     var ChannelSuccessMessage = class extends ChannelMessage {
       get messageType() {
         return 99;
       }
     };
-    exports.ChannelSuccessMessage = ChannelSuccessMessage;
+    exports2.ChannelSuccessMessage = ChannelSuccessMessage;
     var ChannelFailureMessage = class extends ChannelMessage {
       get messageType() {
         return 100;
       }
     };
-    exports.ChannelFailureMessage = ChannelFailureMessage;
+    exports2.ChannelFailureMessage = ChannelFailureMessage;
     sshMessage_1.SshMessage.index.set(90, ChannelOpenMessage);
     sshMessage_1.SshMessage.index.set(91, ChannelOpenConfirmationMessage);
     sshMessage_1.SshMessage.index.set(92, ChannelOpenFailureMessage);
@@ -6071,10 +9067,10 @@ var require_connectionMessages = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/messages/transportMessages.js
 var require_transportMessages = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/transportMessages.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/transportMessages.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SessionReconnectFailureMessage = exports.SshReconnectFailureReason = exports.SessionReconnectResponseMessage = exports.SessionReconnectRequestMessage = exports.SessionChannelRequestMessage = exports.ExtensionInfoMessage = exports.SessionRequestFailureMessage = exports.SessionRequestSuccessMessage = exports.SessionRequestMessage = exports.ServiceAcceptMessage = exports.ServiceRequestMessage = exports.DebugMessage = exports.UnimplementedMessage = exports.IgnoreMessage = exports.DisconnectMessage = exports.SshDisconnectReason = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SessionReconnectFailureMessage = exports2.SshReconnectFailureReason = exports2.SessionReconnectResponseMessage = exports2.SessionReconnectRequestMessage = exports2.SessionChannelRequestMessage = exports2.ExtensionInfoMessage = exports2.SessionRequestFailureMessage = exports2.SessionRequestSuccessMessage = exports2.SessionRequestMessage = exports2.ServiceAcceptMessage = exports2.ServiceRequestMessage = exports2.DebugMessage = exports2.UnimplementedMessage = exports2.IgnoreMessage = exports2.DisconnectMessage = exports2.SshDisconnectReason = void 0;
     var sshMessage_1 = require_sshMessage();
     var connectionMessages_1 = require_connectionMessages();
     var SshDisconnectReason;
@@ -6095,7 +9091,7 @@ var require_transportMessages = __commonJS({
       SshDisconnectReason2[SshDisconnectReason2["authCancelledByUser"] = 13] = "authCancelledByUser";
       SshDisconnectReason2[SshDisconnectReason2["noMoreAuthMethodsAvailable"] = 14] = "noMoreAuthMethodsAvailable";
       SshDisconnectReason2[SshDisconnectReason2["illegalUserName"] = 15] = "illegalUserName";
-    })(SshDisconnectReason = exports.SshDisconnectReason || (exports.SshDisconnectReason = {}));
+    })(SshDisconnectReason = exports2.SshDisconnectReason || (exports2.SshDisconnectReason = {}));
     var DisconnectMessage = class extends sshMessage_1.SshMessage {
       get messageType() {
         return 1;
@@ -6120,7 +9116,7 @@ var require_transportMessages = __commonJS({
         return `${super.toString()} (${SshDisconnectReason[this.reasonCode || 0]}: ${this.description})`;
       }
     };
-    exports.DisconnectMessage = DisconnectMessage;
+    exports2.DisconnectMessage = DisconnectMessage;
     var IgnoreMessage = class extends sshMessage_1.SshMessage {
       get messageType() {
         return 2;
@@ -6130,7 +9126,7 @@ var require_transportMessages = __commonJS({
       onWrite(writer) {
       }
     };
-    exports.IgnoreMessage = IgnoreMessage;
+    exports2.IgnoreMessage = IgnoreMessage;
     var UnimplementedMessage = class extends sshMessage_1.SshMessage {
       get messageType() {
         return 3;
@@ -6145,7 +9141,7 @@ var require_transportMessages = __commonJS({
         return this.unimplementedMessageType ? `${super.toString()} (messageType=${this.unimplementedMessageType})` : `${super.toString()} (sequenceNumber=${this.sequenceNumber})`;
       }
     };
-    exports.UnimplementedMessage = UnimplementedMessage;
+    exports2.UnimplementedMessage = UnimplementedMessage;
     var DebugMessage = class extends sshMessage_1.SshMessage {
       constructor(message) {
         super();
@@ -6170,7 +9166,7 @@ var require_transportMessages = __commonJS({
         return `${super.toString()}: ${this.message}`;
       }
     };
-    exports.DebugMessage = DebugMessage;
+    exports2.DebugMessage = DebugMessage;
     var ServiceRequestMessage = class extends sshMessage_1.SshMessage {
       get messageType() {
         return 5;
@@ -6182,7 +9178,7 @@ var require_transportMessages = __commonJS({
         writer.writeString(this.validateField(this.serviceName, "service name"), "ascii");
       }
     };
-    exports.ServiceRequestMessage = ServiceRequestMessage;
+    exports2.ServiceRequestMessage = ServiceRequestMessage;
     var ServiceAcceptMessage = class extends sshMessage_1.SshMessage {
       get messageType() {
         return 6;
@@ -6194,7 +9190,7 @@ var require_transportMessages = __commonJS({
         writer.writeString(this.validateField(this.serviceName, "service name"), "ascii");
       }
     };
-    exports.ServiceAcceptMessage = ServiceAcceptMessage;
+    exports2.ServiceAcceptMessage = ServiceAcceptMessage;
     var SessionRequestMessage = class extends sshMessage_1.SshMessage {
       constructor(requestType, wantReply) {
         super();
@@ -6216,7 +9212,7 @@ var require_transportMessages = __commonJS({
         return `${super.toString()} (requestType=${this.requestType})`;
       }
     };
-    exports.SessionRequestMessage = SessionRequestMessage;
+    exports2.SessionRequestMessage = SessionRequestMessage;
     var SessionRequestSuccessMessage = class extends sshMessage_1.SshMessage {
       get messageType() {
         return 81;
@@ -6226,7 +9222,7 @@ var require_transportMessages = __commonJS({
       onWrite(writer) {
       }
     };
-    exports.SessionRequestSuccessMessage = SessionRequestSuccessMessage;
+    exports2.SessionRequestSuccessMessage = SessionRequestSuccessMessage;
     var SessionRequestFailureMessage = class extends sshMessage_1.SshMessage {
       get messageType() {
         return 82;
@@ -6236,7 +9232,7 @@ var require_transportMessages = __commonJS({
       onWrite(writer) {
       }
     };
-    exports.SessionRequestFailureMessage = SessionRequestFailureMessage;
+    exports2.SessionRequestFailureMessage = SessionRequestFailureMessage;
     var ExtensionInfoMessage = class extends sshMessage_1.SshMessage {
       constructor() {
         super(...arguments);
@@ -6276,7 +9272,7 @@ var require_transportMessages = __commonJS({
         return `${super.toString()} (${extensionInfoDetails})`;
       }
     };
-    exports.ExtensionInfoMessage = ExtensionInfoMessage;
+    exports2.ExtensionInfoMessage = ExtensionInfoMessage;
     ExtensionInfoMessage.serverIndicator = "ext-info-c";
     ExtensionInfoMessage.clientIndicator = "ext-info-c";
     var SessionChannelRequestMessage = class extends SessionRequestMessage {
@@ -6293,7 +9289,7 @@ var require_transportMessages = __commonJS({
         this.validateField(this.request, "request message").write(writer);
       }
     };
-    exports.SessionChannelRequestMessage = SessionChannelRequestMessage;
+    exports2.SessionChannelRequestMessage = SessionChannelRequestMessage;
     var SessionReconnectRequestMessage = class extends SessionRequestMessage {
       onRead(reader) {
         super.onRead(reader);
@@ -6306,7 +9302,7 @@ var require_transportMessages = __commonJS({
         writer.writeUInt64(this.validateField(this.lastReceivedSequenceNumber, "lastReceivedSequenceNumber"));
       }
     };
-    exports.SessionReconnectRequestMessage = SessionReconnectRequestMessage;
+    exports2.SessionReconnectRequestMessage = SessionReconnectRequestMessage;
     var SessionReconnectResponseMessage = class extends SessionRequestSuccessMessage {
       onRead(reader) {
         super.onRead(reader);
@@ -6319,7 +9315,7 @@ var require_transportMessages = __commonJS({
         writer.writeUInt64(this.validateField(this.lastReceivedSequenceNumber, "lastReceivedSequenceNumber"));
       }
     };
-    exports.SessionReconnectResponseMessage = SessionReconnectResponseMessage;
+    exports2.SessionReconnectResponseMessage = SessionReconnectResponseMessage;
     var SshReconnectFailureReason;
     (function(SshReconnectFailureReason2) {
       SshReconnectFailureReason2[SshReconnectFailureReason2["none"] = 0] = "none";
@@ -6331,7 +9327,7 @@ var require_transportMessages = __commonJS({
       SshReconnectFailureReason2[SshReconnectFailureReason2["differentServerHostKey"] = 102] = "differentServerHostKey";
       SshReconnectFailureReason2[SshReconnectFailureReason2["invalidServerReconnectToken"] = 103] = "invalidServerReconnectToken";
       SshReconnectFailureReason2[SshReconnectFailureReason2["clientDroppedMessages"] = 104] = "clientDroppedMessages";
-    })(SshReconnectFailureReason = exports.SshReconnectFailureReason || (exports.SshReconnectFailureReason = {}));
+    })(SshReconnectFailureReason = exports2.SshReconnectFailureReason || (exports2.SshReconnectFailureReason = {}));
     var SessionReconnectFailureMessage = class extends SessionRequestFailureMessage {
       onRead(reader) {
         if (reader.available > 0) {
@@ -6349,7 +9345,7 @@ var require_transportMessages = __commonJS({
         return `${super.toString()} (${SshReconnectFailureReason[this.reasonCode || 0]}: ${this.description})`;
       }
     };
-    exports.SessionReconnectFailureMessage = SessionReconnectFailureMessage;
+    exports2.SessionReconnectFailureMessage = SessionReconnectFailureMessage;
     sshMessage_1.SshMessage.index.set(1, DisconnectMessage);
     sshMessage_1.SshMessage.index.set(2, IgnoreMessage);
     sshMessage_1.SshMessage.index.set(3, UnimplementedMessage);
@@ -6364,10 +9360,10 @@ var require_transportMessages = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/metrics/channelMetrics.js
 var require_channelMetrics = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/metrics/channelMetrics.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/metrics/channelMetrics.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ChannelMetrics = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ChannelMetrics = void 0;
     var ChannelMetrics = class {
       /* @internal */
       constructor() {
@@ -6400,16 +9396,16 @@ var require_channelMetrics = __commonJS({
         return `Bytes S/R: ${this.bytesSent} / ${this.bytesReceived}; `;
       }
     };
-    exports.ChannelMetrics = ChannelMetrics;
+    exports2.ChannelMetrics = ChannelMetrics;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/util/promiseCompletionSource.js
 var require_promiseCompletionSource = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/util/promiseCompletionSource.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/util/promiseCompletionSource.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PromiseCompletionSource = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PromiseCompletionSource = void 0;
     var PromiseCompletionSource = class {
       constructor() {
         this.promise = new Promise((resolve2, reject) => {
@@ -6422,37 +9418,37 @@ var require_promiseCompletionSource = __commonJS({
       reject(e) {
       }
     };
-    exports.PromiseCompletionSource = PromiseCompletionSource;
+    exports2.PromiseCompletionSource = PromiseCompletionSource;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/errors.js
 var require_errors = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/errors.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/errors.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ObjectDisposedError = exports.SshChannelError = exports.SshReconnectError = exports.SshConnectionError = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ObjectDisposedError = exports2.SshChannelError = exports2.SshReconnectError = exports2.SshConnectionError = void 0;
     var SshConnectionError = class extends Error {
       constructor(message, reason) {
         super(message);
         this.reason = reason;
       }
     };
-    exports.SshConnectionError = SshConnectionError;
+    exports2.SshConnectionError = SshConnectionError;
     var SshReconnectError = class extends Error {
       constructor(message, reason) {
         super(message);
         this.reason = reason;
       }
     };
-    exports.SshReconnectError = SshReconnectError;
+    exports2.SshReconnectError = SshReconnectError;
     var SshChannelError = class extends Error {
       constructor(message, reason) {
         super(message);
         this.reason = reason;
       }
     };
-    exports.SshChannelError = SshChannelError;
+    exports2.SshChannelError = SshChannelError;
     var ObjectDisposedError = class extends Error {
       // eslint-disable-next-line @typescript-eslint/ban-types
       constructor(objectOrMessage) {
@@ -6468,16 +9464,16 @@ var require_errors = __commonJS({
         super(message);
       }
     };
-    exports.ObjectDisposedError = ObjectDisposedError;
+    exports2.ObjectDisposedError = ObjectDisposedError;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/events/sshRequestEventArgs.js
 var require_sshRequestEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshRequestEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshRequestEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshRequestEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshRequestEventArgs = void 0;
     var vscode_jsonrpc_1 = require_main();
     var SshRequestEventArgs = class {
       constructor(requestType, request, principal, cancellation) {
@@ -6501,16 +9497,16 @@ var require_sshRequestEventArgs = __commonJS({
         return `RequestType: ${this.requestType}` + this.request ? ` Request: ${this.request}` : "";
       }
     };
-    exports.SshRequestEventArgs = SshRequestEventArgs;
+    exports2.SshRequestEventArgs = SshRequestEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/events/sshChannelClosedEventArgs.js
 var require_sshChannelClosedEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshChannelClosedEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshChannelClosedEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshChannelClosedEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshChannelClosedEventArgs = void 0;
     var SshChannelClosedEventArgs = class {
       constructor(exitStatusOrSignalOrError, errorMessage) {
         if (typeof exitStatusOrSignalOrError === "number") {
@@ -6523,21 +9519,21 @@ var require_sshChannelClosedEventArgs = __commonJS({
         }
       }
     };
-    exports.SshChannelClosedEventArgs = SshChannelClosedEventArgs;
+    exports2.SshChannelClosedEventArgs = SshChannelClosedEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/util/cancellation.js
 var require_cancellation2 = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/util/cancellation.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/util/cancellation.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.withCancellation = exports.CancellationError = exports.CancellationTokenSource = exports.CancellationToken = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.withCancellation = exports2.CancellationError = exports2.CancellationTokenSource = exports2.CancellationToken = void 0;
     var vscode_jsonrpc_1 = require_main();
-    Object.defineProperty(exports, "CancellationToken", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationToken", { enumerable: true, get: function() {
       return vscode_jsonrpc_1.CancellationToken;
     } });
-    Object.defineProperty(exports, "CancellationTokenSource", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationTokenSource", { enumerable: true, get: function() {
       return vscode_jsonrpc_1.CancellationTokenSource;
     } });
     var CancellationError = class extends Error {
@@ -6545,7 +9541,7 @@ var require_cancellation2 = __commonJS({
         super(message || "Operation cancelled.");
       }
     };
-    exports.CancellationError = CancellationError;
+    exports2.CancellationError = CancellationError;
     function withCancellation(promise, cancellation) {
       if (!cancellation) {
         return promise;
@@ -6563,16 +9559,16 @@ var require_cancellation2 = __commonJS({
         })
       ]);
     }
-    exports.withCancellation = withCancellation;
+    exports2.withCancellation = withCancellation;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/util/semaphore.js
 var require_semaphore = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/util/semaphore.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/util/semaphore.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Semaphore = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Semaphore = void 0;
     var promiseCompletionSource_1 = require_promiseCompletionSource();
     var cancellation_1 = require_cancellation2();
     var errors_1 = require_errors();
@@ -6675,17 +9671,17 @@ var require_semaphore = __commonJS({
         this.count = 0;
       }
     };
-    exports.Semaphore = Semaphore;
+    exports2.Semaphore = Semaphore;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/pipeExtensions.js
 var require_pipeExtensions = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/pipeExtensions.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/pipeExtensions.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PipeExtensions = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PipeExtensions = void 0;
+    var buffer_1 = require("buffer");
     var vscode_jsonrpc_1 = require_main();
     var transportMessages_1 = require_transportMessages();
     var connectionMessages_1 = require_connectionMessages();
@@ -6836,16 +9832,16 @@ Destination: ${toChannel.session} ${toChannel}
         }
       }
     };
-    exports.PipeExtensions = PipeExtensions;
+    exports2.PipeExtensions = PipeExtensions;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/util/queue.js
 var require_queue = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/util/queue.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/util/queue.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Queue = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Queue = void 0;
     var Queue = class {
       constructor() {
         this.array = new Array();
@@ -6923,16 +9919,16 @@ var require_queue = __commonJS({
         }
       }
     };
-    exports.Queue = Queue;
+    exports2.Queue = Queue;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshChannel.js
 var require_sshChannel = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshChannel.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshChannel.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshChannel = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshChannel = void 0;
     var vscode_jsonrpc_1 = require_main();
     var serviceActivation_1 = require_serviceActivation();
     var connectionMessages_1 = require_connectionMessages();
@@ -7343,7 +10339,7 @@ var require_sshChannel = __commonJS({
         return `SshChannel(Type: ${this.channelType}, Id: ${this.channelId}, RemoteId: ${this.remoteChannelId})`;
       }
     };
-    exports.SshChannel = SshChannel;
+    exports2.SshChannel = SshChannel;
     SshChannel.sessionChannelType = "session";
     SshChannel.defaultMaxPacketSize = connectionMessages_1.ChannelOpenMessage.defaultMaxPacketSize;
     SshChannel.defaultMaxWindowSize = connectionMessages_1.ChannelOpenMessage.defaultMaxWindowSize;
@@ -7352,8 +10348,8 @@ var require_sshChannel = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/package.json
 var require_package = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/package.json"(exports, module) {
-    module.exports = {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/package.json"(exports2, module2) {
+    module2.exports = {
       name: "@microsoft/dev-tunnels-ssh",
       version: "3.12.12",
       description: "SSH library for Dev Tunnels",
@@ -7376,10 +10372,10 @@ var require_package = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshVersionInfo.js
 var require_sshVersionInfo = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshVersionInfo.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshVersionInfo.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshVersionInfo = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshVersionInfo = void 0;
     var packageJson = require_package();
     var packageName = packageJson.name.replace(/^@\w+\//, "");
     var packageVersion = packageJson.version;
@@ -7459,22 +10455,22 @@ var require_sshVersionInfo = __commonJS({
         return this.name === "vs-ssh" || this.name === "dev-tunnels-ssh";
       }
     };
-    exports.SshVersionInfo = SshVersionInfo;
+    exports2.SshVersionInfo = SshVersionInfo;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/messages/kexMessages.js
 var require_kexMessages = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/kexMessages.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/kexMessages.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.NewKeysMessage = exports.KeyExchangeDhReplyMessage = exports.KeyExchangeDhInitMessage = exports.KeyExchangeInitMessage = exports.KeyExchangeMessage = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.NewKeysMessage = exports2.KeyExchangeDhReplyMessage = exports2.KeyExchangeDhInitMessage = exports2.KeyExchangeInitMessage = exports2.KeyExchangeMessage = void 0;
+    var buffer_1 = require("buffer");
     var sshMessage_1 = require_sshMessage();
     var sshAlgorithms_1 = require_sshAlgorithms();
     var KeyExchangeMessage = class extends sshMessage_1.SshMessage {
     };
-    exports.KeyExchangeMessage = KeyExchangeMessage;
+    exports2.KeyExchangeMessage = KeyExchangeMessage;
     var keyExchangeInitCookieLength = 16;
     var KeyExchangeInitMessage = class _KeyExchangeInitMessage extends KeyExchangeMessage {
       get messageType() {
@@ -7538,7 +10534,7 @@ var require_kexMessages = __commonJS({
         return includesNone(this.keyExchangeAlgorithms) && includesNone(this.serverHostKeyAlgorithms) && includesNone(this.encryptionAlgorithmsClientToServer) && includesNone(this.encryptionAlgorithmsServerToClient) && includesNone(this.macAlgorithmsClientToServer) && includesNone(this.macAlgorithmsServerToClient) && includesNone(this.compressionAlgorithmsClientToServer) && includesNone(this.compressionAlgorithmsServerToClient) && this.firstKexPacketFollows !== true;
       }
     };
-    exports.KeyExchangeInitMessage = KeyExchangeInitMessage;
+    exports2.KeyExchangeInitMessage = KeyExchangeInitMessage;
     KeyExchangeInitMessage.none = KeyExchangeInitMessage.CreateNone();
     var KeyExchangeDhInitMessage = class extends KeyExchangeMessage {
       get messageType() {
@@ -7551,7 +10547,7 @@ var require_kexMessages = __commonJS({
         writer.writeBinary(this.validateField(this.e, "E"));
       }
     };
-    exports.KeyExchangeDhInitMessage = KeyExchangeDhInitMessage;
+    exports2.KeyExchangeDhInitMessage = KeyExchangeDhInitMessage;
     var KeyExchangeDhReplyMessage = class extends KeyExchangeMessage {
       get messageType() {
         return 31;
@@ -7567,7 +10563,7 @@ var require_kexMessages = __commonJS({
         writer.writeBinary(this.validateField(this.signature, "signature"));
       }
     };
-    exports.KeyExchangeDhReplyMessage = KeyExchangeDhReplyMessage;
+    exports2.KeyExchangeDhReplyMessage = KeyExchangeDhReplyMessage;
     var NewKeysMessage = class extends KeyExchangeMessage {
       get messageType() {
         return 21;
@@ -7577,7 +10573,7 @@ var require_kexMessages = __commonJS({
       onWrite(writer) {
       }
     };
-    exports.NewKeysMessage = NewKeysMessage;
+    exports2.NewKeysMessage = NewKeysMessage;
     sshMessage_1.SshMessage.index.set(20, KeyExchangeInitMessage);
     sshMessage_1.SshMessage.index.set(30, KeyExchangeDhInitMessage);
     sshMessage_1.SshMessage.index.set(31, KeyExchangeDhReplyMessage);
@@ -7587,11 +10583,11 @@ var require_kexMessages = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/io/sshProtocol.js
 var require_sshProtocol = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/io/sshProtocol.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/io/sshProtocol.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshProtocol = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshProtocol = void 0;
+    var buffer_1 = require("buffer");
     var queue_1 = require_queue();
     var semaphore_1 = require_semaphore();
     var sshMessage_1 = require_sshMessage();
@@ -8030,7 +11026,7 @@ var require_sshProtocol = __commonJS({
           this.algorithms.dispose();
       }
     };
-    exports.SshProtocol = SshProtocol;
+    exports2.SshProtocol = SshProtocol;
     SshProtocol.maxPacketLength = 1024 * 1024;
     SshProtocol.packetLengthSize = 4;
     SshProtocol.paddingLengthSize = 1;
@@ -8039,10 +11035,10 @@ var require_sshProtocol = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/services/sshService.js
 var require_sshService = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/services/sshService.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/services/sshService.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshService = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshService = void 0;
     var vscode_jsonrpc_1 = require_main();
     var sshSession_1 = require_sshSession();
     var SshService = class {
@@ -8111,16 +11107,16 @@ var require_sshService = __commonJS({
         await this.session.sendMessage(message, cancellation);
       }
     };
-    exports.SshService = SshService;
+    exports2.SshService = SshService;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/events/sshChannelOpeningEventArgs.js
 var require_sshChannelOpeningEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshChannelOpeningEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshChannelOpeningEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshChannelOpeningEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshChannelOpeningEventArgs = void 0;
     var connectionMessages_1 = require_connectionMessages();
     var vscode_jsonrpc_1 = require_main();
     var SshChannelOpeningEventArgs = class {
@@ -8151,20 +11147,20 @@ var require_sshChannelOpeningEventArgs = __commonJS({
         return `${this.channel.toString()}${this.failureReason ? " " + connectionMessages_1.SshChannelOpenFailureReason[this.failureReason] : ""}`;
       }
     };
-    exports.SshChannelOpeningEventArgs = SshChannelOpeningEventArgs;
+    exports2.SshChannelOpeningEventArgs = SshChannelOpeningEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/events/sshExtendedDataEventArgs.js
 var require_sshExtendedDataEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshExtendedDataEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshExtendedDataEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshExtendedDataEventArgs = exports.SshExtendedDataType = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshExtendedDataEventArgs = exports2.SshExtendedDataType = void 0;
     var SshExtendedDataType;
     (function(SshExtendedDataType2) {
       SshExtendedDataType2[SshExtendedDataType2["STDERR"] = 1] = "STDERR";
-    })(SshExtendedDataType = exports.SshExtendedDataType || (exports.SshExtendedDataType = {}));
+    })(SshExtendedDataType = exports2.SshExtendedDataType || (exports2.SshExtendedDataType = {}));
     var SshExtendedDataEventArgs = class {
       constructor(dataTypeCode, data) {
         this.dataTypeCode = dataTypeCode;
@@ -8174,23 +11170,23 @@ var require_sshExtendedDataEventArgs = __commonJS({
         return `${SshExtendedDataType[this.dataTypeCode]}: ${this.data.toString()}`;
       }
     };
-    exports.SshExtendedDataEventArgs = SshExtendedDataEventArgs;
+    exports2.SshExtendedDataEventArgs = SshExtendedDataEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/services/connectionService.js
 var require_connectionService = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/services/connectionService.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/services/connectionService.js"(exports2) {
     "use strict";
-    var __decorate = exports && exports.__decorate || function(decorators, target, key, desc) {
+    var __decorate = exports2 && exports2.__decorate || function(decorators, target, key, desc) {
       var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
       if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
       else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
       return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var ConnectionService_1;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ConnectionService = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ConnectionService = void 0;
     var sshService_1 = require_sshService();
     var connectionMessages_1 = require_connectionMessages();
     var promiseCompletionSource_1 = require_promiseCompletionSource();
@@ -8525,20 +11521,20 @@ var require_connectionService = __commonJS({
     ConnectionService = ConnectionService_1 = __decorate([
       (0, serviceActivation_1.serviceActivation)({ serviceRequest: ConnectionService_1.serviceName })
     ], ConnectionService);
-    exports.ConnectionService = ConnectionService;
+    exports2.ConnectionService = ConnectionService;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/messages/authenticationMessages.js
 var require_authenticationMessages = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/authenticationMessages.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/messages/authenticationMessages.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.AuthenticationSuccessMessage = exports.AuthenticationFailureMessage = exports.PasswordRequestMessage = exports.PublicKeyOKMessage = exports.AuthenticationInfoResponseMessage = exports.AuthenticationInfoRequestMessage = exports.PublicKeyRequestMessage = exports.AuthenticationRequestMessage = exports.AuthenticationMessage = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.AuthenticationSuccessMessage = exports2.AuthenticationFailureMessage = exports2.PasswordRequestMessage = exports2.PublicKeyOKMessage = exports2.AuthenticationInfoResponseMessage = exports2.AuthenticationInfoRequestMessage = exports2.PublicKeyRequestMessage = exports2.AuthenticationRequestMessage = exports2.AuthenticationMessage = void 0;
     var sshMessage_1 = require_sshMessage();
     var AuthenticationMessage = class extends sshMessage_1.SshMessage {
     };
-    exports.AuthenticationMessage = AuthenticationMessage;
+    exports2.AuthenticationMessage = AuthenticationMessage;
     var AuthenticationRequestMessage = class extends AuthenticationMessage {
       get messageType() {
         return 50;
@@ -8557,7 +11553,7 @@ var require_authenticationMessages = __commonJS({
         return super.toString() + ` (Method: ${this.methodName}, Username: ${this.username})`;
       }
     };
-    exports.AuthenticationRequestMessage = AuthenticationRequestMessage;
+    exports2.AuthenticationRequestMessage = AuthenticationRequestMessage;
     var PublicKeyRequestMessage = class extends AuthenticationRequestMessage {
       constructor() {
         super();
@@ -8602,7 +11598,7 @@ var require_authenticationMessages = __commonJS({
         }
       }
     };
-    exports.PublicKeyRequestMessage = PublicKeyRequestMessage;
+    exports2.PublicKeyRequestMessage = PublicKeyRequestMessage;
     var AuthenticationInfoRequestMessage = class extends AuthenticationMessage {
       get messageType() {
         return 60;
@@ -8639,7 +11635,7 @@ var require_authenticationMessages = __commonJS({
         }
       }
     };
-    exports.AuthenticationInfoRequestMessage = AuthenticationInfoRequestMessage;
+    exports2.AuthenticationInfoRequestMessage = AuthenticationInfoRequestMessage;
     var AuthenticationInfoResponseMessage = class extends AuthenticationMessage {
       get messageType() {
         return 61;
@@ -8660,7 +11656,7 @@ var require_authenticationMessages = __commonJS({
         }
       }
     };
-    exports.AuthenticationInfoResponseMessage = AuthenticationInfoResponseMessage;
+    exports2.AuthenticationInfoResponseMessage = AuthenticationInfoResponseMessage;
     var PublicKeyOKMessage = class extends AuthenticationMessage {
       get messageType() {
         return 60;
@@ -8678,7 +11674,7 @@ var require_authenticationMessages = __commonJS({
         writer.writeBinary(this.publicKey);
       }
     };
-    exports.PublicKeyOKMessage = PublicKeyOKMessage;
+    exports2.PublicKeyOKMessage = PublicKeyOKMessage;
     var PasswordRequestMessage = class extends AuthenticationRequestMessage {
       constructor() {
         super();
@@ -8695,7 +11691,7 @@ var require_authenticationMessages = __commonJS({
         writer.writeString(this.password || "", "utf8");
       }
     };
-    exports.PasswordRequestMessage = PasswordRequestMessage;
+    exports2.PasswordRequestMessage = PasswordRequestMessage;
     var AuthenticationFailureMessage = class extends AuthenticationMessage {
       constructor() {
         super(...arguments);
@@ -8713,7 +11709,7 @@ var require_authenticationMessages = __commonJS({
         writer.writeBoolean(this.partialSuccess);
       }
     };
-    exports.AuthenticationFailureMessage = AuthenticationFailureMessage;
+    exports2.AuthenticationFailureMessage = AuthenticationFailureMessage;
     var AuthenticationSuccessMessage = class extends AuthenticationMessage {
       get messageType() {
         return 52;
@@ -8723,7 +11719,7 @@ var require_authenticationMessages = __commonJS({
       onWrite(writer) {
       }
     };
-    exports.AuthenticationSuccessMessage = AuthenticationSuccessMessage;
+    exports2.AuthenticationSuccessMessage = AuthenticationSuccessMessage;
     sshMessage_1.SshMessage.index.set(50, AuthenticationRequestMessage);
     sshMessage_1.SshMessage.index.set(51, AuthenticationFailureMessage);
     sshMessage_1.SshMessage.index.set(52, AuthenticationSuccessMessage);
@@ -8747,10 +11743,10 @@ var require_authenticationMessages = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/events/sshAuthenticatingEventArgs.js
 var require_sshAuthenticatingEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshAuthenticatingEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshAuthenticatingEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshAuthenticatingEventArgs = exports.SshAuthenticationType = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshAuthenticatingEventArgs = exports2.SshAuthenticationType = void 0;
     var vscode_jsonrpc_1 = require_main();
     var SshAuthenticationType;
     (function(SshAuthenticationType2) {
@@ -8761,7 +11757,7 @@ var require_sshAuthenticatingEventArgs = __commonJS({
       SshAuthenticationType2[SshAuthenticationType2["clientPublicKey"] = 4] = "clientPublicKey";
       SshAuthenticationType2[SshAuthenticationType2["clientInteractive"] = 5] = "clientInteractive";
       SshAuthenticationType2[SshAuthenticationType2["serverPublicKey"] = 10] = "serverPublicKey";
-    })(SshAuthenticationType = exports.SshAuthenticationType || (exports.SshAuthenticationType = {}));
+    })(SshAuthenticationType = exports2.SshAuthenticationType || (exports2.SshAuthenticationType = {}));
     var SshAuthenticatingEventArgs = class {
       constructor(authenticationType, { username, password, publicKey, clientHostname, clientUsername, infoRequest, infoResponse }, cancellation) {
         this.authenticationType = authenticationType;
@@ -8846,23 +11842,23 @@ var require_sshAuthenticatingEventArgs = __commonJS({
         }
       }
     };
-    exports.SshAuthenticatingEventArgs = SshAuthenticatingEventArgs;
+    exports2.SshAuthenticatingEventArgs = SshAuthenticatingEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/services/authenticationService.js
 var require_authenticationService = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/services/authenticationService.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/services/authenticationService.js"(exports2) {
     "use strict";
-    var __decorate = exports && exports.__decorate || function(decorators, target, key, desc) {
+    var __decorate = exports2 && exports2.__decorate || function(decorators, target, key, desc) {
       var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
       if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
       else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
       return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var AuthenticationService_1;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.AuthenticationService = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.AuthenticationService = void 0;
     var sshService_1 = require_sshService();
     var authenticationMessages_1 = require_authenticationMessages();
     var vscode_jsonrpc_1 = require_main();
@@ -9252,16 +12248,16 @@ var require_authenticationService = __commonJS({
     AuthenticationService = AuthenticationService_1 = __decorate([
       (0, serviceActivation_1.serviceActivation)({ serviceRequest: AuthenticationService_1.serviceName })
     ], AuthenticationService);
-    exports.AuthenticationService = AuthenticationService;
+    exports2.AuthenticationService = AuthenticationService;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/metrics/sessionMetrics.js
 var require_sessionMetrics = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/metrics/sessionMetrics.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/metrics/sessionMetrics.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SessionMetrics = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SessionMetrics = void 0;
     var vscode_jsonrpc_1 = require_main();
     var trace_1 = require_trace();
     var SessionMetrics = class {
@@ -9455,16 +12451,16 @@ var require_sessionMetrics = __commonJS({
         return s;
       }
     };
-    exports.SessionMetrics = SessionMetrics;
+    exports2.SessionMetrics = SessionMetrics;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/events/sshSessionClosedEventArgs.js
 var require_sshSessionClosedEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshSessionClosedEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshSessionClosedEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshSessionClosedEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshSessionClosedEventArgs = void 0;
     var transportMessages_1 = require_transportMessages();
     var SshSessionClosedEventArgs = class {
       constructor(reason, message, error) {
@@ -9478,16 +12474,16 @@ var require_sshSessionClosedEventArgs = __commonJS({
         return `${transportMessages_1.SshDisconnectReason[this.reason]}: ${this.message}`;
       }
     };
-    exports.SshSessionClosedEventArgs = SshSessionClosedEventArgs;
+    exports2.SshSessionClosedEventArgs = SshSessionClosedEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/progress.js
 var require_progress = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/progress.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/progress.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Progress = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Progress = void 0;
     var Progress;
     (function(Progress2) {
       Progress2["OpeningClientConnectionToRelay"] = "OpeningClientConnectionToRelay";
@@ -9502,16 +12498,16 @@ var require_progress = __commonJS({
       Progress2["CompletedKeyExchange"] = "CompletedKeyExchange";
       Progress2["StartingSessionAuthentication"] = "StartingSessionAuthentication";
       Progress2["CompletedSessionAuthentication"] = "CompletedSessionAuthentication";
-    })(Progress = exports.Progress || (exports.Progress = {}));
+    })(Progress = exports2.Progress || (exports2.Progress = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/events/sshReportProgressEventArgs.js
 var require_sshReportProgressEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshReportProgressEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/events/sshReportProgressEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshReportProgressEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshReportProgressEventArgs = void 0;
     var SshReportProgressEventArgs = class {
       constructor(progress, sessionNumber) {
         this.progress = progress;
@@ -9521,18 +12517,18 @@ var require_sshReportProgressEventArgs = __commonJS({
         return `Progress: ${this.progress}` + this.sessionNumber ? ` Session number: ${this.sessionNumber}` : "";
       }
     };
-    exports.SshReportProgressEventArgs = SshReportProgressEventArgs;
+    exports2.SshReportProgressEventArgs = SshReportProgressEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshSession.js
 var require_sshSession = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshSession.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshSession.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshSession = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshSession = void 0;
     var trace_1 = require_trace();
-    var buffer_1 = __require("buffer");
+    var buffer_1 = require("buffer");
     var vscode_jsonrpc_1 = require_main();
     var sshSessionConfiguration_1 = require_sshSessionConfiguration();
     var sshChannel_1 = require_sshChannel();
@@ -10401,17 +13397,17 @@ var require_sshSession = __commonJS({
         return this.constructor.name;
       }
     };
-    exports.SshSession = SshSession;
+    exports2.SshSession = SshSession;
     SshSession.localVersion = sshVersionInfo_1.SshVersionInfo.getLocalVersion();
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshSessionAlgorithms.js
 var require_sshSessionAlgorithms = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshSessionAlgorithms.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshSessionAlgorithms.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshSessionAlgorithms = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshSessionAlgorithms = void 0;
     var SshSessionAlgorithms = class {
       dispose() {
         if (this.cipher)
@@ -10424,24 +13420,24 @@ var require_sshSessionAlgorithms = __commonJS({
           this.verifier.dispose();
       }
     };
-    exports.SshSessionAlgorithms = SshSessionAlgorithms;
+    exports2.SshSessionAlgorithms = SshSessionAlgorithms;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/services/keyExchangeService.js
 var require_keyExchangeService = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/services/keyExchangeService.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/services/keyExchangeService.js"(exports2) {
     "use strict";
-    var __decorate = exports && exports.__decorate || function(decorators, target, key, desc) {
+    var __decorate = exports2 && exports2.__decorate || function(decorators, target, key, desc) {
       var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
       if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
       else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
       return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var KeyExchangeService_1;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.KeyExchangeService = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.KeyExchangeService = void 0;
+    var buffer_1 = require("buffer");
     var sshSession_1 = require_sshSession();
     var sshService_1 = require_sshService();
     var bigInt_1 = require_bigInt();
@@ -10864,16 +13860,16 @@ var require_keyExchangeService = __commonJS({
     KeyExchangeService = KeyExchangeService_1 = __decorate([
       (0, serviceActivation_1.serviceActivation)({ serviceRequest: KeyExchangeService_1.serviceName })
     ], KeyExchangeService);
-    exports.KeyExchangeService = KeyExchangeService;
+    exports2.KeyExchangeService = KeyExchangeService;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshSessionConfiguration.js
 var require_sshSessionConfiguration = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshSessionConfiguration.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshSessionConfiguration.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshSessionConfiguration = exports.SshProtocolExtensionNames = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshSessionConfiguration = exports2.SshProtocolExtensionNames = void 0;
     var vscode_jsonrpc_1 = require_main();
     var sshAlgorithms_1 = require_sshAlgorithms();
     var keyExchangeService_1 = require_keyExchangeService();
@@ -10886,7 +13882,7 @@ var require_sshSessionConfiguration = __commonJS({
       SshProtocolExtensionNames2["openChannelRequest"] = "open-channel-request@microsoft.com";
       SshProtocolExtensionNames2["sessionReconnect"] = "session-reconnect@microsoft.com";
       SshProtocolExtensionNames2["sessionLatency"] = "session-latency@microsoft.com";
-    })(SshProtocolExtensionNames = exports.SshProtocolExtensionNames || (exports.SshProtocolExtensionNames = {}));
+    })(SshProtocolExtensionNames = exports2.SshProtocolExtensionNames || (exports2.SshProtocolExtensionNames = {}));
     var SshSessionConfiguration = class {
       constructor(useSecurity = true) {
         this.protocolExtensions = [];
@@ -11014,16 +14010,16 @@ var require_sshSessionConfiguration = __commonJS({
         }
       }
     };
-    exports.SshSessionConfiguration = SshSessionConfiguration;
+    exports2.SshSessionConfiguration = SshSessionConfiguration;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshClientSession.js
 var require_sshClientSession = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshClientSession.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshClientSession.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshClientSession = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshClientSession = void 0;
     var sshSession_1 = require_sshSession();
     var transportMessages_1 = require_transportMessages();
     var sshAuthenticatingEventArgs_1 = require_sshAuthenticatingEventArgs();
@@ -11294,16 +14290,16 @@ var require_sshClientSession = __commonJS({
         super.dispose();
       }
     };
-    exports.SshClientSession = SshClientSession;
+    exports2.SshClientSession = SshClientSession;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshServerSession.js
 var require_sshServerSession = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshServerSession.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshServerSession.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshServerSession = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshServerSession = void 0;
     var sshSession_1 = require_sshSession();
     var vscode_jsonrpc_1 = require_main();
     var transportMessages_1 = require_transportMessages();
@@ -11443,18 +14439,18 @@ var require_sshServerSession = __commonJS({
         super.dispose(error);
       }
     };
-    exports.SshServerSession = SshServerSession;
+    exports2.SshServerSession = SshServerSession;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshStream.js
 var require_sshStream = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshStream.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshStream.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshStream = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshStream = void 0;
     var promiseCompletionSource_1 = require_promiseCompletionSource();
-    var stream_1 = __require("stream");
+    var stream_1 = require("stream");
     var SshStream = class extends stream_1.Duplex {
       constructor(channel) {
         let readPaused = null;
@@ -11560,17 +14556,17 @@ var require_sshStream = __commonJS({
         return `SshStream(Channel Type: ${this.channel.channelType}, Id: ${this.channel.channelId}, RemoteId: ${this.channel.remoteChannelId})`;
       }
     };
-    exports.SshStream = SshStream;
+    exports2.SshStream = SshStream;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/streams.js
 var require_streams = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/streams.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/streams.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WebSocketStream = exports.NodeStream = exports.BaseStream = void 0;
-    var buffer_1 = __require("buffer");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WebSocketStream = exports2.NodeStream = exports2.BaseStream = void 0;
+    var buffer_1 = require("buffer");
     var vscode_jsonrpc_1 = require_main();
     var cancellation_1 = require_cancellation2();
     var errors_1 = require_errors();
@@ -11675,7 +14671,7 @@ var require_streams = __commonJS({
         return this.disposed;
       }
     };
-    exports.BaseStream = BaseStream;
+    exports2.BaseStream = BaseStream;
     var NodeStream = class extends BaseStream {
       constructor(duplexOrReadStream, writeStream) {
         super();
@@ -11727,7 +14723,7 @@ var require_streams = __commonJS({
         super.dispose();
       }
     };
-    exports.NodeStream = NodeStream;
+    exports2.NodeStream = NodeStream;
     var WebSocketStream = class extends BaseStream {
       constructor(websocket) {
         super();
@@ -11785,18 +14781,18 @@ var require_streams = __commonJS({
         super.dispose();
       }
     };
-    exports.WebSocketStream = WebSocketStream;
+    exports2.WebSocketStream = WebSocketStream;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/sshRpcMessageStream.js
 var require_sshRpcMessageStream = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/sshRpcMessageStream.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/sshRpcMessageStream.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshRpcMessageStream = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshRpcMessageStream = void 0;
     var rpc = require_main();
-    var buffer_1 = __require("buffer");
+    var buffer_1 = require("buffer");
     var sshData_1 = require_sshData();
     var contentLengthHeaderPrefix = "Content-Length: ";
     var headersSeparator = "\r\n\r\n";
@@ -11913,16 +14909,16 @@ ${messageJson}`);
         this.writer = new SshRpcMessageWriter(channel);
       }
     };
-    exports.SshRpcMessageStream = SshRpcMessageStream;
+    exports2.SshRpcMessageStream = SshRpcMessageStream;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/metrics/sessionContour.js
 var require_sessionContour = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/metrics/sessionContour.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/metrics/sessionContour.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SessionContour = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SessionContour = void 0;
     var errors_1 = require_errors();
     var queue_1 = require_queue();
     var semaphore_1 = require_semaphore();
@@ -12227,7 +15223,7 @@ var require_sessionContour = __commonJS({
         return sessionContour;
       }
     };
-    exports.SessionContour = SessionContour;
+    exports2.SessionContour = SessionContour;
     SessionContour.initialInterval = 1e3;
     var SessionMetric;
     (function(SessionMetric2) {
@@ -12243,10 +15239,10 @@ var require_sessionContour = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/multiChannelStream.js
 var require_multiChannelStream = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/multiChannelStream.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/multiChannelStream.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MultiChannelStream = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.MultiChannelStream = void 0;
     var vscode_jsonrpc_1 = require_main();
     var sshChannel_1 = require_sshChannel();
     var sshStream_1 = require_sshStream();
@@ -12407,16 +15403,16 @@ var require_multiChannelStream = __commonJS({
         this.disposables = [];
       }
     };
-    exports.MultiChannelStream = MultiChannelStream;
+    exports2.MultiChannelStream = MultiChannelStream;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/secureStream.js
 var require_secureStream = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/secureStream.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/secureStream.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SecureStream = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SecureStream = void 0;
     var vscode_jsonrpc_1 = require_main();
     var streams_1 = require_streams();
     var sshStream_1 = require_sshStream();
@@ -12426,7 +15422,7 @@ var require_secureStream = __commonJS({
     var sshClientSession_1 = require_sshClientSession();
     var sshServerSession_1 = require_sshServerSession();
     var errors_1 = require_errors();
-    var stream_1 = __require("stream");
+    var stream_1 = require("stream");
     var promiseCompletionSource_1 = require_promiseCompletionSource();
     var SecureStream = class extends stream_1.Duplex {
       /**
@@ -12656,299 +15652,299 @@ var require_secureStream = __commonJS({
         this.disposables = [];
       }
     };
-    exports.SecureStream = SecureStream;
+    exports2.SecureStream = SecureStream;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh/index.js
 var require_dev_tunnels_ssh = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh/index.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh/index.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.CommandRequestMessage = exports.ChannelRequestType = exports.ChannelRequestMessage = exports.ChannelOpenConfirmationMessage = exports.ChannelOpenMessage = exports.ChannelOpenFailureMessage = exports.ChannelMessage = exports.SshChannelOpenFailureReason = exports.SessionChannelRequestMessage = exports.ServiceAcceptMessage = exports.ServiceRequestMessage = exports.SshReconnectFailureReason = exports.SshDisconnectReason = exports.SessionRequestFailureMessage = exports.SessionRequestSuccessMessage = exports.DebugMessage = exports.SessionRequestMessage = exports.PasswordRequestMessage = exports.PublicKeyOKMessage = exports.PublicKeyRequestMessage = exports.AuthenticationInfoResponseMessage = exports.AuthenticationInfoRequestMessage = exports.AuthenticationFailureMessage = exports.AuthenticationSuccessMessage = exports.AuthenticationRequestMessage = exports.AuthenticationMessage = exports.SshMessage = exports.SshExtendedDataEventArgs = exports.SshExtendedDataType = exports.SshChannelClosedEventArgs = exports.SshSessionClosedEventArgs = exports.SshChannelOpeningEventArgs = exports.SshReportProgressEventArgs = exports.SshRequestEventArgs = exports.SshAuthenticatingEventArgs = exports.SshAuthenticationType = exports.serviceActivation = exports.SshService = exports.SshRpcMessageStream = exports.WebSocketStream = exports.NodeStream = exports.BaseStream = exports.SshStream = exports.SshChannel = exports.SshServerSession = exports.SshClientSession = exports.SshSession = exports.SshVersionInfo = exports.SshProtocolExtensionNames = exports.SshSessionConfiguration = void 0;
-    exports.Progress = exports.SshTraceEventIds = exports.TraceLevel = exports.SecureStream = exports.MultiChannelStream = exports.SessionContour = exports.ChannelMetrics = exports.SessionMetrics = exports.Queue = exports.Semaphore = exports.PromiseCompletionSource = exports.CancellationError = exports.CancellationTokenSource = exports.CancellationToken = exports.ObjectDisposedError = exports.SshReconnectError = exports.SshConnectionError = exports.SshChannelError = exports.BigInt = exports.DerWriter = exports.DerReader = exports.formatBuffer = exports.SshDataWriter = exports.SshDataReader = exports.ECDsa = exports.Rsa = exports.Encryption = exports.HmacAlgorithm = exports.EncryptionAlgorithm = exports.PublicKeyAlgorithm = exports.KeyExchangeAlgorithm = exports.SshAlgorithms = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.CommandRequestMessage = exports2.ChannelRequestType = exports2.ChannelRequestMessage = exports2.ChannelOpenConfirmationMessage = exports2.ChannelOpenMessage = exports2.ChannelOpenFailureMessage = exports2.ChannelMessage = exports2.SshChannelOpenFailureReason = exports2.SessionChannelRequestMessage = exports2.ServiceAcceptMessage = exports2.ServiceRequestMessage = exports2.SshReconnectFailureReason = exports2.SshDisconnectReason = exports2.SessionRequestFailureMessage = exports2.SessionRequestSuccessMessage = exports2.DebugMessage = exports2.SessionRequestMessage = exports2.PasswordRequestMessage = exports2.PublicKeyOKMessage = exports2.PublicKeyRequestMessage = exports2.AuthenticationInfoResponseMessage = exports2.AuthenticationInfoRequestMessage = exports2.AuthenticationFailureMessage = exports2.AuthenticationSuccessMessage = exports2.AuthenticationRequestMessage = exports2.AuthenticationMessage = exports2.SshMessage = exports2.SshExtendedDataEventArgs = exports2.SshExtendedDataType = exports2.SshChannelClosedEventArgs = exports2.SshSessionClosedEventArgs = exports2.SshChannelOpeningEventArgs = exports2.SshReportProgressEventArgs = exports2.SshRequestEventArgs = exports2.SshAuthenticatingEventArgs = exports2.SshAuthenticationType = exports2.serviceActivation = exports2.SshService = exports2.SshRpcMessageStream = exports2.WebSocketStream = exports2.NodeStream = exports2.BaseStream = exports2.SshStream = exports2.SshChannel = exports2.SshServerSession = exports2.SshClientSession = exports2.SshSession = exports2.SshVersionInfo = exports2.SshProtocolExtensionNames = exports2.SshSessionConfiguration = void 0;
+    exports2.Progress = exports2.SshTraceEventIds = exports2.TraceLevel = exports2.SecureStream = exports2.MultiChannelStream = exports2.SessionContour = exports2.ChannelMetrics = exports2.SessionMetrics = exports2.Queue = exports2.Semaphore = exports2.PromiseCompletionSource = exports2.CancellationError = exports2.CancellationTokenSource = exports2.CancellationToken = exports2.ObjectDisposedError = exports2.SshReconnectError = exports2.SshConnectionError = exports2.SshChannelError = exports2.BigInt = exports2.DerWriter = exports2.DerReader = exports2.formatBuffer = exports2.SshDataWriter = exports2.SshDataReader = exports2.ECDsa = exports2.Rsa = exports2.Encryption = exports2.HmacAlgorithm = exports2.EncryptionAlgorithm = exports2.PublicKeyAlgorithm = exports2.KeyExchangeAlgorithm = exports2.SshAlgorithms = void 0;
     var sshSessionConfiguration_1 = require_sshSessionConfiguration();
-    Object.defineProperty(exports, "SshSessionConfiguration", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshSessionConfiguration", { enumerable: true, get: function() {
       return sshSessionConfiguration_1.SshSessionConfiguration;
     } });
-    Object.defineProperty(exports, "SshProtocolExtensionNames", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshProtocolExtensionNames", { enumerable: true, get: function() {
       return sshSessionConfiguration_1.SshProtocolExtensionNames;
     } });
     var sshVersionInfo_1 = require_sshVersionInfo();
-    Object.defineProperty(exports, "SshVersionInfo", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshVersionInfo", { enumerable: true, get: function() {
       return sshVersionInfo_1.SshVersionInfo;
     } });
     var sshSession_1 = require_sshSession();
-    Object.defineProperty(exports, "SshSession", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshSession", { enumerable: true, get: function() {
       return sshSession_1.SshSession;
     } });
     var sshClientSession_1 = require_sshClientSession();
-    Object.defineProperty(exports, "SshClientSession", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshClientSession", { enumerable: true, get: function() {
       return sshClientSession_1.SshClientSession;
     } });
     var sshServerSession_1 = require_sshServerSession();
-    Object.defineProperty(exports, "SshServerSession", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshServerSession", { enumerable: true, get: function() {
       return sshServerSession_1.SshServerSession;
     } });
     var sshChannel_1 = require_sshChannel();
-    Object.defineProperty(exports, "SshChannel", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshChannel", { enumerable: true, get: function() {
       return sshChannel_1.SshChannel;
     } });
     var sshStream_1 = require_sshStream();
-    Object.defineProperty(exports, "SshStream", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshStream", { enumerable: true, get: function() {
       return sshStream_1.SshStream;
     } });
     var streams_1 = require_streams();
-    Object.defineProperty(exports, "BaseStream", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "BaseStream", { enumerable: true, get: function() {
       return streams_1.BaseStream;
     } });
-    Object.defineProperty(exports, "NodeStream", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NodeStream", { enumerable: true, get: function() {
       return streams_1.NodeStream;
     } });
-    Object.defineProperty(exports, "WebSocketStream", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "WebSocketStream", { enumerable: true, get: function() {
       return streams_1.WebSocketStream;
     } });
     var sshRpcMessageStream_1 = require_sshRpcMessageStream();
-    Object.defineProperty(exports, "SshRpcMessageStream", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshRpcMessageStream", { enumerable: true, get: function() {
       return sshRpcMessageStream_1.SshRpcMessageStream;
     } });
     var sshService_1 = require_sshService();
-    Object.defineProperty(exports, "SshService", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshService", { enumerable: true, get: function() {
       return sshService_1.SshService;
     } });
     var serviceActivation_1 = require_serviceActivation();
-    Object.defineProperty(exports, "serviceActivation", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "serviceActivation", { enumerable: true, get: function() {
       return serviceActivation_1.serviceActivation;
     } });
     var sshAuthenticatingEventArgs_1 = require_sshAuthenticatingEventArgs();
-    Object.defineProperty(exports, "SshAuthenticationType", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshAuthenticationType", { enumerable: true, get: function() {
       return sshAuthenticatingEventArgs_1.SshAuthenticationType;
     } });
-    Object.defineProperty(exports, "SshAuthenticatingEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshAuthenticatingEventArgs", { enumerable: true, get: function() {
       return sshAuthenticatingEventArgs_1.SshAuthenticatingEventArgs;
     } });
     var sshRequestEventArgs_1 = require_sshRequestEventArgs();
-    Object.defineProperty(exports, "SshRequestEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshRequestEventArgs", { enumerable: true, get: function() {
       return sshRequestEventArgs_1.SshRequestEventArgs;
     } });
     var sshReportProgressEventArgs_1 = require_sshReportProgressEventArgs();
-    Object.defineProperty(exports, "SshReportProgressEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshReportProgressEventArgs", { enumerable: true, get: function() {
       return sshReportProgressEventArgs_1.SshReportProgressEventArgs;
     } });
     var sshChannelOpeningEventArgs_1 = require_sshChannelOpeningEventArgs();
-    Object.defineProperty(exports, "SshChannelOpeningEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshChannelOpeningEventArgs", { enumerable: true, get: function() {
       return sshChannelOpeningEventArgs_1.SshChannelOpeningEventArgs;
     } });
     var sshSessionClosedEventArgs_1 = require_sshSessionClosedEventArgs();
-    Object.defineProperty(exports, "SshSessionClosedEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshSessionClosedEventArgs", { enumerable: true, get: function() {
       return sshSessionClosedEventArgs_1.SshSessionClosedEventArgs;
     } });
     var sshChannelClosedEventArgs_1 = require_sshChannelClosedEventArgs();
-    Object.defineProperty(exports, "SshChannelClosedEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshChannelClosedEventArgs", { enumerable: true, get: function() {
       return sshChannelClosedEventArgs_1.SshChannelClosedEventArgs;
     } });
     var sshExtendedDataEventArgs_1 = require_sshExtendedDataEventArgs();
-    Object.defineProperty(exports, "SshExtendedDataType", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshExtendedDataType", { enumerable: true, get: function() {
       return sshExtendedDataEventArgs_1.SshExtendedDataType;
     } });
-    Object.defineProperty(exports, "SshExtendedDataEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshExtendedDataEventArgs", { enumerable: true, get: function() {
       return sshExtendedDataEventArgs_1.SshExtendedDataEventArgs;
     } });
     var sshMessage_1 = require_sshMessage();
-    Object.defineProperty(exports, "SshMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshMessage", { enumerable: true, get: function() {
       return sshMessage_1.SshMessage;
     } });
     var authenticationMessages_1 = require_authenticationMessages();
-    Object.defineProperty(exports, "AuthenticationMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AuthenticationMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.AuthenticationMessage;
     } });
-    Object.defineProperty(exports, "AuthenticationRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AuthenticationRequestMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.AuthenticationRequestMessage;
     } });
-    Object.defineProperty(exports, "AuthenticationSuccessMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AuthenticationSuccessMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.AuthenticationSuccessMessage;
     } });
-    Object.defineProperty(exports, "AuthenticationFailureMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AuthenticationFailureMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.AuthenticationFailureMessage;
     } });
-    Object.defineProperty(exports, "AuthenticationInfoRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AuthenticationInfoRequestMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.AuthenticationInfoRequestMessage;
     } });
-    Object.defineProperty(exports, "AuthenticationInfoResponseMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AuthenticationInfoResponseMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.AuthenticationInfoResponseMessage;
     } });
-    Object.defineProperty(exports, "PublicKeyRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PublicKeyRequestMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.PublicKeyRequestMessage;
     } });
-    Object.defineProperty(exports, "PublicKeyOKMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PublicKeyOKMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.PublicKeyOKMessage;
     } });
-    Object.defineProperty(exports, "PasswordRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PasswordRequestMessage", { enumerable: true, get: function() {
       return authenticationMessages_1.PasswordRequestMessage;
     } });
     var transportMessages_1 = require_transportMessages();
-    Object.defineProperty(exports, "SessionRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SessionRequestMessage", { enumerable: true, get: function() {
       return transportMessages_1.SessionRequestMessage;
     } });
-    Object.defineProperty(exports, "DebugMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "DebugMessage", { enumerable: true, get: function() {
       return transportMessages_1.DebugMessage;
     } });
-    Object.defineProperty(exports, "SessionRequestSuccessMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SessionRequestSuccessMessage", { enumerable: true, get: function() {
       return transportMessages_1.SessionRequestSuccessMessage;
     } });
-    Object.defineProperty(exports, "SessionRequestFailureMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SessionRequestFailureMessage", { enumerable: true, get: function() {
       return transportMessages_1.SessionRequestFailureMessage;
     } });
-    Object.defineProperty(exports, "SshDisconnectReason", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshDisconnectReason", { enumerable: true, get: function() {
       return transportMessages_1.SshDisconnectReason;
     } });
-    Object.defineProperty(exports, "SshReconnectFailureReason", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshReconnectFailureReason", { enumerable: true, get: function() {
       return transportMessages_1.SshReconnectFailureReason;
     } });
-    Object.defineProperty(exports, "ServiceRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ServiceRequestMessage", { enumerable: true, get: function() {
       return transportMessages_1.ServiceRequestMessage;
     } });
-    Object.defineProperty(exports, "ServiceAcceptMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ServiceAcceptMessage", { enumerable: true, get: function() {
       return transportMessages_1.ServiceAcceptMessage;
     } });
-    Object.defineProperty(exports, "SessionChannelRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SessionChannelRequestMessage", { enumerable: true, get: function() {
       return transportMessages_1.SessionChannelRequestMessage;
     } });
     var connectionMessages_1 = require_connectionMessages();
-    Object.defineProperty(exports, "SshChannelOpenFailureReason", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshChannelOpenFailureReason", { enumerable: true, get: function() {
       return connectionMessages_1.SshChannelOpenFailureReason;
     } });
-    Object.defineProperty(exports, "ChannelMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ChannelMessage", { enumerable: true, get: function() {
       return connectionMessages_1.ChannelMessage;
     } });
-    Object.defineProperty(exports, "ChannelOpenFailureMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ChannelOpenFailureMessage", { enumerable: true, get: function() {
       return connectionMessages_1.ChannelOpenFailureMessage;
     } });
-    Object.defineProperty(exports, "ChannelOpenMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ChannelOpenMessage", { enumerable: true, get: function() {
       return connectionMessages_1.ChannelOpenMessage;
     } });
-    Object.defineProperty(exports, "ChannelOpenConfirmationMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ChannelOpenConfirmationMessage", { enumerable: true, get: function() {
       return connectionMessages_1.ChannelOpenConfirmationMessage;
     } });
-    Object.defineProperty(exports, "ChannelRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ChannelRequestMessage", { enumerable: true, get: function() {
       return connectionMessages_1.ChannelRequestMessage;
     } });
-    Object.defineProperty(exports, "ChannelRequestType", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ChannelRequestType", { enumerable: true, get: function() {
       return connectionMessages_1.ChannelRequestType;
     } });
-    Object.defineProperty(exports, "CommandRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CommandRequestMessage", { enumerable: true, get: function() {
       return connectionMessages_1.CommandRequestMessage;
     } });
     var sshAlgorithms_1 = require_sshAlgorithms();
-    Object.defineProperty(exports, "SshAlgorithms", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshAlgorithms", { enumerable: true, get: function() {
       return sshAlgorithms_1.SshAlgorithms;
     } });
-    Object.defineProperty(exports, "KeyExchangeAlgorithm", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "KeyExchangeAlgorithm", { enumerable: true, get: function() {
       return sshAlgorithms_1.KeyExchangeAlgorithm;
     } });
-    Object.defineProperty(exports, "PublicKeyAlgorithm", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PublicKeyAlgorithm", { enumerable: true, get: function() {
       return sshAlgorithms_1.PublicKeyAlgorithm;
     } });
-    Object.defineProperty(exports, "EncryptionAlgorithm", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "EncryptionAlgorithm", { enumerable: true, get: function() {
       return sshAlgorithms_1.EncryptionAlgorithm;
     } });
-    Object.defineProperty(exports, "HmacAlgorithm", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "HmacAlgorithm", { enumerable: true, get: function() {
       return sshAlgorithms_1.HmacAlgorithm;
     } });
-    Object.defineProperty(exports, "Encryption", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Encryption", { enumerable: true, get: function() {
       return sshAlgorithms_1.Encryption;
     } });
-    Object.defineProperty(exports, "Rsa", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Rsa", { enumerable: true, get: function() {
       return sshAlgorithms_1.Rsa;
     } });
-    Object.defineProperty(exports, "ECDsa", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ECDsa", { enumerable: true, get: function() {
       return sshAlgorithms_1.ECDsa;
     } });
     var sshData_1 = require_sshData();
-    Object.defineProperty(exports, "SshDataReader", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshDataReader", { enumerable: true, get: function() {
       return sshData_1.SshDataReader;
     } });
-    Object.defineProperty(exports, "SshDataWriter", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshDataWriter", { enumerable: true, get: function() {
       return sshData_1.SshDataWriter;
     } });
-    Object.defineProperty(exports, "formatBuffer", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "formatBuffer", { enumerable: true, get: function() {
       return sshData_1.formatBuffer;
     } });
     var derData_1 = require_derData();
-    Object.defineProperty(exports, "DerReader", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "DerReader", { enumerable: true, get: function() {
       return derData_1.DerReader;
     } });
-    Object.defineProperty(exports, "DerWriter", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "DerWriter", { enumerable: true, get: function() {
       return derData_1.DerWriter;
     } });
     var bigInt_1 = require_bigInt();
-    Object.defineProperty(exports, "BigInt", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "BigInt", { enumerable: true, get: function() {
       return bigInt_1.BigInt;
     } });
     var errors_1 = require_errors();
-    Object.defineProperty(exports, "SshChannelError", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshChannelError", { enumerable: true, get: function() {
       return errors_1.SshChannelError;
     } });
-    Object.defineProperty(exports, "SshConnectionError", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshConnectionError", { enumerable: true, get: function() {
       return errors_1.SshConnectionError;
     } });
-    Object.defineProperty(exports, "SshReconnectError", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshReconnectError", { enumerable: true, get: function() {
       return errors_1.SshReconnectError;
     } });
-    Object.defineProperty(exports, "ObjectDisposedError", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ObjectDisposedError", { enumerable: true, get: function() {
       return errors_1.ObjectDisposedError;
     } });
     var cancellation_1 = require_cancellation2();
-    Object.defineProperty(exports, "CancellationToken", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationToken", { enumerable: true, get: function() {
       return cancellation_1.CancellationToken;
     } });
-    Object.defineProperty(exports, "CancellationTokenSource", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationTokenSource", { enumerable: true, get: function() {
       return cancellation_1.CancellationTokenSource;
     } });
-    Object.defineProperty(exports, "CancellationError", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationError", { enumerable: true, get: function() {
       return cancellation_1.CancellationError;
     } });
     var promiseCompletionSource_1 = require_promiseCompletionSource();
-    Object.defineProperty(exports, "PromiseCompletionSource", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PromiseCompletionSource", { enumerable: true, get: function() {
       return promiseCompletionSource_1.PromiseCompletionSource;
     } });
     var semaphore_1 = require_semaphore();
-    Object.defineProperty(exports, "Semaphore", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Semaphore", { enumerable: true, get: function() {
       return semaphore_1.Semaphore;
     } });
     var queue_1 = require_queue();
-    Object.defineProperty(exports, "Queue", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Queue", { enumerable: true, get: function() {
       return queue_1.Queue;
     } });
     var sessionMetrics_1 = require_sessionMetrics();
-    Object.defineProperty(exports, "SessionMetrics", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SessionMetrics", { enumerable: true, get: function() {
       return sessionMetrics_1.SessionMetrics;
     } });
     var channelMetrics_1 = require_channelMetrics();
-    Object.defineProperty(exports, "ChannelMetrics", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ChannelMetrics", { enumerable: true, get: function() {
       return channelMetrics_1.ChannelMetrics;
     } });
     var sessionContour_1 = require_sessionContour();
-    Object.defineProperty(exports, "SessionContour", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SessionContour", { enumerable: true, get: function() {
       return sessionContour_1.SessionContour;
     } });
     var multiChannelStream_1 = require_multiChannelStream();
-    Object.defineProperty(exports, "MultiChannelStream", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "MultiChannelStream", { enumerable: true, get: function() {
       return multiChannelStream_1.MultiChannelStream;
     } });
     var secureStream_1 = require_secureStream();
-    Object.defineProperty(exports, "SecureStream", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SecureStream", { enumerable: true, get: function() {
       return secureStream_1.SecureStream;
     } });
     var trace_1 = require_trace();
-    Object.defineProperty(exports, "TraceLevel", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TraceLevel", { enumerable: true, get: function() {
       return trace_1.TraceLevel;
     } });
-    Object.defineProperty(exports, "SshTraceEventIds", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshTraceEventIds", { enumerable: true, get: function() {
       return trace_1.SshTraceEventIds;
     } });
     var progress_1 = require_progress();
-    Object.defineProperty(exports, "Progress", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Progress", { enumerable: true, get: function() {
       return progress_1.Progress;
     } });
   }
@@ -12956,10 +15952,10 @@ var require_dev_tunnels_ssh = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/connectionStatus.js
 var require_connectionStatus = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/connectionStatus.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/connectionStatus.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ConnectionStatus = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ConnectionStatus = void 0;
     var ConnectionStatus;
     (function(ConnectionStatus2) {
       ConnectionStatus2["None"] = "none";
@@ -12968,16 +15964,16 @@ var require_connectionStatus = __commonJS({
       ConnectionStatus2["Connected"] = "connected";
       ConnectionStatus2["Disconnected"] = "disconnected";
       ConnectionStatus2["RefreshingTunnelHostPublicKey"] = "refreshingTunnelHostPublicKey";
-    })(ConnectionStatus = exports.ConnectionStatus || (exports.ConnectionStatus = {}));
+    })(ConnectionStatus = exports2.ConnectionStatus || (exports2.ConnectionStatus = {}));
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/connectionStatusChangedEventArgs.js
 var require_connectionStatusChangedEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/connectionStatusChangedEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/connectionStatusChangedEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ConnectionStatusChangedEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ConnectionStatusChangedEventArgs = void 0;
     var ConnectionStatusChangedEventArgs = class {
       /**
        * Creates a new instance of ConnectionStatusChangedEventArgs.
@@ -12988,16 +15984,16 @@ var require_connectionStatusChangedEventArgs = __commonJS({
         this.disconnectError = disconnectError;
       }
     };
-    exports.ConnectionStatusChangedEventArgs = ConnectionStatusChangedEventArgs;
+    exports2.ConnectionStatusChangedEventArgs = ConnectionStatusChangedEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelAccessTokenEventArgs.js
 var require_refreshingTunnelAccessTokenEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelAccessTokenEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelAccessTokenEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RefreshingTunnelAccessTokenEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RefreshingTunnelAccessTokenEventArgs = void 0;
     var RefreshingTunnelAccessTokenEventArgs = class {
       /**
        * Creates a new instance of RefreshingTunnelAccessTokenEventArgs class.
@@ -13007,16 +16003,16 @@ var require_refreshingTunnelAccessTokenEventArgs = __commonJS({
         this.cancellation = cancellation;
       }
     };
-    exports.RefreshingTunnelAccessTokenEventArgs = RefreshingTunnelAccessTokenEventArgs;
+    exports2.RefreshingTunnelAccessTokenEventArgs = RefreshingTunnelAccessTokenEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/utils.js
 var require_utils = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/utils.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/utils.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TrackingEmitter = exports.withCancellation = exports.getError = exports.getErrorMessage = exports.delay = exports.List = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TrackingEmitter = exports2.withCancellation = exports2.getError = exports2.getErrorMessage = exports2.delay = exports2.List = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var vscode_jsonrpc_1 = require_main();
     var List = class {
@@ -13034,7 +16030,7 @@ var require_utils = __commonJS({
         return map;
       }
     };
-    exports.List = List;
+    exports2.List = List;
     function delay(milliseconds, cancellation) {
       return new Promise((resolve2, reject) => {
         let cancellationDisposable;
@@ -13058,16 +16054,16 @@ var require_utils = __commonJS({
         }, milliseconds);
       });
     }
-    exports.delay = delay;
+    exports2.delay = delay;
     function getErrorMessage(e) {
       var _a;
       return String((_a = e === null || e === void 0 ? void 0 : e.message) !== null && _a !== void 0 ? _a : e);
     }
-    exports.getErrorMessage = getErrorMessage;
+    exports2.getErrorMessage = getErrorMessage;
     function getError(e, messagePrefix) {
       return e instanceof Error ? e : new Error(`${messagePrefix !== null && messagePrefix !== void 0 ? messagePrefix : ""}${e}`);
     }
-    exports.getError = getError;
+    exports2.getError = getError;
     function withCancellation(promise, cancellation) {
       if (!cancellation) {
         return promise;
@@ -13085,7 +16081,7 @@ var require_utils = __commonJS({
         })
       ]);
     }
-    exports.withCancellation = withCancellation;
+    exports2.withCancellation = withCancellation;
     var TrackingEmitter = class extends vscode_jsonrpc_1.Emitter {
       constructor() {
         super({
@@ -13101,31 +16097,31 @@ var require_utils = __commonJS({
         return this.subscribed;
       }
     };
-    exports.TrackingEmitter = TrackingEmitter;
+    exports2.TrackingEmitter = TrackingEmitter;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/sshKeepAliveEventArgs.js
 var require_sshKeepAliveEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/sshKeepAliveEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/sshKeepAliveEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshKeepAliveEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshKeepAliveEventArgs = void 0;
     var SshKeepAliveEventArgs = class {
       constructor(count) {
         this.count = count;
       }
     };
-    exports.SshKeepAliveEventArgs = SshKeepAliveEventArgs;
+    exports2.SshKeepAliveEventArgs = SshKeepAliveEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionBase.js
 var require_tunnelConnectionBase = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionBase.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionBase.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelConnectionBase = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelConnectionBase = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var vscode_jsonrpc_1 = require_main();
     var connectionStatus_1 = require_connectionStatus();
@@ -13260,16 +16256,16 @@ var require_tunnelConnectionBase = __commonJS({
         }
       }
     };
-    exports.TunnelConnectionBase = TunnelConnectionBase;
+    exports2.TunnelConnectionBase = TunnelConnectionBase;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelClient.js
 var require_multiModeTunnelClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelClient.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelClient.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MultiModeTunnelClient = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.MultiModeTunnelClient = void 0;
     var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
     var tunnelConnectionBase_1 = require_tunnelConnectionBase();
     var MultiModeTunnelClient = class extends tunnelConnectionBase_1.TunnelConnectionBase {
@@ -13319,16 +16315,16 @@ var require_multiModeTunnelClient = __commonJS({
         await Promise.all(this.clients.map((client) => client.dispose()));
       }
     };
-    exports.MultiModeTunnelClient = MultiModeTunnelClient;
+    exports2.MultiModeTunnelClient = MultiModeTunnelClient;
   }
 });
 
 // ../../node_modules/uuid/lib/rng.js
 var require_rng = __commonJS({
-  "../../node_modules/uuid/lib/rng.js"(exports, module) {
+  "../../node_modules/uuid/lib/rng.js"(exports2, module2) {
     "use strict";
-    var crypto2 = __require("crypto");
-    module.exports = function nodeRNG() {
+    var crypto2 = require("crypto");
+    module2.exports = function nodeRNG() {
       return crypto2.randomBytes(16);
     };
   }
@@ -13336,7 +16332,7 @@ var require_rng = __commonJS({
 
 // ../../node_modules/uuid/lib/bytesToUuid.js
 var require_bytesToUuid = __commonJS({
-  "../../node_modules/uuid/lib/bytesToUuid.js"(exports, module) {
+  "../../node_modules/uuid/lib/bytesToUuid.js"(exports2, module2) {
     "use strict";
     var byteToHex = [];
     for (i = 0; i < 256; ++i) {
@@ -13369,13 +16365,13 @@ var require_bytesToUuid = __commonJS({
         bth[buf[i2++]]
       ].join("");
     }
-    module.exports = bytesToUuid;
+    module2.exports = bytesToUuid;
   }
 });
 
 // ../../node_modules/uuid/v1.js
 var require_v1 = __commonJS({
-  "../../node_modules/uuid/v1.js"(exports, module) {
+  "../../node_modules/uuid/v1.js"(exports2, module2) {
     "use strict";
     var rng = require_rng();
     var bytesToUuid = require_bytesToUuid();
@@ -13438,13 +16434,13 @@ var require_v1 = __commonJS({
       }
       return buf ? buf : bytesToUuid(b);
     }
-    module.exports = v1;
+    module2.exports = v1;
   }
 });
 
 // ../../node_modules/uuid/v4.js
 var require_v4 = __commonJS({
-  "../../node_modules/uuid/v4.js"(exports, module) {
+  "../../node_modules/uuid/v4.js"(exports2, module2) {
     "use strict";
     var rng = require_rng();
     var bytesToUuid = require_bytesToUuid();
@@ -13465,29 +16461,29 @@ var require_v4 = __commonJS({
       }
       return buf || bytesToUuid(rnds);
     }
-    module.exports = v4;
+    module2.exports = v4;
   }
 });
 
 // ../../node_modules/uuid/index.js
 var require_uuid = __commonJS({
-  "../../node_modules/uuid/index.js"(exports, module) {
+  "../../node_modules/uuid/index.js"(exports2, module2) {
     "use strict";
     var v1 = require_v1();
     var v4 = require_v4();
     var uuid = v4;
     uuid.v1 = v1;
     uuid.v4 = v4;
-    module.exports = uuid;
+    module2.exports = uuid;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelHost.js
 var require_multiModeTunnelHost = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelHost.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelHost.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.MultiModeTunnelHost = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.MultiModeTunnelHost = void 0;
     var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
     var uuid_1 = require_uuid();
     var tunnelConnectionBase_1 = require_tunnelConnectionBase();
@@ -13521,18 +16517,18 @@ var require_multiModeTunnelHost = __commonJS({
         await super.dispose();
       }
     };
-    exports.MultiModeTunnelHost = MultiModeTunnelHost;
+    exports2.MultiModeTunnelHost = MultiModeTunnelHost;
     MultiModeTunnelHost.hostId = (0, uuid_1.v4)();
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/retryTcpListenerFactory.js
 var require_retryTcpListenerFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/retryTcpListenerFactory.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/retryTcpListenerFactory.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RetryTcpListenerFactory = void 0;
-    var net2 = __require("net");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RetryTcpListenerFactory = void 0;
+    var net2 = require("net");
     var RetryTcpListenerFactory = class {
       constructor(localAddress) {
         this.localAddress = localAddress;
@@ -13581,16 +16577,16 @@ var require_retryTcpListenerFactory = __commonJS({
         }
       }
     };
-    exports.RetryTcpListenerFactory = RetryTcpListenerFactory;
+    exports2.RetryTcpListenerFactory = RetryTcpListenerFactory;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/sessionPortKey.js
 var require_sessionPortKey = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/sessionPortKey.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/sessionPortKey.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SessionPortKey = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SessionPortKey = void 0;
     var SessionPortKey = class {
       constructor(sessionId, port) {
         this.sessionId = sessionId !== null && sessionId !== void 0 ? sessionId : null;
@@ -13603,20 +16599,20 @@ var require_sessionPortKey = __commonJS({
         return this.port + (this.sessionId ? "_" + this.sessionId.toString("base64") : "");
       }
     };
-    exports.SessionPortKey = SessionPortKey;
+    exports2.SessionPortKey = SessionPortKey;
   }
 });
 
 // ../../node_modules/websocket/node_modules/ms/index.js
 var require_ms = __commonJS({
-  "../../node_modules/websocket/node_modules/ms/index.js"(exports, module) {
+  "../../node_modules/websocket/node_modules/ms/index.js"(exports2, module2) {
     "use strict";
     var s = 1e3;
     var m = s * 60;
     var h = m * 60;
     var d = h * 24;
     var y = d * 365.25;
-    module.exports = function(val, options) {
+    module2.exports = function(val, options) {
       options = options || {};
       var type = typeof val;
       if (type === "string" && val.length > 0) {
@@ -13712,17 +16708,17 @@ var require_ms = __commonJS({
 
 // ../../node_modules/websocket/node_modules/debug/src/debug.js
 var require_debug = __commonJS({
-  "../../node_modules/websocket/node_modules/debug/src/debug.js"(exports, module) {
+  "../../node_modules/websocket/node_modules/debug/src/debug.js"(exports2, module2) {
     "use strict";
-    exports = module.exports = createDebug.debug = createDebug["default"] = createDebug;
-    exports.coerce = coerce;
-    exports.disable = disable;
-    exports.enable = enable;
-    exports.enabled = enabled;
-    exports.humanize = require_ms();
-    exports.names = [];
-    exports.skips = [];
-    exports.formatters = {};
+    exports2 = module2.exports = createDebug.debug = createDebug["default"] = createDebug;
+    exports2.coerce = coerce;
+    exports2.disable = disable;
+    exports2.enable = enable;
+    exports2.enabled = enabled;
+    exports2.humanize = require_ms();
+    exports2.names = [];
+    exports2.skips = [];
+    exports2.formatters = {};
     var prevTime;
     function selectColor(namespace) {
       var hash = 0, i;
@@ -13730,7 +16726,7 @@ var require_debug = __commonJS({
         hash = (hash << 5) - hash + namespace.charCodeAt(i);
         hash |= 0;
       }
-      return exports.colors[Math.abs(hash) % exports.colors.length];
+      return exports2.colors[Math.abs(hash) % exports2.colors.length];
     }
     function createDebug(namespace) {
       function debug() {
@@ -13746,7 +16742,7 @@ var require_debug = __commonJS({
         for (var i = 0; i < args.length; i++) {
           args[i] = arguments[i];
         }
-        args[0] = exports.coerce(args[0]);
+        args[0] = exports2.coerce(args[0]);
         if ("string" !== typeof args[0]) {
           args.unshift("%O");
         }
@@ -13754,7 +16750,7 @@ var require_debug = __commonJS({
         args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
           if (match === "%%") return match;
           index++;
-          var formatter = exports.formatters[format];
+          var formatter = exports2.formatters[format];
           if ("function" === typeof formatter) {
             var val = args[index];
             match = formatter.call(self2, val);
@@ -13763,47 +16759,47 @@ var require_debug = __commonJS({
           }
           return match;
         });
-        exports.formatArgs.call(self2, args);
-        var logFn = debug.log || exports.log || console.log.bind(console);
+        exports2.formatArgs.call(self2, args);
+        var logFn = debug.log || exports2.log || console.log.bind(console);
         logFn.apply(self2, args);
       }
       debug.namespace = namespace;
-      debug.enabled = exports.enabled(namespace);
-      debug.useColors = exports.useColors();
+      debug.enabled = exports2.enabled(namespace);
+      debug.useColors = exports2.useColors();
       debug.color = selectColor(namespace);
-      if ("function" === typeof exports.init) {
-        exports.init(debug);
+      if ("function" === typeof exports2.init) {
+        exports2.init(debug);
       }
       return debug;
     }
     function enable(namespaces) {
-      exports.save(namespaces);
-      exports.names = [];
-      exports.skips = [];
+      exports2.save(namespaces);
+      exports2.names = [];
+      exports2.skips = [];
       var split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
       var len = split.length;
       for (var i = 0; i < len; i++) {
         if (!split[i]) continue;
         namespaces = split[i].replace(/\*/g, ".*?");
         if (namespaces[0] === "-") {
-          exports.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
+          exports2.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
         } else {
-          exports.names.push(new RegExp("^" + namespaces + "$"));
+          exports2.names.push(new RegExp("^" + namespaces + "$"));
         }
       }
     }
     function disable() {
-      exports.enable("");
+      exports2.enable("");
     }
     function enabled(name) {
       var i, len;
-      for (i = 0, len = exports.skips.length; i < len; i++) {
-        if (exports.skips[i].test(name)) {
+      for (i = 0, len = exports2.skips.length; i < len; i++) {
+        if (exports2.skips[i].test(name)) {
           return false;
         }
       }
-      for (i = 0, len = exports.names.length; i < len; i++) {
-        if (exports.names[i].test(name)) {
+      for (i = 0, len = exports2.names.length; i < len; i++) {
+        if (exports2.names[i].test(name)) {
           return true;
         }
       }
@@ -13818,16 +16814,16 @@ var require_debug = __commonJS({
 
 // ../../node_modules/websocket/node_modules/debug/src/browser.js
 var require_browser = __commonJS({
-  "../../node_modules/websocket/node_modules/debug/src/browser.js"(exports, module) {
+  "../../node_modules/websocket/node_modules/debug/src/browser.js"(exports2, module2) {
     "use strict";
-    exports = module.exports = require_debug();
-    exports.log = log;
-    exports.formatArgs = formatArgs;
-    exports.save = save;
-    exports.load = load;
-    exports.useColors = useColors;
-    exports.storage = "undefined" != typeof chrome && "undefined" != typeof chrome.storage ? chrome.storage.local : localstorage();
-    exports.colors = [
+    exports2 = module2.exports = require_debug();
+    exports2.log = log;
+    exports2.formatArgs = formatArgs;
+    exports2.save = save;
+    exports2.load = load;
+    exports2.useColors = useColors;
+    exports2.storage = "undefined" != typeof chrome && "undefined" != typeof chrome.storage ? chrome.storage.local : localstorage();
+    exports2.colors = [
       "lightseagreen",
       "forestgreen",
       "goldenrod",
@@ -13845,7 +16841,7 @@ var require_browser = __commonJS({
       typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || // double check webkit in userAgent just in case we are in a worker
       typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
     }
-    exports.formatters.j = function(v) {
+    exports2.formatters.j = function(v) {
       try {
         return JSON.stringify(v);
       } catch (err) {
@@ -13854,7 +16850,7 @@ var require_browser = __commonJS({
     };
     function formatArgs(args) {
       var useColors2 = this.useColors;
-      args[0] = (useColors2 ? "%c" : "") + this.namespace + (useColors2 ? " %c" : " ") + args[0] + (useColors2 ? "%c " : " ") + "+" + exports.humanize(this.diff);
+      args[0] = (useColors2 ? "%c" : "") + this.namespace + (useColors2 ? " %c" : " ") + args[0] + (useColors2 ? "%c " : " ") + "+" + exports2.humanize(this.diff);
       if (!useColors2) return;
       var c = "color: " + this.color;
       args.splice(1, 0, c, "color: inherit");
@@ -13875,9 +16871,9 @@ var require_browser = __commonJS({
     function save(namespaces) {
       try {
         if (null == namespaces) {
-          exports.storage.removeItem("debug");
+          exports2.storage.removeItem("debug");
         } else {
-          exports.storage.debug = namespaces;
+          exports2.storage.debug = namespaces;
         }
       } catch (e) {
       }
@@ -13885,7 +16881,7 @@ var require_browser = __commonJS({
     function load() {
       var r;
       try {
-        r = exports.storage.debug;
+        r = exports2.storage.debug;
       } catch (e) {
       }
       if (!r && typeof process !== "undefined" && "env" in process) {
@@ -13893,7 +16889,7 @@ var require_browser = __commonJS({
       }
       return r;
     }
-    exports.enable(load());
+    exports2.enable(load());
     function localstorage() {
       try {
         return window.localStorage;
@@ -13905,19 +16901,19 @@ var require_browser = __commonJS({
 
 // ../../node_modules/websocket/node_modules/debug/src/node.js
 var require_node = __commonJS({
-  "../../node_modules/websocket/node_modules/debug/src/node.js"(exports, module) {
+  "../../node_modules/websocket/node_modules/debug/src/node.js"(exports2, module2) {
     "use strict";
-    var tty = __require("tty");
-    var util = __require("util");
-    exports = module.exports = require_debug();
-    exports.init = init;
-    exports.log = log;
-    exports.formatArgs = formatArgs;
-    exports.save = save;
-    exports.load = load;
-    exports.useColors = useColors;
-    exports.colors = [6, 2, 3, 4, 5, 1];
-    exports.inspectOpts = Object.keys(process.env).filter(function(key) {
+    var tty = require("tty");
+    var util = require("util");
+    exports2 = module2.exports = require_debug();
+    exports2.init = init;
+    exports2.log = log;
+    exports2.formatArgs = formatArgs;
+    exports2.save = save;
+    exports2.load = load;
+    exports2.useColors = useColors;
+    exports2.colors = [6, 2, 3, 4, 5, 1];
+    exports2.inspectOpts = Object.keys(process.env).filter(function(key) {
       return /^debug_/i.test(key);
     }).reduce(function(obj, key) {
       var prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, function(_, k) {
@@ -13938,15 +16934,15 @@ var require_node = __commonJS({
     }
     var stream = 1 === fd ? process.stdout : 2 === fd ? process.stderr : createWritableStdioStream(fd);
     function useColors() {
-      return "colors" in exports.inspectOpts ? Boolean(exports.inspectOpts.colors) : tty.isatty(fd);
+      return "colors" in exports2.inspectOpts ? Boolean(exports2.inspectOpts.colors) : tty.isatty(fd);
     }
-    exports.formatters.o = function(v) {
+    exports2.formatters.o = function(v) {
       this.inspectOpts.colors = this.useColors;
       return util.inspect(v, this.inspectOpts).split("\n").map(function(str) {
         return str.trim();
       }).join(" ");
     };
-    exports.formatters.O = function(v) {
+    exports2.formatters.O = function(v) {
       this.inspectOpts.colors = this.useColors;
       return util.inspect(v, this.inspectOpts);
     };
@@ -13957,7 +16953,7 @@ var require_node = __commonJS({
         var c = this.color;
         var prefix = "  \x1B[3" + c + ";1m" + name + " \x1B[0m";
         args[0] = prefix + args[0].split("\n").join("\n" + prefix);
-        args.push("\x1B[3" + c + "m+" + exports.humanize(this.diff) + "\x1B[0m");
+        args.push("\x1B[3" + c + "m+" + exports2.humanize(this.diff) + "\x1B[0m");
       } else {
         args[0] = (/* @__PURE__ */ new Date()).toUTCString() + " " + name + " " + args[0];
       }
@@ -13987,13 +16983,13 @@ var require_node = __commonJS({
           }
           break;
         case "FILE":
-          var fs2 = __require("fs");
+          var fs2 = require("fs");
           stream2 = new fs2.SyncWriteStream(fd2, { autoClose: false });
           stream2._type = "fs";
           break;
         case "PIPE":
         case "TCP":
-          var net2 = __require("net");
+          var net2 = require("net");
           stream2 = new net2.Socket({
             fd: fd2,
             readable: false,
@@ -14015,48 +17011,48 @@ var require_node = __commonJS({
     }
     function init(debug) {
       debug.inspectOpts = {};
-      var keys = Object.keys(exports.inspectOpts);
+      var keys = Object.keys(exports2.inspectOpts);
       for (var i = 0; i < keys.length; i++) {
-        debug.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
+        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
       }
     }
-    exports.enable(load());
+    exports2.enable(load());
   }
 });
 
 // ../../node_modules/websocket/node_modules/debug/src/index.js
 var require_src = __commonJS({
-  "../../node_modules/websocket/node_modules/debug/src/index.js"(exports, module) {
+  "../../node_modules/websocket/node_modules/debug/src/index.js"(exports2, module2) {
     "use strict";
     if (typeof process !== "undefined" && process.type === "renderer") {
-      module.exports = require_browser();
+      module2.exports = require_browser();
     } else {
-      module.exports = require_node();
+      module2.exports = require_node();
     }
   }
 });
 
 // ../../node_modules/websocket/lib/utils.js
 var require_utils2 = __commonJS({
-  "../../node_modules/websocket/lib/utils.js"(exports) {
+  "../../node_modules/websocket/lib/utils.js"(exports2) {
     "use strict";
-    var noop = exports.noop = function() {
+    var noop = exports2.noop = function() {
     };
-    exports.extend = function extend(dest, source) {
+    exports2.extend = function extend(dest, source) {
       for (var prop in source) {
         dest[prop] = source[prop];
       }
     };
-    exports.eventEmitterListenerCount = __require("events").EventEmitter.listenerCount || function(emitter, type) {
+    exports2.eventEmitterListenerCount = require("events").EventEmitter.listenerCount || function(emitter, type) {
       return emitter.listeners(type).length;
     };
-    exports.bufferAllocUnsafe = Buffer.allocUnsafe ? Buffer.allocUnsafe : function oldBufferAllocUnsafe(size) {
+    exports2.bufferAllocUnsafe = Buffer.allocUnsafe ? Buffer.allocUnsafe : function oldBufferAllocUnsafe(size) {
       return new Buffer(size);
     };
-    exports.bufferFromString = Buffer.from ? Buffer.from : function oldBufferFromString(string, encoding) {
+    exports2.bufferFromString = Buffer.from ? Buffer.from : function oldBufferFromString(string, encoding) {
       return new Buffer(string, encoding);
     };
-    exports.BufferingLogger = function createBufferingLogger(identifier, uniqueID) {
+    exports2.BufferingLogger = function createBufferingLogger(identifier, uniqueID) {
       var logFunction = require_src()(identifier);
       if (logFunction.enabled) {
         var logger = new BufferingLogger(identifier, uniqueID, logFunction);
@@ -14103,12 +17099,12 @@ var require_utils2 = __commonJS({
 
 // ../../node_modules/node-gyp-build/node-gyp-build.js
 var require_node_gyp_build = __commonJS({
-  "../../node_modules/node-gyp-build/node-gyp-build.js"(exports, module) {
+  "../../node_modules/node-gyp-build/node-gyp-build.js"(exports2, module2) {
     "use strict";
-    var fs2 = __require("fs");
-    var path2 = __require("path");
-    var os3 = __require("os");
-    var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : __require;
+    var fs2 = require("fs");
+    var path2 = require("path");
+    var os3 = require("os");
+    var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
     var vars = process.config && process.config.variables || {};
     var prebuildsOnly = !!process.env.PREBUILDS_ONLY;
     var abi = process.versions.modules;
@@ -14118,7 +17114,7 @@ var require_node_gyp_build = __commonJS({
     var libc = process.env.LIBC || (isAlpine(platform) ? "musl" : "glibc");
     var armv = process.env.ARM_VERSION || (arch === "arm64" ? "8" : vars.arm_version) || "";
     var uv = (process.versions.uv || "").split(".")[0];
-    module.exports = load;
+    module2.exports = load;
     function load(dir) {
       return runtimeRequire(load.resolve(dir));
     }
@@ -14273,20 +17269,20 @@ var require_node_gyp_build = __commonJS({
 
 // ../../node_modules/node-gyp-build/index.js
 var require_node_gyp_build2 = __commonJS({
-  "../../node_modules/node-gyp-build/index.js"(exports, module) {
+  "../../node_modules/node-gyp-build/index.js"(exports2, module2) {
     "use strict";
-    var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : __require;
+    var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
     if (typeof runtimeRequire.addon === "function") {
-      module.exports = runtimeRequire.addon.bind(runtimeRequire);
+      module2.exports = runtimeRequire.addon.bind(runtimeRequire);
     } else {
-      module.exports = require_node_gyp_build();
+      module2.exports = require_node_gyp_build();
     }
   }
 });
 
 // ../../node_modules/bufferutil/fallback.js
 var require_fallback = __commonJS({
-  "../../node_modules/bufferutil/fallback.js"(exports, module) {
+  "../../node_modules/bufferutil/fallback.js"(exports2, module2) {
     "use strict";
     var mask = (source, mask2, output, offset, length) => {
       for (var i = 0; i < length; i++) {
@@ -14299,25 +17295,25 @@ var require_fallback = __commonJS({
         buffer[i] ^= mask2[i & 3];
       }
     };
-    module.exports = { mask, unmask };
+    module2.exports = { mask, unmask };
   }
 });
 
 // ../../node_modules/bufferutil/index.js
 var require_bufferutil = __commonJS({
-  "../../node_modules/bufferutil/index.js"(exports, module) {
+  "../../node_modules/bufferutil/index.js"(exports2, module2) {
     "use strict";
     try {
-      module.exports = require_node_gyp_build2()(__dirname);
+      module2.exports = require_node_gyp_build2()(__dirname);
     } catch (e) {
-      module.exports = require_fallback();
+      module2.exports = require_fallback();
     }
   }
 });
 
 // ../../node_modules/websocket/lib/WebSocketFrame.js
 var require_WebSocketFrame = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketFrame.js"(exports, module) {
+  "../../node_modules/websocket/lib/WebSocketFrame.js"(exports2, module2) {
     "use strict";
     var bufferUtil = require_bufferutil();
     var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
@@ -14525,19 +17521,19 @@ var require_WebSocketFrame = __commonJS({
     WebSocketFrame.prototype.toString = function() {
       return "Opcode: " + this.opcode + ", fin: " + this.fin + ", length: " + this.length + ", hasPayload: " + Boolean(this.binaryPayload) + ", masked: " + this.mask;
     };
-    module.exports = WebSocketFrame;
+    module2.exports = WebSocketFrame;
   }
 });
 
 // ../../node_modules/websocket/vendor/FastBufferList.js
 var require_FastBufferList = __commonJS({
-  "../../node_modules/websocket/vendor/FastBufferList.js"(exports, module) {
+  "../../node_modules/websocket/vendor/FastBufferList.js"(exports2, module2) {
     "use strict";
-    var Buffer2 = __require("buffer").Buffer;
-    var EventEmitter = __require("events").EventEmitter;
+    var Buffer2 = require("buffer").Buffer;
+    var EventEmitter = require("events").EventEmitter;
     var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
-    module.exports = BufferList;
-    module.exports.BufferList = BufferList;
+    module2.exports = BufferList;
+    module2.exports.BufferList = BufferList;
     function BufferList(opts) {
       if (!(this instanceof BufferList)) return new BufferList(opts);
       EventEmitter.call(this);
@@ -14665,13 +17661,13 @@ var require_FastBufferList = __commonJS({
         return self2.take("binary");
       };
     }
-    __require("util").inherits(BufferList, EventEmitter);
+    require("util").inherits(BufferList, EventEmitter);
   }
 });
 
 // ../../node_modules/utf-8-validate/fallback.js
 var require_fallback2 = __commonJS({
-  "../../node_modules/utf-8-validate/fallback.js"(exports, module) {
+  "../../node_modules/utf-8-validate/fallback.js"(exports2, module2) {
     "use strict";
     function isValidUTF8(buf) {
       const len = buf.length;
@@ -14702,29 +17698,29 @@ var require_fallback2 = __commonJS({
       }
       return true;
     }
-    module.exports = isValidUTF8;
+    module2.exports = isValidUTF8;
   }
 });
 
 // ../../node_modules/utf-8-validate/index.js
 var require_utf_8_validate = __commonJS({
-  "../../node_modules/utf-8-validate/index.js"(exports, module) {
+  "../../node_modules/utf-8-validate/index.js"(exports2, module2) {
     "use strict";
     try {
-      module.exports = require_node_gyp_build2()(__dirname);
+      module2.exports = require_node_gyp_build2()(__dirname);
     } catch (e) {
-      module.exports = require_fallback2();
+      module2.exports = require_fallback2();
     }
   }
 });
 
 // ../../node_modules/websocket/lib/WebSocketConnection.js
 var require_WebSocketConnection = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketConnection.js"(exports, module) {
+  "../../node_modules/websocket/lib/WebSocketConnection.js"(exports2, module2) {
     "use strict";
-    var util = __require("util");
+    var util = require("util");
     var utils = require_utils2();
-    var EventEmitter = __require("events").EventEmitter;
+    var EventEmitter = require("events").EventEmitter;
     var WebSocketFrame = require_WebSocketFrame();
     var BufferList = require_FastBufferList();
     var isValidUTF8 = require_utf_8_validate();
@@ -15403,7 +18399,7 @@ var require_WebSocketConnection = __commonJS({
       this.outputBufferFull = !flushed;
       return flushed;
     };
-    module.exports = WebSocketConnection;
+    module2.exports = WebSocketConnection;
     function instrumentSocketForDebugging(connection, socket) {
       if (!connection._debug.enabled) {
         return;
@@ -15441,12 +18437,12 @@ var require_WebSocketConnection = __commonJS({
 
 // ../../node_modules/websocket/lib/WebSocketRequest.js
 var require_WebSocketRequest = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketRequest.js"(exports, module) {
+  "../../node_modules/websocket/lib/WebSocketRequest.js"(exports2, module2) {
     "use strict";
-    var crypto2 = __require("crypto");
-    var util = __require("util");
-    var url = __require("url");
-    var EventEmitter = __require("events").EventEmitter;
+    var crypto2 = require("crypto");
+    var util = require("util");
+    var url = require("url");
+    var EventEmitter = require("events").EventEmitter;
     var WebSocketConnection = require_WebSocketConnection();
     var headerValueSplitRegExp = /,\s*/;
     var headerParamSplitRegExp = /;\s*/;
@@ -15851,19 +18847,19 @@ var require_WebSocketRequest = __commonJS({
         connection.drop(1006, "TCP connection lost before handshake completed.", true);
       });
     }
-    module.exports = WebSocketRequest;
+    module2.exports = WebSocketRequest;
   }
 });
 
 // ../../node_modules/websocket/lib/WebSocketServer.js
 var require_WebSocketServer = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketServer.js"(exports, module) {
+  "../../node_modules/websocket/lib/WebSocketServer.js"(exports2, module2) {
     "use strict";
     var extend = require_utils2().extend;
     var utils = require_utils2();
-    var util = __require("util");
+    var util = require("util");
     var debug = require_src()("websocket:server");
-    var EventEmitter = __require("events").EventEmitter;
+    var EventEmitter = require("events").EventEmitter;
     var WebSocketRequest = require_WebSocketRequest();
     var WebSocketServer = function WebSocketServer2(config) {
       EventEmitter.call(this);
@@ -16059,22 +19055,22 @@ var require_WebSocketServer = __commonJS({
         this.pendingRequests.splice(index, 1);
       }
     };
-    module.exports = WebSocketServer;
+    module2.exports = WebSocketServer;
   }
 });
 
 // ../../node_modules/websocket/lib/WebSocketClient.js
 var require_WebSocketClient = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketClient.js"(exports, module) {
+  "../../node_modules/websocket/lib/WebSocketClient.js"(exports2, module2) {
     "use strict";
     var utils = require_utils2();
     var extend = utils.extend;
-    var util = __require("util");
-    var EventEmitter = __require("events").EventEmitter;
-    var http = __require("http");
-    var https = __require("https");
-    var url = __require("url");
-    var crypto2 = __require("crypto");
+    var util = require("util");
+    var EventEmitter = require("events").EventEmitter;
+    var http = require("http");
+    var https = require("https");
+    var url = require("url");
+    var crypto2 = require("crypto");
     var WebSocketConnection = require_WebSocketConnection();
     var bufferAllocUnsafe = utils.bufferAllocUnsafe;
     var protocolSeparators = [
@@ -16355,16 +19351,16 @@ var require_WebSocketClient = __commonJS({
         this._req.abort();
       }
     };
-    module.exports = WebSocketClient;
+    module2.exports = WebSocketClient;
   }
 });
 
 // ../../node_modules/websocket/lib/WebSocketRouterRequest.js
 var require_WebSocketRouterRequest = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketRouterRequest.js"(exports, module) {
+  "../../node_modules/websocket/lib/WebSocketRouterRequest.js"(exports2, module2) {
     "use strict";
-    var util = __require("util");
-    var EventEmitter = __require("events").EventEmitter;
+    var util = require("util");
+    var EventEmitter = require("events").EventEmitter;
     function WebSocketRouterRequest(webSocketRequest, resolvedProtocol) {
       EventEmitter.call(this);
       this.webSocketRequest = webSocketRequest;
@@ -16392,17 +19388,17 @@ var require_WebSocketRouterRequest = __commonJS({
       this.webSocketRequest.reject(status, reason, extraHeaders);
       this.emit("requestRejected", this);
     };
-    module.exports = WebSocketRouterRequest;
+    module2.exports = WebSocketRouterRequest;
   }
 });
 
 // ../../node_modules/websocket/lib/WebSocketRouter.js
 var require_WebSocketRouter = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketRouter.js"(exports, module) {
+  "../../node_modules/websocket/lib/WebSocketRouter.js"(exports2, module2) {
     "use strict";
     var extend = require_utils2().extend;
-    var util = __require("util");
-    var EventEmitter = __require("events").EventEmitter;
+    var util = require("util");
+    var EventEmitter = require("events").EventEmitter;
     var WebSocketRouterRequest = require_WebSocketRouterRequest();
     function WebSocketRouter(config) {
       EventEmitter.call(this);
@@ -16511,15 +19507,15 @@ var require_WebSocketRouter = __commonJS({
       }
       request.reject(404, "No handler is available for the given request.");
     };
-    module.exports = WebSocketRouter;
+    module2.exports = WebSocketRouter;
   }
 });
 
 // ../../node_modules/is-typedarray/index.js
 var require_is_typedarray = __commonJS({
-  "../../node_modules/is-typedarray/index.js"(exports, module) {
+  "../../node_modules/is-typedarray/index.js"(exports2, module2) {
     "use strict";
-    module.exports = isTypedArray;
+    module2.exports = isTypedArray;
     isTypedArray.strict = isStrictTypedArray;
     isTypedArray.loose = isLooseTypedArray;
     var toString = Object.prototype.toString;
@@ -16548,10 +19544,10 @@ var require_is_typedarray = __commonJS({
 
 // ../../node_modules/typedarray-to-buffer/index.js
 var require_typedarray_to_buffer = __commonJS({
-  "../../node_modules/typedarray-to-buffer/index.js"(exports, module) {
+  "../../node_modules/typedarray-to-buffer/index.js"(exports2, module2) {
     "use strict";
     var isTypedArray = require_is_typedarray().strict;
-    module.exports = function typedarrayToBuffer(arr) {
+    module2.exports = function typedarrayToBuffer(arr) {
       if (isTypedArray(arr)) {
         var buf = Buffer.from(arr.buffer);
         if (arr.byteLength !== arr.buffer.byteLength) {
@@ -16567,9 +19563,9 @@ var require_typedarray_to_buffer = __commonJS({
 
 // ../../node_modules/yaeti/lib/EventTarget.js
 var require_EventTarget = __commonJS({
-  "../../node_modules/yaeti/lib/EventTarget.js"(exports, module) {
+  "../../node_modules/yaeti/lib/EventTarget.js"(exports2, module2) {
     "use strict";
-    module.exports = _EventTarget;
+    module2.exports = _EventTarget;
     function _EventTarget() {
       if (typeof this.addEventListener === "function") {
         return;
@@ -16655,9 +19651,9 @@ var require_EventTarget = __commonJS({
 
 // ../../node_modules/yaeti/lib/Event.js
 var require_Event = __commonJS({
-  "../../node_modules/yaeti/lib/Event.js"(exports, module) {
+  "../../node_modules/yaeti/lib/Event.js"(exports2, module2) {
     "use strict";
-    module.exports = _Event;
+    module2.exports = _Event;
     function _Event(type) {
       this.type = type;
       this.isTrusted = false;
@@ -16668,9 +19664,9 @@ var require_Event = __commonJS({
 
 // ../../node_modules/yaeti/index.js
 var require_yaeti = __commonJS({
-  "../../node_modules/yaeti/index.js"(exports, module) {
+  "../../node_modules/yaeti/index.js"(exports2, module2) {
     "use strict";
-    module.exports = {
+    module2.exports = {
       EventTarget: require_EventTarget(),
       Event: require_Event()
     };
@@ -16679,7 +19675,7 @@ var require_yaeti = __commonJS({
 
 // ../../node_modules/websocket/lib/W3CWebSocket.js
 var require_W3CWebSocket = __commonJS({
-  "../../node_modules/websocket/lib/W3CWebSocket.js"(exports, module) {
+  "../../node_modules/websocket/lib/W3CWebSocket.js"(exports2, module2) {
     "use strict";
     var WebSocketClient = require_WebSocketClient();
     var toBuffer = require_typedarray_to_buffer();
@@ -16688,7 +19684,7 @@ var require_W3CWebSocket = __commonJS({
     var OPEN = 1;
     var CLOSING = 2;
     var CLOSED = 3;
-    module.exports = W3CWebSocket;
+    module2.exports = W3CWebSocket;
     function W3CWebSocket(url, protocols, origin, headers, requestOptions, clientConfig) {
       yaeti.EventTarget.call(this);
       clientConfig = clientConfig || {};
@@ -16862,7 +19858,7 @@ var require_W3CWebSocket = __commonJS({
 
 // ../../node_modules/websocket/lib/Deprecation.js
 var require_Deprecation = __commonJS({
-  "../../node_modules/websocket/lib/Deprecation.js"(exports, module) {
+  "../../node_modules/websocket/lib/Deprecation.js"(exports2, module2) {
     "use strict";
     var Deprecation = {
       disableWarnings: false,
@@ -16874,14 +19870,14 @@ var require_Deprecation = __commonJS({
         }
       }
     };
-    module.exports = Deprecation;
+    module2.exports = Deprecation;
   }
 });
 
 // ../../node_modules/websocket/package.json
 var require_package2 = __commonJS({
-  "../../node_modules/websocket/package.json"(exports, module) {
-    module.exports = {
+  "../../node_modules/websocket/package.json"(exports2, module2) {
+    module2.exports = {
       name: "websocket",
       description: "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
       keywords: [
@@ -16944,17 +19940,17 @@ var require_package2 = __commonJS({
 
 // ../../node_modules/websocket/lib/version.js
 var require_version = __commonJS({
-  "../../node_modules/websocket/lib/version.js"(exports, module) {
+  "../../node_modules/websocket/lib/version.js"(exports2, module2) {
     "use strict";
-    module.exports = require_package2().version;
+    module2.exports = require_package2().version;
   }
 });
 
 // ../../node_modules/websocket/lib/websocket.js
 var require_websocket = __commonJS({
-  "../../node_modules/websocket/lib/websocket.js"(exports, module) {
+  "../../node_modules/websocket/lib/websocket.js"(exports2, module2) {
     "use strict";
-    module.exports = {
+    module2.exports = {
       "server": require_WebSocketServer(),
       "client": require_WebSocketClient(),
       "router": require_WebSocketRouter(),
@@ -16970,18 +19966,18 @@ var require_websocket = __commonJS({
 
 // ../../node_modules/websocket/index.js
 var require_websocket2 = __commonJS({
-  "../../node_modules/websocket/index.js"(exports, module) {
+  "../../node_modules/websocket/index.js"(exports2, module2) {
     "use strict";
-    module.exports = require_websocket();
+    module2.exports = require_websocket();
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/sshHelpers.js
 var require_sshHelpers = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/sshHelpers.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/sshHelpers.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RelayConnectionError = exports.RelayErrorType = exports.isNode = exports.SshHelpers = exports.BrowserWebSocketRelayError = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RelayConnectionError = exports2.RelayErrorType = exports2.isNode = exports2.SshHelpers = exports2.BrowserWebSocketRelayError = void 0;
     var ssh = require_dev_tunnels_ssh();
     var websocket_1 = require_websocket2();
     var BrowserWebSocketRelayError = class extends Error {
@@ -16989,7 +19985,7 @@ var require_sshHelpers = __commonJS({
         super(message);
       }
     };
-    exports.BrowserWebSocketRelayError = BrowserWebSocketRelayError;
+    exports2.BrowserWebSocketRelayError = BrowserWebSocketRelayError;
     var SshHelpers = class _SshHelpers {
       /**
        * Open a connection to the relay uri depending on the running environment.
@@ -17000,7 +19996,7 @@ var require_sshHelpers = __commonJS({
        * @returns
        */
       static openConnection(relayUri, protocols, headers, clientConfig) {
-        if ((0, exports.isNode)()) {
+        if ((0, exports2.isNode)()) {
           return _SshHelpers.nodeSshStreamFactory(relayUri, protocols, headers, clientConfig);
         }
         return _SshHelpers.webSshStreamFactory(new WebSocket(relayUri, protocols));
@@ -17100,7 +20096,7 @@ var require_sshHelpers = __commonJS({
         });
       }
     };
-    exports.SshHelpers = SshHelpers;
+    exports2.SshHelpers = SshHelpers;
     var WebsocketStreamAdapter = class {
       constructor(connection) {
         this.connection = connection;
@@ -17140,7 +20136,7 @@ var require_sshHelpers = __commonJS({
       }
     };
     var isNode = () => typeof process !== "undefined" && typeof process.release !== "undefined" && process.release.name === "node";
-    exports.isNode = isNode;
+    exports2.isNode = isNode;
     var RelayErrorType;
     (function(RelayErrorType2) {
       RelayErrorType2[RelayErrorType2["ConnectionError"] = 1] = "ConnectionError";
@@ -17152,14 +20148,14 @@ var require_sshHelpers = __commonJS({
       RelayErrorType2[RelayErrorType2["TooManyRequests"] = 7] = "TooManyRequests";
       RelayErrorType2[RelayErrorType2["ServiceUnavailable"] = 8] = "ServiceUnavailable";
       RelayErrorType2[RelayErrorType2["BadGateway"] = 9] = "BadGateway";
-    })(RelayErrorType = exports.RelayErrorType || (exports.RelayErrorType = {}));
+    })(RelayErrorType = exports2.RelayErrorType || (exports2.RelayErrorType = {}));
     var RelayConnectionError = class extends Error {
       constructor(message, errorContext) {
         super(message);
         this.errorContext = errorContext;
       }
     };
-    exports.RelayConnectionError = RelayConnectionError;
+    exports2.RelayConnectionError = RelayConnectionError;
     var webSocketClientContexts = [
       {
         regex: /status: 401/,
@@ -17209,18 +20205,18 @@ var require_sshHelpers = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayStreamFactory.js
 var require_tunnelRelayStreamFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayStreamFactory.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayStreamFactory.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/defaultTunnelRelayStreamFactory.js
 var require_defaultTunnelRelayStreamFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/defaultTunnelRelayStreamFactory.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/defaultTunnelRelayStreamFactory.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DefaultTunnelRelayStreamFactory = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.DefaultTunnelRelayStreamFactory = void 0;
     var sshHelpers_1 = require_sshHelpers();
     var DefaultTunnelRelayStreamFactory = class {
       async createRelayStream(relayUri, protocols, accessToken, clientConfig) {
@@ -17236,17 +20232,17 @@ var require_defaultTunnelRelayStreamFactory = __commonJS({
         }
       }
     };
-    exports.DefaultTunnelRelayStreamFactory = DefaultTunnelRelayStreamFactory;
+    exports2.DefaultTunnelRelayStreamFactory = DefaultTunnelRelayStreamFactory;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshClient.js
 var require_sshClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshClient.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshClient.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshClient = void 0;
-    var net2 = __require("net");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshClient = void 0;
+    var net2 = require("net");
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var SshClient = class _SshClient {
       constructor(config) {
@@ -17294,18 +20290,18 @@ var require_sshClient = __commonJS({
         }
       }
     };
-    exports.SshClient = SshClient;
+    exports2.SshClient = SshClient;
     SshClient.defaultServerPort = 22;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/tcpListenerFactory.js
 var require_tcpListenerFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/tcpListenerFactory.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/tcpListenerFactory.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DefaultTcpListenerFactory = void 0;
-    var net2 = __require("net");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.DefaultTcpListenerFactory = void 0;
+    var net2 = require("net");
     var DefaultTcpListenerFactory = class {
       async createTcpListener(remotePort, localIPAddress, localPort, canChangeLocalPort, cancellation) {
         if (!localIPAddress)
@@ -17326,16 +20322,16 @@ var require_tcpListenerFactory = __commonJS({
         return listener;
       }
     };
-    exports.DefaultTcpListenerFactory = DefaultTcpListenerFactory;
+    exports2.DefaultTcpListenerFactory = DefaultTcpListenerFactory;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshServer.js
 var require_sshServer = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshServer.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshServer.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SshServer = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshServer = void 0;
     var vscode_jsonrpc_1 = require_main();
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var tcpListenerFactory_1 = require_tcpListenerFactory();
@@ -17415,16 +20411,16 @@ var require_sshServer = __commonJS({
         (_a = this.tcpListener) === null || _a === void 0 ? void 0 : _a.close();
       }
     };
-    exports.SshServer = SshServer;
+    exports2.SshServer = SshServer;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPort.js
 var require_forwardedPort = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPort.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPort.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ForwardedPort = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ForwardedPort = void 0;
     var ForwardedPort = class {
       /** @internal */
       constructor(localPort, remotePort, isRemote) {
@@ -17460,16 +20456,16 @@ var require_forwardedPort = __commonJS({
         return this.str;
       }
     };
-    exports.ForwardedPort = ForwardedPort;
+    exports2.ForwardedPort = ForwardedPort;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortEventArgs.js
 var require_forwardedPortEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ForwardedPortConnectingEventArgs = exports.ForwardedPortChannelEventArgs = exports.ForwardedPortEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ForwardedPortConnectingEventArgs = exports2.ForwardedPortChannelEventArgs = exports2.ForwardedPortEventArgs = void 0;
     var ForwardedPortEventArgs = class {
       constructor(port) {
         this.port = port;
@@ -17478,7 +20474,7 @@ var require_forwardedPortEventArgs = __commonJS({
         return this.port.toString();
       }
     };
-    exports.ForwardedPortEventArgs = ForwardedPortEventArgs;
+    exports2.ForwardedPortEventArgs = ForwardedPortEventArgs;
     var ForwardedPortChannelEventArgs = class extends ForwardedPortEventArgs {
       constructor(port, channel) {
         super(port);
@@ -17489,7 +20485,7 @@ var require_forwardedPortEventArgs = __commonJS({
         return `${this.port} ${this.channel}`;
       }
     };
-    exports.ForwardedPortChannelEventArgs = ForwardedPortChannelEventArgs;
+    exports2.ForwardedPortChannelEventArgs = ForwardedPortChannelEventArgs;
     var ForwardedPortConnectingEventArgs = class {
       constructor(port, isIncoming, stream, cancellation) {
         this.port = port;
@@ -17501,16 +20497,16 @@ var require_forwardedPortEventArgs = __commonJS({
         return `${this.port} isIncoming=${this.isIncoming}`;
       }
     };
-    exports.ForwardedPortConnectingEventArgs = ForwardedPortConnectingEventArgs;
+    exports2.ForwardedPortConnectingEventArgs = ForwardedPortConnectingEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortsCollection.js
 var require_forwardedPortsCollection = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortsCollection.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortsCollection.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ForwardedPortsCollection = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ForwardedPortsCollection = void 0;
     var vscode_jsonrpc_1 = require_main();
     var forwardedPortEventArgs_1 = require_forwardedPortEventArgs();
     var ForwardedPortsCollection = class {
@@ -17626,16 +20622,16 @@ var require_forwardedPortsCollection = __commonJS({
         return [...this].join(", ");
       }
     };
-    exports.ForwardedPortsCollection = ForwardedPortsCollection;
+    exports2.ForwardedPortsCollection = ForwardedPortsCollection;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/ipAddressConversions.js
 var require_ipAddressConversions = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/ipAddressConversions.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/ipAddressConversions.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.IPAddressConversions = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.IPAddressConversions = void 0;
     var IPAddressConversions = class {
       /**
        * Converts from an SSH-protocol address string to an IP address string.
@@ -17664,16 +20660,16 @@ var require_ipAddressConversions = __commonJS({
         }
       }
     };
-    exports.IPAddressConversions = IPAddressConversions;
+    exports2.IPAddressConversions = IPAddressConversions;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardChannelOpenMessage.js
 var require_portForwardChannelOpenMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardChannelOpenMessage.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardChannelOpenMessage.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PortForwardChannelOpenMessage = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardChannelOpenMessage = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var PortForwardChannelOpenMessage = class extends dev_tunnels_ssh_1.ChannelOpenMessage {
       constructor() {
@@ -17701,16 +20697,16 @@ var require_portForwardChannelOpenMessage = __commonJS({
         return `${super.toString()} (host=${this.host} port=${this.port})`;
       }
     };
-    exports.PortForwardChannelOpenMessage = PortForwardChannelOpenMessage;
+    exports2.PortForwardChannelOpenMessage = PortForwardChannelOpenMessage;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardRequestMessage.js
 var require_portForwardRequestMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardRequestMessage.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardRequestMessage.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PortForwardRequestMessage = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardRequestMessage = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var portForwardingService_1 = require_portForwardingService();
     var PortForwardRequestMessage = class extends dev_tunnels_ssh_1.SessionRequestMessage {
@@ -17735,16 +20731,16 @@ var require_portForwardRequestMessage = __commonJS({
         return `${super.toString()} (addressToBind=${this.addressToBind} port=${this.port})`;
       }
     };
-    exports.PortForwardRequestMessage = PortForwardRequestMessage;
+    exports2.PortForwardRequestMessage = PortForwardRequestMessage;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardSuccessMessage.js
 var require_portForwardSuccessMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardSuccessMessage.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardSuccessMessage.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PortForwardSuccessMessage = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardSuccessMessage = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var PortForwardSuccessMessage = class extends dev_tunnels_ssh_1.SessionRequestSuccessMessage {
       constructor() {
@@ -17765,16 +20761,16 @@ var require_portForwardSuccessMessage = __commonJS({
         return `${super.toString()} (port=${this.port})`;
       }
     };
-    exports.PortForwardSuccessMessage = PortForwardSuccessMessage;
+    exports2.PortForwardSuccessMessage = PortForwardSuccessMessage;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/portForwardMessageFactory.js
 var require_portForwardMessageFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/portForwardMessageFactory.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/portForwardMessageFactory.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.DefaultPortForwardMessageFactory = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.DefaultPortForwardMessageFactory = void 0;
     var portForwardChannelOpenMessage_1 = require_portForwardChannelOpenMessage();
     var portForwardRequestMessage_1 = require_portForwardRequestMessage();
     var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
@@ -17789,18 +20785,18 @@ var require_portForwardMessageFactory = __commonJS({
         return Promise.resolve(new portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage());
       }
     };
-    exports.DefaultPortForwardMessageFactory = DefaultPortForwardMessageFactory;
+    exports2.DefaultPortForwardMessageFactory = DefaultPortForwardMessageFactory;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/streamForwarder.js
 var require_streamForwarder = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/streamForwarder.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/streamForwarder.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.StreamForwarder = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.StreamForwarder = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var net_1 = __require("net");
+    var net_1 = require("net");
     var StreamForwarder = class {
       /* @internal */
       constructor(localStream, remoteStream, trace) {
@@ -17842,16 +20838,16 @@ var require_streamForwarder = __commonJS({
         }
       }
     };
-    exports.StreamForwarder = StreamForwarder;
+    exports2.StreamForwarder = StreamForwarder;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/localPortForwarder.js
 var require_localPortForwarder = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/localPortForwarder.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/localPortForwarder.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.LocalPortForwarder = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.LocalPortForwarder = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var streamForwarder_1 = require_streamForwarder();
     var LocalPortForwarder = class extends dev_tunnels_ssh_1.SshService {
@@ -17934,16 +20930,16 @@ var require_localPortForwarder = __commonJS({
         super.dispose();
       }
     };
-    exports.LocalPortForwarder = LocalPortForwarder;
+    exports2.LocalPortForwarder = LocalPortForwarder;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortConnector.js
 var require_remotePortConnector = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortConnector.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortConnector.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RemotePortConnector = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RemotePortConnector = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var portForwardRequestMessage_1 = require_portForwardRequestMessage();
     var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
@@ -17999,17 +20995,17 @@ var require_remotePortConnector = __commonJS({
         super.dispose();
       }
     };
-    exports.RemotePortConnector = RemotePortConnector;
+    exports2.RemotePortConnector = RemotePortConnector;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortForwarder.js
 var require_remotePortForwarder = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortForwarder.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortForwarder.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RemotePortForwarder = void 0;
-    var net2 = __require("net");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RemotePortForwarder = void 0;
+    var net2 = require("net");
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var streamForwarder_1 = require_streamForwarder();
     var remotePortConnector_1 = require_remotePortConnector();
@@ -18071,16 +21067,16 @@ var require_remotePortForwarder = __commonJS({
         pfs.streamForwarders.push(streamForwarder);
       }
     };
-    exports.RemotePortForwarder = RemotePortForwarder;
+    exports2.RemotePortForwarder = RemotePortForwarder;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortStreamer.js
 var require_remotePortStreamer = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortStreamer.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortStreamer.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RemotePortStreamer = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RemotePortStreamer = void 0;
     var vscode_jsonrpc_1 = require_main();
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var remotePortConnector_1 = require_remotePortConnector();
@@ -18097,23 +21093,23 @@ var require_remotePortStreamer = __commonJS({
         this.streamOpenedEmitter.fire(stream);
       }
     };
-    exports.RemotePortStreamer = RemotePortStreamer;
+    exports2.RemotePortStreamer = RemotePortStreamer;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/portForwardingService.js
 var require_portForwardingService = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/portForwardingService.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/portForwardingService.js"(exports2) {
     "use strict";
-    var __decorate = exports && exports.__decorate || function(decorators, target, key, desc) {
+    var __decorate = exports2 && exports2.__decorate || function(decorators, target, key, desc) {
       var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
       if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
       else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
       return c > 3 && r && Object.defineProperty(target, key, r), r;
     };
     var PortForwardingService_1;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PortForwardingService = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardingService = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var vscode_jsonrpc_1 = require_main();
     var forwardedPort_1 = require_forwardedPort();
@@ -18536,68 +21532,68 @@ var require_portForwardingService = __commonJS({
       (0, dev_tunnels_ssh_1.serviceActivation)({ channelType: PortForwardingService_1.portForwardChannelType }),
       (0, dev_tunnels_ssh_1.serviceActivation)({ channelType: PortForwardingService_1.reversePortForwardChannelType })
     ], PortForwardingService);
-    exports.PortForwardingService = PortForwardingService;
+    exports2.PortForwardingService = PortForwardingService;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/index.js
 var require_dev_tunnels_ssh_tcp = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/index.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/index.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ForwardedPortConnectingEventArgs = exports.ForwardedPortChannelEventArgs = exports.ForwardedPortEventArgs = exports.ForwardedPortsCollection = exports.ForwardedPort = exports.PortForwardChannelOpenMessage = exports.PortForwardSuccessMessage = exports.PortForwardRequestMessage = exports.RemotePortStreamer = exports.RemotePortForwarder = exports.LocalPortForwarder = exports.PortForwardingService = exports.SshServer = exports.SshClient = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ForwardedPortConnectingEventArgs = exports2.ForwardedPortChannelEventArgs = exports2.ForwardedPortEventArgs = exports2.ForwardedPortsCollection = exports2.ForwardedPort = exports2.PortForwardChannelOpenMessage = exports2.PortForwardSuccessMessage = exports2.PortForwardRequestMessage = exports2.RemotePortStreamer = exports2.RemotePortForwarder = exports2.LocalPortForwarder = exports2.PortForwardingService = exports2.SshServer = exports2.SshClient = void 0;
     var sshClient_1 = require_sshClient();
-    Object.defineProperty(exports, "SshClient", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshClient", { enumerable: true, get: function() {
       return sshClient_1.SshClient;
     } });
     var sshServer_1 = require_sshServer();
-    Object.defineProperty(exports, "SshServer", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SshServer", { enumerable: true, get: function() {
       return sshServer_1.SshServer;
     } });
     var portForwardingService_1 = require_portForwardingService();
-    Object.defineProperty(exports, "PortForwardingService", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PortForwardingService", { enumerable: true, get: function() {
       return portForwardingService_1.PortForwardingService;
     } });
     var localPortForwarder_1 = require_localPortForwarder();
-    Object.defineProperty(exports, "LocalPortForwarder", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "LocalPortForwarder", { enumerable: true, get: function() {
       return localPortForwarder_1.LocalPortForwarder;
     } });
     var remotePortForwarder_1 = require_remotePortForwarder();
-    Object.defineProperty(exports, "RemotePortForwarder", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RemotePortForwarder", { enumerable: true, get: function() {
       return remotePortForwarder_1.RemotePortForwarder;
     } });
     var remotePortStreamer_1 = require_remotePortStreamer();
-    Object.defineProperty(exports, "RemotePortStreamer", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RemotePortStreamer", { enumerable: true, get: function() {
       return remotePortStreamer_1.RemotePortStreamer;
     } });
     var portForwardRequestMessage_1 = require_portForwardRequestMessage();
-    Object.defineProperty(exports, "PortForwardRequestMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PortForwardRequestMessage", { enumerable: true, get: function() {
       return portForwardRequestMessage_1.PortForwardRequestMessage;
     } });
     var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
-    Object.defineProperty(exports, "PortForwardSuccessMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PortForwardSuccessMessage", { enumerable: true, get: function() {
       return portForwardSuccessMessage_1.PortForwardSuccessMessage;
     } });
     var portForwardChannelOpenMessage_1 = require_portForwardChannelOpenMessage();
-    Object.defineProperty(exports, "PortForwardChannelOpenMessage", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "PortForwardChannelOpenMessage", { enumerable: true, get: function() {
       return portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage;
     } });
     var forwardedPort_1 = require_forwardedPort();
-    Object.defineProperty(exports, "ForwardedPort", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ForwardedPort", { enumerable: true, get: function() {
       return forwardedPort_1.ForwardedPort;
     } });
     var forwardedPortsCollection_1 = require_forwardedPortsCollection();
-    Object.defineProperty(exports, "ForwardedPortsCollection", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ForwardedPortsCollection", { enumerable: true, get: function() {
       return forwardedPortsCollection_1.ForwardedPortsCollection;
     } });
     var forwardedPortEventArgs_1 = require_forwardedPortEventArgs();
-    Object.defineProperty(exports, "ForwardedPortEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ForwardedPortEventArgs", { enumerable: true, get: function() {
       return forwardedPortEventArgs_1.ForwardedPortEventArgs;
     } });
-    Object.defineProperty(exports, "ForwardedPortChannelEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ForwardedPortChannelEventArgs", { enumerable: true, get: function() {
       return forwardedPortEventArgs_1.ForwardedPortChannelEventArgs;
     } });
-    Object.defineProperty(exports, "ForwardedPortConnectingEventArgs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ForwardedPortConnectingEventArgs", { enumerable: true, get: function() {
       return forwardedPortEventArgs_1.ForwardedPortConnectingEventArgs;
     } });
   }
@@ -18605,10 +21601,10 @@ var require_dev_tunnels_ssh_tcp = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectResponseMessage.js
 var require_portRelayConnectResponseMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectResponseMessage.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectResponseMessage.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PortRelayConnectResponseMessage = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortRelayConnectResponseMessage = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var PortRelayConnectResponseMessage = class extends dev_tunnels_ssh_1.ChannelOpenConfirmationMessage {
       constructor() {
@@ -18624,19 +21620,19 @@ var require_portRelayConnectResponseMessage = __commonJS({
         this.isE2EEncryptionEnabled = reader.readBoolean();
       }
     };
-    exports.PortRelayConnectResponseMessage = PortRelayConnectResponseMessage;
+    exports2.PortRelayConnectResponseMessage = PortRelayConnectResponseMessage;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-management/tunnelManagementClient.js
 var require_tunnelManagementClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/tunnelManagementClient.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-management/tunnelManagementClient.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelAuthenticationSchemes = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelAuthenticationSchemes = void 0;
     var TunnelAuthenticationSchemes = class {
     };
-    exports.TunnelAuthenticationSchemes = TunnelAuthenticationSchemes;
+    exports2.TunnelAuthenticationSchemes = TunnelAuthenticationSchemes;
     TunnelAuthenticationSchemes.aad = "aad";
     TunnelAuthenticationSchemes.github = "github";
     TunnelAuthenticationSchemes.tunnel = "tunnel";
@@ -18645,10 +21641,10 @@ var require_tunnelManagementClient = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-management/tunnelAccessTokenProperties.js
 var require_tunnelAccessTokenProperties = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/tunnelAccessTokenProperties.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-management/tunnelAccessTokenProperties.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelAccessTokenProperties = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelAccessTokenProperties = void 0;
     var TunnelAccessTokenProperties = class _TunnelAccessTokenProperties {
       constructor(clusterId, tunnelId, tunnelPorts, scopes, issuer, expiration) {
         this.clusterId = clusterId;
@@ -18778,14 +21774,14 @@ var require_tunnelAccessTokenProperties = __commonJS({
         }
       }
     };
-    exports.TunnelAccessTokenProperties = TunnelAccessTokenProperties;
+    exports2.TunnelAccessTokenProperties = TunnelAccessTokenProperties;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-management/package.json
 var require_package3 = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/package.json"(exports, module) {
-    module.exports = {
+  "../../node_modules/@microsoft/dev-tunnels-management/package.json"(exports2, module2) {
+    module2.exports = {
       name: "@microsoft/dev-tunnels-management",
       version: "1.3.6",
       description: "Tunnels library for Visual Studio tools",
@@ -18808,23 +21804,23 @@ var require_package3 = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-management/version.js
 var require_version2 = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/version.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-management/version.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.tunnelSdkUserAgent = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.tunnelSdkUserAgent = void 0;
     var packageJson = require_package3();
     var packageVersion = packageJson.version;
-    exports.tunnelSdkUserAgent = `Dev-Tunnels-Service-TypeScript-SDK/${packageVersion}`;
+    exports2.tunnelSdkUserAgent = `Dev-Tunnels-Service-TypeScript-SDK/${packageVersion}`;
   }
 });
 
 // ../../node_modules/delayed-stream/lib/delayed_stream.js
 var require_delayed_stream = __commonJS({
-  "../../node_modules/delayed-stream/lib/delayed_stream.js"(exports, module) {
+  "../../node_modules/delayed-stream/lib/delayed_stream.js"(exports2, module2) {
     "use strict";
-    var Stream = __require("stream").Stream;
-    var util = __require("util");
-    module.exports = DelayedStream;
+    var Stream = require("stream").Stream;
+    var util = require("util");
+    module2.exports = DelayedStream;
     function DelayedStream() {
       this.source = null;
       this.dataSize = 0;
@@ -18912,12 +21908,12 @@ var require_delayed_stream = __commonJS({
 
 // ../../node_modules/combined-stream/lib/combined_stream.js
 var require_combined_stream = __commonJS({
-  "../../node_modules/combined-stream/lib/combined_stream.js"(exports, module) {
+  "../../node_modules/combined-stream/lib/combined_stream.js"(exports2, module2) {
     "use strict";
-    var util = __require("util");
-    var Stream = __require("stream").Stream;
+    var util = require("util");
+    var Stream = require("stream").Stream;
     var DelayedStream = require_delayed_stream();
-    module.exports = CombinedStream;
+    module2.exports = CombinedStream;
     function CombinedStream() {
       this.writable = false;
       this.readable = true;
@@ -19082,8 +22078,8 @@ var require_combined_stream = __commonJS({
 
 // ../../node_modules/mime-db/db.json
 var require_db = __commonJS({
-  "../../node_modules/mime-db/db.json"(exports, module) {
-    module.exports = {
+  "../../node_modules/mime-db/db.json"(exports2, module2) {
+    module2.exports = {
       "application/1d-interleaved-parityfec": {
         source: "iana"
       },
@@ -27607,28 +30603,28 @@ var require_db = __commonJS({
 
 // ../../node_modules/mime-db/index.js
 var require_mime_db = __commonJS({
-  "../../node_modules/mime-db/index.js"(exports, module) {
+  "../../node_modules/mime-db/index.js"(exports2, module2) {
     "use strict";
-    module.exports = require_db();
+    module2.exports = require_db();
   }
 });
 
 // ../../node_modules/mime-types/index.js
 var require_mime_types = __commonJS({
-  "../../node_modules/mime-types/index.js"(exports) {
+  "../../node_modules/mime-types/index.js"(exports2) {
     "use strict";
     var db = require_mime_db();
-    var extname = __require("path").extname;
+    var extname = require("path").extname;
     var EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
     var TEXT_TYPE_REGEXP = /^text\//i;
-    exports.charset = charset;
-    exports.charsets = { lookup: charset };
-    exports.contentType = contentType;
-    exports.extension = extension;
-    exports.extensions = /* @__PURE__ */ Object.create(null);
-    exports.lookup = lookup;
-    exports.types = /* @__PURE__ */ Object.create(null);
-    populateMaps(exports.extensions, exports.types);
+    exports2.charset = charset;
+    exports2.charsets = { lookup: charset };
+    exports2.contentType = contentType;
+    exports2.extension = extension;
+    exports2.extensions = /* @__PURE__ */ Object.create(null);
+    exports2.lookup = lookup;
+    exports2.types = /* @__PURE__ */ Object.create(null);
+    populateMaps(exports2.extensions, exports2.types);
     function charset(type) {
       if (!type || typeof type !== "string") {
         return false;
@@ -27647,12 +30643,12 @@ var require_mime_types = __commonJS({
       if (!str || typeof str !== "string") {
         return false;
       }
-      var mime = str.indexOf("/") === -1 ? exports.lookup(str) : str;
+      var mime = str.indexOf("/") === -1 ? exports2.lookup(str) : str;
       if (!mime) {
         return false;
       }
       if (mime.indexOf("charset") === -1) {
-        var charset2 = exports.charset(mime);
+        var charset2 = exports2.charset(mime);
         if (charset2) mime += "; charset=" + charset2.toLowerCase();
       }
       return mime;
@@ -27662,7 +30658,7 @@ var require_mime_types = __commonJS({
         return false;
       }
       var match = EXTRACT_TYPE_REGEXP.exec(type);
-      var exts = match && exports.extensions[match[1].toLowerCase()];
+      var exts = match && exports2.extensions[match[1].toLowerCase()];
       if (!exts || !exts.length) {
         return false;
       }
@@ -27676,7 +30672,7 @@ var require_mime_types = __commonJS({
       if (!extension2) {
         return false;
       }
-      return exports.types[extension2] || false;
+      return exports2.types[extension2] || false;
     }
     function populateMaps(extensions, types) {
       var preference = ["nginx", "apache", void 0, "iana"];
@@ -27705,9 +30701,9 @@ var require_mime_types = __commonJS({
 
 // ../../node_modules/asynckit/lib/defer.js
 var require_defer = __commonJS({
-  "../../node_modules/asynckit/lib/defer.js"(exports, module) {
+  "../../node_modules/asynckit/lib/defer.js"(exports2, module2) {
     "use strict";
-    module.exports = defer;
+    module2.exports = defer;
     function defer(fn) {
       var nextTick = typeof setImmediate == "function" ? setImmediate : typeof process == "object" && typeof process.nextTick == "function" ? process.nextTick : null;
       if (nextTick) {
@@ -27721,10 +30717,10 @@ var require_defer = __commonJS({
 
 // ../../node_modules/asynckit/lib/async.js
 var require_async = __commonJS({
-  "../../node_modules/asynckit/lib/async.js"(exports, module) {
+  "../../node_modules/asynckit/lib/async.js"(exports2, module2) {
     "use strict";
     var defer = require_defer();
-    module.exports = async;
+    module2.exports = async;
     function async(callback) {
       var isAsync = false;
       defer(function() {
@@ -27745,9 +30741,9 @@ var require_async = __commonJS({
 
 // ../../node_modules/asynckit/lib/abort.js
 var require_abort = __commonJS({
-  "../../node_modules/asynckit/lib/abort.js"(exports, module) {
+  "../../node_modules/asynckit/lib/abort.js"(exports2, module2) {
     "use strict";
-    module.exports = abort;
+    module2.exports = abort;
     function abort(state) {
       Object.keys(state.jobs).forEach(clean.bind(state));
       state.jobs = {};
@@ -27762,11 +30758,11 @@ var require_abort = __commonJS({
 
 // ../../node_modules/asynckit/lib/iterate.js
 var require_iterate = __commonJS({
-  "../../node_modules/asynckit/lib/iterate.js"(exports, module) {
+  "../../node_modules/asynckit/lib/iterate.js"(exports2, module2) {
     "use strict";
     var async = require_async();
     var abort = require_abort();
-    module.exports = iterate;
+    module2.exports = iterate;
     function iterate(list, iterator, state, callback) {
       var key = state["keyedList"] ? state["keyedList"][state.index] : state.index;
       state.jobs[key] = runJob(iterator, key, list[key], function(error, output) {
@@ -27796,9 +30792,9 @@ var require_iterate = __commonJS({
 
 // ../../node_modules/asynckit/lib/state.js
 var require_state = __commonJS({
-  "../../node_modules/asynckit/lib/state.js"(exports, module) {
+  "../../node_modules/asynckit/lib/state.js"(exports2, module2) {
     "use strict";
-    module.exports = state;
+    module2.exports = state;
     function state(list, sortMethod) {
       var isNamedList = !Array.isArray(list), initState = {
         index: 0,
@@ -27819,11 +30815,11 @@ var require_state = __commonJS({
 
 // ../../node_modules/asynckit/lib/terminator.js
 var require_terminator = __commonJS({
-  "../../node_modules/asynckit/lib/terminator.js"(exports, module) {
+  "../../node_modules/asynckit/lib/terminator.js"(exports2, module2) {
     "use strict";
     var abort = require_abort();
     var async = require_async();
-    module.exports = terminator;
+    module2.exports = terminator;
     function terminator(callback) {
       if (!Object.keys(this.jobs).length) {
         return;
@@ -27837,12 +30833,12 @@ var require_terminator = __commonJS({
 
 // ../../node_modules/asynckit/parallel.js
 var require_parallel = __commonJS({
-  "../../node_modules/asynckit/parallel.js"(exports, module) {
+  "../../node_modules/asynckit/parallel.js"(exports2, module2) {
     "use strict";
     var iterate = require_iterate();
     var initState = require_state();
     var terminator = require_terminator();
-    module.exports = parallel;
+    module2.exports = parallel;
     function parallel(list, iterator, callback) {
       var state = initState(list);
       while (state.index < (state["keyedList"] || list).length) {
@@ -27865,14 +30861,14 @@ var require_parallel = __commonJS({
 
 // ../../node_modules/asynckit/serialOrdered.js
 var require_serialOrdered = __commonJS({
-  "../../node_modules/asynckit/serialOrdered.js"(exports, module) {
+  "../../node_modules/asynckit/serialOrdered.js"(exports2, module2) {
     "use strict";
     var iterate = require_iterate();
     var initState = require_state();
     var terminator = require_terminator();
-    module.exports = serialOrdered;
-    module.exports.ascending = ascending;
-    module.exports.descending = descending;
+    module2.exports = serialOrdered;
+    module2.exports.ascending = ascending;
+    module2.exports.descending = descending;
     function serialOrdered(list, iterator, sortMethod, callback) {
       var state = initState(list, sortMethod);
       iterate(list, iterator, state, function iteratorHandler(error, result) {
@@ -27900,10 +30896,10 @@ var require_serialOrdered = __commonJS({
 
 // ../../node_modules/asynckit/serial.js
 var require_serial = __commonJS({
-  "../../node_modules/asynckit/serial.js"(exports, module) {
+  "../../node_modules/asynckit/serial.js"(exports2, module2) {
     "use strict";
     var serialOrdered = require_serialOrdered();
-    module.exports = serial;
+    module2.exports = serial;
     function serial(list, iterator, callback) {
       return serialOrdered(list, iterator, null, callback);
     }
@@ -27912,9 +30908,9 @@ var require_serial = __commonJS({
 
 // ../../node_modules/asynckit/index.js
 var require_asynckit = __commonJS({
-  "../../node_modules/asynckit/index.js"(exports, module) {
+  "../../node_modules/asynckit/index.js"(exports2, module2) {
     "use strict";
-    module.exports = {
+    module2.exports = {
       parallel: require_parallel(),
       serial: require_serial(),
       serialOrdered: require_serialOrdered()
@@ -27924,121 +30920,121 @@ var require_asynckit = __commonJS({
 
 // ../../node_modules/es-object-atoms/index.js
 var require_es_object_atoms = __commonJS({
-  "../../node_modules/es-object-atoms/index.js"(exports, module) {
+  "../../node_modules/es-object-atoms/index.js"(exports2, module2) {
     "use strict";
-    module.exports = Object;
+    module2.exports = Object;
   }
 });
 
 // ../../node_modules/es-errors/index.js
 var require_es_errors = __commonJS({
-  "../../node_modules/es-errors/index.js"(exports, module) {
+  "../../node_modules/es-errors/index.js"(exports2, module2) {
     "use strict";
-    module.exports = Error;
+    module2.exports = Error;
   }
 });
 
 // ../../node_modules/es-errors/eval.js
 var require_eval = __commonJS({
-  "../../node_modules/es-errors/eval.js"(exports, module) {
+  "../../node_modules/es-errors/eval.js"(exports2, module2) {
     "use strict";
-    module.exports = EvalError;
+    module2.exports = EvalError;
   }
 });
 
 // ../../node_modules/es-errors/range.js
 var require_range = __commonJS({
-  "../../node_modules/es-errors/range.js"(exports, module) {
+  "../../node_modules/es-errors/range.js"(exports2, module2) {
     "use strict";
-    module.exports = RangeError;
+    module2.exports = RangeError;
   }
 });
 
 // ../../node_modules/es-errors/ref.js
 var require_ref = __commonJS({
-  "../../node_modules/es-errors/ref.js"(exports, module) {
+  "../../node_modules/es-errors/ref.js"(exports2, module2) {
     "use strict";
-    module.exports = ReferenceError;
+    module2.exports = ReferenceError;
   }
 });
 
 // ../../node_modules/es-errors/syntax.js
 var require_syntax = __commonJS({
-  "../../node_modules/es-errors/syntax.js"(exports, module) {
+  "../../node_modules/es-errors/syntax.js"(exports2, module2) {
     "use strict";
-    module.exports = SyntaxError;
+    module2.exports = SyntaxError;
   }
 });
 
 // ../../node_modules/es-errors/type.js
 var require_type = __commonJS({
-  "../../node_modules/es-errors/type.js"(exports, module) {
+  "../../node_modules/es-errors/type.js"(exports2, module2) {
     "use strict";
-    module.exports = TypeError;
+    module2.exports = TypeError;
   }
 });
 
 // ../../node_modules/es-errors/uri.js
 var require_uri = __commonJS({
-  "../../node_modules/es-errors/uri.js"(exports, module) {
+  "../../node_modules/es-errors/uri.js"(exports2, module2) {
     "use strict";
-    module.exports = URIError;
+    module2.exports = URIError;
   }
 });
 
 // ../../node_modules/math-intrinsics/abs.js
 var require_abs = __commonJS({
-  "../../node_modules/math-intrinsics/abs.js"(exports, module) {
+  "../../node_modules/math-intrinsics/abs.js"(exports2, module2) {
     "use strict";
-    module.exports = Math.abs;
+    module2.exports = Math.abs;
   }
 });
 
 // ../../node_modules/math-intrinsics/floor.js
 var require_floor = __commonJS({
-  "../../node_modules/math-intrinsics/floor.js"(exports, module) {
+  "../../node_modules/math-intrinsics/floor.js"(exports2, module2) {
     "use strict";
-    module.exports = Math.floor;
+    module2.exports = Math.floor;
   }
 });
 
 // ../../node_modules/math-intrinsics/max.js
 var require_max = __commonJS({
-  "../../node_modules/math-intrinsics/max.js"(exports, module) {
+  "../../node_modules/math-intrinsics/max.js"(exports2, module2) {
     "use strict";
-    module.exports = Math.max;
+    module2.exports = Math.max;
   }
 });
 
 // ../../node_modules/math-intrinsics/min.js
 var require_min = __commonJS({
-  "../../node_modules/math-intrinsics/min.js"(exports, module) {
+  "../../node_modules/math-intrinsics/min.js"(exports2, module2) {
     "use strict";
-    module.exports = Math.min;
+    module2.exports = Math.min;
   }
 });
 
 // ../../node_modules/math-intrinsics/pow.js
 var require_pow = __commonJS({
-  "../../node_modules/math-intrinsics/pow.js"(exports, module) {
+  "../../node_modules/math-intrinsics/pow.js"(exports2, module2) {
     "use strict";
-    module.exports = Math.pow;
+    module2.exports = Math.pow;
   }
 });
 
 // ../../node_modules/math-intrinsics/round.js
 var require_round = __commonJS({
-  "../../node_modules/math-intrinsics/round.js"(exports, module) {
+  "../../node_modules/math-intrinsics/round.js"(exports2, module2) {
     "use strict";
-    module.exports = Math.round;
+    module2.exports = Math.round;
   }
 });
 
 // ../../node_modules/math-intrinsics/isNaN.js
 var require_isNaN = __commonJS({
-  "../../node_modules/math-intrinsics/isNaN.js"(exports, module) {
+  "../../node_modules/math-intrinsics/isNaN.js"(exports2, module2) {
     "use strict";
-    module.exports = Number.isNaN || function isNaN2(a) {
+    module2.exports = Number.isNaN || function isNaN2(a) {
       return a !== a;
     };
   }
@@ -28046,10 +31042,10 @@ var require_isNaN = __commonJS({
 
 // ../../node_modules/math-intrinsics/sign.js
 var require_sign = __commonJS({
-  "../../node_modules/math-intrinsics/sign.js"(exports, module) {
+  "../../node_modules/math-intrinsics/sign.js"(exports2, module2) {
     "use strict";
     var $isNaN = require_isNaN();
-    module.exports = function sign(number) {
+    module2.exports = function sign(number) {
       if ($isNaN(number) || number === 0) {
         return number;
       }
@@ -28060,15 +31056,15 @@ var require_sign = __commonJS({
 
 // ../../node_modules/gopd/gOPD.js
 var require_gOPD = __commonJS({
-  "../../node_modules/gopd/gOPD.js"(exports, module) {
+  "../../node_modules/gopd/gOPD.js"(exports2, module2) {
     "use strict";
-    module.exports = Object.getOwnPropertyDescriptor;
+    module2.exports = Object.getOwnPropertyDescriptor;
   }
 });
 
 // ../../node_modules/gopd/index.js
 var require_gopd = __commonJS({
-  "../../node_modules/gopd/index.js"(exports, module) {
+  "../../node_modules/gopd/index.js"(exports2, module2) {
     "use strict";
     var $gOPD = require_gOPD();
     if ($gOPD) {
@@ -28078,13 +31074,13 @@ var require_gopd = __commonJS({
         $gOPD = null;
       }
     }
-    module.exports = $gOPD;
+    module2.exports = $gOPD;
   }
 });
 
 // ../../node_modules/es-define-property/index.js
 var require_es_define_property = __commonJS({
-  "../../node_modules/es-define-property/index.js"(exports, module) {
+  "../../node_modules/es-define-property/index.js"(exports2, module2) {
     "use strict";
     var $defineProperty = Object.defineProperty || false;
     if ($defineProperty) {
@@ -28094,15 +31090,15 @@ var require_es_define_property = __commonJS({
         $defineProperty = false;
       }
     }
-    module.exports = $defineProperty;
+    module2.exports = $defineProperty;
   }
 });
 
 // ../../node_modules/has-symbols/shams.js
 var require_shams = __commonJS({
-  "../../node_modules/has-symbols/shams.js"(exports, module) {
+  "../../node_modules/has-symbols/shams.js"(exports2, module2) {
     "use strict";
-    module.exports = function hasSymbols() {
+    module2.exports = function hasSymbols() {
       if (typeof Symbol !== "function" || typeof Object.getOwnPropertySymbols !== "function") {
         return false;
       }
@@ -28155,11 +31151,11 @@ var require_shams = __commonJS({
 
 // ../../node_modules/has-symbols/index.js
 var require_has_symbols = __commonJS({
-  "../../node_modules/has-symbols/index.js"(exports, module) {
+  "../../node_modules/has-symbols/index.js"(exports2, module2) {
     "use strict";
     var origSymbol = typeof Symbol !== "undefined" && Symbol;
     var hasSymbolSham = require_shams();
-    module.exports = function hasNativeSymbols() {
+    module2.exports = function hasNativeSymbols() {
       if (typeof origSymbol !== "function") {
         return false;
       }
@@ -28179,24 +31175,24 @@ var require_has_symbols = __commonJS({
 
 // ../../node_modules/get-proto/Reflect.getPrototypeOf.js
 var require_Reflect_getPrototypeOf = __commonJS({
-  "../../node_modules/get-proto/Reflect.getPrototypeOf.js"(exports, module) {
+  "../../node_modules/get-proto/Reflect.getPrototypeOf.js"(exports2, module2) {
     "use strict";
-    module.exports = typeof Reflect !== "undefined" && Reflect.getPrototypeOf || null;
+    module2.exports = typeof Reflect !== "undefined" && Reflect.getPrototypeOf || null;
   }
 });
 
 // ../../node_modules/get-proto/Object.getPrototypeOf.js
 var require_Object_getPrototypeOf = __commonJS({
-  "../../node_modules/get-proto/Object.getPrototypeOf.js"(exports, module) {
+  "../../node_modules/get-proto/Object.getPrototypeOf.js"(exports2, module2) {
     "use strict";
     var $Object = require_es_object_atoms();
-    module.exports = $Object.getPrototypeOf || null;
+    module2.exports = $Object.getPrototypeOf || null;
   }
 });
 
 // ../../node_modules/function-bind/implementation.js
 var require_implementation = __commonJS({
-  "../../node_modules/function-bind/implementation.js"(exports, module) {
+  "../../node_modules/function-bind/implementation.js"(exports2, module2) {
     "use strict";
     var ERROR_MESSAGE = "Function.prototype.bind called on incompatible ";
     var toStr = Object.prototype.toString;
@@ -28229,7 +31225,7 @@ var require_implementation = __commonJS({
       }
       return str;
     };
-    module.exports = function bind(that) {
+    module2.exports = function bind(that) {
       var target = this;
       if (typeof target !== "function" || toStr.apply(target) !== funcType) {
         throw new TypeError(ERROR_MESSAGE + target);
@@ -28272,58 +31268,58 @@ var require_implementation = __commonJS({
 
 // ../../node_modules/function-bind/index.js
 var require_function_bind = __commonJS({
-  "../../node_modules/function-bind/index.js"(exports, module) {
+  "../../node_modules/function-bind/index.js"(exports2, module2) {
     "use strict";
     var implementation = require_implementation();
-    module.exports = Function.prototype.bind || implementation;
+    module2.exports = Function.prototype.bind || implementation;
   }
 });
 
 // ../../node_modules/call-bind-apply-helpers/functionCall.js
 var require_functionCall = __commonJS({
-  "../../node_modules/call-bind-apply-helpers/functionCall.js"(exports, module) {
+  "../../node_modules/call-bind-apply-helpers/functionCall.js"(exports2, module2) {
     "use strict";
-    module.exports = Function.prototype.call;
+    module2.exports = Function.prototype.call;
   }
 });
 
 // ../../node_modules/call-bind-apply-helpers/functionApply.js
 var require_functionApply = __commonJS({
-  "../../node_modules/call-bind-apply-helpers/functionApply.js"(exports, module) {
+  "../../node_modules/call-bind-apply-helpers/functionApply.js"(exports2, module2) {
     "use strict";
-    module.exports = Function.prototype.apply;
+    module2.exports = Function.prototype.apply;
   }
 });
 
 // ../../node_modules/call-bind-apply-helpers/reflectApply.js
 var require_reflectApply = __commonJS({
-  "../../node_modules/call-bind-apply-helpers/reflectApply.js"(exports, module) {
+  "../../node_modules/call-bind-apply-helpers/reflectApply.js"(exports2, module2) {
     "use strict";
-    module.exports = typeof Reflect !== "undefined" && Reflect && Reflect.apply;
+    module2.exports = typeof Reflect !== "undefined" && Reflect && Reflect.apply;
   }
 });
 
 // ../../node_modules/call-bind-apply-helpers/actualApply.js
 var require_actualApply = __commonJS({
-  "../../node_modules/call-bind-apply-helpers/actualApply.js"(exports, module) {
+  "../../node_modules/call-bind-apply-helpers/actualApply.js"(exports2, module2) {
     "use strict";
     var bind = require_function_bind();
     var $apply = require_functionApply();
     var $call = require_functionCall();
     var $reflectApply = require_reflectApply();
-    module.exports = $reflectApply || bind.call($call, $apply);
+    module2.exports = $reflectApply || bind.call($call, $apply);
   }
 });
 
 // ../../node_modules/call-bind-apply-helpers/index.js
 var require_call_bind_apply_helpers = __commonJS({
-  "../../node_modules/call-bind-apply-helpers/index.js"(exports, module) {
+  "../../node_modules/call-bind-apply-helpers/index.js"(exports2, module2) {
     "use strict";
     var bind = require_function_bind();
     var $TypeError = require_type();
     var $call = require_functionCall();
     var $actualApply = require_actualApply();
-    module.exports = function callBindBasic(args) {
+    module2.exports = function callBindBasic(args) {
       if (args.length < 1 || typeof args[0] !== "function") {
         throw new $TypeError("a function is required");
       }
@@ -28334,7 +31330,7 @@ var require_call_bind_apply_helpers = __commonJS({
 
 // ../../node_modules/dunder-proto/get.js
 var require_get = __commonJS({
-  "../../node_modules/dunder-proto/get.js"(exports, module) {
+  "../../node_modules/dunder-proto/get.js"(exports2, module2) {
     "use strict";
     var callBind = require_call_bind_apply_helpers();
     var gOPD = require_gopd();
@@ -28354,7 +31350,7 @@ var require_get = __commonJS({
     );
     var $Object = Object;
     var $getPrototypeOf = $Object.getPrototypeOf;
-    module.exports = desc && typeof desc.get === "function" ? callBind([desc.get]) : typeof $getPrototypeOf === "function" ? (
+    module2.exports = desc && typeof desc.get === "function" ? callBind([desc.get]) : typeof $getPrototypeOf === "function" ? (
       /** @type {import('./get')} */
       function getDunder(value) {
         return $getPrototypeOf(value == null ? value : $Object(value));
@@ -28365,12 +31361,12 @@ var require_get = __commonJS({
 
 // ../../node_modules/get-proto/index.js
 var require_get_proto = __commonJS({
-  "../../node_modules/get-proto/index.js"(exports, module) {
+  "../../node_modules/get-proto/index.js"(exports2, module2) {
     "use strict";
     var reflectGetProto = require_Reflect_getPrototypeOf();
     var originalGetProto = require_Object_getPrototypeOf();
     var getDunderProto = require_get();
-    module.exports = reflectGetProto ? function getProto(O) {
+    module2.exports = reflectGetProto ? function getProto(O) {
       return reflectGetProto(O);
     } : originalGetProto ? function getProto(O) {
       if (!O || typeof O !== "object" && typeof O !== "function") {
@@ -28385,18 +31381,18 @@ var require_get_proto = __commonJS({
 
 // ../../node_modules/hasown/index.js
 var require_hasown = __commonJS({
-  "../../node_modules/hasown/index.js"(exports, module) {
+  "../../node_modules/hasown/index.js"(exports2, module2) {
     "use strict";
     var call = Function.prototype.call;
     var $hasOwn = Object.prototype.hasOwnProperty;
     var bind = require_function_bind();
-    module.exports = bind.call(call, $hasOwn);
+    module2.exports = bind.call(call, $hasOwn);
   }
 });
 
 // ../../node_modules/get-intrinsic/index.js
 var require_get_intrinsic = __commonJS({
-  "../../node_modules/get-intrinsic/index.js"(exports, module) {
+  "../../node_modules/get-intrinsic/index.js"(exports2, module2) {
     "use strict";
     var undefined2;
     var $Object = require_es_object_atoms();
@@ -28661,7 +31657,7 @@ var require_get_intrinsic = __commonJS({
       }
       throw new $SyntaxError("intrinsic " + name + " does not exist!");
     };
-    module.exports = function GetIntrinsic(name, allowMissing) {
+    module2.exports = function GetIntrinsic(name, allowMissing) {
       if (typeof name !== "string" || name.length === 0) {
         throw new $TypeError("intrinsic name must be a non-empty string");
       }
@@ -28727,10 +31723,10 @@ var require_get_intrinsic = __commonJS({
 
 // ../../node_modules/has-tostringtag/shams.js
 var require_shams2 = __commonJS({
-  "../../node_modules/has-tostringtag/shams.js"(exports, module) {
+  "../../node_modules/has-tostringtag/shams.js"(exports2, module2) {
     "use strict";
     var hasSymbols = require_shams();
-    module.exports = function hasToStringTagShams() {
+    module2.exports = function hasToStringTagShams() {
       return hasSymbols() && !!Symbol.toStringTag;
     };
   }
@@ -28738,7 +31734,7 @@ var require_shams2 = __commonJS({
 
 // ../../node_modules/es-set-tostringtag/index.js
 var require_es_set_tostringtag = __commonJS({
-  "../../node_modules/es-set-tostringtag/index.js"(exports, module) {
+  "../../node_modules/es-set-tostringtag/index.js"(exports2, module2) {
     "use strict";
     var GetIntrinsic = require_get_intrinsic();
     var $defineProperty = GetIntrinsic("%Object.defineProperty%", true);
@@ -28746,7 +31742,7 @@ var require_es_set_tostringtag = __commonJS({
     var hasOwn = require_hasown();
     var $TypeError = require_type();
     var toStringTag = hasToStringTag ? Symbol.toStringTag : null;
-    module.exports = function setToStringTag(object, value) {
+    module2.exports = function setToStringTag(object, value) {
       var overrideIfSet = arguments.length > 2 && !!arguments[2] && arguments[2].force;
       var nonConfigurable = arguments.length > 2 && !!arguments[2] && arguments[2].nonConfigurable;
       if (typeof overrideIfSet !== "undefined" && typeof overrideIfSet !== "boolean" || typeof nonConfigurable !== "undefined" && typeof nonConfigurable !== "boolean") {
@@ -28770,9 +31766,9 @@ var require_es_set_tostringtag = __commonJS({
 
 // ../../node_modules/form-data/lib/populate.js
 var require_populate = __commonJS({
-  "../../node_modules/form-data/lib/populate.js"(exports, module) {
+  "../../node_modules/form-data/lib/populate.js"(exports2, module2) {
     "use strict";
-    module.exports = function(dst, src) {
+    module2.exports = function(dst, src) {
       Object.keys(src).forEach(function(prop) {
         dst[prop] = dst[prop] || src[prop];
       });
@@ -28783,17 +31779,17 @@ var require_populate = __commonJS({
 
 // ../../node_modules/form-data/lib/form_data.js
 var require_form_data = __commonJS({
-  "../../node_modules/form-data/lib/form_data.js"(exports, module) {
+  "../../node_modules/form-data/lib/form_data.js"(exports2, module2) {
     "use strict";
     var CombinedStream = require_combined_stream();
-    var util = __require("util");
-    var path2 = __require("path");
-    var http = __require("http");
-    var https = __require("https");
-    var parseUrl = __require("url").parse;
-    var fs2 = __require("fs");
-    var Stream = __require("stream").Stream;
-    var crypto2 = __require("crypto");
+    var util = require("util");
+    var path2 = require("path");
+    var http = require("http");
+    var https = require("https");
+    var parseUrl = require("url").parse;
+    var fs2 = require("fs");
+    var Stream = require("stream").Stream;
+    var crypto2 = require("crypto");
     var mime = require_mime_types();
     var asynckit = require_asynckit();
     var setToStringTag = require_es_set_tostringtag();
@@ -29096,15 +32092,15 @@ var require_form_data = __commonJS({
       return "[object FormData]";
     };
     setToStringTag(FormData2.prototype, "FormData");
-    module.exports = FormData2;
+    module2.exports = FormData2;
   }
 });
 
 // ../../node_modules/proxy-from-env/index.js
 var require_proxy_from_env = __commonJS({
-  "../../node_modules/proxy-from-env/index.js"(exports) {
+  "../../node_modules/proxy-from-env/index.js"(exports2) {
     "use strict";
-    var parseUrl = __require("url").parse;
+    var parseUrl = require("url").parse;
     var DEFAULT_PORTS = {
       ftp: 21,
       gopher: 70,
@@ -29166,13 +32162,13 @@ var require_proxy_from_env = __commonJS({
     function getEnv(key) {
       return process.env[key.toLowerCase()] || process.env[key.toUpperCase()] || "";
     }
-    exports.getProxyForUrl = getProxyForUrl;
+    exports2.getProxyForUrl = getProxyForUrl;
   }
 });
 
 // ../../node_modules/ms/index.js
 var require_ms2 = __commonJS({
-  "../../node_modules/ms/index.js"(exports, module) {
+  "../../node_modules/ms/index.js"(exports2, module2) {
     "use strict";
     var s = 1e3;
     var m = s * 60;
@@ -29180,7 +32176,7 @@ var require_ms2 = __commonJS({
     var d = h * 24;
     var w = d * 7;
     var y = d * 365.25;
-    module.exports = function(val, options) {
+    module2.exports = function(val, options) {
       options = options || {};
       var type = typeof val;
       if (type === "string" && val.length > 0) {
@@ -29289,7 +32285,7 @@ var require_ms2 = __commonJS({
 
 // ../../node_modules/debug/src/common.js
 var require_common = __commonJS({
-  "../../node_modules/debug/src/common.js"(exports, module) {
+  "../../node_modules/debug/src/common.js"(exports2, module2) {
     "use strict";
     function setup(env) {
       createDebug.debug = createDebug;
@@ -29461,20 +32457,20 @@ var require_common = __commonJS({
       createDebug.enable(createDebug.load());
       return createDebug;
     }
-    module.exports = setup;
+    module2.exports = setup;
   }
 });
 
 // ../../node_modules/debug/src/browser.js
 var require_browser2 = __commonJS({
-  "../../node_modules/debug/src/browser.js"(exports, module) {
+  "../../node_modules/debug/src/browser.js"(exports2, module2) {
     "use strict";
-    exports.formatArgs = formatArgs;
-    exports.save = save;
-    exports.load = load;
-    exports.useColors = useColors;
-    exports.storage = localstorage();
-    exports.destroy = /* @__PURE__ */ (() => {
+    exports2.formatArgs = formatArgs;
+    exports2.save = save;
+    exports2.load = load;
+    exports2.useColors = useColors;
+    exports2.storage = localstorage();
+    exports2.destroy = /* @__PURE__ */ (() => {
       let warned = false;
       return () => {
         if (!warned) {
@@ -29483,7 +32479,7 @@ var require_browser2 = __commonJS({
         }
       };
     })();
-    exports.colors = [
+    exports2.colors = [
       "#0000CC",
       "#0000FF",
       "#0033CC",
@@ -29576,7 +32572,7 @@ var require_browser2 = __commonJS({
       typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
     }
     function formatArgs(args) {
-      args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module.exports.humanize(this.diff);
+      args[0] = (this.useColors ? "%c" : "") + this.namespace + (this.useColors ? " %c" : " ") + args[0] + (this.useColors ? "%c " : " ") + "+" + module2.exports.humanize(this.diff);
       if (!this.useColors) {
         return;
       }
@@ -29595,14 +32591,14 @@ var require_browser2 = __commonJS({
       });
       args.splice(lastC, 0, c);
     }
-    exports.log = console.debug || console.log || (() => {
+    exports2.log = console.debug || console.log || (() => {
     });
     function save(namespaces) {
       try {
         if (namespaces) {
-          exports.storage.setItem("debug", namespaces);
+          exports2.storage.setItem("debug", namespaces);
         } else {
-          exports.storage.removeItem("debug");
+          exports2.storage.removeItem("debug");
         }
       } catch (error) {
       }
@@ -29610,7 +32606,7 @@ var require_browser2 = __commonJS({
     function load() {
       let r;
       try {
-        r = exports.storage.getItem("debug") || exports.storage.getItem("DEBUG");
+        r = exports2.storage.getItem("debug") || exports2.storage.getItem("DEBUG");
       } catch (error) {
       }
       if (!r && typeof process !== "undefined" && "env" in process) {
@@ -29624,8 +32620,8 @@ var require_browser2 = __commonJS({
       } catch (error) {
       }
     }
-    module.exports = require_common()(exports);
-    var { formatters } = module.exports;
+    module2.exports = require_common()(exports2);
+    var { formatters } = module2.exports;
     formatters.j = function(v) {
       try {
         return JSON.stringify(v);
@@ -29638,26 +32634,26 @@ var require_browser2 = __commonJS({
 
 // ../../node_modules/debug/src/node.js
 var require_node2 = __commonJS({
-  "../../node_modules/debug/src/node.js"(exports, module) {
+  "../../node_modules/debug/src/node.js"(exports2, module2) {
     "use strict";
-    var tty = __require("tty");
-    var util = __require("util");
-    exports.init = init;
-    exports.log = log;
-    exports.formatArgs = formatArgs;
-    exports.save = save;
-    exports.load = load;
-    exports.useColors = useColors;
-    exports.destroy = util.deprecate(
+    var tty = require("tty");
+    var util = require("util");
+    exports2.init = init;
+    exports2.log = log;
+    exports2.formatArgs = formatArgs;
+    exports2.save = save;
+    exports2.load = load;
+    exports2.useColors = useColors;
+    exports2.destroy = util.deprecate(
       () => {
       },
       "Instance method `debug.destroy()` is deprecated and no longer does anything. It will be removed in the next major version of `debug`."
     );
-    exports.colors = [6, 2, 3, 4, 5, 1];
+    exports2.colors = [6, 2, 3, 4, 5, 1];
     try {
-      const supportsColor = __require("supports-color");
+      const supportsColor = require("supports-color");
       if (supportsColor && (supportsColor.stderr || supportsColor).level >= 2) {
-        exports.colors = [
+        exports2.colors = [
           20,
           21,
           26,
@@ -29738,7 +32734,7 @@ var require_node2 = __commonJS({
       }
     } catch (error) {
     }
-    exports.inspectOpts = Object.keys(process.env).filter((key) => {
+    exports2.inspectOpts = Object.keys(process.env).filter((key) => {
       return /^debug_/i.test(key);
     }).reduce((obj, key) => {
       const prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, (_, k) => {
@@ -29758,7 +32754,7 @@ var require_node2 = __commonJS({
       return obj;
     }, {});
     function useColors() {
-      return "colors" in exports.inspectOpts ? Boolean(exports.inspectOpts.colors) : tty.isatty(process.stderr.fd);
+      return "colors" in exports2.inspectOpts ? Boolean(exports2.inspectOpts.colors) : tty.isatty(process.stderr.fd);
     }
     function formatArgs(args) {
       const { namespace: name, useColors: useColors2 } = this;
@@ -29767,19 +32763,19 @@ var require_node2 = __commonJS({
         const colorCode = "\x1B[3" + (c < 8 ? c : "8;5;" + c);
         const prefix = `  ${colorCode};1m${name} \x1B[0m`;
         args[0] = prefix + args[0].split("\n").join("\n" + prefix);
-        args.push(colorCode + "m+" + module.exports.humanize(this.diff) + "\x1B[0m");
+        args.push(colorCode + "m+" + module2.exports.humanize(this.diff) + "\x1B[0m");
       } else {
         args[0] = getDate() + name + " " + args[0];
       }
     }
     function getDate() {
-      if (exports.inspectOpts.hideDate) {
+      if (exports2.inspectOpts.hideDate) {
         return "";
       }
       return (/* @__PURE__ */ new Date()).toISOString() + " ";
     }
     function log(...args) {
-      return process.stderr.write(util.formatWithOptions(exports.inspectOpts, ...args) + "\n");
+      return process.stderr.write(util.formatWithOptions(exports2.inspectOpts, ...args) + "\n");
     }
     function save(namespaces) {
       if (namespaces) {
@@ -29793,13 +32789,13 @@ var require_node2 = __commonJS({
     }
     function init(debug) {
       debug.inspectOpts = {};
-      const keys = Object.keys(exports.inspectOpts);
+      const keys = Object.keys(exports2.inspectOpts);
       for (let i = 0; i < keys.length; i++) {
-        debug.inspectOpts[keys[i]] = exports.inspectOpts[keys[i]];
+        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
       }
     }
-    module.exports = require_common()(exports);
-    var { formatters } = module.exports;
+    module2.exports = require_common()(exports2);
+    var { formatters } = module2.exports;
     formatters.o = function(v) {
       this.inspectOpts.colors = this.useColors;
       return util.inspect(v, this.inspectOpts).split("\n").map((str) => str.trim()).join(" ");
@@ -29813,22 +32809,22 @@ var require_node2 = __commonJS({
 
 // ../../node_modules/debug/src/index.js
 var require_src2 = __commonJS({
-  "../../node_modules/debug/src/index.js"(exports, module) {
+  "../../node_modules/debug/src/index.js"(exports2, module2) {
     "use strict";
     if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
-      module.exports = require_browser2();
+      module2.exports = require_browser2();
     } else {
-      module.exports = require_node2();
+      module2.exports = require_node2();
     }
   }
 });
 
 // ../../node_modules/follow-redirects/debug.js
 var require_debug2 = __commonJS({
-  "../../node_modules/follow-redirects/debug.js"(exports, module) {
+  "../../node_modules/follow-redirects/debug.js"(exports2, module2) {
     "use strict";
     var debug;
-    module.exports = function() {
+    module2.exports = function() {
       if (!debug) {
         try {
           debug = require_src2()("follow-redirects");
@@ -29846,14 +32842,14 @@ var require_debug2 = __commonJS({
 
 // ../../node_modules/follow-redirects/index.js
 var require_follow_redirects = __commonJS({
-  "../../node_modules/follow-redirects/index.js"(exports, module) {
+  "../../node_modules/follow-redirects/index.js"(exports2, module2) {
     "use strict";
-    var url = __require("url");
+    var url = require("url");
     var URL2 = url.URL;
-    var http = __require("http");
-    var https = __require("https");
-    var Writable = __require("stream").Writable;
-    var assert = __require("assert");
+    var http = require("http");
+    var https = require("https");
+    var Writable = require("stream").Writable;
+    var assert = require("assert");
     var debug = require_debug2();
     (function detectUnsupportedEnvironment() {
       var looksLikeNode = typeof process !== "undefined";
@@ -30193,7 +33189,7 @@ var require_follow_redirects = __commonJS({
       this._performRequest();
     };
     function wrap(protocols) {
-      var exports2 = {
+      var exports3 = {
         maxRedirects: 21,
         maxBodyLength: 10 * 1024 * 1024
       };
@@ -30201,7 +33197,7 @@ var require_follow_redirects = __commonJS({
       Object.keys(protocols).forEach(function(scheme) {
         var protocol = scheme + ":";
         var nativeProtocol = nativeProtocols[protocol] = protocols[scheme];
-        var wrappedProtocol = exports2[scheme] = Object.create(nativeProtocol);
+        var wrappedProtocol = exports3[scheme] = Object.create(nativeProtocol);
         function request(input, options, callback) {
           if (isURL(input)) {
             input = spreadUrlObject(input);
@@ -30217,8 +33213,8 @@ var require_follow_redirects = __commonJS({
             options = null;
           }
           options = Object.assign({
-            maxRedirects: exports2.maxRedirects,
-            maxBodyLength: exports2.maxBodyLength
+            maxRedirects: exports3.maxRedirects,
+            maxBodyLength: exports3.maxBodyLength
           }, input, options);
           options.nativeProtocols = nativeProtocols;
           if (!isString(options.host) && !isString(options.hostname)) {
@@ -30238,7 +33234,7 @@ var require_follow_redirects = __commonJS({
           get: { value: get, configurable: true, enumerable: true, writable: true }
         });
       });
-      return exports2;
+      return exports3;
     }
     function noop() {
     }
@@ -30336,27 +33332,27 @@ var require_follow_redirects = __commonJS({
     function isURL(value) {
       return URL2 && value instanceof URL2;
     }
-    module.exports = wrap({ http, https });
-    module.exports.wrap = wrap;
+    module2.exports = wrap({ http, https });
+    module2.exports.wrap = wrap;
   }
 });
 
 // ../../node_modules/axios/dist/node/axios.cjs
 var require_axios = __commonJS({
-  "../../node_modules/axios/dist/node/axios.cjs"(exports, module) {
+  "../../node_modules/axios/dist/node/axios.cjs"(exports2, module2) {
     "use strict";
     var FormData$1 = require_form_data();
-    var crypto2 = __require("crypto");
-    var url = __require("url");
+    var crypto2 = require("crypto");
+    var url = require("url");
     var proxyFromEnv = require_proxy_from_env();
-    var http = __require("http");
-    var https = __require("https");
-    var http2 = __require("http2");
-    var util = __require("util");
+    var http = require("http");
+    var https = require("https");
+    var http2 = require("http2");
+    var util = require("util");
     var followRedirects = require_follow_redirects();
-    var zlib = __require("zlib");
-    var stream = __require("stream");
-    var events = __require("events");
+    var zlib = require("zlib");
+    var stream = require("stream");
+    var events = require("events");
     function _interopDefaultLegacy(e) {
       return e && typeof e === "object" && "default" in e ? e : { "default": e };
     }
@@ -33817,16 +36813,16 @@ var require_axios = __commonJS({
     axios.getAdapter = adapters.getAdapter;
     axios.HttpStatusCode = HttpStatusCode$1;
     axios.default = axios;
-    module.exports = axios;
+    module2.exports = axios;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-management/tunnelPlanTokenProperties.js
 var require_tunnelPlanTokenProperties = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/tunnelPlanTokenProperties.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-management/tunnelPlanTokenProperties.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelPlanTokenProperties = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelPlanTokenProperties = void 0;
     var TunnelPlanTokenProperties = class _TunnelPlanTokenProperties {
       constructor(clusterId, issuer, expiration, userEmail, tunnelPlanId, subscriptionId, scopes) {
         this.clusterId = clusterId;
@@ -33900,16 +36896,16 @@ var require_tunnelPlanTokenProperties = __commonJS({
         }
       }
     };
-    exports.TunnelPlanTokenProperties = TunnelPlanTokenProperties;
+    exports2.TunnelPlanTokenProperties = TunnelPlanTokenProperties;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-management/idGeneration.js
 var require_idGeneration = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/idGeneration.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-management/idGeneration.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.IdGeneration = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.IdGeneration = void 0;
     var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
     var IdGeneration = class {
       static generateTunnelId() {
@@ -33922,7 +36918,7 @@ var require_idGeneration = __commonJS({
         return tunnelId;
       }
     };
-    exports.IdGeneration = IdGeneration;
+    exports2.IdGeneration = IdGeneration;
     IdGeneration.nouns = ["pond", "hill", "mountain", "field", "fog", "ant", "dog", "cat", "shoe", "plane", "chair", "book", "ocean", "lake", "river", "horse"];
     IdGeneration.adjectives = ["fun", "happy", "interesting", "neat", "peaceful", "puzzled", "kind", "joyful", "new", "giant", "sneaky", "quick", "majestic", "jolly", "fancy", "tidy", "swift", "silent", "amusing", "spiffy"];
   }
@@ -33930,10 +36926,10 @@ var require_idGeneration = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-management/tunnelManagementHttpClient.js
 var require_tunnelManagementHttpClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/tunnelManagementHttpClient.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-management/tunnelManagementHttpClient.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelManagementHttpClient = exports.ManagementApiVersions = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelManagementHttpClient = exports2.ManagementApiVersions = void 0;
     var vscode_jsonrpc_1 = require_main();
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
@@ -33955,7 +36951,7 @@ var require_tunnelManagementHttpClient = __commonJS({
     var ManagementApiVersions2;
     (function(ManagementApiVersions3) {
       ManagementApiVersions3["Version20230927preview"] = "2023-09-27-preview";
-    })(ManagementApiVersions2 = exports.ManagementApiVersions || (exports.ManagementApiVersions = {}));
+    })(ManagementApiVersions2 = exports2.ManagementApiVersions || (exports2.ManagementApiVersions = {}));
     function comparePorts(a, b) {
       var _a, _b;
       return ((_a = a.portNumber) !== null && _a !== void 0 ? _a : Number.MAX_SAFE_INTEGER) - ((_b = b.portNumber) !== null && _b !== void 0 ? _b : Number.MAX_SAFE_INTEGER);
@@ -34752,23 +37748,23 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
         }
       }
     };
-    exports.TunnelManagementHttpClient = TunnelManagementHttpClient2;
+    exports2.TunnelManagementHttpClient = TunnelManagementHttpClient2;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-management/tunnelRequestOptions.js
 var require_tunnelRequestOptions = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/tunnelRequestOptions.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-management/tunnelRequestOptions.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-management/index.js
 var require_dev_tunnels_management = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-management/index.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-management/index.js"(exports2) {
     "use strict";
-    var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
+    var __createBinding = exports2 && exports2.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
       var desc = Object.getOwnPropertyDescriptor(m, k);
       if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
@@ -34781,23 +37777,23 @@ var require_dev_tunnels_management = __commonJS({
       if (k2 === void 0) k2 = k;
       o[k2] = m[k];
     }));
-    var __exportStar = exports && exports.__exportStar || function(m, exports2) {
-      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports2, p)) __createBinding(exports2, m, p);
+    var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
+      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
     };
-    Object.defineProperty(exports, "__esModule", { value: true });
-    __exportStar(require_tunnelManagementHttpClient(), exports);
-    __exportStar(require_tunnelManagementClient(), exports);
-    __exportStar(require_tunnelRequestOptions(), exports);
-    __exportStar(require_tunnelAccessTokenProperties(), exports);
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    __exportStar(require_tunnelManagementHttpClient(), exports2);
+    __exportStar(require_tunnelManagementClient(), exports2);
+    __exportStar(require_tunnelRequestOptions(), exports2);
+    __exportStar(require_tunnelAccessTokenProperties(), exports2);
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/retryingTunnelConnectionEventArgs.js
 var require_retryingTunnelConnectionEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/retryingTunnelConnectionEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/retryingTunnelConnectionEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RetryingTunnelConnectionEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RetryingTunnelConnectionEventArgs = void 0;
     var RetryingTunnelConnectionEventArgs = class {
       constructor(error, delayMs) {
         this.error = error;
@@ -34805,21 +37801,21 @@ var require_retryingTunnelConnectionEventArgs = __commonJS({
         this.retry = true;
       }
     };
-    exports.RetryingTunnelConnectionEventArgs = RetryingTunnelConnectionEventArgs;
+    exports2.RetryingTunnelConnectionEventArgs = RetryingTunnelConnectionEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/relayTunnelConnector.js
 var require_relayTunnelConnector = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/relayTunnelConnector.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/relayTunnelConnector.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RelayTunnelConnector = exports.maxReconnectDelayMs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RelayTunnelConnector = exports2.maxReconnectDelayMs = void 0;
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var utils_1 = require_utils();
     var sshHelpers_1 = require_sshHelpers();
     var retryingTunnelConnectionEventArgs_1 = require_retryingTunnelConnectionEventArgs();
-    exports.maxReconnectDelayMs = 13e3;
+    exports2.maxReconnectDelayMs = 13e3;
     var reconnectInitialDelayMs = 1e3;
     var maxBrowserReconnectAttempts = 5;
     var RelayTunnelConnector = class {
@@ -34889,7 +37885,7 @@ var require_relayTunnelConnector = __commonJS({
                   throwIfCancellation(e);
                   throw e;
                 }
-                if (attemptDelayMs < exports.maxReconnectDelayMs) {
+                if (attemptDelayMs < exports2.maxReconnectDelayMs) {
                   attemptDelayMs = attemptDelayMs << 1;
                 }
               }
@@ -34978,8 +37974,8 @@ var require_relayTunnelConnector = __commonJS({
                     if (attempt > 3) {
                       throwError(errorDescription);
                     }
-                    if (attemptDelayMs < exports.maxReconnectDelayMs / 2) {
-                      attemptDelayMs = exports.maxReconnectDelayMs / 2;
+                    if (attemptDelayMs < exports2.maxReconnectDelayMs / 2) {
+                      attemptDelayMs = exports2.maxReconnectDelayMs / 2;
                     }
                     continue;
                   default:
@@ -35010,7 +38006,7 @@ var require_relayTunnelConnector = __commonJS({
         }
       }
     };
-    exports.RelayTunnelConnector = RelayTunnelConnector;
+    exports2.RelayTunnelConnector = RelayTunnelConnector;
     var recoverableNetworkErrors = [
       "ECONNRESET",
       "ENOTFOUND",
@@ -35027,10 +38023,10 @@ var require_relayTunnelConnector = __commonJS({
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayRequestMessage.js
 var require_portRelayRequestMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayRequestMessage.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayRequestMessage.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PortRelayRequestMessage = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortRelayRequestMessage = void 0;
     var dev_tunnels_ssh_tcp_1 = require_dev_tunnels_ssh_tcp();
     var PortRelayRequestMessage = class extends dev_tunnels_ssh_tcp_1.PortForwardRequestMessage {
       onWrite(writer) {
@@ -35045,16 +38041,16 @@ var require_portRelayRequestMessage = __commonJS({
         this.accessToken = reader.readString("utf8");
       }
     };
-    exports.PortRelayRequestMessage = PortRelayRequestMessage;
+    exports2.PortRelayRequestMessage = PortRelayRequestMessage;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectRequestMessage.js
 var require_portRelayConnectRequestMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectRequestMessage.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectRequestMessage.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PortRelayConnectRequestMessage = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortRelayConnectRequestMessage = void 0;
     var dev_tunnels_ssh_tcp_1 = require_dev_tunnels_ssh_tcp();
     var PortRelayConnectRequestMessage = class extends dev_tunnels_ssh_tcp_1.PortForwardChannelOpenMessage {
       constructor() {
@@ -35073,16 +38069,16 @@ var require_portRelayConnectRequestMessage = __commonJS({
         this.isE2EEncryptionRequested = reader.readBoolean();
       }
     };
-    exports.PortRelayConnectRequestMessage = PortRelayConnectRequestMessage;
+    exports2.PortRelayConnectRequestMessage = PortRelayConnectRequestMessage;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelEventArgs.js
 var require_refreshingTunnelEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.RefreshingTunnelEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RefreshingTunnelEventArgs = void 0;
     var RefreshingTunnelEventArgs = class {
       /**
        * Creates a new instance of RefreshingTunnelAccessTokenEventArgs class.
@@ -35095,16 +38091,16 @@ var require_refreshingTunnelEventArgs = __commonJS({
         this.cancellation = cancellation;
       }
     };
-    exports.RefreshingTunnelEventArgs = RefreshingTunnelEventArgs;
+    exports2.RefreshingTunnelEventArgs = RefreshingTunnelEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionSession.js
 var require_tunnelConnectionSession = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionSession.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionSession.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelConnectionSession = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelConnectionSession = void 0;
     var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
     var dev_tunnels_management_1 = require_dev_tunnels_management();
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
@@ -35671,16 +38667,16 @@ var require_tunnelConnectionSession = __commonJS({
         return b.subarray(0, 4).toString("hex") + "-" + b.subarray(4, 6).toString("hex") + "-" + b.subarray(6, 8).toString("hex") + "-" + b.subarray(8, 10).toString("hex") + "-" + b.subarray(10, 16).toString("hex");
       }
     };
-    exports.TunnelConnectionSession = TunnelConnectionSession;
+    exports2.TunnelConnectionSession = TunnelConnectionSession;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/portForwardingEventArgs.js
 var require_portForwardingEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/portForwardingEventArgs.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/portForwardingEventArgs.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.PortForwardingEventArgs = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardingEventArgs = void 0;
     var PortForwardingEventArgs = class {
       /**
        * Creates a new instance of PortForwardingEventArgs.
@@ -35690,16 +38686,16 @@ var require_portForwardingEventArgs = __commonJS({
         this.cancel = false;
       }
     };
-    exports.PortForwardingEventArgs = PortForwardingEventArgs;
+    exports2.PortForwardingEventArgs = PortForwardingEventArgs;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayTunnelClient.js
 var require_tunnelRelayTunnelClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayTunnelClient.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayTunnelClient.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelRelayTunnelClient = exports.webSocketSubProtocolv2 = exports.webSocketSubProtocol = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelRelayTunnelClient = exports2.webSocketSubProtocolv2 = exports2.webSocketSubProtocol = void 0;
     var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var dev_tunnels_ssh_tcp_1 = require_dev_tunnels_ssh_tcp();
@@ -35710,10 +38706,10 @@ var require_tunnelRelayTunnelClient = __commonJS({
     var portRelayConnectResponseMessage_1 = require_portRelayConnectResponseMessage();
     var tunnelConnectionSession_1 = require_tunnelConnectionSession();
     var portForwardingEventArgs_1 = require_portForwardingEventArgs();
-    exports.webSocketSubProtocol = "tunnel-relay-client";
-    exports.webSocketSubProtocolv2 = "tunnel-relay-client-v2-dev";
+    exports2.webSocketSubProtocol = "tunnel-relay-client";
+    exports2.webSocketSubProtocolv2 = "tunnel-relay-client-v2-dev";
     var protocolVersion = (process === null || process === void 0 ? void 0 : process.env) && process.env.DEVTUNNELS_PROTOCOL_VERSION;
-    var connectionProtocols = protocolVersion === "1" ? [exports.webSocketSubProtocol] : protocolVersion === "2" ? [exports.webSocketSubProtocolv2] : [exports.webSocketSubProtocolv2, exports.webSocketSubProtocol];
+    var connectionProtocols = protocolVersion === "1" ? [exports2.webSocketSubProtocol] : protocolVersion === "2" ? [exports2.webSocketSubProtocolv2] : [exports2.webSocketSubProtocolv2, exports2.webSocketSubProtocol];
     var TunnelRelayTunnelClient = class extends tunnelConnectionSession_1.TunnelConnectionSession {
       constructor(managementClient, trace) {
         super(dev_tunnels_contracts_1.TunnelAccessScopes.Connect, connectionProtocols, managementClient, trace);
@@ -35844,7 +38840,7 @@ var require_tunnelRelayTunnelClient = __commonJS({
           this.sshSession = sshHelpers_1.SshHelpers.createSshClientSession((config) => {
             var _a;
             config.addService(dev_tunnels_ssh_tcp_1.PortForwardingService);
-            if (this.connectionProtocol === exports.webSocketSubProtocol) {
+            if (this.connectionProtocol === exports2.webSocketSubProtocol) {
               config.protocolExtensions.push(dev_tunnels_ssh_1.SshProtocolExtensionNames.sessionReconnect);
             } else {
               config.keyExchangeAlgorithms.splice(0, 0, dev_tunnels_ssh_1.SshAlgorithms.keyExchange.none);
@@ -35863,7 +38859,7 @@ var require_tunnelRelayTunnelClient = __commonJS({
           this.sshSession.onKeepAliveFailed((count) => this.onKeepAliveFailed(count));
           this.sshSession.onKeepAliveSucceeded((count) => this.onKeepAliveSucceeded(count));
           const pfs = this.sshSession.activateService(dev_tunnels_ssh_tcp_1.PortForwardingService);
-          if (this.connectionProtocol === exports.webSocketSubProtocolv2) {
+          if (this.connectionProtocol === exports2.webSocketSubProtocolv2) {
             pfs.messageFactory = this;
             pfs.onForwardedPortConnecting(this.onForwardedPortConnecting, this, this.sshSessionDisposables);
             pfs.remoteForwardedPorts.onPortAdded((e) => this.onForwardedPortAdded(pfs, e), this, this.sshSessionDisposables);
@@ -35975,7 +38971,7 @@ var require_tunnelRelayTunnelClient = __commonJS({
         return null;
       }
       onSshServerAuthenticating(e) {
-        if (this.connectionProtocol === exports.webSocketSubProtocol) {
+        if (this.connectionProtocol === exports2.webSocketSubProtocol) {
           e.authenticationPromise = this.onHostAuthenticating(e);
         } else {
           e.authenticationPromise = Promise.resolve({});
@@ -36044,18 +39040,18 @@ var require_tunnelRelayTunnelClient = __commonJS({
         await this.connectTunnelSession();
       }
     };
-    exports.TunnelRelayTunnelClient = TunnelRelayTunnelClient;
-    TunnelRelayTunnelClient.webSocketSubProtocol = exports.webSocketSubProtocol;
-    TunnelRelayTunnelClient.webSocketSubProtocolv2 = exports.webSocketSubProtocolv2;
+    exports2.TunnelRelayTunnelClient = TunnelRelayTunnelClient;
+    TunnelRelayTunnelClient.webSocketSubProtocol = exports2.webSocketSubProtocol;
+    TunnelRelayTunnelClient.webSocketSubProtocolv2 = exports2.webSocketSubProtocolv2;
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayTunnelHost.js
 var require_tunnelRelayTunnelHost = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayTunnelHost.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayTunnelHost.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.TunnelRelayTunnelHost = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelRelayTunnelHost = void 0;
     var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
     var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
     var dev_tunnels_ssh_tcp_1 = require_dev_tunnels_ssh_tcp();
@@ -36506,7 +39502,7 @@ ${e.error}`;
         this.remoteForwarders.set(key.toString(), forwarder);
       }
     };
-    exports.TunnelRelayTunnelHost = TunnelRelayTunnelHost2;
+    exports2.TunnelRelayTunnelHost = TunnelRelayTunnelHost2;
     TunnelRelayTunnelHost2.webSocketSubProtocol = webSocketSubProtocol;
     TunnelRelayTunnelHost2.webSocketSubProtocolv2 = webSocketSubProtocolv2;
     TunnelRelayTunnelHost2.clientStreamChannelType = "client-ssh-session-stream";
@@ -36515,33 +39511,33 @@ ${e.error}`;
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnection.js
 var require_tunnelConnection = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnection.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnection.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionOptions.js
 var require_tunnelConnectionOptions = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionOptions.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionOptions.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnector.js
 var require_tunnelConnector = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnector.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnector.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
   }
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-connections/index.js
 var require_dev_tunnels_connections = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/index.js"(exports) {
+  "../../node_modules/@microsoft/dev-tunnels-connections/index.js"(exports2) {
     "use strict";
-    var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
+    var __createBinding = exports2 && exports2.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
       var desc = Object.getOwnPropertyDescriptor(m, k);
       if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
@@ -36554,85 +39550,85 @@ var require_dev_tunnels_connections = __commonJS({
       if (k2 === void 0) k2 = k;
       o[k2] = m[k];
     }));
-    var __exportStar = exports && exports.__exportStar || function(m, exports2) {
-      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports2, p)) __createBinding(exports2, m, p);
+    var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
+      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
     };
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.maxReconnectDelayMs = void 0;
-    __exportStar(require_tunnelClient(), exports);
-    __exportStar(require_tunnelHost(), exports);
-    __exportStar(require_multiModeTunnelClient(), exports);
-    __exportStar(require_multiModeTunnelHost(), exports);
-    __exportStar(require_retryTcpListenerFactory(), exports);
-    __exportStar(require_sessionPortKey(), exports);
-    __exportStar(require_sshHelpers(), exports);
-    __exportStar(require_tunnelClient(), exports);
-    __exportStar(require_tunnelHost(), exports);
-    __exportStar(require_tunnelRelayStreamFactory(), exports);
-    __exportStar(require_defaultTunnelRelayStreamFactory(), exports);
-    __exportStar(require_tunnelRelayTunnelClient(), exports);
-    __exportStar(require_tunnelRelayTunnelHost(), exports);
-    __exportStar(require_tunnelConnection(), exports);
-    __exportStar(require_tunnelConnectionBase(), exports);
-    __exportStar(require_tunnelConnectionOptions(), exports);
-    __exportStar(require_sshKeepAliveEventArgs(), exports);
-    __exportStar(require_connectionStatus(), exports);
-    __exportStar(require_connectionStatusChangedEventArgs(), exports);
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.maxReconnectDelayMs = void 0;
+    __exportStar(require_tunnelClient(), exports2);
+    __exportStar(require_tunnelHost(), exports2);
+    __exportStar(require_multiModeTunnelClient(), exports2);
+    __exportStar(require_multiModeTunnelHost(), exports2);
+    __exportStar(require_retryTcpListenerFactory(), exports2);
+    __exportStar(require_sessionPortKey(), exports2);
+    __exportStar(require_sshHelpers(), exports2);
+    __exportStar(require_tunnelClient(), exports2);
+    __exportStar(require_tunnelHost(), exports2);
+    __exportStar(require_tunnelRelayStreamFactory(), exports2);
+    __exportStar(require_defaultTunnelRelayStreamFactory(), exports2);
+    __exportStar(require_tunnelRelayTunnelClient(), exports2);
+    __exportStar(require_tunnelRelayTunnelHost(), exports2);
+    __exportStar(require_tunnelConnection(), exports2);
+    __exportStar(require_tunnelConnectionBase(), exports2);
+    __exportStar(require_tunnelConnectionOptions(), exports2);
+    __exportStar(require_sshKeepAliveEventArgs(), exports2);
+    __exportStar(require_connectionStatus(), exports2);
+    __exportStar(require_connectionStatusChangedEventArgs(), exports2);
     var relayTunnelConnector_1 = require_relayTunnelConnector();
-    Object.defineProperty(exports, "maxReconnectDelayMs", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "maxReconnectDelayMs", { enumerable: true, get: function() {
       return relayTunnelConnector_1.maxReconnectDelayMs;
     } });
-    __exportStar(require_refreshingTunnelAccessTokenEventArgs(), exports);
-    __exportStar(require_refreshingTunnelEventArgs(), exports);
-    __exportStar(require_retryingTunnelConnectionEventArgs(), exports);
-    __exportStar(require_portForwardingEventArgs(), exports);
-    __exportStar(require_tunnelConnector(), exports);
+    __exportStar(require_refreshingTunnelAccessTokenEventArgs(), exports2);
+    __exportStar(require_refreshingTunnelEventArgs(), exports2);
+    __exportStar(require_retryingTunnelConnectionEventArgs(), exports2);
+    __exportStar(require_portForwardingEventArgs(), exports2);
+    __exportStar(require_tunnelConnector(), exports2);
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/is.js
 var require_is2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/is.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/is.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.stringArray = exports.array = exports.func = exports.error = exports.number = exports.string = exports.boolean = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.stringArray = exports2.array = exports2.func = exports2.error = exports2.number = exports2.string = exports2.boolean = void 0;
     function boolean(value) {
       return value === true || value === false;
     }
-    exports.boolean = boolean;
+    exports2.boolean = boolean;
     function string(value) {
       return typeof value === "string" || value instanceof String;
     }
-    exports.string = string;
+    exports2.string = string;
     function number(value) {
       return typeof value === "number" || value instanceof Number;
     }
-    exports.number = number;
+    exports2.number = number;
     function error(value) {
       return value instanceof Error;
     }
-    exports.error = error;
+    exports2.error = error;
     function func(value) {
       return typeof value === "function";
     }
-    exports.func = func;
+    exports2.func = func;
     function array(value) {
       return Array.isArray(value);
     }
-    exports.array = array;
+    exports2.array = array;
     function stringArray(value) {
       return array(value) && value.every((elem) => string(elem));
     }
-    exports.stringArray = stringArray;
+    exports2.stringArray = stringArray;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messages.js
 var require_messages2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messages.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messages.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Message = exports.NotificationType9 = exports.NotificationType8 = exports.NotificationType7 = exports.NotificationType6 = exports.NotificationType5 = exports.NotificationType4 = exports.NotificationType3 = exports.NotificationType2 = exports.NotificationType1 = exports.NotificationType0 = exports.NotificationType = exports.RequestType9 = exports.RequestType8 = exports.RequestType7 = exports.RequestType6 = exports.RequestType5 = exports.RequestType4 = exports.RequestType3 = exports.RequestType2 = exports.RequestType1 = exports.RequestType = exports.RequestType0 = exports.AbstractMessageSignature = exports.ParameterStructures = exports.ResponseError = exports.ErrorCodes = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Message = exports2.NotificationType9 = exports2.NotificationType8 = exports2.NotificationType7 = exports2.NotificationType6 = exports2.NotificationType5 = exports2.NotificationType4 = exports2.NotificationType3 = exports2.NotificationType2 = exports2.NotificationType1 = exports2.NotificationType0 = exports2.NotificationType = exports2.RequestType9 = exports2.RequestType8 = exports2.RequestType7 = exports2.RequestType6 = exports2.RequestType5 = exports2.RequestType4 = exports2.RequestType3 = exports2.RequestType2 = exports2.RequestType1 = exports2.RequestType = exports2.RequestType0 = exports2.AbstractMessageSignature = exports2.ParameterStructures = exports2.ResponseError = exports2.ErrorCodes = void 0;
     var is = require_is2();
     var ErrorCodes;
     (function(ErrorCodes2) {
@@ -36651,7 +39647,7 @@ var require_messages2 = __commonJS({
       ErrorCodes2.UnknownErrorCode = -32001;
       ErrorCodes2.jsonrpcReservedErrorRangeEnd = -32e3;
       ErrorCodes2.serverErrorEnd = -32e3;
-    })(ErrorCodes || (exports.ErrorCodes = ErrorCodes = {}));
+    })(ErrorCodes || (exports2.ErrorCodes = ErrorCodes = {}));
     var ResponseError = class _ResponseError extends Error {
       constructor(code, message, data) {
         super(message);
@@ -36670,7 +39666,7 @@ var require_messages2 = __commonJS({
         return result;
       }
     };
-    exports.ResponseError = ResponseError;
+    exports2.ResponseError = ResponseError;
     var ParameterStructures = class _ParameterStructures {
       constructor(kind) {
         this.kind = kind;
@@ -36682,7 +39678,7 @@ var require_messages2 = __commonJS({
         return this.kind;
       }
     };
-    exports.ParameterStructures = ParameterStructures;
+    exports2.ParameterStructures = ParameterStructures;
     ParameterStructures.auto = new ParameterStructures("auto");
     ParameterStructures.byPosition = new ParameterStructures("byPosition");
     ParameterStructures.byName = new ParameterStructures("byName");
@@ -36695,13 +39691,13 @@ var require_messages2 = __commonJS({
         return ParameterStructures.auto;
       }
     };
-    exports.AbstractMessageSignature = AbstractMessageSignature;
+    exports2.AbstractMessageSignature = AbstractMessageSignature;
     var RequestType0 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 0);
       }
     };
-    exports.RequestType0 = RequestType0;
+    exports2.RequestType0 = RequestType0;
     var RequestType = class extends AbstractMessageSignature {
       constructor(method, _parameterStructures = ParameterStructures.auto) {
         super(method, 1);
@@ -36711,7 +39707,7 @@ var require_messages2 = __commonJS({
         return this._parameterStructures;
       }
     };
-    exports.RequestType = RequestType;
+    exports2.RequestType = RequestType;
     var RequestType1 = class extends AbstractMessageSignature {
       constructor(method, _parameterStructures = ParameterStructures.auto) {
         super(method, 1);
@@ -36721,55 +39717,55 @@ var require_messages2 = __commonJS({
         return this._parameterStructures;
       }
     };
-    exports.RequestType1 = RequestType1;
+    exports2.RequestType1 = RequestType1;
     var RequestType2 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 2);
       }
     };
-    exports.RequestType2 = RequestType2;
+    exports2.RequestType2 = RequestType2;
     var RequestType3 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 3);
       }
     };
-    exports.RequestType3 = RequestType3;
+    exports2.RequestType3 = RequestType3;
     var RequestType4 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 4);
       }
     };
-    exports.RequestType4 = RequestType4;
+    exports2.RequestType4 = RequestType4;
     var RequestType5 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 5);
       }
     };
-    exports.RequestType5 = RequestType5;
+    exports2.RequestType5 = RequestType5;
     var RequestType6 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 6);
       }
     };
-    exports.RequestType6 = RequestType6;
+    exports2.RequestType6 = RequestType6;
     var RequestType7 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 7);
       }
     };
-    exports.RequestType7 = RequestType7;
+    exports2.RequestType7 = RequestType7;
     var RequestType8 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 8);
       }
     };
-    exports.RequestType8 = RequestType8;
+    exports2.RequestType8 = RequestType8;
     var RequestType9 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 9);
       }
     };
-    exports.RequestType9 = RequestType9;
+    exports2.RequestType9 = RequestType9;
     var NotificationType = class extends AbstractMessageSignature {
       constructor(method, _parameterStructures = ParameterStructures.auto) {
         super(method, 1);
@@ -36779,13 +39775,13 @@ var require_messages2 = __commonJS({
         return this._parameterStructures;
       }
     };
-    exports.NotificationType = NotificationType;
+    exports2.NotificationType = NotificationType;
     var NotificationType0 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 0);
       }
     };
-    exports.NotificationType0 = NotificationType0;
+    exports2.NotificationType0 = NotificationType0;
     var NotificationType1 = class extends AbstractMessageSignature {
       constructor(method, _parameterStructures = ParameterStructures.auto) {
         super(method, 1);
@@ -36795,55 +39791,55 @@ var require_messages2 = __commonJS({
         return this._parameterStructures;
       }
     };
-    exports.NotificationType1 = NotificationType1;
+    exports2.NotificationType1 = NotificationType1;
     var NotificationType2 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 2);
       }
     };
-    exports.NotificationType2 = NotificationType2;
+    exports2.NotificationType2 = NotificationType2;
     var NotificationType3 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 3);
       }
     };
-    exports.NotificationType3 = NotificationType3;
+    exports2.NotificationType3 = NotificationType3;
     var NotificationType4 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 4);
       }
     };
-    exports.NotificationType4 = NotificationType4;
+    exports2.NotificationType4 = NotificationType4;
     var NotificationType5 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 5);
       }
     };
-    exports.NotificationType5 = NotificationType5;
+    exports2.NotificationType5 = NotificationType5;
     var NotificationType6 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 6);
       }
     };
-    exports.NotificationType6 = NotificationType6;
+    exports2.NotificationType6 = NotificationType6;
     var NotificationType7 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 7);
       }
     };
-    exports.NotificationType7 = NotificationType7;
+    exports2.NotificationType7 = NotificationType7;
     var NotificationType8 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 8);
       }
     };
-    exports.NotificationType8 = NotificationType8;
+    exports2.NotificationType8 = NotificationType8;
     var NotificationType9 = class extends AbstractMessageSignature {
       constructor(method) {
         super(method, 9);
       }
     };
-    exports.NotificationType9 = NotificationType9;
+    exports2.NotificationType9 = NotificationType9;
     var Message;
     (function(Message2) {
       function isRequest(message) {
@@ -36861,17 +39857,17 @@ var require_messages2 = __commonJS({
         return candidate && (candidate.result !== void 0 || !!candidate.error) && (is.string(candidate.id) || is.number(candidate.id) || candidate.id === null);
       }
       Message2.isResponse = isResponse;
-    })(Message || (exports.Message = Message = {}));
+    })(Message || (exports2.Message = Message = {}));
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/linkedMap.js
 var require_linkedMap2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/linkedMap.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/linkedMap.js"(exports2) {
     "use strict";
     var _a;
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.LRUCache = exports.LinkedMap = exports.Touch = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.LRUCache = exports2.LinkedMap = exports2.Touch = void 0;
     var Touch;
     (function(Touch2) {
       Touch2.None = 0;
@@ -36879,7 +39875,7 @@ var require_linkedMap2 = __commonJS({
       Touch2.AsOld = Touch2.First;
       Touch2.Last = 2;
       Touch2.AsNew = Touch2.Last;
-    })(Touch || (exports.Touch = Touch = {}));
+    })(Touch || (exports2.Touch = Touch = {}));
     var LinkedMap = class {
       constructor() {
         this[_a] = "LinkedMap";
@@ -37193,7 +40189,7 @@ var require_linkedMap2 = __commonJS({
         }
       }
     };
-    exports.LinkedMap = LinkedMap;
+    exports2.LinkedMap = LinkedMap;
     var LRUCache = class extends LinkedMap {
       constructor(limit, ratio = 1) {
         super();
@@ -37231,16 +40227,16 @@ var require_linkedMap2 = __commonJS({
         }
       }
     };
-    exports.LRUCache = LRUCache;
+    exports2.LRUCache = LRUCache;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/disposable.js
 var require_disposable = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/disposable.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/disposable.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Disposable = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Disposable = void 0;
     var Disposable;
     (function(Disposable2) {
       function create(func) {
@@ -37249,15 +40245,15 @@ var require_disposable = __commonJS({
         };
       }
       Disposable2.create = create;
-    })(Disposable || (exports.Disposable = Disposable = {}));
+    })(Disposable || (exports2.Disposable = Disposable = {}));
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/ral.js
 var require_ral = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/ral.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/ral.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
+    Object.defineProperty(exports2, "__esModule", { value: true });
     var _ral;
     function RAL() {
       if (_ral === void 0) {
@@ -37274,16 +40270,16 @@ var require_ral = __commonJS({
       }
       RAL2.install = install;
     })(RAL || (RAL = {}));
-    exports.default = RAL;
+    exports2.default = RAL;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/events.js
 var require_events2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/events.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/events.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Emitter = exports.Event = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Emitter = exports2.Event = void 0;
     var ral_1 = require_ral();
     var Event;
     (function(Event2) {
@@ -37292,7 +40288,7 @@ var require_events2 = __commonJS({
       Event2.None = function() {
         return _disposable;
       };
-    })(Event || (exports.Event = Event = {}));
+    })(Event || (exports2.Event = Event = {}));
     var CallbackList = class {
       add(callback, context = null, bucket) {
         if (!this._callbacks) {
@@ -37401,7 +40397,7 @@ var require_events2 = __commonJS({
         }
       }
     };
-    exports.Emitter = Emitter;
+    exports2.Emitter = Emitter;
     Emitter._noop = function() {
     };
   }
@@ -37409,10 +40405,10 @@ var require_events2 = __commonJS({
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/cancellation.js
 var require_cancellation3 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/cancellation.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/cancellation.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.CancellationTokenSource = exports.CancellationToken = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.CancellationTokenSource = exports2.CancellationToken = void 0;
     var ral_1 = require_ral();
     var Is = require_is2();
     var events_1 = require_events2();
@@ -37431,7 +40427,7 @@ var require_cancellation3 = __commonJS({
         return candidate && (candidate === CancellationToken2.None || candidate === CancellationToken2.Cancelled || Is.boolean(candidate.isCancellationRequested) && !!candidate.onCancellationRequested);
       }
       CancellationToken2.is = is;
-    })(CancellationToken || (exports.CancellationToken = CancellationToken = {}));
+    })(CancellationToken || (exports2.CancellationToken = CancellationToken = {}));
     var shortcutEvent = Object.freeze(function(callback, context) {
       const handle = (0, ral_1.default)().timer.setTimeout(callback.bind(context), 0);
       return { dispose() {
@@ -37492,16 +40488,16 @@ var require_cancellation3 = __commonJS({
         }
       }
     };
-    exports.CancellationTokenSource = CancellationTokenSource;
+    exports2.CancellationTokenSource = CancellationTokenSource;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/sharedArrayCancellation.js
 var require_sharedArrayCancellation = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/sharedArrayCancellation.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/sharedArrayCancellation.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.SharedArrayReceiverStrategy = exports.SharedArraySenderStrategy = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SharedArrayReceiverStrategy = exports2.SharedArraySenderStrategy = void 0;
     var cancellation_1 = require_cancellation3();
     var CancellationState;
     (function(CancellationState2) {
@@ -37537,7 +40533,7 @@ var require_sharedArrayCancellation = __commonJS({
         this.buffers.clear();
       }
     };
-    exports.SharedArraySenderStrategy = SharedArraySenderStrategy;
+    exports2.SharedArraySenderStrategy = SharedArraySenderStrategy;
     var SharedArrayBufferCancellationToken = class {
       constructor(buffer) {
         this.data = new Int32Array(buffer, 0, 1);
@@ -37570,16 +40566,16 @@ var require_sharedArrayCancellation = __commonJS({
         return new SharedArrayBufferCancellationTokenSource(buffer);
       }
     };
-    exports.SharedArrayReceiverStrategy = SharedArrayReceiverStrategy;
+    exports2.SharedArrayReceiverStrategy = SharedArrayReceiverStrategy;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/semaphore.js
 var require_semaphore2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/semaphore.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/semaphore.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.Semaphore = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Semaphore = void 0;
     var ral_1 = require_ral();
     var Semaphore = class {
       constructor(capacity = 1) {
@@ -37638,16 +40634,16 @@ var require_semaphore2 = __commonJS({
         }
       }
     };
-    exports.Semaphore = Semaphore;
+    exports2.Semaphore = Semaphore;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageReader.js
 var require_messageReader2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageReader.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageReader.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ReadableStreamMessageReader = exports.AbstractMessageReader = exports.MessageReader = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ReadableStreamMessageReader = exports2.AbstractMessageReader = exports2.MessageReader = void 0;
     var ral_1 = require_ral();
     var Is = require_is2();
     var events_1 = require_events2();
@@ -37659,7 +40655,7 @@ var require_messageReader2 = __commonJS({
         return candidate && Is.func(candidate.listen) && Is.func(candidate.dispose) && Is.func(candidate.onError) && Is.func(candidate.onClose) && Is.func(candidate.onPartialMessage);
       }
       MessageReader2.is = is;
-    })(MessageReader || (exports.MessageReader = MessageReader = {}));
+    })(MessageReader || (exports2.MessageReader = MessageReader = {}));
     var AbstractMessageReader = class {
       constructor() {
         this.errorEmitter = new events_1.Emitter();
@@ -37696,7 +40692,7 @@ var require_messageReader2 = __commonJS({
         }
       }
     };
-    exports.AbstractMessageReader = AbstractMessageReader;
+    exports2.AbstractMessageReader = AbstractMessageReader;
     var ResolvedMessageReaderOptions;
     (function(ResolvedMessageReaderOptions2) {
       function fromOptions(options) {
@@ -37827,16 +40823,16 @@ ${JSON.stringify(Object.fromEntries(headers))}`));
         }, this._partialMessageTimeout, this.messageToken, this._partialMessageTimeout);
       }
     };
-    exports.ReadableStreamMessageReader = ReadableStreamMessageReader;
+    exports2.ReadableStreamMessageReader = ReadableStreamMessageReader;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageWriter.js
 var require_messageWriter2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageWriter.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageWriter.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.WriteableStreamMessageWriter = exports.AbstractMessageWriter = exports.MessageWriter = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WriteableStreamMessageWriter = exports2.AbstractMessageWriter = exports2.MessageWriter = void 0;
     var ral_1 = require_ral();
     var Is = require_is2();
     var semaphore_1 = require_semaphore2();
@@ -37850,7 +40846,7 @@ var require_messageWriter2 = __commonJS({
         return candidate && Is.func(candidate.dispose) && Is.func(candidate.onClose) && Is.func(candidate.onError) && Is.func(candidate.write);
       }
       MessageWriter2.is = is;
-    })(MessageWriter || (exports.MessageWriter = MessageWriter = {}));
+    })(MessageWriter || (exports2.MessageWriter = MessageWriter = {}));
     var AbstractMessageWriter = class {
       constructor() {
         this.errorEmitter = new events_1.Emitter();
@@ -37880,7 +40876,7 @@ var require_messageWriter2 = __commonJS({
         }
       }
     };
-    exports.AbstractMessageWriter = AbstractMessageWriter;
+    exports2.AbstractMessageWriter = AbstractMessageWriter;
     var ResolvedMessageWriterOptions;
     (function(ResolvedMessageWriterOptions2) {
       function fromOptions(options) {
@@ -37939,16 +40935,16 @@ var require_messageWriter2 = __commonJS({
         this.writable.end();
       }
     };
-    exports.WriteableStreamMessageWriter = WriteableStreamMessageWriter;
+    exports2.WriteableStreamMessageWriter = WriteableStreamMessageWriter;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageBuffer.js
 var require_messageBuffer = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageBuffer.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageBuffer.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.AbstractMessageBuffer = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.AbstractMessageBuffer = void 0;
     var CR = 13;
     var LF = 10;
     var CRLF = "\r\n";
@@ -38087,16 +41083,16 @@ ${header}`);
         return result;
       }
     };
-    exports.AbstractMessageBuffer = AbstractMessageBuffer;
+    exports2.AbstractMessageBuffer = AbstractMessageBuffer;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/connection.js
 var require_connection = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/connection.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/connection.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.createMessageConnection = exports.ConnectionOptions = exports.MessageStrategy = exports.CancellationStrategy = exports.CancellationSenderStrategy = exports.CancellationReceiverStrategy = exports.RequestCancellationReceiverStrategy = exports.IdCancellationReceiverStrategy = exports.ConnectionStrategy = exports.ConnectionError = exports.ConnectionErrors = exports.LogTraceNotification = exports.SetTraceNotification = exports.TraceFormat = exports.TraceValues = exports.Trace = exports.NullLogger = exports.ProgressType = exports.ProgressToken = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.createMessageConnection = exports2.ConnectionOptions = exports2.MessageStrategy = exports2.CancellationStrategy = exports2.CancellationSenderStrategy = exports2.CancellationReceiverStrategy = exports2.RequestCancellationReceiverStrategy = exports2.IdCancellationReceiverStrategy = exports2.ConnectionStrategy = exports2.ConnectionError = exports2.ConnectionErrors = exports2.LogTraceNotification = exports2.SetTraceNotification = exports2.TraceFormat = exports2.TraceValues = exports2.Trace = exports2.NullLogger = exports2.ProgressType = exports2.ProgressToken = void 0;
     var ral_1 = require_ral();
     var Is = require_is2();
     var messages_1 = require_messages2();
@@ -38113,7 +41109,7 @@ var require_connection = __commonJS({
         return typeof value === "string" || typeof value === "number";
       }
       ProgressToken2.is = is;
-    })(ProgressToken || (exports.ProgressToken = ProgressToken = {}));
+    })(ProgressToken || (exports2.ProgressToken = ProgressToken = {}));
     var ProgressNotification;
     (function(ProgressNotification2) {
       ProgressNotification2.type = new messages_1.NotificationType("$/progress");
@@ -38122,7 +41118,7 @@ var require_connection = __commonJS({
       constructor() {
       }
     };
-    exports.ProgressType = ProgressType;
+    exports2.ProgressType = ProgressType;
     var StarRequestHandler;
     (function(StarRequestHandler2) {
       function is(value) {
@@ -38130,7 +41126,7 @@ var require_connection = __commonJS({
       }
       StarRequestHandler2.is = is;
     })(StarRequestHandler || (StarRequestHandler = {}));
-    exports.NullLogger = Object.freeze({
+    exports2.NullLogger = Object.freeze({
       error: () => {
       },
       warn: () => {
@@ -38146,14 +41142,14 @@ var require_connection = __commonJS({
       Trace2[Trace2["Messages"] = 1] = "Messages";
       Trace2[Trace2["Compact"] = 2] = "Compact";
       Trace2[Trace2["Verbose"] = 3] = "Verbose";
-    })(Trace || (exports.Trace = Trace = {}));
+    })(Trace || (exports2.Trace = Trace = {}));
     var TraceValues;
     (function(TraceValues2) {
       TraceValues2.Off = "off";
       TraceValues2.Messages = "messages";
       TraceValues2.Compact = "compact";
       TraceValues2.Verbose = "verbose";
-    })(TraceValues || (exports.TraceValues = TraceValues = {}));
+    })(TraceValues || (exports2.TraceValues = TraceValues = {}));
     (function(Trace2) {
       function fromString(value) {
         if (!Is.string(value)) {
@@ -38189,12 +41185,12 @@ var require_connection = __commonJS({
         }
       }
       Trace2.toString = toString;
-    })(Trace || (exports.Trace = Trace = {}));
+    })(Trace || (exports2.Trace = Trace = {}));
     var TraceFormat;
     (function(TraceFormat2) {
       TraceFormat2["Text"] = "text";
       TraceFormat2["JSON"] = "json";
-    })(TraceFormat || (exports.TraceFormat = TraceFormat = {}));
+    })(TraceFormat || (exports2.TraceFormat = TraceFormat = {}));
     (function(TraceFormat2) {
       function fromString(value) {
         if (!Is.string(value)) {
@@ -38208,21 +41204,21 @@ var require_connection = __commonJS({
         }
       }
       TraceFormat2.fromString = fromString;
-    })(TraceFormat || (exports.TraceFormat = TraceFormat = {}));
+    })(TraceFormat || (exports2.TraceFormat = TraceFormat = {}));
     var SetTraceNotification;
     (function(SetTraceNotification2) {
       SetTraceNotification2.type = new messages_1.NotificationType("$/setTrace");
-    })(SetTraceNotification || (exports.SetTraceNotification = SetTraceNotification = {}));
+    })(SetTraceNotification || (exports2.SetTraceNotification = SetTraceNotification = {}));
     var LogTraceNotification;
     (function(LogTraceNotification2) {
       LogTraceNotification2.type = new messages_1.NotificationType("$/logTrace");
-    })(LogTraceNotification || (exports.LogTraceNotification = LogTraceNotification = {}));
+    })(LogTraceNotification || (exports2.LogTraceNotification = LogTraceNotification = {}));
     var ConnectionErrors;
     (function(ConnectionErrors2) {
       ConnectionErrors2[ConnectionErrors2["Closed"] = 1] = "Closed";
       ConnectionErrors2[ConnectionErrors2["Disposed"] = 2] = "Disposed";
       ConnectionErrors2[ConnectionErrors2["AlreadyListening"] = 3] = "AlreadyListening";
-    })(ConnectionErrors || (exports.ConnectionErrors = ConnectionErrors = {}));
+    })(ConnectionErrors || (exports2.ConnectionErrors = ConnectionErrors = {}));
     var ConnectionError = class _ConnectionError extends Error {
       constructor(code, message) {
         super(message);
@@ -38230,7 +41226,7 @@ var require_connection = __commonJS({
         Object.setPrototypeOf(this, _ConnectionError.prototype);
       }
     };
-    exports.ConnectionError = ConnectionError;
+    exports2.ConnectionError = ConnectionError;
     var ConnectionStrategy;
     (function(ConnectionStrategy2) {
       function is(value) {
@@ -38238,7 +41234,7 @@ var require_connection = __commonJS({
         return candidate && Is.func(candidate.cancelUndispatched);
       }
       ConnectionStrategy2.is = is;
-    })(ConnectionStrategy || (exports.ConnectionStrategy = ConnectionStrategy = {}));
+    })(ConnectionStrategy || (exports2.ConnectionStrategy = ConnectionStrategy = {}));
     var IdCancellationReceiverStrategy;
     (function(IdCancellationReceiverStrategy2) {
       function is(value) {
@@ -38246,7 +41242,7 @@ var require_connection = __commonJS({
         return candidate && (candidate.kind === void 0 || candidate.kind === "id") && Is.func(candidate.createCancellationTokenSource) && (candidate.dispose === void 0 || Is.func(candidate.dispose));
       }
       IdCancellationReceiverStrategy2.is = is;
-    })(IdCancellationReceiverStrategy || (exports.IdCancellationReceiverStrategy = IdCancellationReceiverStrategy = {}));
+    })(IdCancellationReceiverStrategy || (exports2.IdCancellationReceiverStrategy = IdCancellationReceiverStrategy = {}));
     var RequestCancellationReceiverStrategy;
     (function(RequestCancellationReceiverStrategy2) {
       function is(value) {
@@ -38254,7 +41250,7 @@ var require_connection = __commonJS({
         return candidate && candidate.kind === "request" && Is.func(candidate.createCancellationTokenSource) && (candidate.dispose === void 0 || Is.func(candidate.dispose));
       }
       RequestCancellationReceiverStrategy2.is = is;
-    })(RequestCancellationReceiverStrategy || (exports.RequestCancellationReceiverStrategy = RequestCancellationReceiverStrategy = {}));
+    })(RequestCancellationReceiverStrategy || (exports2.RequestCancellationReceiverStrategy = RequestCancellationReceiverStrategy = {}));
     var CancellationReceiverStrategy;
     (function(CancellationReceiverStrategy2) {
       CancellationReceiverStrategy2.Message = Object.freeze({
@@ -38266,7 +41262,7 @@ var require_connection = __commonJS({
         return IdCancellationReceiverStrategy.is(value) || RequestCancellationReceiverStrategy.is(value);
       }
       CancellationReceiverStrategy2.is = is;
-    })(CancellationReceiverStrategy || (exports.CancellationReceiverStrategy = CancellationReceiverStrategy = {}));
+    })(CancellationReceiverStrategy || (exports2.CancellationReceiverStrategy = CancellationReceiverStrategy = {}));
     var CancellationSenderStrategy;
     (function(CancellationSenderStrategy2) {
       CancellationSenderStrategy2.Message = Object.freeze({
@@ -38281,7 +41277,7 @@ var require_connection = __commonJS({
         return candidate && Is.func(candidate.sendCancellation) && Is.func(candidate.cleanup);
       }
       CancellationSenderStrategy2.is = is;
-    })(CancellationSenderStrategy || (exports.CancellationSenderStrategy = CancellationSenderStrategy = {}));
+    })(CancellationSenderStrategy || (exports2.CancellationSenderStrategy = CancellationSenderStrategy = {}));
     var CancellationStrategy;
     (function(CancellationStrategy2) {
       CancellationStrategy2.Message = Object.freeze({
@@ -38293,7 +41289,7 @@ var require_connection = __commonJS({
         return candidate && CancellationReceiverStrategy.is(candidate.receiver) && CancellationSenderStrategy.is(candidate.sender);
       }
       CancellationStrategy2.is = is;
-    })(CancellationStrategy || (exports.CancellationStrategy = CancellationStrategy = {}));
+    })(CancellationStrategy || (exports2.CancellationStrategy = CancellationStrategy = {}));
     var MessageStrategy;
     (function(MessageStrategy2) {
       function is(value) {
@@ -38301,7 +41297,7 @@ var require_connection = __commonJS({
         return candidate && Is.func(candidate.handleMessage);
       }
       MessageStrategy2.is = is;
-    })(MessageStrategy || (exports.MessageStrategy = MessageStrategy = {}));
+    })(MessageStrategy || (exports2.MessageStrategy = MessageStrategy = {}));
     var ConnectionOptions;
     (function(ConnectionOptions2) {
       function is(value) {
@@ -38309,7 +41305,7 @@ var require_connection = __commonJS({
         return candidate && (CancellationStrategy.is(candidate.cancellationStrategy) || ConnectionStrategy.is(candidate.connectionStrategy) || MessageStrategy.is(candidate.messageStrategy));
       }
       ConnectionOptions2.is = is;
-    })(ConnectionOptions || (exports.ConnectionOptions = ConnectionOptions = {}));
+    })(ConnectionOptions || (exports2.ConnectionOptions = ConnectionOptions = {}));
     var ConnectionState;
     (function(ConnectionState2) {
       ConnectionState2[ConnectionState2["New"] = 1] = "New";
@@ -38318,7 +41314,7 @@ var require_connection = __commonJS({
       ConnectionState2[ConnectionState2["Disposed"] = 4] = "Disposed";
     })(ConnectionState || (ConnectionState = {}));
     function createMessageConnection2(messageReader, messageWriter, _logger, options) {
-      const logger = _logger !== void 0 ? _logger : exports.NullLogger;
+      const logger = _logger !== void 0 ? _logger : exports2.NullLogger;
       let sequenceNumber = 0;
       let notificationSequenceNumber = 0;
       let unknownResponseSequenceNumber = 0;
@@ -39216,218 +42212,218 @@ ${JSON.stringify(message, null, 4)}`);
       });
       return connection;
     }
-    exports.createMessageConnection = createMessageConnection2;
+    exports2.createMessageConnection = createMessageConnection2;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/api.js
 var require_api = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/api.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/api.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.ProgressType = exports.ProgressToken = exports.createMessageConnection = exports.NullLogger = exports.ConnectionOptions = exports.ConnectionStrategy = exports.AbstractMessageBuffer = exports.WriteableStreamMessageWriter = exports.AbstractMessageWriter = exports.MessageWriter = exports.ReadableStreamMessageReader = exports.AbstractMessageReader = exports.MessageReader = exports.SharedArrayReceiverStrategy = exports.SharedArraySenderStrategy = exports.CancellationToken = exports.CancellationTokenSource = exports.Emitter = exports.Event = exports.Disposable = exports.LRUCache = exports.Touch = exports.LinkedMap = exports.ParameterStructures = exports.NotificationType9 = exports.NotificationType8 = exports.NotificationType7 = exports.NotificationType6 = exports.NotificationType5 = exports.NotificationType4 = exports.NotificationType3 = exports.NotificationType2 = exports.NotificationType1 = exports.NotificationType0 = exports.NotificationType = exports.ErrorCodes = exports.ResponseError = exports.RequestType9 = exports.RequestType8 = exports.RequestType7 = exports.RequestType6 = exports.RequestType5 = exports.RequestType4 = exports.RequestType3 = exports.RequestType2 = exports.RequestType1 = exports.RequestType0 = exports.RequestType = exports.Message = exports.RAL = void 0;
-    exports.MessageStrategy = exports.CancellationStrategy = exports.CancellationSenderStrategy = exports.CancellationReceiverStrategy = exports.ConnectionError = exports.ConnectionErrors = exports.LogTraceNotification = exports.SetTraceNotification = exports.TraceFormat = exports.TraceValues = exports.Trace = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ProgressType = exports2.ProgressToken = exports2.createMessageConnection = exports2.NullLogger = exports2.ConnectionOptions = exports2.ConnectionStrategy = exports2.AbstractMessageBuffer = exports2.WriteableStreamMessageWriter = exports2.AbstractMessageWriter = exports2.MessageWriter = exports2.ReadableStreamMessageReader = exports2.AbstractMessageReader = exports2.MessageReader = exports2.SharedArrayReceiverStrategy = exports2.SharedArraySenderStrategy = exports2.CancellationToken = exports2.CancellationTokenSource = exports2.Emitter = exports2.Event = exports2.Disposable = exports2.LRUCache = exports2.Touch = exports2.LinkedMap = exports2.ParameterStructures = exports2.NotificationType9 = exports2.NotificationType8 = exports2.NotificationType7 = exports2.NotificationType6 = exports2.NotificationType5 = exports2.NotificationType4 = exports2.NotificationType3 = exports2.NotificationType2 = exports2.NotificationType1 = exports2.NotificationType0 = exports2.NotificationType = exports2.ErrorCodes = exports2.ResponseError = exports2.RequestType9 = exports2.RequestType8 = exports2.RequestType7 = exports2.RequestType6 = exports2.RequestType5 = exports2.RequestType4 = exports2.RequestType3 = exports2.RequestType2 = exports2.RequestType1 = exports2.RequestType0 = exports2.RequestType = exports2.Message = exports2.RAL = void 0;
+    exports2.MessageStrategy = exports2.CancellationStrategy = exports2.CancellationSenderStrategy = exports2.CancellationReceiverStrategy = exports2.ConnectionError = exports2.ConnectionErrors = exports2.LogTraceNotification = exports2.SetTraceNotification = exports2.TraceFormat = exports2.TraceValues = exports2.Trace = void 0;
     var messages_1 = require_messages2();
-    Object.defineProperty(exports, "Message", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Message", { enumerable: true, get: function() {
       return messages_1.Message;
     } });
-    Object.defineProperty(exports, "RequestType", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType", { enumerable: true, get: function() {
       return messages_1.RequestType;
     } });
-    Object.defineProperty(exports, "RequestType0", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType0", { enumerable: true, get: function() {
       return messages_1.RequestType0;
     } });
-    Object.defineProperty(exports, "RequestType1", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType1", { enumerable: true, get: function() {
       return messages_1.RequestType1;
     } });
-    Object.defineProperty(exports, "RequestType2", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType2", { enumerable: true, get: function() {
       return messages_1.RequestType2;
     } });
-    Object.defineProperty(exports, "RequestType3", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType3", { enumerable: true, get: function() {
       return messages_1.RequestType3;
     } });
-    Object.defineProperty(exports, "RequestType4", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType4", { enumerable: true, get: function() {
       return messages_1.RequestType4;
     } });
-    Object.defineProperty(exports, "RequestType5", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType5", { enumerable: true, get: function() {
       return messages_1.RequestType5;
     } });
-    Object.defineProperty(exports, "RequestType6", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType6", { enumerable: true, get: function() {
       return messages_1.RequestType6;
     } });
-    Object.defineProperty(exports, "RequestType7", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType7", { enumerable: true, get: function() {
       return messages_1.RequestType7;
     } });
-    Object.defineProperty(exports, "RequestType8", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType8", { enumerable: true, get: function() {
       return messages_1.RequestType8;
     } });
-    Object.defineProperty(exports, "RequestType9", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "RequestType9", { enumerable: true, get: function() {
       return messages_1.RequestType9;
     } });
-    Object.defineProperty(exports, "ResponseError", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ResponseError", { enumerable: true, get: function() {
       return messages_1.ResponseError;
     } });
-    Object.defineProperty(exports, "ErrorCodes", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ErrorCodes", { enumerable: true, get: function() {
       return messages_1.ErrorCodes;
     } });
-    Object.defineProperty(exports, "NotificationType", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType", { enumerable: true, get: function() {
       return messages_1.NotificationType;
     } });
-    Object.defineProperty(exports, "NotificationType0", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType0", { enumerable: true, get: function() {
       return messages_1.NotificationType0;
     } });
-    Object.defineProperty(exports, "NotificationType1", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType1", { enumerable: true, get: function() {
       return messages_1.NotificationType1;
     } });
-    Object.defineProperty(exports, "NotificationType2", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType2", { enumerable: true, get: function() {
       return messages_1.NotificationType2;
     } });
-    Object.defineProperty(exports, "NotificationType3", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType3", { enumerable: true, get: function() {
       return messages_1.NotificationType3;
     } });
-    Object.defineProperty(exports, "NotificationType4", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType4", { enumerable: true, get: function() {
       return messages_1.NotificationType4;
     } });
-    Object.defineProperty(exports, "NotificationType5", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType5", { enumerable: true, get: function() {
       return messages_1.NotificationType5;
     } });
-    Object.defineProperty(exports, "NotificationType6", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType6", { enumerable: true, get: function() {
       return messages_1.NotificationType6;
     } });
-    Object.defineProperty(exports, "NotificationType7", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType7", { enumerable: true, get: function() {
       return messages_1.NotificationType7;
     } });
-    Object.defineProperty(exports, "NotificationType8", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType8", { enumerable: true, get: function() {
       return messages_1.NotificationType8;
     } });
-    Object.defineProperty(exports, "NotificationType9", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NotificationType9", { enumerable: true, get: function() {
       return messages_1.NotificationType9;
     } });
-    Object.defineProperty(exports, "ParameterStructures", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ParameterStructures", { enumerable: true, get: function() {
       return messages_1.ParameterStructures;
     } });
     var linkedMap_1 = require_linkedMap2();
-    Object.defineProperty(exports, "LinkedMap", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "LinkedMap", { enumerable: true, get: function() {
       return linkedMap_1.LinkedMap;
     } });
-    Object.defineProperty(exports, "LRUCache", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "LRUCache", { enumerable: true, get: function() {
       return linkedMap_1.LRUCache;
     } });
-    Object.defineProperty(exports, "Touch", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Touch", { enumerable: true, get: function() {
       return linkedMap_1.Touch;
     } });
     var disposable_1 = require_disposable();
-    Object.defineProperty(exports, "Disposable", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Disposable", { enumerable: true, get: function() {
       return disposable_1.Disposable;
     } });
     var events_1 = require_events2();
-    Object.defineProperty(exports, "Event", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Event", { enumerable: true, get: function() {
       return events_1.Event;
     } });
-    Object.defineProperty(exports, "Emitter", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Emitter", { enumerable: true, get: function() {
       return events_1.Emitter;
     } });
     var cancellation_1 = require_cancellation3();
-    Object.defineProperty(exports, "CancellationTokenSource", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationTokenSource", { enumerable: true, get: function() {
       return cancellation_1.CancellationTokenSource;
     } });
-    Object.defineProperty(exports, "CancellationToken", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationToken", { enumerable: true, get: function() {
       return cancellation_1.CancellationToken;
     } });
     var sharedArrayCancellation_1 = require_sharedArrayCancellation();
-    Object.defineProperty(exports, "SharedArraySenderStrategy", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SharedArraySenderStrategy", { enumerable: true, get: function() {
       return sharedArrayCancellation_1.SharedArraySenderStrategy;
     } });
-    Object.defineProperty(exports, "SharedArrayReceiverStrategy", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SharedArrayReceiverStrategy", { enumerable: true, get: function() {
       return sharedArrayCancellation_1.SharedArrayReceiverStrategy;
     } });
     var messageReader_1 = require_messageReader2();
-    Object.defineProperty(exports, "MessageReader", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "MessageReader", { enumerable: true, get: function() {
       return messageReader_1.MessageReader;
     } });
-    Object.defineProperty(exports, "AbstractMessageReader", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AbstractMessageReader", { enumerable: true, get: function() {
       return messageReader_1.AbstractMessageReader;
     } });
-    Object.defineProperty(exports, "ReadableStreamMessageReader", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ReadableStreamMessageReader", { enumerable: true, get: function() {
       return messageReader_1.ReadableStreamMessageReader;
     } });
     var messageWriter_1 = require_messageWriter2();
-    Object.defineProperty(exports, "MessageWriter", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "MessageWriter", { enumerable: true, get: function() {
       return messageWriter_1.MessageWriter;
     } });
-    Object.defineProperty(exports, "AbstractMessageWriter", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AbstractMessageWriter", { enumerable: true, get: function() {
       return messageWriter_1.AbstractMessageWriter;
     } });
-    Object.defineProperty(exports, "WriteableStreamMessageWriter", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "WriteableStreamMessageWriter", { enumerable: true, get: function() {
       return messageWriter_1.WriteableStreamMessageWriter;
     } });
     var messageBuffer_1 = require_messageBuffer();
-    Object.defineProperty(exports, "AbstractMessageBuffer", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "AbstractMessageBuffer", { enumerable: true, get: function() {
       return messageBuffer_1.AbstractMessageBuffer;
     } });
     var connection_1 = require_connection();
-    Object.defineProperty(exports, "ConnectionStrategy", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ConnectionStrategy", { enumerable: true, get: function() {
       return connection_1.ConnectionStrategy;
     } });
-    Object.defineProperty(exports, "ConnectionOptions", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ConnectionOptions", { enumerable: true, get: function() {
       return connection_1.ConnectionOptions;
     } });
-    Object.defineProperty(exports, "NullLogger", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "NullLogger", { enumerable: true, get: function() {
       return connection_1.NullLogger;
     } });
-    Object.defineProperty(exports, "createMessageConnection", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "createMessageConnection", { enumerable: true, get: function() {
       return connection_1.createMessageConnection;
     } });
-    Object.defineProperty(exports, "ProgressToken", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ProgressToken", { enumerable: true, get: function() {
       return connection_1.ProgressToken;
     } });
-    Object.defineProperty(exports, "ProgressType", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ProgressType", { enumerable: true, get: function() {
       return connection_1.ProgressType;
     } });
-    Object.defineProperty(exports, "Trace", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "Trace", { enumerable: true, get: function() {
       return connection_1.Trace;
     } });
-    Object.defineProperty(exports, "TraceValues", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TraceValues", { enumerable: true, get: function() {
       return connection_1.TraceValues;
     } });
-    Object.defineProperty(exports, "TraceFormat", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "TraceFormat", { enumerable: true, get: function() {
       return connection_1.TraceFormat;
     } });
-    Object.defineProperty(exports, "SetTraceNotification", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "SetTraceNotification", { enumerable: true, get: function() {
       return connection_1.SetTraceNotification;
     } });
-    Object.defineProperty(exports, "LogTraceNotification", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "LogTraceNotification", { enumerable: true, get: function() {
       return connection_1.LogTraceNotification;
     } });
-    Object.defineProperty(exports, "ConnectionErrors", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ConnectionErrors", { enumerable: true, get: function() {
       return connection_1.ConnectionErrors;
     } });
-    Object.defineProperty(exports, "ConnectionError", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "ConnectionError", { enumerable: true, get: function() {
       return connection_1.ConnectionError;
     } });
-    Object.defineProperty(exports, "CancellationReceiverStrategy", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationReceiverStrategy", { enumerable: true, get: function() {
       return connection_1.CancellationReceiverStrategy;
     } });
-    Object.defineProperty(exports, "CancellationSenderStrategy", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationSenderStrategy", { enumerable: true, get: function() {
       return connection_1.CancellationSenderStrategy;
     } });
-    Object.defineProperty(exports, "CancellationStrategy", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "CancellationStrategy", { enumerable: true, get: function() {
       return connection_1.CancellationStrategy;
     } });
-    Object.defineProperty(exports, "MessageStrategy", { enumerable: true, get: function() {
+    Object.defineProperty(exports2, "MessageStrategy", { enumerable: true, get: function() {
       return connection_1.MessageStrategy;
     } });
     var ral_1 = require_ral();
-    exports.RAL = ral_1.default;
+    exports2.RAL = ral_1.default;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/ril.js
 var require_ril = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/ril.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/ril.js"(exports2) {
     "use strict";
-    Object.defineProperty(exports, "__esModule", { value: true });
-    var util_1 = __require("util");
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    var util_1 = require("util");
     var api_1 = require_api();
     var MessageBuffer = class _MessageBuffer extends api_1.AbstractMessageBuffer {
       constructor(encoding = "utf-8") {
@@ -39574,15 +42570,15 @@ var require_ril = __commonJS({
       }
       RIL2.install = install;
     })(RIL || (RIL = {}));
-    exports.default = RIL;
+    exports2.default = RIL;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/main.js
 var require_main2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/main.js"(exports) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/main.js"(exports2) {
     "use strict";
-    var __createBinding = exports && exports.__createBinding || (Object.create ? (function(o, m, k, k2) {
+    var __createBinding = exports2 && exports2.__createBinding || (Object.create ? (function(o, m, k, k2) {
       if (k2 === void 0) k2 = k;
       var desc = Object.getOwnPropertyDescriptor(m, k);
       if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
@@ -39595,19 +42591,19 @@ var require_main2 = __commonJS({
       if (k2 === void 0) k2 = k;
       o[k2] = m[k];
     }));
-    var __exportStar = exports && exports.__exportStar || function(m, exports2) {
-      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports2, p)) __createBinding(exports2, m, p);
+    var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
+      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
     };
-    Object.defineProperty(exports, "__esModule", { value: true });
-    exports.createMessageConnection = exports.createServerSocketTransport = exports.createClientSocketTransport = exports.createServerPipeTransport = exports.createClientPipeTransport = exports.generateRandomPipeName = exports.StreamMessageWriter = exports.StreamMessageReader = exports.SocketMessageWriter = exports.SocketMessageReader = exports.PortMessageWriter = exports.PortMessageReader = exports.IPCMessageWriter = exports.IPCMessageReader = void 0;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.createMessageConnection = exports2.createServerSocketTransport = exports2.createClientSocketTransport = exports2.createServerPipeTransport = exports2.createClientPipeTransport = exports2.generateRandomPipeName = exports2.StreamMessageWriter = exports2.StreamMessageReader = exports2.SocketMessageWriter = exports2.SocketMessageReader = exports2.PortMessageWriter = exports2.PortMessageReader = exports2.IPCMessageWriter = exports2.IPCMessageReader = void 0;
     var ril_1 = require_ril();
     ril_1.default.install();
-    var path2 = __require("path");
-    var os3 = __require("os");
-    var crypto_1 = __require("crypto");
-    var net_1 = __require("net");
+    var path2 = require("path");
+    var os3 = require("os");
+    var crypto_1 = require("crypto");
+    var net_1 = require("net");
     var api_1 = require_api();
-    __exportStar(require_api(), exports);
+    __exportStar(require_api(), exports2);
     var IPCMessageReader = class extends api_1.AbstractMessageReader {
       constructor(process2) {
         super();
@@ -39621,7 +42617,7 @@ var require_main2 = __commonJS({
         return api_1.Disposable.create(() => this.process.off("message", callback));
       }
     };
-    exports.IPCMessageReader = IPCMessageReader;
+    exports2.IPCMessageReader = IPCMessageReader;
     var IPCMessageWriter = class extends api_1.AbstractMessageWriter {
       constructor(process2) {
         super();
@@ -39656,7 +42652,7 @@ var require_main2 = __commonJS({
       end() {
       }
     };
-    exports.IPCMessageWriter = IPCMessageWriter;
+    exports2.IPCMessageWriter = IPCMessageWriter;
     var PortMessageReader = class extends api_1.AbstractMessageReader {
       constructor(port) {
         super();
@@ -39671,7 +42667,7 @@ var require_main2 = __commonJS({
         return this.onData.event(callback);
       }
     };
-    exports.PortMessageReader = PortMessageReader;
+    exports2.PortMessageReader = PortMessageReader;
     var PortMessageWriter = class extends api_1.AbstractMessageWriter {
       constructor(port) {
         super();
@@ -39696,13 +42692,13 @@ var require_main2 = __commonJS({
       end() {
       }
     };
-    exports.PortMessageWriter = PortMessageWriter;
+    exports2.PortMessageWriter = PortMessageWriter;
     var SocketMessageReader = class extends api_1.ReadableStreamMessageReader {
       constructor(socket, encoding = "utf-8") {
         super((0, ril_1.default)().stream.asReadableStream(socket), encoding);
       }
     };
-    exports.SocketMessageReader = SocketMessageReader;
+    exports2.SocketMessageReader = SocketMessageReader;
     var SocketMessageWriter = class extends api_1.WriteableStreamMessageWriter {
       constructor(socket, options) {
         super((0, ril_1.default)().stream.asWritableStream(socket), options);
@@ -39713,19 +42709,19 @@ var require_main2 = __commonJS({
         this.socket.destroy();
       }
     };
-    exports.SocketMessageWriter = SocketMessageWriter;
+    exports2.SocketMessageWriter = SocketMessageWriter;
     var StreamMessageReader2 = class extends api_1.ReadableStreamMessageReader {
       constructor(readable, encoding) {
         super((0, ril_1.default)().stream.asReadableStream(readable), encoding);
       }
     };
-    exports.StreamMessageReader = StreamMessageReader2;
+    exports2.StreamMessageReader = StreamMessageReader2;
     var StreamMessageWriter2 = class extends api_1.WriteableStreamMessageWriter {
       constructor(writable, options) {
         super((0, ril_1.default)().stream.asWritableStream(writable), options);
       }
     };
-    exports.StreamMessageWriter = StreamMessageWriter2;
+    exports2.StreamMessageWriter = StreamMessageWriter2;
     var XDG_RUNTIME_DIR = process.env["XDG_RUNTIME_DIR"];
     var safeIpcPathLengths = /* @__PURE__ */ new Map([
       ["linux", 107],
@@ -39748,7 +42744,7 @@ var require_main2 = __commonJS({
       }
       return result;
     }
-    exports.generateRandomPipeName = generateRandomPipeName;
+    exports2.generateRandomPipeName = generateRandomPipeName;
     function createClientPipeTransport(pipeName, encoding = "utf-8") {
       let connectResolve;
       const connected = new Promise((resolve2, _reject) => {
@@ -39773,7 +42769,7 @@ var require_main2 = __commonJS({
         });
       });
     }
-    exports.createClientPipeTransport = createClientPipeTransport;
+    exports2.createClientPipeTransport = createClientPipeTransport;
     function createServerPipeTransport(pipeName, encoding = "utf-8") {
       const socket = (0, net_1.createConnection)(pipeName);
       return [
@@ -39781,7 +42777,7 @@ var require_main2 = __commonJS({
         new SocketMessageWriter(socket, encoding)
       ];
     }
-    exports.createServerPipeTransport = createServerPipeTransport;
+    exports2.createServerPipeTransport = createServerPipeTransport;
     function createClientSocketTransport(port, encoding = "utf-8") {
       let connectResolve;
       const connected = new Promise((resolve2, _reject) => {
@@ -39806,7 +42802,7 @@ var require_main2 = __commonJS({
         });
       });
     }
-    exports.createClientSocketTransport = createClientSocketTransport;
+    exports2.createClientSocketTransport = createClientSocketTransport;
     function createServerSocketTransport(port, encoding = "utf-8") {
       const socket = (0, net_1.createConnection)(port, "127.0.0.1");
       return [
@@ -39814,7 +42810,7 @@ var require_main2 = __commonJS({
         new SocketMessageWriter(socket, encoding)
       ];
     }
-    exports.createServerSocketTransport = createServerSocketTransport;
+    exports2.createServerSocketTransport = createServerSocketTransport;
     function isReadableStream(value) {
       const candidate = value;
       return candidate.read !== void 0 && candidate.addListener !== void 0;
@@ -39834,25 +42830,50 @@ var require_main2 = __commonJS({
       }
       return (0, api_1.createMessageConnection)(reader, writer, logger, options);
     }
-    exports.createMessageConnection = createMessageConnection2;
+    exports2.createMessageConnection = createMessageConnection2;
   }
 });
 
 // ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/node.js
 var require_node3 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/node.js"(exports, module) {
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/node.js"(exports2, module2) {
     "use strict";
-    module.exports = require_main2();
+    module2.exports = require_main2();
   }
 });
 
+// node_modules/commander/esm.mjs
+var import_index = __toESM(require_commander(), 1);
+var {
+  program,
+  createCommand,
+  createArgument,
+  createOption,
+  CommanderError,
+  InvalidArgumentError,
+  InvalidOptionArgumentError,
+  // deprecated old name
+  Command,
+  Argument,
+  Option,
+  Help
+} = import_index.default;
+
+// src/tunnel-adapter.ts
+var dns = __toESM(require("dns"), 1);
+var net = __toESM(require("net"), 1);
+var os2 = __toESM(require("os"), 1);
+var import_dev_tunnels_connections = __toESM(require_dev_tunnels_connections(), 1);
+var import_dev_tunnels_contracts = __toESM(require_dev_tunnels_contracts(), 1);
+var import_dev_tunnels_management = __toESM(require_dev_tunnels_management(), 1);
+
 // src/token-storage.ts
-import keytar from "keytar";
+var import_keytar = __toESM(require("keytar"), 1);
 var SERVICE_NAME = "agent-tunnels";
 var ACCOUNT_NAME = "github-token-data";
 async function loadTokenData() {
   try {
-    const data = await keytar.getPassword(SERVICE_NAME, ACCOUNT_NAME);
+    const data = await import_keytar.default.getPassword(SERVICE_NAME, ACCOUNT_NAME);
     if (!data) return null;
     return JSON.parse(data);
   } catch (error) {
@@ -39862,7 +42883,7 @@ async function loadTokenData() {
 }
 async function saveTokenData(tokenData) {
   try {
-    await keytar.setPassword(SERVICE_NAME, ACCOUNT_NAME, JSON.stringify(tokenData));
+    await import_keytar.default.setPassword(SERVICE_NAME, ACCOUNT_NAME, JSON.stringify(tokenData));
   } catch (error) {
     console.warn("Failed to save token data to keychain:", error);
     throw error;
@@ -39870,16 +42891,16 @@ async function saveTokenData(tokenData) {
 }
 async function clearTokenData() {
   try {
-    await keytar.deletePassword(SERVICE_NAME, ACCOUNT_NAME);
+    await import_keytar.default.deletePassword(SERVICE_NAME, ACCOUNT_NAME);
   } catch (error) {
     console.warn("Failed to clear token data from keychain:", error);
   }
 }
 
 // src/tunnel-config.ts
-import * as fs from "fs/promises";
-import * as path from "path";
-import * as os from "os";
+var fs = __toESM(require("fs/promises"), 1);
+var path = __toESM(require("path"), 1);
+var os = __toESM(require("os"), 1);
 function getConfigDir() {
   return path.join(os.homedir(), ".copilot", "agent-tunnels");
 }
@@ -39910,12 +42931,6 @@ async function clearTunnelConfig() {
 }
 
 // src/tunnel-adapter.ts
-var import_dev_tunnels_connections = __toESM(require_dev_tunnels_connections(), 1);
-var import_dev_tunnels_contracts = __toESM(require_dev_tunnels_contracts(), 1);
-var import_dev_tunnels_management = __toESM(require_dev_tunnels_management(), 1);
-import * as dns from "dns";
-import * as net from "net";
-import * as os2 from "os";
 var DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS = 30;
 var DEFAULT_CONNECTION_TIMEOUT_MS = 3e4;
 var NETWORK_CHECK_INTERVAL_MS = 5e3;
@@ -40505,9 +43520,9 @@ function createTunnelHostAdapter(config) {
 }
 
 // ../../node_modules/@github/copilot-sdk/dist/client.js
+var import_node_child_process = require("child_process");
+var import_node_net = require("net");
 var import_node = __toESM(require_node3(), 1);
-import { spawn } from "child_process";
-import { Socket } from "net";
 
 // ../../node_modules/@github/copilot-sdk/dist/sdkProtocolVersion.js
 var SDK_PROTOCOL_VERSION = 2;
@@ -41382,7 +44397,7 @@ var CopilotClient = class {
         command = this.options.cliPath;
         spawnArgs = args;
       }
-      this.cliProcess = spawn(command, spawnArgs, {
+      this.cliProcess = (0, import_node_child_process.spawn)(command, spawnArgs, {
         stdio: this.options.useStdio ? ["pipe", "pipe", "pipe"] : ["ignore", "pipe", "pipe"],
         cwd: this.options.cwd,
         env: envWithoutNodeDebug
@@ -41471,7 +44486,7 @@ var CopilotClient = class {
       throw new Error("Server port not available");
     }
     return new Promise((resolve2, reject) => {
-      this.socket = new Socket();
+      this.socket = new import_node_net.Socket();
       this.socket.connect(this.actualPort, this.actualHost, () => {
         this.connection = (0, import_node.createMessageConnection)(
           new import_node.StreamMessageReader(this.socket),
@@ -41627,13 +44642,13 @@ function encodeJsonRpcMessageToBuffer(message) {
 }
 
 // src/jsonrpc-proxy.ts
-import { execSync } from "child_process";
-import { readFile as readFile2 } from "fs/promises";
-import { homedir as homedir2 } from "os";
-import { join as join2 } from "path";
+var import_node_child_process2 = require("child_process");
+var import_promises = require("fs/promises");
+var import_node_os = require("os");
+var import_node_path = require("path");
 function getGhCliToken() {
   try {
-    const token = execSync("gh auth token", {
+    const token = (0, import_node_child_process2.execSync)("gh auth token", {
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"]
       // Suppress stderr
@@ -41644,9 +44659,9 @@ function getGhCliToken() {
   }
 }
 async function discoverSessionCwd(sessionId) {
-  const sessionDir = join2(homedir2(), ".copilot", "session-state", sessionId);
+  const sessionDir = (0, import_node_path.join)((0, import_node_os.homedir)(), ".copilot", "session-state", sessionId);
   try {
-    const yaml = await readFile2(join2(sessionDir, "workspace.yaml"), "utf-8");
+    const yaml = await (0, import_promises.readFile)((0, import_node_path.join)(sessionDir, "workspace.yaml"), "utf-8");
     const match = yaml.match(/^cwd:\s*(.+)$/m);
     if (match) {
       return match[1].trim();
@@ -41654,7 +44669,7 @@ async function discoverSessionCwd(sessionId) {
   } catch {
   }
   try {
-    const content = await readFile2(join2(sessionDir, "events.jsonl"), "utf-8");
+    const content = await (0, import_promises.readFile)((0, import_node_path.join)(sessionDir, "events.jsonl"), "utf-8");
     const firstLine = content.slice(0, content.indexOf("\n"));
     if (firstLine.startsWith('{"type":"session.start"')) {
       const cwdMatch = firstLine.match(/"cwd":"([^"]+)"/);
@@ -41679,6 +44694,15 @@ function resolveCopilotToken(explicitToken) {
   }
   return void 0;
 }
+var BUILT_IN_COMMANDS = [
+  {
+    name: "/session",
+    help: "Show current session information",
+    category: "info",
+    requiresRemote: true,
+    opensDialog: "session"
+  }
+];
 var ClientConnection = class {
   constructor(clientStream, clientId, options = {}) {
     this.clientStream = clientStream;
@@ -41869,6 +44893,13 @@ var ClientConnection = class {
             break;
           case "deleteSession":
             await this.handleDeleteSession(request);
+            break;
+          // Slash commands
+          case "listSlashCommands":
+            await this.handleListSlashCommands(request);
+            break;
+          case "executeSlashCommand":
+            await this.handleExecuteSlashCommand(request);
             break;
           // Session methods
           case "session.send":
@@ -42101,6 +45132,72 @@ var ClientConnection = class {
       id: request.id,
       result: null
     });
+  }
+  // ==========================================================================
+  // Slash Commands
+  // ==========================================================================
+  async handleListSlashCommands(request) {
+    this.log("debug", `[${this.clientId}] RPC -> listSlashCommands`);
+    this.sendToClient({
+      jsonrpc: "2.0",
+      id: request.id,
+      result: { commands: BUILT_IN_COMMANDS }
+    });
+  }
+  async handleExecuteSlashCommand(request) {
+    const params = request.params;
+    const command = params?.command;
+    const sessionId = params?.sessionId;
+    if (!command) {
+      this.sendErrorResponse(request.id, -32602, "Missing command parameter");
+      return;
+    }
+    this.log("info", `[${this.clientId}] RPC -> executeSlashCommand: ${command}`);
+    const trimmed = command.trim();
+    const parts = trimmed.split(/\s+/);
+    const commandName = parts[0].toLowerCase();
+    const args = parts.slice(1);
+    const result = await this.executeSlashCommandInternal(commandName, args, sessionId);
+    const response = {
+      success: result.kind !== "message" || result.type !== "error",
+      result
+    };
+    this.sendToClient({
+      jsonrpc: "2.0",
+      id: request.id,
+      result: response
+    });
+  }
+  async executeSlashCommandInternal(commandName, args, sessionId) {
+    const cmd = BUILT_IN_COMMANDS.find(
+      (c) => c.name === commandName || c.aliases?.includes(commandName)
+    );
+    if (!cmd) {
+      return {
+        kind: "message",
+        type: "error",
+        text: `Unknown command: ${commandName}`
+      };
+    }
+    switch (cmd.name) {
+      case "/session": {
+        const cwd = sessionId ? this.sessionCwds.get(sessionId) ?? this.defaultCwd : this.defaultCwd;
+        return {
+          kind: "open-dialog",
+          dialog: "session",
+          data: {
+            sessionId: sessionId ?? "No active session",
+            workingDirectory: cwd
+          }
+        };
+      }
+      default:
+        return {
+          kind: "message",
+          type: "error",
+          text: `Unknown command: ${cmd.name}`
+        };
+    }
   }
   // ==========================================================================
   // Session Methods
@@ -42363,19 +45460,262 @@ var JsonRpcProxyHost = class {
   }
 };
 
-export {
-  __require,
-  __commonJS,
-  __toESM,
-  clearTokenData,
-  getConfigPath,
-  loadTunnelConfig,
-  saveTunnelConfig,
-  clearTunnelConfig,
-  DevTunnelHostAdapter,
-  createTunnelHostAdapter,
-  JsonRpcProxyHost
+// src/logger.ts
+var LOG_LEVEL_PRIORITY = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3
 };
+function formatTimestamp() {
+  const now = /* @__PURE__ */ new Date();
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+  return `${hours}:${minutes}:${seconds}`;
+}
+function formatLevel(level) {
+  return level.toUpperCase().padEnd(5);
+}
+function createLogger(options) {
+  const minLevel = options.level;
+  const minPriority = LOG_LEVEL_PRIORITY[minLevel];
+  function shouldLog(level) {
+    return LOG_LEVEL_PRIORITY[level] >= minPriority;
+  }
+  function log(level, message) {
+    if (!shouldLog(level)) return;
+    const timestamp = formatTimestamp();
+    const levelStr = formatLevel(level);
+    if (message.includes("\n")) {
+      const lines = message.split("\n");
+      for (const line of lines) {
+        console.log(`[${timestamp}] [${levelStr}] ${line}`);
+      }
+    } else {
+      console.log(`[${timestamp}] [${levelStr}] ${message}`);
+    }
+  }
+  return {
+    debug: (message) => log("debug", message),
+    info: (message) => log("info", message),
+    warn: (message) => log("warn", message),
+    error: (message) => log("error", message),
+    log,
+    blank: () => console.log(""),
+    getLevel: () => minLevel
+  };
+}
+function createLogCallback(logger) {
+  return (level, message) => logger.log(level, message);
+}
+
+// src/version-check.ts
+var CURRENT_VERSION = "0.1.1";
+var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
+var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
+var RED = "\x1B[31m";
+var GREEN = "\x1B[32m";
+var YELLOW = "\x1B[33m";
+var DIM = "\x1B[2m";
+var RESET = "\x1B[0m";
+var BOLD = "\x1B[1m";
+function parseSemVer(version) {
+  const [major, minor, patch] = version.split(".").map(Number);
+  return { major, minor, patch };
+}
+function compareSemVer(a, b) {
+  if (a.major !== b.major) return a.major - b.major;
+  if (a.minor !== b.minor) return a.minor - b.minor;
+  return a.patch - b.patch;
+}
+async function fetchLatestVersion() {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5e3);
+    const response = await fetch(RELEASE_REPO_URL, {
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return null;
+    const pkg = await response.json();
+    return pkg.version;
+  } catch {
+    return null;
+  }
+}
+async function checkForUpdates() {
+  if (CURRENT_VERSION === "0.1.1") {
+    return;
+  }
+  const latestVersion = await fetchLatestVersion();
+  if (!latestVersion) {
+    return;
+  }
+  const current = parseSemVer(CURRENT_VERSION);
+  const latest = parseSemVer(latestVersion);
+  const comparison = compareSemVer(current, latest);
+  if (comparison < 0) {
+    console.log(
+      `  ${BOLD}${YELLOW}Update available:${RESET} ${RED}${CURRENT_VERSION}${RESET} \u2192 ${GREEN}${latestVersion}${RESET}`
+    );
+    console.log(`  ${DIM}Run: ${UPDATE_COMMAND}${RESET}`);
+    console.log();
+  }
+}
+
+// src/banner.ts
+var GREEN2 = "\x1B[32m";
+var CYAN = "\x1B[36m";
+var MAGENTA = "\x1B[35m";
+var DIM2 = "\x1B[2m";
+var RESET2 = "\x1B[0m";
+var BOLD2 = "\x1B[1m";
+function printBanner() {
+  const version = CURRENT_VERSION === "0.1.1" ? "dev" : `v${CURRENT_VERSION}`;
+  const url = "https://gh.io/copilot-tunnel";
+  const iconL1 = `${CYAN}\u256D\u2500\u256E\u256D\u2500\u256E${RESET2}`;
+  const iconL2 = `${CYAN}\u2570\u2500\u256F\u2570\u2500\u256F${RESET2}`;
+  const iconL3 = `${MAGENTA}\u2588${RESET2} ${GREEN2}\u2598\u259D${RESET2} ${MAGENTA}\u2588${RESET2}`;
+  const iconL4 = `${MAGENTA}\u2594\u2594\u2594\u2594${RESET2}`;
+  const titleLine = `${MAGENTA}${BOLD2}GitHub Copilot Tunnel Host${RESET2}  ${DIM2}${version}${RESET2}`;
+  const descLine = `${DIM2}Making your sessions available online.${RESET2}`;
+  const urlLine = `${DIM2}See ${RESET2}${CYAN}${url}${RESET2}`;
+  const line1 = `  ${iconL1}`;
+  const line2 = `  ${iconL2}  ${titleLine}`;
+  const line3 = `  ${iconL3}  ${descLine}`;
+  const line4 = `   ${iconL4}   ${urlLine}`;
+  console.log();
+  console.log(line1);
+  console.log(line2);
+  console.log(line3);
+  console.log(line4);
+  console.log();
+}
+
+// src/sdk-proxy.ts
+var program2 = new Command();
+program2.name("remote-sdk-host").description("Host a Remote SDK session via Dev Tunnels").version(CURRENT_VERSION).option("-d, --debug", "Enable verbose debug logging").option("-p, --port <number>", "Port for local SDK connection", "0").action(runHost);
+program2.command("logout").description("Clear stored GitHub credentials").action(runLogout);
+var tunnelCmd = program2.command("tunnel").description("Manage stored tunnel configuration").action(runTunnelInfo);
+tunnelCmd.command("clear").description("Clear stored tunnel configuration").action(runTunnelClear);
+tunnelCmd.command("regenerate").option("-d, --debug", "Enable verbose debug logging").option("-p, --port <number>", "Port for local SDK connection", "0").description("Clear stored tunnel and create a fresh one").action(runTunnelRegenerate);
+program2.parse();
+async function runHost(options) {
+  printBanner();
+  checkForUpdates().catch(() => {
+  });
+  const logLevel = options.debug ? "debug" : "info";
+  const port = parseInt(options.port || "0", 10);
+  const logger = createLogger({ level: logLevel });
+  const logCallback = createLogCallback(logger);
+  const proxyHost = new JsonRpcProxyHost({
+    cliPath: "copilot",
+    cwd: process.cwd(),
+    cliLogLevel: "info",
+    logLevel,
+    onLog: logCallback
+  });
+  const tunnelAdapter = createTunnelHostAdapter({
+    port,
+    logLevel,
+    onLog: logCallback,
+    onStatusChange: (status) => {
+    },
+    onAuth: (message, uri, userCode) => {
+      logger.blank();
+      logger.info("=== GitHub Authentication ===");
+      logger.info(`Visit: ${uri}`);
+      logger.info(`Enter code: ${userCode}`);
+      logger.blank();
+    }
+  });
+  tunnelAdapter.onClientConnected((stream, clientId) => {
+    logger.info(`Client connected: ${clientId}`);
+    proxyHost.handleClient(stream, clientId).catch((error) => {
+      logger.error(`Error handling client ${clientId}: ${error}`);
+    });
+  });
+  tunnelAdapter.onClientDisconnected((clientId) => {
+    logger.info(`Client disconnected: ${clientId}`);
+    proxyHost.handleClientDisconnect(clientId);
+  });
+  logger.debug("Starting tunnel...");
+  let tunnelInfo;
+  try {
+    tunnelInfo = await tunnelAdapter.start();
+  } catch (error) {
+    logger.error(`Failed to start tunnel: ${error}`);
+    process.exit(1);
+  }
+  if (tunnelInfo.username) {
+    logger.info(`Using stored credentials (${tunnelInfo.username})`);
+    logger.info("To switch accounts, run: remote-sdk-host logout");
+  }
+  logger.blank();
+  logger.info("=== Tunnel Ready ===");
+  logger.info(`Tunnel ID: ${tunnelInfo.tunnelId}`);
+  logger.info(`Cluster:   ${tunnelInfo.clusterId}`);
+  logger.info(`Port:      ${tunnelInfo.port}`);
+  logger.blank();
+  const shutdown = async () => {
+    logger.blank();
+    logger.info("Shutting down...");
+    await proxyHost.stop();
+    await tunnelAdapter.stop();
+    process.exit(0);
+  };
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+}
+async function runLogout() {
+  try {
+    await clearTokenData();
+    console.log("Credentials cleared.");
+  } catch (error) {
+    console.error(`Failed to clear credentials: ${error}`);
+    process.exit(1);
+  }
+}
+async function runTunnelInfo() {
+  const configPath = getConfigPath();
+  console.log(`Config file: ${configPath}`);
+  console.log();
+  try {
+    const config = await loadTunnelConfig();
+    if (config) {
+      console.log("Stored tunnel configuration:");
+      console.log(`  Tunnel ID: ${config.tunnelId}`);
+      console.log(`  Cluster:   ${config.clusterId}`);
+      console.log(`  Created:   ${config.createdAt}`);
+    } else {
+      console.log("No stored tunnel configuration.");
+    }
+  } catch (error) {
+    console.error(`Failed to read tunnel config: ${error}`);
+    process.exit(1);
+  }
+}
+async function runTunnelClear() {
+  try {
+    await clearTunnelConfig();
+    console.log("Tunnel configuration cleared.");
+  } catch (error) {
+    console.error(`Failed to clear tunnel config: ${error}`);
+    process.exit(1);
+  }
+}
+async function runTunnelRegenerate(options) {
+  try {
+    await clearTunnelConfig();
+    console.log("Cleared stored tunnel configuration.");
+    console.log();
+  } catch (error) {
+    console.error(`Failed to clear tunnel config: ${error}`);
+    process.exit(1);
+  }
+  await runHost(options);
+}
 /*! Bundled license information:
 
 mime-db/index.js:
