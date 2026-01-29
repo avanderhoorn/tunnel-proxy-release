@@ -1,3 +1,6 @@
+
+const __bundled_import_meta_url = require('url').pathToFileURL(__filename).href;
+
 "use strict";
 var __create = Object.create;
 var __defProp = Object.defineProperty;
@@ -5,7 +8,7 @@ var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __commonJS = (cb, mod) => function __require() {
+var __commonJS = (cb, mod) => function __require2() {
   return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
 };
 var __export = (target, all) => {
@@ -770,24 +773,24 @@ var require_events = __commonJS({
       };
     })(Event = exports2.Event || (exports2.Event = {}));
     var CallbackList = class {
-      add(callback, context = null, bucket) {
+      add(callback2, context = null, bucket) {
         if (!this._callbacks) {
           this._callbacks = [];
           this._contexts = [];
         }
-        this._callbacks.push(callback);
+        this._callbacks.push(callback2);
         this._contexts.push(context);
         if (Array.isArray(bucket)) {
-          bucket.push({ dispose: () => this.remove(callback, context) });
+          bucket.push({ dispose: () => this.remove(callback2, context) });
         }
       }
-      remove(callback, context = null) {
+      remove(callback2, context = null) {
         if (!this._callbacks) {
           return;
         }
         var foundCallbackWithDifferentContext = false;
         for (var i = 0, len = this._callbacks.length; i < len; i++) {
-          if (this._callbacks[i] === callback) {
+          if (this._callbacks[i] === callback2) {
             if (this._contexts[i] === context) {
               this._callbacks.splice(i, 1);
               this._contexts.splice(i, 1);
@@ -1016,11 +1019,11 @@ var require_messageReader = __commonJS({
       get partialMessageTimeout() {
         return this._partialMessageTimeout;
       }
-      listen(callback) {
+      listen(callback2) {
         this.nextMessageLength = -1;
         this.messageToken = 0;
         this.partialMessageTimer = void 0;
-        this.callback = callback;
+        this.callback = callback2;
         this.readable.on("data", (data) => {
           this.onData(data);
         });
@@ -1086,8 +1089,8 @@ var require_messageReader = __commonJS({
         eventEmitter.on("error", (error) => this.fireError(error));
         eventEmitter.on("close", () => this.fireClose());
       }
-      listen(callback) {
-        this.process.on("message", callback);
+      listen(callback2) {
+        this.process.on("message", callback2);
       }
     };
     exports2.IPCMessageReader = IPCMessageReader;
@@ -1303,8 +1306,8 @@ var require_cancellation = __commonJS({
       }
       CancellationToken2.is = is;
     })(CancellationToken = exports2.CancellationToken || (exports2.CancellationToken = {}));
-    var shortcutEvent = Object.freeze(function(callback, context) {
-      let handle = setTimeout(callback.bind(context), 0);
+    var shortcutEvent = Object.freeze(function(callback2, context) {
+      let handle = setTimeout(callback2.bind(context), 0);
       return { dispose() {
         clearTimeout(handle);
       } };
@@ -1636,10 +1639,10 @@ var require_pipeSupport = __commonJS({
     exports2.generateRandomPipeName = generateRandomPipeName;
     function createClientPipeTransport(pipeName, encoding = "utf-8") {
       let connectResolve;
-      let connected = new Promise((resolve2, _reject) => {
-        connectResolve = resolve2;
+      let connected = new Promise((resolve3, _reject) => {
+        connectResolve = resolve3;
       });
-      return new Promise((resolve2, reject) => {
+      return new Promise((resolve3, reject) => {
         let server = net_1.createServer((socket) => {
           server.close();
           connectResolve([
@@ -1650,7 +1653,7 @@ var require_pipeSupport = __commonJS({
         server.on("error", reject);
         server.listen(pipeName, () => {
           server.removeListener("error", reject);
-          resolve2({
+          resolve3({
             onConnected: () => {
               return connected;
             }
@@ -1680,10 +1683,10 @@ var require_socketSupport = __commonJS({
     var messageWriter_1 = require_messageWriter();
     function createClientSocketTransport(port, encoding = "utf-8") {
       let connectResolve;
-      let connected = new Promise((resolve2, _reject) => {
-        connectResolve = resolve2;
+      let connected = new Promise((resolve3, _reject) => {
+        connectResolve = resolve3;
       });
-      return new Promise((resolve2, reject) => {
+      return new Promise((resolve3, reject) => {
         let server = net_1.createServer((socket) => {
           server.close();
           connectResolve([
@@ -1694,7 +1697,7 @@ var require_socketSupport = __commonJS({
         server.on("error", reject);
         server.listen(port, "127.0.0.1", () => {
           server.removeListener("error", reject);
-          resolve2({
+          resolve3({
             onConnected: () => {
               return connected;
             }
@@ -1970,7 +1973,7 @@ var require_main = __commonJS({
           triggerMessageQueue();
         }
       }
-      let callback = (message) => {
+      let callback2 = (message) => {
         try {
           if (messages_1.isNotificationMessage(message) && message.method === CancelNotification.type.method) {
             let key = createRequestQueueKey(message.params.id);
@@ -2051,12 +2054,12 @@ var require_main = __commonJS({
             } else {
               handlerResult = requestHandler ? requestHandler(requestMessage.params, cancellationSource.token) : starRequestHandler(requestMessage.method, requestMessage.params, cancellationSource.token);
             }
-            let promise = handlerResult;
+            let promise2 = handlerResult;
             if (!handlerResult) {
               delete requestTokens[tokenKey];
               replySuccess(handlerResult, requestMessage.method, startTime);
-            } else if (promise.then) {
-              promise.then((resultOrError) => {
+            } else if (promise2.then) {
+              promise2.then((resultOrError) => {
                 delete requestTokens[tokenKey];
                 reply(resultOrError, requestMessage.method, startTime);
               }, (error) => {
@@ -2454,14 +2457,14 @@ ${JSON.stringify(message, null, 4)}`);
             token = cancellation_1.CancellationToken.is(params[numberOfParams]) ? params[numberOfParams] : void 0;
           }
           let id = sequenceNumber++;
-          let result = new Promise((resolve2, reject) => {
+          let result = new Promise((resolve3, reject) => {
             let requestMessage = {
               jsonrpc: version,
               id,
               method,
               params: messageParams
             };
-            let responsePromise = { method, timerStart: Date.now(), resolve: resolve2, reject };
+            let responsePromise = { method, timerStart: Date.now(), resolve: resolve3, reject };
             traceSendingRequest(requestMessage);
             try {
               messageWriter.write(requestMessage);
@@ -2542,7 +2545,7 @@ ${JSON.stringify(message, null, 4)}`);
           throwIfClosedOrDisposed();
           throwIfListening();
           state = ConnectionState.Listening;
-          messageReader.listen(callback);
+          messageReader.listen(callback2);
         },
         inspect: () => {
           console.log("inspect");
@@ -4760,7 +4763,7 @@ var require_nodeRsa = __commonJS({
         }
       }
       async generateNodeKeyPairObjects(keySizeInBits) {
-        [this.publicKey, this.privateKey] = await new Promise((resolve2, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve3, reject) => {
           const keyGenParams = {
             modulusLength: keySizeInBits
           };
@@ -4769,7 +4772,7 @@ var require_nodeRsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve2([publicKey, privateKey]);
+                resolve3([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -4778,7 +4781,7 @@ var require_nodeRsa = __commonJS({
         });
       }
       async generateNodeKeyPairBuffers(keySizeInBits) {
-        [this.publicKey, this.privateKey] = await new Promise((resolve2, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve3, reject) => {
           const keyGenParams = {
             modulusLength: keySizeInBits,
             publicKeyEncoding: { type: "pkcs1", format: "pem" },
@@ -4794,7 +4797,7 @@ var require_nodeRsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve2([publicKey, privateKey]);
+                resolve3([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -5028,7 +5031,7 @@ var require_nodeECDsa = __commonJS({
         }
       }
       async generateNodeKeyPairObjects() {
-        [this.publicKey, this.privateKey] = await new Promise((resolve2, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve3, reject) => {
           const keyGenParams = {
             namedCurve: this.curve.shortName
           };
@@ -5037,7 +5040,7 @@ var require_nodeECDsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve2([publicKey, privateKey]);
+                resolve3([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -5046,7 +5049,7 @@ var require_nodeECDsa = __commonJS({
         });
       }
       async generateNodeKeyPairBuffers() {
-        [this.publicKey, this.privateKey] = await new Promise((resolve2, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve3, reject) => {
           const keyGenParams = {
             namedCurve: this.curve.shortName,
             publicKeyEncoding: { type: "spki", format: "pem" },
@@ -5062,7 +5065,7 @@ var require_nodeECDsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve2([publicKey, privateKey]);
+                resolve3([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -6412,8 +6415,8 @@ var require_promiseCompletionSource = __commonJS({
     exports2.PromiseCompletionSource = void 0;
     var PromiseCompletionSource = class {
       constructor() {
-        this.promise = new Promise((resolve2, reject) => {
-          this.resolve = resolve2;
+        this.promise = new Promise((resolve3, reject) => {
+          this.resolve = resolve3;
           this.reject = reject;
         });
       }
@@ -6546,13 +6549,13 @@ var require_cancellation2 = __commonJS({
       }
     };
     exports2.CancellationError = CancellationError;
-    function withCancellation(promise, cancellation) {
+    function withCancellation(promise2, cancellation) {
       if (!cancellation) {
-        return promise;
+        return promise2;
       }
       return Promise.race([
-        promise,
-        new Promise((resolve2, reject) => {
+        promise2,
+        new Promise((resolve3, reject) => {
           if (cancellation.isCancellationRequested) {
             reject(new CancellationError());
           } else {
@@ -6642,7 +6645,7 @@ var require_semaphore = __commonJS({
           this.completions.push(completion);
           const promises = [completion.promise];
           if (millisecondsTimeout) {
-            promises.push(new Promise((resolve2) => setTimeout(() => resolve2(false), millisecondsTimeout)));
+            promises.push(new Promise((resolve3) => setTimeout(() => resolve3(false), millisecondsTimeout)));
           }
           if (cancellation) {
             const cancellationCompletion = new promiseCompletionSource_1.PromiseCompletionSource();
@@ -6807,16 +6810,16 @@ var require_pipeExtensions = __commonJS({
       static async forwardData(channel, toChannel, data) {
         const buffer = buffer_1.Buffer.alloc(data.length);
         data.copy(buffer);
-        const promise = toChannel.send(buffer, vscode_jsonrpc_1.CancellationToken.None);
+        const promise2 = toChannel.send(buffer, vscode_jsonrpc_1.CancellationToken.None);
         channel.adjustWindow(buffer.length);
-        return promise;
+        return promise2;
       }
       static async forwardExtendedData(channel, toChannel, dataTypeCode, data) {
         const buffer = buffer_1.Buffer.alloc(data.length);
         data.copy(buffer);
-        const promise = toChannel.sendExtendedData(dataTypeCode, buffer, vscode_jsonrpc_1.CancellationToken.None);
+        const promise2 = toChannel.sendExtendedData(dataTypeCode, buffer, vscode_jsonrpc_1.CancellationToken.None);
         channel.adjustWindow(buffer.length);
-        return promise;
+        return promise2;
       }
       static async forwardChannelClose(fromChannel, toChannel, e) {
         const message = `Piping channel closure.
@@ -6846,7 +6849,7 @@ var require_queue = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.Queue = void 0;
-    var Queue = class {
+    var Queue2 = class {
       constructor() {
         this.array = new Array();
         this.first = 0;
@@ -6923,7 +6926,7 @@ var require_queue = __commonJS({
         }
       }
     };
-    exports2.Queue = Queue;
+    exports2.Queue = Queue2;
   }
 });
 
@@ -11100,17 +11103,17 @@ var require_sshClientSession = __commonJS({
         if (typeof callbackOrCancellation === "function") {
           return this.authenticateClientWithCompletion(credentials, callbackOrCancellation, cancellation);
         } else {
-          return new Promise((resolve2, reject) => this.authenticateClientWithCompletion(credentials, (err, result) => {
+          return new Promise((resolve3, reject) => this.authenticateClientWithCompletion(credentials, (err, result) => {
             if (err)
               reject(err);
             else
-              resolve2(result);
+              resolve3(result);
           }, callbackOrCancellation));
         }
       }
-      async authenticateClientWithCompletion(credentials, callback, cancellation) {
+      async authenticateClientWithCompletion(credentials, callback2, cancellation) {
         this.clientAuthCompletion = new promiseCompletionSource_1.PromiseCompletionSource();
-        this.clientAuthCompletion.promise.then((result) => callback(void 0, result), (err) => callback(err));
+        this.clientAuthCompletion.promise.then((result) => callback2(void 0, result), (err) => callback2(err));
         if (cancellation) {
           if (cancellation.isCancellationRequested)
             throw new cancellation_1.CancellationError();
@@ -11413,7 +11416,7 @@ var require_sshServerSession = __commonJS({
           reconnectSession.reconnecting = true;
           (_c = reconnectSession.protocol) === null || _c === void 0 ? void 0 : _c.dispose();
           while (reconnectSession.isConnected) {
-            await new Promise((resolve2) => setTimeout(() => resolve2(), 5));
+            await new Promise((resolve3) => setTimeout(() => resolve3(), 5));
           }
           reconnectSession.protocol = this.protocol;
           reconnectSession.protocol.kexService = reconnectSession.kexService;
@@ -11641,7 +11644,7 @@ var require_streams = __commonJS({
         } else if (this.error) {
           throw this.error;
         } else {
-          return await new Promise((resolve2, reject) => {
+          return await new Promise((resolve3, reject) => {
             if (cancellation) {
               if (cancellation.isCancellationRequested) {
                 reject(new cancellation_1.CancellationError());
@@ -11656,7 +11659,7 @@ var require_streams = __commonJS({
                 }
               });
             }
-            this.pendingReads.push({ count, resolve: resolve2, reject, cancellation });
+            this.pendingReads.push({ count, resolve: resolve3, reject, cancellation });
           });
         }
       }
@@ -11696,11 +11699,11 @@ var require_streams = __commonJS({
           throw new TypeError("Data is required.");
         if (this.disposed)
           throw new errors_1.ObjectDisposedError(this);
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           handleCancellation(reject, cancellation);
           this.writeStream.write(data, (err) => {
             if (!err) {
-              resolve2();
+              resolve3();
             } else {
               reject(err);
             }
@@ -11710,9 +11713,9 @@ var require_streams = __commonJS({
       async close(error, cancellation) {
         if (this.disposed)
           throw new errors_1.ObjectDisposedError(this);
-        await new Promise((resolve2, reject) => {
+        await new Promise((resolve3, reject) => {
           handleCancellation(reject, cancellation);
-          this.writeStream.end(resolve2);
+          this.writeStream.end(resolve3);
         });
         this.disposed = true;
         this.onError(error || new errors_1.ObjectDisposedError(this));
@@ -11821,8 +11824,8 @@ var require_sshRpcMessageStream = __commonJS({
           this.closeEmitter.fire();
         });
       }
-      listen(callback) {
-        this.callback = callback;
+      listen(callback2) {
+        this.callback = callback2;
         return rpc.Disposable.create(() => {
           this.callback = null;
         });
@@ -12354,9 +12357,9 @@ var require_multiChannelStream = __commonJS({
        */
       async connectAndRunUntilClosed(cancellation) {
         const disposables = [];
-        const sessionClosedPromise = new Promise((resolve2, reject) => {
+        const sessionClosedPromise = new Promise((resolve3, reject) => {
           cancellation === null || cancellation === void 0 ? void 0 : cancellation.onCancellationRequested(reject, null, disposables);
-          this.session.onClosed(resolve2, null, disposables);
+          this.session.onClosed(resolve3, null, disposables);
         });
         try {
           await this.connect(cancellation);
@@ -12636,8 +12639,8 @@ var require_secureStream = __commonJS({
           this.session.dispose();
           this.unsubscribe();
           if (this.transportStream instanceof stream_1.Duplex) {
-            await new Promise((resolve2) => {
-              this.transportStream.end(resolve2);
+            await new Promise((resolve3) => {
+              this.transportStream.end(resolve3);
             });
           } else {
             await this.transportStream.close();
@@ -13036,7 +13039,7 @@ var require_utils = __commonJS({
     };
     exports2.List = List;
     function delay(milliseconds, cancellation) {
-      return new Promise((resolve2, reject) => {
+      return new Promise((resolve3, reject) => {
         let cancellationDisposable;
         let timeout = void 0;
         if (cancellation) {
@@ -13054,7 +13057,7 @@ var require_utils = __commonJS({
         }
         timeout = setTimeout(() => {
           cancellationDisposable === null || cancellationDisposable === void 0 ? void 0 : cancellationDisposable.dispose();
-          resolve2();
+          resolve3();
         }, milliseconds);
       });
     }
@@ -13068,13 +13071,13 @@ var require_utils = __commonJS({
       return e instanceof Error ? e : new Error(`${messagePrefix !== null && messagePrefix !== void 0 ? messagePrefix : ""}${e}`);
     }
     exports2.getError = getError;
-    function withCancellation(promise, cancellation) {
+    function withCancellation(promise2, cancellation) {
       if (!cancellation) {
-        return promise;
+        return promise2;
       }
       return Promise.race([
-        promise,
-        new Promise((resolve2, reject) => {
+        promise2,
+        new Promise((resolve3, reject) => {
           if (cancellation.isCancellationRequested) {
             reject(new dev_tunnels_ssh_1.CancellationError());
           } else {
@@ -13299,7 +13302,7 @@ var require_multiModeTunnelClient = __commonJS({
         if (!tunnel) {
           throw new Error("Tunnel cannot be null");
         }
-        return new Promise((resolve2) => {
+        return new Promise((resolve3) => {
         });
       }
       get portForwarding() {
@@ -13552,7 +13555,7 @@ var require_retryTcpListenerFactory = __commonJS({
         for (let offset = 0; ; offset++) {
           const localPortNumber = offset === maxOffset ? 0 : localPort + offset;
           try {
-            return await new Promise((resolve2, reject) => {
+            return await new Promise((resolve3, reject) => {
               listener.listen({
                 host: localIPAddress,
                 port: localPortNumber,
@@ -13563,7 +13566,7 @@ var require_retryTcpListenerFactory = __commonJS({
                   const { address, port } = listener.address();
                   console.log(`Forwarding from ${address}:${port} to host port ${remotePort}.`);
                 }
-                resolve2(listener);
+                resolve3(listener);
               });
               listener.on("error", (err) => {
                 reject(err);
@@ -14135,9 +14138,9 @@ var require_node_gyp_build = __commonJS({
         var debug = getFirst(path2.join(dir, "build/Debug"), matchBuild);
         if (debug) return debug;
       }
-      var prebuild = resolve2(dir);
+      var prebuild = resolve3(dir);
       if (prebuild) return prebuild;
-      var nearby = resolve2(path2.dirname(process.execPath));
+      var nearby = resolve3(path2.dirname(process.execPath));
       if (nearby) return nearby;
       var target = [
         "platform=" + platform,
@@ -14153,7 +14156,7 @@ var require_node_gyp_build = __commonJS({
         // eslint-disable-line
       ].filter(Boolean).join(" ");
       throw new Error("No native build was found for " + target + "\n    loaded from: " + dir + "\n");
-      function resolve2(dir2) {
+      function resolve3(dir2) {
         var tuples = readdirSync(path2.join(dir2, "prebuilds")).map(parseTuple);
         var tuple = tuples.filter(matchTuple(platform, arch)).sort(compareTuples)[0];
         if (!tuple) return;
@@ -16436,14 +16439,14 @@ var require_WebSocketRouter = __commonJS({
         throw new Error("Cannot detach from server: not attached.");
       }
     };
-    WebSocketRouter.prototype.mount = function(path2, protocol, callback) {
+    WebSocketRouter.prototype.mount = function(path2, protocol, callback2) {
       if (!path2) {
         throw new Error("You must specify a path for this handler.");
       }
       if (!protocol) {
         protocol = "____no_protocol____";
       }
-      if (!callback) {
+      if (!callback2) {
         throw new Error("You must specify a callback for this handler.");
       }
       path2 = this.pathToRegExp(path2);
@@ -16459,7 +16462,7 @@ var require_WebSocketRouter = __commonJS({
         "path": path2,
         "pathString": pathString,
         "protocol": protocol,
-        "callback": callback
+        "callback": callback2
       });
     };
     WebSocketRouter.prototype.unmount = function(path2, protocol) {
@@ -17045,10 +17048,10 @@ var require_sshHelpers = __commonJS({
        */
       static webSshStreamFactory(socket) {
         socket.binaryType = "arraybuffer";
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           const relayError = "Failed to connect to relay url";
           socket.onopen = () => {
-            resolve2(new ssh.WebSocketStream(socket));
+            resolve3(new ssh.WebSocketStream(socket));
           };
           socket.onerror = (e) => {
             setTimeout(() => reject(new BrowserWebSocketRelayError(relayError)), 100);
@@ -17070,9 +17073,9 @@ var require_sshHelpers = __commonJS({
       }
       static nodeSshStreamFactory(relayUri, protocols, headers, clientConfig) {
         const client = new websocket_1.client(clientConfig);
-        return new Promise((resolve2, reject) => {
+        return new Promise((resolve3, reject) => {
           client.on("connect", (connection) => {
-            resolve2(new ssh.WebSocketStream(new WebsocketStreamAdapter(connection)));
+            resolve3(new ssh.WebSocketStream(new WebsocketStreamAdapter(connection)));
           });
           client.on("httpResponse", ({ statusCode, statusMessage }) => {
             var _a;
@@ -17269,8 +17272,8 @@ var require_sshClient = __commonJS({
       }
       async openConnection(serverHost, serverPort, cancellation) {
         const socket = new net2.Socket();
-        await new Promise((resolve2, reject) => {
-          socket.on("connect", resolve2);
+        await new Promise((resolve3, reject) => {
+          socket.on("connect", resolve3);
           socket.on("error", reject);
           if (cancellation) {
             if (cancellation.isCancellationRequested) {
@@ -17313,14 +17316,14 @@ var require_tcpListenerFactory = __commonJS({
         if (!Number.isInteger(localPort) || localPort < 0)
           throw new TypeError("Local port must be a non-negative integer.");
         const listener = net2.createServer();
-        await new Promise((resolve2, reject) => {
+        await new Promise((resolve3, reject) => {
           listener.listen({
             host: localIPAddress,
             port: localPort,
             ipv6Only: net2.isIPv6(localIPAddress),
             exclusive: false
           });
-          listener.on("listening", resolve2);
+          listener.on("listening", resolve3);
           listener.on("error", reject);
         });
         return listener;
@@ -27725,17 +27728,17 @@ var require_async = __commonJS({
     "use strict";
     var defer = require_defer();
     module2.exports = async;
-    function async(callback) {
+    function async(callback2) {
       var isAsync = false;
       defer(function() {
         isAsync = true;
       });
       return function async_callback(err, result) {
         if (isAsync) {
-          callback(err, result);
+          callback2(err, result);
         } else {
           defer(function nextTick_callback() {
-            callback(err, result);
+            callback2(err, result);
           });
         }
       };
@@ -27767,7 +27770,7 @@ var require_iterate = __commonJS({
     var async = require_async();
     var abort = require_abort();
     module2.exports = iterate;
-    function iterate(list, iterator, state, callback) {
+    function iterate(list, iterator, state, callback2) {
       var key = state["keyedList"] ? state["keyedList"][state.index] : state.index;
       state.jobs[key] = runJob(iterator, key, list[key], function(error, output) {
         if (!(key in state.jobs)) {
@@ -27779,15 +27782,15 @@ var require_iterate = __commonJS({
         } else {
           state.results[key] = output;
         }
-        callback(error, state.results);
+        callback2(error, state.results);
       });
     }
-    function runJob(iterator, key, item, callback) {
+    function runJob(iterator, key, item, callback2) {
       var aborter;
       if (iterator.length == 2) {
-        aborter = iterator(item, async(callback));
+        aborter = iterator(item, async(callback2));
       } else {
-        aborter = iterator(item, key, async(callback));
+        aborter = iterator(item, key, async(callback2));
       }
       return aborter;
     }
@@ -27824,13 +27827,13 @@ var require_terminator = __commonJS({
     var abort = require_abort();
     var async = require_async();
     module2.exports = terminator;
-    function terminator(callback) {
+    function terminator(callback2) {
       if (!Object.keys(this.jobs).length) {
         return;
       }
       this.index = this.size;
       abort(this);
-      async(callback)(null, this.results);
+      async(callback2)(null, this.results);
     }
   }
 });
@@ -27843,22 +27846,22 @@ var require_parallel = __commonJS({
     var initState = require_state();
     var terminator = require_terminator();
     module2.exports = parallel;
-    function parallel(list, iterator, callback) {
+    function parallel(list, iterator, callback2) {
       var state = initState(list);
       while (state.index < (state["keyedList"] || list).length) {
         iterate(list, iterator, state, function(error, result) {
           if (error) {
-            callback(error, result);
+            callback2(error, result);
             return;
           }
           if (Object.keys(state.jobs).length === 0) {
-            callback(null, state.results);
+            callback2(null, state.results);
             return;
           }
         });
         state.index++;
       }
-      return terminator.bind(state, callback);
+      return terminator.bind(state, callback2);
     }
   }
 });
@@ -27873,11 +27876,11 @@ var require_serialOrdered = __commonJS({
     module2.exports = serialOrdered;
     module2.exports.ascending = ascending;
     module2.exports.descending = descending;
-    function serialOrdered(list, iterator, sortMethod, callback) {
+    function serialOrdered(list, iterator, sortMethod, callback2) {
       var state = initState(list, sortMethod);
       iterate(list, iterator, state, function iteratorHandler(error, result) {
         if (error) {
-          callback(error, result);
+          callback2(error, result);
           return;
         }
         state.index++;
@@ -27885,9 +27888,9 @@ var require_serialOrdered = __commonJS({
           iterate(list, iterator, state, iteratorHandler);
           return;
         }
-        callback(null, state.results);
+        callback2(null, state.results);
       });
-      return terminator.bind(state, callback);
+      return terminator.bind(state, callback2);
     }
     function ascending(a, b) {
       return a < b ? -1 : a > b ? 1 : 0;
@@ -27904,8 +27907,8 @@ var require_serial = __commonJS({
     "use strict";
     var serialOrdered = require_serialOrdered();
     module2.exports = serial;
-    function serial(list, iterator, callback) {
-      return serialOrdered(list, iterator, null, callback);
+    function serial(list, iterator, callback2) {
+      return serialOrdered(list, iterator, null, callback2);
     }
   }
 });
@@ -28853,30 +28856,30 @@ var require_form_data = __commonJS({
         this._valuesToMeasure.push(value);
       }
     };
-    FormData2.prototype._lengthRetriever = function(value, callback) {
+    FormData2.prototype._lengthRetriever = function(value, callback2) {
       if (hasOwn(value, "fd")) {
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
-          callback(null, value.end + 1 - (value.start ? value.start : 0));
+          callback2(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
           fs2.stat(value.path, function(err, stat) {
             if (err) {
-              callback(err);
+              callback2(err);
               return;
             }
             var fileSize = stat.size - (value.start ? value.start : 0);
-            callback(null, fileSize);
+            callback2(null, fileSize);
           });
         }
       } else if (hasOwn(value, "httpVersion")) {
-        callback(null, Number(value.headers["content-length"]));
+        callback2(null, Number(value.headers["content-length"]));
       } else if (hasOwn(value, "httpModule")) {
         value.on("response", function(response) {
           value.pause();
-          callback(null, Number(response.headers["content-length"]));
+          callback2(null, Number(response.headers["content-length"]));
         });
         value.resume();
       } else {
-        callback("Unknown stream");
+        callback2("Unknown stream");
       }
     };
     FormData2.prototype._multiPartHeader = function(field, value, options) {
@@ -29073,13 +29076,13 @@ var require_form_data = __commonJS({
         this.pipe(request);
         if (cb) {
           var onResponse;
-          var callback = function(error, responce) {
-            request.removeListener("error", callback);
+          var callback2 = function(error, responce) {
+            request.removeListener("error", callback2);
             request.removeListener("response", onResponse);
             return cb.call(this, error, responce);
           };
-          onResponse = callback.bind(this, null);
-          request.on("error", callback);
+          onResponse = callback2.bind(this, null);
+          request.on("error", callback2);
           request.on("response", onResponse);
         }
       }.bind(this));
@@ -29946,7 +29949,7 @@ var require_follow_redirects = __commonJS({
       destroy.call(this, error);
       return this;
     };
-    RedirectableRequest.prototype.write = function(data, encoding, callback) {
+    RedirectableRequest.prototype.write = function(data, encoding, callback2) {
       if (this._ending) {
         throw new WriteAfterEndError();
       }
@@ -29954,41 +29957,41 @@ var require_follow_redirects = __commonJS({
         throw new TypeError("data should be a string, Buffer or Uint8Array");
       }
       if (isFunction(encoding)) {
-        callback = encoding;
+        callback2 = encoding;
         encoding = null;
       }
       if (data.length === 0) {
-        if (callback) {
-          callback();
+        if (callback2) {
+          callback2();
         }
         return;
       }
       if (this._requestBodyLength + data.length <= this._options.maxBodyLength) {
         this._requestBodyLength += data.length;
         this._requestBodyBuffers.push({ data, encoding });
-        this._currentRequest.write(data, encoding, callback);
+        this._currentRequest.write(data, encoding, callback2);
       } else {
         this.emit("error", new MaxBodyLengthExceededError());
         this.abort();
       }
     };
-    RedirectableRequest.prototype.end = function(data, encoding, callback) {
+    RedirectableRequest.prototype.end = function(data, encoding, callback2) {
       if (isFunction(data)) {
-        callback = data;
+        callback2 = data;
         data = encoding = null;
       } else if (isFunction(encoding)) {
-        callback = encoding;
+        callback2 = encoding;
         encoding = null;
       }
       if (!data) {
         this._ended = this._ending = true;
-        this._currentRequest.end(null, null, callback);
+        this._currentRequest.end(null, null, callback2);
       } else {
         var self2 = this;
         var currentRequest = this._currentRequest;
         this.write(data, encoding, function() {
           self2._ended = true;
-          currentRequest.end(null, null, callback);
+          currentRequest.end(null, null, callback2);
         });
         this._ending = true;
       }
@@ -30001,7 +30004,7 @@ var require_follow_redirects = __commonJS({
       delete this._options.headers[name];
       this._currentRequest.removeHeader(name);
     };
-    RedirectableRequest.prototype.setTimeout = function(msecs, callback) {
+    RedirectableRequest.prototype.setTimeout = function(msecs, callback2) {
       var self2 = this;
       function destroyOnTimeout(socket) {
         socket.setTimeout(msecs);
@@ -30027,15 +30030,15 @@ var require_follow_redirects = __commonJS({
         self2.removeListener("error", clearTimer);
         self2.removeListener("response", clearTimer);
         self2.removeListener("close", clearTimer);
-        if (callback) {
-          self2.removeListener("timeout", callback);
+        if (callback2) {
+          self2.removeListener("timeout", callback2);
         }
         if (!self2.socket) {
           self2._currentRequest.removeListener("socket", startTimer);
         }
       }
-      if (callback) {
-        this.on("timeout", callback);
+      if (callback2) {
+        this.on("timeout", callback2);
       }
       if (this.socket) {
         startTimer(this.socket);
@@ -30202,18 +30205,18 @@ var require_follow_redirects = __commonJS({
         var protocol = scheme + ":";
         var nativeProtocol = nativeProtocols[protocol] = protocols[scheme];
         var wrappedProtocol = exports3[scheme] = Object.create(nativeProtocol);
-        function request(input, options, callback) {
+        function request(input, options, callback2) {
           if (isURL(input)) {
             input = spreadUrlObject(input);
           } else if (isString(input)) {
             input = spreadUrlObject(parseUrl(input));
           } else {
-            callback = options;
+            callback2 = options;
             options = validateUrl(input);
             input = { protocol };
           }
           if (isFunction(options)) {
-            callback = options;
+            callback2 = options;
             options = null;
           }
           options = Object.assign({
@@ -30226,10 +30229,10 @@ var require_follow_redirects = __commonJS({
           }
           assert.equal(options.protocol, protocol, "protocol mismatch");
           debug("options", options);
-          return new RedirectableRequest(options, callback);
+          return new RedirectableRequest(options, callback2);
         }
-        function get(input, options, callback) {
-          var wrappedRequest = wrappedProtocol.request(input, options, callback);
+        function get(input, options, callback2) {
+          var wrappedRequest = wrappedProtocol.request(input, options, callback2);
           wrappedRequest.end();
           return wrappedRequest;
         }
@@ -30254,8 +30257,8 @@ var require_follow_redirects = __commonJS({
       }
       return parsed;
     }
-    function resolveUrl(relative, base) {
-      return useNativeURL ? new URL2(relative, base) : parseUrl(url.resolve(base, relative));
+    function resolveUrl(relative2, base) {
+      return useNativeURL ? new URL2(relative2, base) : parseUrl(url.resolve(base, relative2));
     }
     function validateUrl(input) {
       if (/^\[/.test(input.hostname) && !/^\[[:0-9a-f]+\]$/i.test(input.hostname)) {
@@ -30921,7 +30924,7 @@ var require_axios = __commonJS({
         convertValue,
         isVisitable
       });
-      function build(value, path2) {
+      function build2(value, path2) {
         if (utils$1.isUndefined(value)) return;
         if (stack.indexOf(value) !== -1) {
           throw Error("Circular reference detected in " + path2.join("."));
@@ -30936,7 +30939,7 @@ var require_axios = __commonJS({
             exposedHelpers
           );
           if (result === true) {
-            build(el, path2 ? path2.concat(key) : [key]);
+            build2(el, path2 ? path2.concat(key) : [key]);
           }
         });
         stack.pop();
@@ -30944,7 +30947,7 @@ var require_axios = __commonJS({
       if (!utils$1.isObject(obj)) {
         throw new TypeError("data must be an object");
       }
-      build(obj);
+      build2(obj);
       return formData;
     }
     function encode$1(str) {
@@ -31582,10 +31585,10 @@ var require_axios = __commonJS({
     utils$1.inherits(CanceledError, AxiosError, {
       __CANCEL__: true
     });
-    function settle(resolve2, reject, response) {
+    function settle(resolve3, reject, response) {
       const validateStatus = response.config.validateStatus;
       if (!response.status || !validateStatus || validateStatus(response.status)) {
-        resolve2(response);
+        resolve3(response);
       } else {
         reject(new AxiosError(
           "Request failed with status code " + response.status,
@@ -31684,7 +31687,7 @@ var require_axios = __commonJS({
         }
         return super._read(size);
       }
-      _transform(chunk, encoding, callback) {
+      _transform(chunk, encoding, callback2) {
         const internals = this[kInternals];
         const maxRate = internals.maxRate;
         const readableHighWaterMark = this.readableHighWaterMark;
@@ -31742,12 +31745,12 @@ var require_axios = __commonJS({
         };
         transformChunk(chunk, function transformNextChunk(err, _chunk) {
           if (err) {
-            return callback(err);
+            return callback2(err);
           }
           if (_chunk) {
             transformChunk(_chunk, transformNextChunk);
           } else {
-            callback(null);
+            callback2(null);
           }
         });
       }
@@ -31844,11 +31847,11 @@ var require_axios = __commonJS({
     };
     var formDataToStream$1 = formDataToStream;
     var ZlibHeaderTransformStream = class extends stream__default["default"].Transform {
-      __transform(chunk, encoding, callback) {
+      __transform(chunk, encoding, callback2) {
         this.push(chunk);
-        callback();
+        callback2();
       }
-      _transform(chunk, encoding, callback) {
+      _transform(chunk, encoding, callback2) {
         if (chunk.length !== 0) {
           this._transform = this.__transform;
           if (chunk[0] !== 120) {
@@ -31858,7 +31861,7 @@ var require_axios = __commonJS({
             this.push(header, encoding);
           }
         }
-        this.__transform(chunk, encoding, callback);
+        this.__transform(chunk, encoding, callback2);
       }
     };
     var ZlibHeaderTransformStream$1 = ZlibHeaderTransformStream;
@@ -32153,7 +32156,7 @@ var require_axios = __commonJS({
     }
     var isHttpAdapterSupported = typeof process !== "undefined" && utils$1.kindOf(process) === "process";
     var wrapAsync = (asyncExecutor) => {
-      return new Promise((resolve2, reject) => {
+      return new Promise((resolve3, reject) => {
         let onDone;
         let isDone;
         const done = (value, isRejected) => {
@@ -32163,7 +32166,7 @@ var require_axios = __commonJS({
         };
         const _resolve = (value) => {
           done(value);
-          resolve2(value);
+          resolve3(value);
         };
         const _reject = (reason) => {
           done(reason, true);
@@ -32215,7 +32218,7 @@ var require_axios = __commonJS({
       }
     };
     var httpAdapter = isHttpAdapterSupported && function httpAdapter2(config) {
-      return wrapAsync(async function dispatchHttpRequest(resolve2, reject, onDone) {
+      return wrapAsync(async function dispatchHttpRequest(resolve3, reject, onDone) {
         let { data, lookup, family, httpVersion = 1, http2Options } = config;
         const { responseType, responseEncoding } = config;
         const method = config.method.toUpperCase();
@@ -32300,7 +32303,7 @@ var require_axios = __commonJS({
           }
           let convertedData;
           if (method !== "GET") {
-            return settle(resolve2, reject, {
+            return settle(resolve3, reject, {
               status: 405,
               statusText: "method not allowed",
               headers: {},
@@ -32322,7 +32325,7 @@ var require_axios = __commonJS({
           } else if (responseType === "stream") {
             convertedData = stream__default["default"].Readable.from(convertedData);
           }
-          return settle(resolve2, reject, {
+          return settle(resolve3, reject, {
             data: convertedData,
             status: 200,
             statusText: "OK",
@@ -32541,7 +32544,7 @@ var require_axios = __commonJS({
           };
           if (responseType === "stream") {
             response.data = responseStream;
-            settle(resolve2, reject, response);
+            settle(resolve3, reject, response);
           } else {
             const responseBuffer = [];
             let totalResponseBytes = 0;
@@ -32589,7 +32592,7 @@ var require_axios = __commonJS({
               } catch (err) {
                 return reject(AxiosError.from(err, null, config, response.request, response));
               }
-              settle(resolve2, reject, response);
+              settle(resolve3, reject, response);
             });
           }
           abortEmitter.once("abort", (err) => {
@@ -32828,7 +32831,7 @@ var require_axios = __commonJS({
     };
     var isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
     var xhrAdapter = isXHRAdapterSupported && function(config) {
-      return new Promise(function dispatchXhrRequest(resolve2, reject) {
+      return new Promise(function dispatchXhrRequest(resolve3, reject) {
         const _config = resolveConfig(config);
         let requestData = _config.data;
         const requestHeaders = AxiosHeaders$1.from(_config.headers).normalize();
@@ -32862,7 +32865,7 @@ var require_axios = __commonJS({
             request
           };
           settle(function _resolve(value) {
-            resolve2(value);
+            resolve3(value);
             done();
           }, function _reject(err) {
             reject(err);
@@ -33227,8 +33230,8 @@ var require_axios = __commonJS({
           responseType = responseType || "text";
           let responseData = await resolvers[utils$1.findKey(resolvers, responseType) || "text"](response, config);
           !isStreamResponse && unsubscribe && unsubscribe();
-          return await new Promise((resolve2, reject) => {
-            settle(resolve2, reject, {
+          return await new Promise((resolve3, reject) => {
+            settle(resolve3, reject, {
               data: responseData,
               headers: AxiosHeaders$1.from(response.headers),
               status: response.status,
@@ -33538,7 +33541,7 @@ var require_axios = __commonJS({
         this.interceptors.response.forEach(function pushResponseInterceptors(interceptor) {
           responseInterceptorChain.push(interceptor.fulfilled, interceptor.rejected);
         });
-        let promise;
+        let promise2;
         let i = 0;
         let len;
         if (!synchronousRequestInterceptors) {
@@ -33546,11 +33549,11 @@ var require_axios = __commonJS({
           chain.unshift(...requestInterceptorChain);
           chain.push(...responseInterceptorChain);
           len = chain.length;
-          promise = Promise.resolve(config);
+          promise2 = Promise.resolve(config);
           while (i < len) {
-            promise = promise.then(chain[i++], chain[i++]);
+            promise2 = promise2.then(chain[i++], chain[i++]);
           }
-          return promise;
+          return promise2;
         }
         len = requestInterceptorChain.length;
         let newConfig = config;
@@ -33565,16 +33568,16 @@ var require_axios = __commonJS({
           }
         }
         try {
-          promise = dispatchRequest.call(this, newConfig);
+          promise2 = dispatchRequest.call(this, newConfig);
         } catch (error) {
           return Promise.reject(error);
         }
         i = 0;
         len = responseInterceptorChain.length;
         while (i < len) {
-          promise = promise.then(responseInterceptorChain[i++], responseInterceptorChain[i++]);
+          promise2 = promise2.then(responseInterceptorChain[i++], responseInterceptorChain[i++]);
         }
-        return promise;
+        return promise2;
       }
       getUri(config) {
         config = mergeConfig(this.defaults, config);
@@ -33614,8 +33617,8 @@ var require_axios = __commonJS({
           throw new TypeError("executor must be a function.");
         }
         let resolvePromise;
-        this.promise = new Promise(function promiseExecutor(resolve2) {
-          resolvePromise = resolve2;
+        this.promise = new Promise(function promiseExecutor(resolve3) {
+          resolvePromise = resolve3;
         });
         const token = this;
         this.promise.then((cancel) => {
@@ -33628,14 +33631,14 @@ var require_axios = __commonJS({
         });
         this.promise.then = (onfulfilled) => {
           let _resolve;
-          const promise = new Promise((resolve2) => {
-            token.subscribe(resolve2);
-            _resolve = resolve2;
+          const promise2 = new Promise((resolve3) => {
+            token.subscribe(resolve3);
+            _resolve = resolve3;
           }).then(onfulfilled);
-          promise.cancel = function reject() {
+          promise2.cancel = function reject() {
             token.unsubscribe(_resolve);
           };
-          return promise;
+          return promise2;
         };
         executor(function cancel(message, config, request) {
           if (token.reason) {
@@ -33704,9 +33707,9 @@ var require_axios = __commonJS({
       }
     };
     var CancelToken$1 = CancelToken;
-    function spread(callback) {
+    function spread(callback2) {
       return function wrap(arr) {
-        return callback.apply(null, arr);
+        return callback2.apply(null, arr);
       };
     }
     function isAxiosError(payload) {
@@ -35920,21 +35923,21 @@ var require_tunnelRelayTunnelClient = __commonJS({
         const relayResponseMessage = channel.openConfirmationMessage.convertTo(new portRelayConnectResponseMessage_1.PortRelayConnectResponseMessage());
         if (relayResponseMessage.isE2EEncryptionEnabled) {
           const clientCredentials = { username: "tunnel" };
-          e.transformPromise = new Promise((resolve2, reject) => {
+          e.transformPromise = new Promise((resolve3, reject) => {
             var _a;
             let secureStream = (_a = this.disconnectedStreams.get(e.port)) === null || _a === void 0 ? void 0 : _a.shift();
             if (secureStream) {
               this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, `Reconnecting encrypted stream for port ${e.port}...`);
               secureStream.reconnect(e.stream).then(() => {
                 this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, `Reconnecting encrypted stream for port ${e.port} succeeded.`);
-                resolve2(secureStream);
+                resolve3(secureStream);
               }).catch(reject);
             } else {
               secureStream = new dev_tunnels_ssh_1.SecureStream(e.stream, clientCredentials);
               secureStream.trace = this.trace;
               secureStream.onAuthenticating((authEvent) => authEvent.authenticationPromise = this.onHostAuthenticating(authEvent).catch());
               secureStream.onDisconnected(() => this.onSecureStreamDisconnected(e.port, secureStream));
-              secureStream.connect().then(() => resolve2(secureStream)).catch(reject);
+              secureStream.connect().then(() => resolve3(secureStream)).catch(reject);
             }
           });
         }
@@ -36214,8 +36217,8 @@ var require_tunnelRelayTunnelHost = __commonJS({
         const promises = Object.assign([], this.clientSessionPromises);
         this.clientSessionPromises.length = 0;
         if (this.tunnel && this.endpointSignature && this.disconnectReason !== dev_tunnels_ssh_1.SshDisconnectReason.tooManyConnections) {
-          const promise = this.managementClient.deleteTunnelEndpoints(this.tunnel, this.id);
-          promises.push(promise);
+          const promise2 = this.managementClient.deleteTunnelEndpoints(this.tunnel, this.id);
+          promises.push(promise2);
         }
         for (const forwarder of this.remoteForwarders.values()) {
           forwarder.dispose();
@@ -36243,10 +36246,10 @@ var require_tunnelRelayTunnelHost = __commonJS({
           e.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.connectFailed;
           return;
         }
-        const promise = this.acceptClientSession(e.channel, this.disposeToken);
-        this.clientSessionPromises.push(promise);
-        promise.then(() => {
-          const index = this.clientSessionPromises.indexOf(promise);
+        const promise2 = this.acceptClientSession(e.channel, this.disposeToken);
+        this.clientSessionPromises.push(promise2);
+        promise2.then(() => {
+          const index = this.clientSessionPromises.indexOf(promise2);
           this.clientSessionPromises.splice(index, 1);
         });
       }
@@ -37294,24 +37297,24 @@ var require_events2 = __commonJS({
       };
     })(Event || (exports2.Event = Event = {}));
     var CallbackList = class {
-      add(callback, context = null, bucket) {
+      add(callback2, context = null, bucket) {
         if (!this._callbacks) {
           this._callbacks = [];
           this._contexts = [];
         }
-        this._callbacks.push(callback);
+        this._callbacks.push(callback2);
         this._contexts.push(context);
         if (Array.isArray(bucket)) {
-          bucket.push({ dispose: () => this.remove(callback, context) });
+          bucket.push({ dispose: () => this.remove(callback2, context) });
         }
       }
-      remove(callback, context = null) {
+      remove(callback2, context = null) {
         if (!this._callbacks) {
           return;
         }
         let foundCallbackWithDifferentContext = false;
         for (let i = 0, len = this._callbacks.length; i < len; i++) {
-          if (this._callbacks[i] === callback) {
+          if (this._callbacks[i] === callback2) {
             if (this._contexts[i] === context) {
               this._callbacks.splice(i, 1);
               this._contexts.splice(i, 1);
@@ -37432,8 +37435,8 @@ var require_cancellation3 = __commonJS({
       }
       CancellationToken2.is = is;
     })(CancellationToken || (exports2.CancellationToken = CancellationToken = {}));
-    var shortcutEvent = Object.freeze(function(callback, context) {
-      const handle = (0, ral_1.default)().timer.setTimeout(callback.bind(context), 0);
+    var shortcutEvent = Object.freeze(function(callback2, context) {
+      const handle = (0, ral_1.default)().timer.setTimeout(callback2.bind(context), 0);
       return { dispose() {
         handle.dispose();
       } };
@@ -37591,8 +37594,8 @@ var require_semaphore2 = __commonJS({
         this._waiting = [];
       }
       lock(thunk) {
-        return new Promise((resolve2, reject) => {
-          this._waiting.push({ thunk, resolve: resolve2, reject });
+        return new Promise((resolve3, reject) => {
+          this._waiting.push({ thunk, resolve: resolve3, reject });
           this.runNext();
         });
       }
@@ -37754,11 +37757,11 @@ var require_messageReader2 = __commonJS({
       get partialMessageTimeout() {
         return this._partialMessageTimeout;
       }
-      listen(callback) {
+      listen(callback2) {
         this.nextMessageLength = -1;
         this.messageToken = 0;
         this.partialMessageTimer = void 0;
-        this.callback = callback;
+        this.callback = callback2;
         const result = this.readable.onData((data) => {
           this.onData(data);
         });
@@ -38432,7 +38435,7 @@ var require_connection = __commonJS({
           triggerMessageQueue();
         }
       }
-      const callback = (message) => {
+      const callback2 = (message) => {
         try {
           if (messages_1.Message.isNotification(message) && message.method === CancelNotification.type.method) {
             const cancelId = message.params.id;
@@ -38545,12 +38548,12 @@ var require_connection = __commonJS({
             } else if (starRequestHandler) {
               handlerResult = starRequestHandler(requestMessage.method, requestMessage.params, cancellationSource.token);
             }
-            const promise = handlerResult;
+            const promise2 = handlerResult;
             if (!handlerResult) {
               requestTokens.delete(tokenKey);
               replySuccess(handlerResult, requestMessage.method, startTime);
-            } else if (promise.then) {
-              promise.then((resultOrError) => {
+            } else if (promise2.then) {
+              promise2.then((resultOrError) => {
                 requestTokens.delete(tokenKey);
                 reply(resultOrError, requestMessage.method, startTime);
               }, (error) => {
@@ -39082,9 +39085,9 @@ ${JSON.stringify(message, null, 4)}`);
           if (typeof cancellationStrategy.sender.enableCancellation === "function") {
             cancellationStrategy.sender.enableCancellation(requestMessage);
           }
-          return new Promise(async (resolve2, reject) => {
+          return new Promise(async (resolve3, reject) => {
             const resolveWithCleanup = (r) => {
-              resolve2(r);
+              resolve3(r);
               cancellationStrategy.sender.cleanup(id);
               disposable?.dispose();
             };
@@ -39175,8 +39178,8 @@ ${JSON.stringify(message, null, 4)}`);
           state = ConnectionState.Disposed;
           disposeEmitter.fire(void 0);
           const error = new messages_1.ResponseError(messages_1.ErrorCodes.PendingResponseRejected, "Pending response rejected since connection got disposed");
-          for (const promise of responsePromises.values()) {
-            promise.reject(error);
+          for (const promise2 of responsePromises.values()) {
+            promise2.reject(error);
           }
           responsePromises = /* @__PURE__ */ new Map();
           requestTokens = /* @__PURE__ */ new Map();
@@ -39193,7 +39196,7 @@ ${JSON.stringify(message, null, 4)}`);
           throwIfClosedOrDisposed();
           throwIfListening();
           state = ConnectionState.Listening;
-          messageReader.listen(callback);
+          messageReader.listen(callback2);
         },
         inspect: () => {
           (0, ral_1.default)().console.log("inspect");
@@ -39496,18 +39499,18 @@ var require_ril = __commonJS({
         return api_1.Disposable.create(() => this.stream.off("end", listener));
       }
       write(data, encoding) {
-        return new Promise((resolve2, reject) => {
-          const callback = (error) => {
+        return new Promise((resolve3, reject) => {
+          const callback2 = (error) => {
             if (error === void 0 || error === null) {
-              resolve2();
+              resolve3();
             } else {
               reject(error);
             }
           };
           if (typeof data === "string") {
-            this.stream.write(data, encoding, callback);
+            this.stream.write(data, encoding, callback2);
           } else {
-            this.stream.write(data, callback);
+            this.stream.write(data, callback2);
           }
         });
       }
@@ -39551,16 +39554,16 @@ var require_ril = __commonJS({
       }),
       console,
       timer: Object.freeze({
-        setTimeout(callback, ms, ...args) {
-          const handle = setTimeout(callback, ms, ...args);
+        setTimeout(callback2, ms, ...args) {
+          const handle = setTimeout(callback2, ms, ...args);
           return { dispose: () => clearTimeout(handle) };
         },
-        setImmediate(callback, ...args) {
-          const handle = setImmediate(callback, ...args);
+        setImmediate(callback2, ...args) {
+          const handle = setImmediate(callback2, ...args);
           return { dispose: () => clearImmediate(handle) };
         },
-        setInterval(callback, ms, ...args) {
-          const handle = setInterval(callback, ms, ...args);
+        setInterval(callback2, ms, ...args) {
+          const handle = setInterval(callback2, ms, ...args);
           return { dispose: () => clearInterval(handle) };
         }
       })
@@ -39616,9 +39619,9 @@ var require_main2 = __commonJS({
         eventEmitter.on("error", (error) => this.fireError(error));
         eventEmitter.on("close", () => this.fireClose());
       }
-      listen(callback) {
-        this.process.on("message", callback);
-        return api_1.Disposable.create(() => this.process.off("message", callback));
+      listen(callback2) {
+        this.process.on("message", callback2);
+        return api_1.Disposable.create(() => this.process.off("message", callback2));
       }
     };
     exports2.IPCMessageReader = IPCMessageReader;
@@ -39667,8 +39670,8 @@ var require_main2 = __commonJS({
           this.onData.fire(message);
         });
       }
-      listen(callback) {
-        return this.onData.event(callback);
+      listen(callback2) {
+        return this.onData.event(callback2);
       }
     };
     exports2.PortMessageReader = PortMessageReader;
@@ -39751,10 +39754,10 @@ var require_main2 = __commonJS({
     exports2.generateRandomPipeName = generateRandomPipeName;
     function createClientPipeTransport(pipeName, encoding = "utf-8") {
       let connectResolve;
-      const connected = new Promise((resolve2, _reject) => {
-        connectResolve = resolve2;
+      const connected = new Promise((resolve3, _reject) => {
+        connectResolve = resolve3;
       });
-      return new Promise((resolve2, reject) => {
+      return new Promise((resolve3, reject) => {
         let server = (0, net_1.createServer)((socket) => {
           server.close();
           connectResolve([
@@ -39765,7 +39768,7 @@ var require_main2 = __commonJS({
         server.on("error", reject);
         server.listen(pipeName, () => {
           server.removeListener("error", reject);
-          resolve2({
+          resolve3({
             onConnected: () => {
               return connected;
             }
@@ -39784,10 +39787,10 @@ var require_main2 = __commonJS({
     exports2.createServerPipeTransport = createServerPipeTransport;
     function createClientSocketTransport(port, encoding = "utf-8") {
       let connectResolve;
-      const connected = new Promise((resolve2, _reject) => {
-        connectResolve = resolve2;
+      const connected = new Promise((resolve3, _reject) => {
+        connectResolve = resolve3;
       });
-      return new Promise((resolve2, reject) => {
+      return new Promise((resolve3, reject) => {
         const server = (0, net_1.createServer)((socket) => {
           server.close();
           connectResolve([
@@ -39798,7 +39801,7 @@ var require_main2 = __commonJS({
         server.on("error", reject);
         server.listen(port, "127.0.0.1", () => {
           server.removeListener("error", reject);
-          resolve2({
+          resolve3({
             onConnected: () => {
               return connected;
             }
@@ -39843,6 +39846,1524 @@ var require_node3 = __commonJS({
   "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/node.js"(exports2, module2) {
     "use strict";
     module2.exports = require_main2();
+  }
+});
+
+// ../../node_modules/picomatch/lib/constants.js
+var require_constants = __commonJS({
+  "../../node_modules/picomatch/lib/constants.js"(exports2, module2) {
+    "use strict";
+    var WIN_SLASH = "\\\\/";
+    var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
+    var DOT_LITERAL = "\\.";
+    var PLUS_LITERAL = "\\+";
+    var QMARK_LITERAL = "\\?";
+    var SLASH_LITERAL = "\\/";
+    var ONE_CHAR = "(?=.)";
+    var QMARK = "[^/]";
+    var END_ANCHOR = `(?:${SLASH_LITERAL}|$)`;
+    var START_ANCHOR = `(?:^|${SLASH_LITERAL})`;
+    var DOTS_SLASH = `${DOT_LITERAL}{1,2}${END_ANCHOR}`;
+    var NO_DOT = `(?!${DOT_LITERAL})`;
+    var NO_DOTS = `(?!${START_ANCHOR}${DOTS_SLASH})`;
+    var NO_DOT_SLASH = `(?!${DOT_LITERAL}{0,1}${END_ANCHOR})`;
+    var NO_DOTS_SLASH = `(?!${DOTS_SLASH})`;
+    var QMARK_NO_DOT = `[^.${SLASH_LITERAL}]`;
+    var STAR = `${QMARK}*?`;
+    var SEP = "/";
+    var POSIX_CHARS = {
+      DOT_LITERAL,
+      PLUS_LITERAL,
+      QMARK_LITERAL,
+      SLASH_LITERAL,
+      ONE_CHAR,
+      QMARK,
+      END_ANCHOR,
+      DOTS_SLASH,
+      NO_DOT,
+      NO_DOTS,
+      NO_DOT_SLASH,
+      NO_DOTS_SLASH,
+      QMARK_NO_DOT,
+      STAR,
+      START_ANCHOR,
+      SEP
+    };
+    var WINDOWS_CHARS = {
+      ...POSIX_CHARS,
+      SLASH_LITERAL: `[${WIN_SLASH}]`,
+      QMARK: WIN_NO_SLASH,
+      STAR: `${WIN_NO_SLASH}*?`,
+      DOTS_SLASH: `${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$)`,
+      NO_DOT: `(?!${DOT_LITERAL})`,
+      NO_DOTS: `(?!(?:^|[${WIN_SLASH}])${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$))`,
+      NO_DOT_SLASH: `(?!${DOT_LITERAL}{0,1}(?:[${WIN_SLASH}]|$))`,
+      NO_DOTS_SLASH: `(?!${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$))`,
+      QMARK_NO_DOT: `[^.${WIN_SLASH}]`,
+      START_ANCHOR: `(?:^|[${WIN_SLASH}])`,
+      END_ANCHOR: `(?:[${WIN_SLASH}]|$)`,
+      SEP: "\\"
+    };
+    var POSIX_REGEX_SOURCE = {
+      alnum: "a-zA-Z0-9",
+      alpha: "a-zA-Z",
+      ascii: "\\x00-\\x7F",
+      blank: " \\t",
+      cntrl: "\\x00-\\x1F\\x7F",
+      digit: "0-9",
+      graph: "\\x21-\\x7E",
+      lower: "a-z",
+      print: "\\x20-\\x7E ",
+      punct: "\\-!\"#$%&'()\\*+,./:;<=>?@[\\]^_`{|}~",
+      space: " \\t\\r\\n\\v\\f",
+      upper: "A-Z",
+      word: "A-Za-z0-9_",
+      xdigit: "A-Fa-f0-9"
+    };
+    module2.exports = {
+      MAX_LENGTH: 1024 * 64,
+      POSIX_REGEX_SOURCE,
+      // regular expressions
+      REGEX_BACKSLASH: /\\(?![*+?^${}(|)[\]])/g,
+      REGEX_NON_SPECIAL_CHARS: /^[^@![\].,$*+?^{}()|\\/]+/,
+      REGEX_SPECIAL_CHARS: /[-*+?.^${}(|)[\]]/,
+      REGEX_SPECIAL_CHARS_BACKREF: /(\\?)((\W)(\3*))/g,
+      REGEX_SPECIAL_CHARS_GLOBAL: /([-*+?.^${}(|)[\]])/g,
+      REGEX_REMOVE_BACKSLASH: /(?:\[.*?[^\\]\]|\\(?=.))/g,
+      // Replace globs with equivalent patterns to reduce parsing time.
+      REPLACEMENTS: {
+        __proto__: null,
+        "***": "*",
+        "**/**": "**",
+        "**/**/**": "**"
+      },
+      // Digits
+      CHAR_0: 48,
+      /* 0 */
+      CHAR_9: 57,
+      /* 9 */
+      // Alphabet chars.
+      CHAR_UPPERCASE_A: 65,
+      /* A */
+      CHAR_LOWERCASE_A: 97,
+      /* a */
+      CHAR_UPPERCASE_Z: 90,
+      /* Z */
+      CHAR_LOWERCASE_Z: 122,
+      /* z */
+      CHAR_LEFT_PARENTHESES: 40,
+      /* ( */
+      CHAR_RIGHT_PARENTHESES: 41,
+      /* ) */
+      CHAR_ASTERISK: 42,
+      /* * */
+      // Non-alphabetic chars.
+      CHAR_AMPERSAND: 38,
+      /* & */
+      CHAR_AT: 64,
+      /* @ */
+      CHAR_BACKWARD_SLASH: 92,
+      /* \ */
+      CHAR_CARRIAGE_RETURN: 13,
+      /* \r */
+      CHAR_CIRCUMFLEX_ACCENT: 94,
+      /* ^ */
+      CHAR_COLON: 58,
+      /* : */
+      CHAR_COMMA: 44,
+      /* , */
+      CHAR_DOT: 46,
+      /* . */
+      CHAR_DOUBLE_QUOTE: 34,
+      /* " */
+      CHAR_EQUAL: 61,
+      /* = */
+      CHAR_EXCLAMATION_MARK: 33,
+      /* ! */
+      CHAR_FORM_FEED: 12,
+      /* \f */
+      CHAR_FORWARD_SLASH: 47,
+      /* / */
+      CHAR_GRAVE_ACCENT: 96,
+      /* ` */
+      CHAR_HASH: 35,
+      /* # */
+      CHAR_HYPHEN_MINUS: 45,
+      /* - */
+      CHAR_LEFT_ANGLE_BRACKET: 60,
+      /* < */
+      CHAR_LEFT_CURLY_BRACE: 123,
+      /* { */
+      CHAR_LEFT_SQUARE_BRACKET: 91,
+      /* [ */
+      CHAR_LINE_FEED: 10,
+      /* \n */
+      CHAR_NO_BREAK_SPACE: 160,
+      /* \u00A0 */
+      CHAR_PERCENT: 37,
+      /* % */
+      CHAR_PLUS: 43,
+      /* + */
+      CHAR_QUESTION_MARK: 63,
+      /* ? */
+      CHAR_RIGHT_ANGLE_BRACKET: 62,
+      /* > */
+      CHAR_RIGHT_CURLY_BRACE: 125,
+      /* } */
+      CHAR_RIGHT_SQUARE_BRACKET: 93,
+      /* ] */
+      CHAR_SEMICOLON: 59,
+      /* ; */
+      CHAR_SINGLE_QUOTE: 39,
+      /* ' */
+      CHAR_SPACE: 32,
+      /*   */
+      CHAR_TAB: 9,
+      /* \t */
+      CHAR_UNDERSCORE: 95,
+      /* _ */
+      CHAR_VERTICAL_LINE: 124,
+      /* | */
+      CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
+      /* \uFEFF */
+      /**
+       * Create EXTGLOB_CHARS
+       */
+      extglobChars(chars) {
+        return {
+          "!": { type: "negate", open: "(?:(?!(?:", close: `))${chars.STAR})` },
+          "?": { type: "qmark", open: "(?:", close: ")?" },
+          "+": { type: "plus", open: "(?:", close: ")+" },
+          "*": { type: "star", open: "(?:", close: ")*" },
+          "@": { type: "at", open: "(?:", close: ")" }
+        };
+      },
+      /**
+       * Create GLOB_CHARS
+       */
+      globChars(win32) {
+        return win32 === true ? WINDOWS_CHARS : POSIX_CHARS;
+      }
+    };
+  }
+});
+
+// ../../node_modules/picomatch/lib/utils.js
+var require_utils3 = __commonJS({
+  "../../node_modules/picomatch/lib/utils.js"(exports2) {
+    "use strict";
+    var {
+      REGEX_BACKSLASH,
+      REGEX_REMOVE_BACKSLASH,
+      REGEX_SPECIAL_CHARS,
+      REGEX_SPECIAL_CHARS_GLOBAL
+    } = require_constants();
+    exports2.isObject = (val) => val !== null && typeof val === "object" && !Array.isArray(val);
+    exports2.hasRegexChars = (str) => REGEX_SPECIAL_CHARS.test(str);
+    exports2.isRegexChar = (str) => str.length === 1 && exports2.hasRegexChars(str);
+    exports2.escapeRegex = (str) => str.replace(REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
+    exports2.toPosixSlashes = (str) => str.replace(REGEX_BACKSLASH, "/");
+    exports2.isWindows = () => {
+      if (typeof navigator !== "undefined" && navigator.platform) {
+        const platform = navigator.platform.toLowerCase();
+        return platform === "win32" || platform === "windows";
+      }
+      if (typeof process !== "undefined" && process.platform) {
+        return process.platform === "win32";
+      }
+      return false;
+    };
+    exports2.removeBackslashes = (str) => {
+      return str.replace(REGEX_REMOVE_BACKSLASH, (match) => {
+        return match === "\\" ? "" : match;
+      });
+    };
+    exports2.escapeLast = (input, char, lastIdx) => {
+      const idx = input.lastIndexOf(char, lastIdx);
+      if (idx === -1) return input;
+      if (input[idx - 1] === "\\") return exports2.escapeLast(input, char, idx - 1);
+      return `${input.slice(0, idx)}\\${input.slice(idx)}`;
+    };
+    exports2.removePrefix = (input, state = {}) => {
+      let output = input;
+      if (output.startsWith("./")) {
+        output = output.slice(2);
+        state.prefix = "./";
+      }
+      return output;
+    };
+    exports2.wrapOutput = (input, state = {}, options = {}) => {
+      const prepend = options.contains ? "" : "^";
+      const append = options.contains ? "" : "$";
+      let output = `${prepend}(?:${input})${append}`;
+      if (state.negated === true) {
+        output = `(?:^(?!${output}).*$)`;
+      }
+      return output;
+    };
+    exports2.basename = (path2, { windows } = {}) => {
+      const segs = path2.split(windows ? /[\\/]/ : "/");
+      const last = segs[segs.length - 1];
+      if (last === "") {
+        return segs[segs.length - 2];
+      }
+      return last;
+    };
+  }
+});
+
+// ../../node_modules/picomatch/lib/scan.js
+var require_scan = __commonJS({
+  "../../node_modules/picomatch/lib/scan.js"(exports2, module2) {
+    "use strict";
+    var utils = require_utils3();
+    var {
+      CHAR_ASTERISK,
+      /* * */
+      CHAR_AT,
+      /* @ */
+      CHAR_BACKWARD_SLASH,
+      /* \ */
+      CHAR_COMMA,
+      /* , */
+      CHAR_DOT,
+      /* . */
+      CHAR_EXCLAMATION_MARK,
+      /* ! */
+      CHAR_FORWARD_SLASH,
+      /* / */
+      CHAR_LEFT_CURLY_BRACE,
+      /* { */
+      CHAR_LEFT_PARENTHESES,
+      /* ( */
+      CHAR_LEFT_SQUARE_BRACKET,
+      /* [ */
+      CHAR_PLUS,
+      /* + */
+      CHAR_QUESTION_MARK,
+      /* ? */
+      CHAR_RIGHT_CURLY_BRACE,
+      /* } */
+      CHAR_RIGHT_PARENTHESES,
+      /* ) */
+      CHAR_RIGHT_SQUARE_BRACKET
+      /* ] */
+    } = require_constants();
+    var isPathSeparator = (code) => {
+      return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
+    };
+    var depth = (token) => {
+      if (token.isPrefix !== true) {
+        token.depth = token.isGlobstar ? Infinity : 1;
+      }
+    };
+    var scan = (input, options) => {
+      const opts = options || {};
+      const length = input.length - 1;
+      const scanToEnd = opts.parts === true || opts.scanToEnd === true;
+      const slashes = [];
+      const tokens = [];
+      const parts = [];
+      let str = input;
+      let index = -1;
+      let start = 0;
+      let lastIndex = 0;
+      let isBrace = false;
+      let isBracket = false;
+      let isGlob = false;
+      let isExtglob = false;
+      let isGlobstar = false;
+      let braceEscaped = false;
+      let backslashes = false;
+      let negated = false;
+      let negatedExtglob = false;
+      let finished = false;
+      let braces = 0;
+      let prev;
+      let code;
+      let token = { value: "", depth: 0, isGlob: false };
+      const eos = () => index >= length;
+      const peek = () => str.charCodeAt(index + 1);
+      const advance = () => {
+        prev = code;
+        return str.charCodeAt(++index);
+      };
+      while (index < length) {
+        code = advance();
+        let next;
+        if (code === CHAR_BACKWARD_SLASH) {
+          backslashes = token.backslashes = true;
+          code = advance();
+          if (code === CHAR_LEFT_CURLY_BRACE) {
+            braceEscaped = true;
+          }
+          continue;
+        }
+        if (braceEscaped === true || code === CHAR_LEFT_CURLY_BRACE) {
+          braces++;
+          while (eos() !== true && (code = advance())) {
+            if (code === CHAR_BACKWARD_SLASH) {
+              backslashes = token.backslashes = true;
+              advance();
+              continue;
+            }
+            if (code === CHAR_LEFT_CURLY_BRACE) {
+              braces++;
+              continue;
+            }
+            if (braceEscaped !== true && code === CHAR_DOT && (code = advance()) === CHAR_DOT) {
+              isBrace = token.isBrace = true;
+              isGlob = token.isGlob = true;
+              finished = true;
+              if (scanToEnd === true) {
+                continue;
+              }
+              break;
+            }
+            if (braceEscaped !== true && code === CHAR_COMMA) {
+              isBrace = token.isBrace = true;
+              isGlob = token.isGlob = true;
+              finished = true;
+              if (scanToEnd === true) {
+                continue;
+              }
+              break;
+            }
+            if (code === CHAR_RIGHT_CURLY_BRACE) {
+              braces--;
+              if (braces === 0) {
+                braceEscaped = false;
+                isBrace = token.isBrace = true;
+                finished = true;
+                break;
+              }
+            }
+          }
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+        if (code === CHAR_FORWARD_SLASH) {
+          slashes.push(index);
+          tokens.push(token);
+          token = { value: "", depth: 0, isGlob: false };
+          if (finished === true) continue;
+          if (prev === CHAR_DOT && index === start + 1) {
+            start += 2;
+            continue;
+          }
+          lastIndex = index + 1;
+          continue;
+        }
+        if (opts.noext !== true) {
+          const isExtglobChar = code === CHAR_PLUS || code === CHAR_AT || code === CHAR_ASTERISK || code === CHAR_QUESTION_MARK || code === CHAR_EXCLAMATION_MARK;
+          if (isExtglobChar === true && peek() === CHAR_LEFT_PARENTHESES) {
+            isGlob = token.isGlob = true;
+            isExtglob = token.isExtglob = true;
+            finished = true;
+            if (code === CHAR_EXCLAMATION_MARK && index === start) {
+              negatedExtglob = true;
+            }
+            if (scanToEnd === true) {
+              while (eos() !== true && (code = advance())) {
+                if (code === CHAR_BACKWARD_SLASH) {
+                  backslashes = token.backslashes = true;
+                  code = advance();
+                  continue;
+                }
+                if (code === CHAR_RIGHT_PARENTHESES) {
+                  isGlob = token.isGlob = true;
+                  finished = true;
+                  break;
+                }
+              }
+              continue;
+            }
+            break;
+          }
+        }
+        if (code === CHAR_ASTERISK) {
+          if (prev === CHAR_ASTERISK) isGlobstar = token.isGlobstar = true;
+          isGlob = token.isGlob = true;
+          finished = true;
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+        if (code === CHAR_QUESTION_MARK) {
+          isGlob = token.isGlob = true;
+          finished = true;
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+        if (code === CHAR_LEFT_SQUARE_BRACKET) {
+          while (eos() !== true && (next = advance())) {
+            if (next === CHAR_BACKWARD_SLASH) {
+              backslashes = token.backslashes = true;
+              advance();
+              continue;
+            }
+            if (next === CHAR_RIGHT_SQUARE_BRACKET) {
+              isBracket = token.isBracket = true;
+              isGlob = token.isGlob = true;
+              finished = true;
+              break;
+            }
+          }
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+        if (opts.nonegate !== true && code === CHAR_EXCLAMATION_MARK && index === start) {
+          negated = token.negated = true;
+          start++;
+          continue;
+        }
+        if (opts.noparen !== true && code === CHAR_LEFT_PARENTHESES) {
+          isGlob = token.isGlob = true;
+          if (scanToEnd === true) {
+            while (eos() !== true && (code = advance())) {
+              if (code === CHAR_LEFT_PARENTHESES) {
+                backslashes = token.backslashes = true;
+                code = advance();
+                continue;
+              }
+              if (code === CHAR_RIGHT_PARENTHESES) {
+                finished = true;
+                break;
+              }
+            }
+            continue;
+          }
+          break;
+        }
+        if (isGlob === true) {
+          finished = true;
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+      }
+      if (opts.noext === true) {
+        isExtglob = false;
+        isGlob = false;
+      }
+      let base = str;
+      let prefix = "";
+      let glob = "";
+      if (start > 0) {
+        prefix = str.slice(0, start);
+        str = str.slice(start);
+        lastIndex -= start;
+      }
+      if (base && isGlob === true && lastIndex > 0) {
+        base = str.slice(0, lastIndex);
+        glob = str.slice(lastIndex);
+      } else if (isGlob === true) {
+        base = "";
+        glob = str;
+      } else {
+        base = str;
+      }
+      if (base && base !== "" && base !== "/" && base !== str) {
+        if (isPathSeparator(base.charCodeAt(base.length - 1))) {
+          base = base.slice(0, -1);
+        }
+      }
+      if (opts.unescape === true) {
+        if (glob) glob = utils.removeBackslashes(glob);
+        if (base && backslashes === true) {
+          base = utils.removeBackslashes(base);
+        }
+      }
+      const state = {
+        prefix,
+        input,
+        start,
+        base,
+        glob,
+        isBrace,
+        isBracket,
+        isGlob,
+        isExtglob,
+        isGlobstar,
+        negated,
+        negatedExtglob
+      };
+      if (opts.tokens === true) {
+        state.maxDepth = 0;
+        if (!isPathSeparator(code)) {
+          tokens.push(token);
+        }
+        state.tokens = tokens;
+      }
+      if (opts.parts === true || opts.tokens === true) {
+        let prevIndex;
+        for (let idx = 0; idx < slashes.length; idx++) {
+          const n = prevIndex ? prevIndex + 1 : start;
+          const i = slashes[idx];
+          const value = input.slice(n, i);
+          if (opts.tokens) {
+            if (idx === 0 && start !== 0) {
+              tokens[idx].isPrefix = true;
+              tokens[idx].value = prefix;
+            } else {
+              tokens[idx].value = value;
+            }
+            depth(tokens[idx]);
+            state.maxDepth += tokens[idx].depth;
+          }
+          if (idx !== 0 || value !== "") {
+            parts.push(value);
+          }
+          prevIndex = i;
+        }
+        if (prevIndex && prevIndex + 1 < input.length) {
+          const value = input.slice(prevIndex + 1);
+          parts.push(value);
+          if (opts.tokens) {
+            tokens[tokens.length - 1].value = value;
+            depth(tokens[tokens.length - 1]);
+            state.maxDepth += tokens[tokens.length - 1].depth;
+          }
+        }
+        state.slashes = slashes;
+        state.parts = parts;
+      }
+      return state;
+    };
+    module2.exports = scan;
+  }
+});
+
+// ../../node_modules/picomatch/lib/parse.js
+var require_parse = __commonJS({
+  "../../node_modules/picomatch/lib/parse.js"(exports2, module2) {
+    "use strict";
+    var constants = require_constants();
+    var utils = require_utils3();
+    var {
+      MAX_LENGTH,
+      POSIX_REGEX_SOURCE,
+      REGEX_NON_SPECIAL_CHARS,
+      REGEX_SPECIAL_CHARS_BACKREF,
+      REPLACEMENTS
+    } = constants;
+    var expandRange = (args, options) => {
+      if (typeof options.expandRange === "function") {
+        return options.expandRange(...args, options);
+      }
+      args.sort();
+      const value = `[${args.join("-")}]`;
+      try {
+        new RegExp(value);
+      } catch (ex) {
+        return args.map((v) => utils.escapeRegex(v)).join("..");
+      }
+      return value;
+    };
+    var syntaxError = (type, char) => {
+      return `Missing ${type}: "${char}" - use "\\\\${char}" to match literal characters`;
+    };
+    var parse = (input, options) => {
+      if (typeof input !== "string") {
+        throw new TypeError("Expected a string");
+      }
+      input = REPLACEMENTS[input] || input;
+      const opts = { ...options };
+      const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
+      let len = input.length;
+      if (len > max) {
+        throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
+      }
+      const bos = { type: "bos", value: "", output: opts.prepend || "" };
+      const tokens = [bos];
+      const capture = opts.capture ? "" : "?:";
+      const PLATFORM_CHARS = constants.globChars(opts.windows);
+      const EXTGLOB_CHARS = constants.extglobChars(PLATFORM_CHARS);
+      const {
+        DOT_LITERAL,
+        PLUS_LITERAL,
+        SLASH_LITERAL,
+        ONE_CHAR,
+        DOTS_SLASH,
+        NO_DOT,
+        NO_DOT_SLASH,
+        NO_DOTS_SLASH,
+        QMARK,
+        QMARK_NO_DOT,
+        STAR,
+        START_ANCHOR
+      } = PLATFORM_CHARS;
+      const globstar = (opts2) => {
+        return `(${capture}(?:(?!${START_ANCHOR}${opts2.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
+      };
+      const nodot = opts.dot ? "" : NO_DOT;
+      const qmarkNoDot = opts.dot ? QMARK : QMARK_NO_DOT;
+      let star = opts.bash === true ? globstar(opts) : STAR;
+      if (opts.capture) {
+        star = `(${star})`;
+      }
+      if (typeof opts.noext === "boolean") {
+        opts.noextglob = opts.noext;
+      }
+      const state = {
+        input,
+        index: -1,
+        start: 0,
+        dot: opts.dot === true,
+        consumed: "",
+        output: "",
+        prefix: "",
+        backtrack: false,
+        negated: false,
+        brackets: 0,
+        braces: 0,
+        parens: 0,
+        quotes: 0,
+        globstar: false,
+        tokens
+      };
+      input = utils.removePrefix(input, state);
+      len = input.length;
+      const extglobs = [];
+      const braces = [];
+      const stack = [];
+      let prev = bos;
+      let value;
+      const eos = () => state.index === len - 1;
+      const peek = state.peek = (n = 1) => input[state.index + n];
+      const advance = state.advance = () => input[++state.index] || "";
+      const remaining = () => input.slice(state.index + 1);
+      const consume = (value2 = "", num = 0) => {
+        state.consumed += value2;
+        state.index += num;
+      };
+      const append = (token) => {
+        state.output += token.output != null ? token.output : token.value;
+        consume(token.value);
+      };
+      const negate = () => {
+        let count = 1;
+        while (peek() === "!" && (peek(2) !== "(" || peek(3) === "?")) {
+          advance();
+          state.start++;
+          count++;
+        }
+        if (count % 2 === 0) {
+          return false;
+        }
+        state.negated = true;
+        state.start++;
+        return true;
+      };
+      const increment = (type) => {
+        state[type]++;
+        stack.push(type);
+      };
+      const decrement = (type) => {
+        state[type]--;
+        stack.pop();
+      };
+      const push = (tok) => {
+        if (prev.type === "globstar") {
+          const isBrace = state.braces > 0 && (tok.type === "comma" || tok.type === "brace");
+          const isExtglob = tok.extglob === true || extglobs.length && (tok.type === "pipe" || tok.type === "paren");
+          if (tok.type !== "slash" && tok.type !== "paren" && !isBrace && !isExtglob) {
+            state.output = state.output.slice(0, -prev.output.length);
+            prev.type = "star";
+            prev.value = "*";
+            prev.output = star;
+            state.output += prev.output;
+          }
+        }
+        if (extglobs.length && tok.type !== "paren") {
+          extglobs[extglobs.length - 1].inner += tok.value;
+        }
+        if (tok.value || tok.output) append(tok);
+        if (prev && prev.type === "text" && tok.type === "text") {
+          prev.output = (prev.output || prev.value) + tok.value;
+          prev.value += tok.value;
+          return;
+        }
+        tok.prev = prev;
+        tokens.push(tok);
+        prev = tok;
+      };
+      const extglobOpen = (type, value2) => {
+        const token = { ...EXTGLOB_CHARS[value2], conditions: 1, inner: "" };
+        token.prev = prev;
+        token.parens = state.parens;
+        token.output = state.output;
+        const output = (opts.capture ? "(" : "") + token.open;
+        increment("parens");
+        push({ type, value: value2, output: state.output ? "" : ONE_CHAR });
+        push({ type: "paren", extglob: true, value: advance(), output });
+        extglobs.push(token);
+      };
+      const extglobClose = (token) => {
+        let output = token.close + (opts.capture ? ")" : "");
+        let rest;
+        if (token.type === "negate") {
+          let extglobStar = star;
+          if (token.inner && token.inner.length > 1 && token.inner.includes("/")) {
+            extglobStar = globstar(opts);
+          }
+          if (extglobStar !== star || eos() || /^\)+$/.test(remaining())) {
+            output = token.close = `)$))${extglobStar}`;
+          }
+          if (token.inner.includes("*") && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
+            const expression = parse(rest, { ...options, fastpaths: false }).output;
+            output = token.close = `)${expression})${extglobStar})`;
+          }
+          if (token.prev.type === "bos") {
+            state.negatedExtglob = true;
+          }
+        }
+        push({ type: "paren", extglob: true, value, output });
+        decrement("parens");
+      };
+      if (opts.fastpaths !== false && !/(^[*!]|[/()[\]{}"])/.test(input)) {
+        let backslashes = false;
+        let output = input.replace(REGEX_SPECIAL_CHARS_BACKREF, (m, esc, chars, first, rest, index) => {
+          if (first === "\\") {
+            backslashes = true;
+            return m;
+          }
+          if (first === "?") {
+            if (esc) {
+              return esc + first + (rest ? QMARK.repeat(rest.length) : "");
+            }
+            if (index === 0) {
+              return qmarkNoDot + (rest ? QMARK.repeat(rest.length) : "");
+            }
+            return QMARK.repeat(chars.length);
+          }
+          if (first === ".") {
+            return DOT_LITERAL.repeat(chars.length);
+          }
+          if (first === "*") {
+            if (esc) {
+              return esc + first + (rest ? star : "");
+            }
+            return star;
+          }
+          return esc ? m : `\\${m}`;
+        });
+        if (backslashes === true) {
+          if (opts.unescape === true) {
+            output = output.replace(/\\/g, "");
+          } else {
+            output = output.replace(/\\+/g, (m) => {
+              return m.length % 2 === 0 ? "\\\\" : m ? "\\" : "";
+            });
+          }
+        }
+        if (output === input && opts.contains === true) {
+          state.output = input;
+          return state;
+        }
+        state.output = utils.wrapOutput(output, state, options);
+        return state;
+      }
+      while (!eos()) {
+        value = advance();
+        if (value === "\0") {
+          continue;
+        }
+        if (value === "\\") {
+          const next = peek();
+          if (next === "/" && opts.bash !== true) {
+            continue;
+          }
+          if (next === "." || next === ";") {
+            continue;
+          }
+          if (!next) {
+            value += "\\";
+            push({ type: "text", value });
+            continue;
+          }
+          const match = /^\\+/.exec(remaining());
+          let slashes = 0;
+          if (match && match[0].length > 2) {
+            slashes = match[0].length;
+            state.index += slashes;
+            if (slashes % 2 !== 0) {
+              value += "\\";
+            }
+          }
+          if (opts.unescape === true) {
+            value = advance();
+          } else {
+            value += advance();
+          }
+          if (state.brackets === 0) {
+            push({ type: "text", value });
+            continue;
+          }
+        }
+        if (state.brackets > 0 && (value !== "]" || prev.value === "[" || prev.value === "[^")) {
+          if (opts.posix !== false && value === ":") {
+            const inner = prev.value.slice(1);
+            if (inner.includes("[")) {
+              prev.posix = true;
+              if (inner.includes(":")) {
+                const idx = prev.value.lastIndexOf("[");
+                const pre = prev.value.slice(0, idx);
+                const rest2 = prev.value.slice(idx + 2);
+                const posix = POSIX_REGEX_SOURCE[rest2];
+                if (posix) {
+                  prev.value = pre + posix;
+                  state.backtrack = true;
+                  advance();
+                  if (!bos.output && tokens.indexOf(prev) === 1) {
+                    bos.output = ONE_CHAR;
+                  }
+                  continue;
+                }
+              }
+            }
+          }
+          if (value === "[" && peek() !== ":" || value === "-" && peek() === "]") {
+            value = `\\${value}`;
+          }
+          if (value === "]" && (prev.value === "[" || prev.value === "[^")) {
+            value = `\\${value}`;
+          }
+          if (opts.posix === true && value === "!" && prev.value === "[") {
+            value = "^";
+          }
+          prev.value += value;
+          append({ value });
+          continue;
+        }
+        if (state.quotes === 1 && value !== '"') {
+          value = utils.escapeRegex(value);
+          prev.value += value;
+          append({ value });
+          continue;
+        }
+        if (value === '"') {
+          state.quotes = state.quotes === 1 ? 0 : 1;
+          if (opts.keepQuotes === true) {
+            push({ type: "text", value });
+          }
+          continue;
+        }
+        if (value === "(") {
+          increment("parens");
+          push({ type: "paren", value });
+          continue;
+        }
+        if (value === ")") {
+          if (state.parens === 0 && opts.strictBrackets === true) {
+            throw new SyntaxError(syntaxError("opening", "("));
+          }
+          const extglob = extglobs[extglobs.length - 1];
+          if (extglob && state.parens === extglob.parens + 1) {
+            extglobClose(extglobs.pop());
+            continue;
+          }
+          push({ type: "paren", value, output: state.parens ? ")" : "\\)" });
+          decrement("parens");
+          continue;
+        }
+        if (value === "[") {
+          if (opts.nobracket === true || !remaining().includes("]")) {
+            if (opts.nobracket !== true && opts.strictBrackets === true) {
+              throw new SyntaxError(syntaxError("closing", "]"));
+            }
+            value = `\\${value}`;
+          } else {
+            increment("brackets");
+          }
+          push({ type: "bracket", value });
+          continue;
+        }
+        if (value === "]") {
+          if (opts.nobracket === true || prev && prev.type === "bracket" && prev.value.length === 1) {
+            push({ type: "text", value, output: `\\${value}` });
+            continue;
+          }
+          if (state.brackets === 0) {
+            if (opts.strictBrackets === true) {
+              throw new SyntaxError(syntaxError("opening", "["));
+            }
+            push({ type: "text", value, output: `\\${value}` });
+            continue;
+          }
+          decrement("brackets");
+          const prevValue = prev.value.slice(1);
+          if (prev.posix !== true && prevValue[0] === "^" && !prevValue.includes("/")) {
+            value = `/${value}`;
+          }
+          prev.value += value;
+          append({ value });
+          if (opts.literalBrackets === false || utils.hasRegexChars(prevValue)) {
+            continue;
+          }
+          const escaped = utils.escapeRegex(prev.value);
+          state.output = state.output.slice(0, -prev.value.length);
+          if (opts.literalBrackets === true) {
+            state.output += escaped;
+            prev.value = escaped;
+            continue;
+          }
+          prev.value = `(${capture}${escaped}|${prev.value})`;
+          state.output += prev.value;
+          continue;
+        }
+        if (value === "{" && opts.nobrace !== true) {
+          increment("braces");
+          const open = {
+            type: "brace",
+            value,
+            output: "(",
+            outputIndex: state.output.length,
+            tokensIndex: state.tokens.length
+          };
+          braces.push(open);
+          push(open);
+          continue;
+        }
+        if (value === "}") {
+          const brace = braces[braces.length - 1];
+          if (opts.nobrace === true || !brace) {
+            push({ type: "text", value, output: value });
+            continue;
+          }
+          let output = ")";
+          if (brace.dots === true) {
+            const arr = tokens.slice();
+            const range = [];
+            for (let i = arr.length - 1; i >= 0; i--) {
+              tokens.pop();
+              if (arr[i].type === "brace") {
+                break;
+              }
+              if (arr[i].type !== "dots") {
+                range.unshift(arr[i].value);
+              }
+            }
+            output = expandRange(range, opts);
+            state.backtrack = true;
+          }
+          if (brace.comma !== true && brace.dots !== true) {
+            const out = state.output.slice(0, brace.outputIndex);
+            const toks = state.tokens.slice(brace.tokensIndex);
+            brace.value = brace.output = "\\{";
+            value = output = "\\}";
+            state.output = out;
+            for (const t of toks) {
+              state.output += t.output || t.value;
+            }
+          }
+          push({ type: "brace", value, output });
+          decrement("braces");
+          braces.pop();
+          continue;
+        }
+        if (value === "|") {
+          if (extglobs.length > 0) {
+            extglobs[extglobs.length - 1].conditions++;
+          }
+          push({ type: "text", value });
+          continue;
+        }
+        if (value === ",") {
+          let output = value;
+          const brace = braces[braces.length - 1];
+          if (brace && stack[stack.length - 1] === "braces") {
+            brace.comma = true;
+            output = "|";
+          }
+          push({ type: "comma", value, output });
+          continue;
+        }
+        if (value === "/") {
+          if (prev.type === "dot" && state.index === state.start + 1) {
+            state.start = state.index + 1;
+            state.consumed = "";
+            state.output = "";
+            tokens.pop();
+            prev = bos;
+            continue;
+          }
+          push({ type: "slash", value, output: SLASH_LITERAL });
+          continue;
+        }
+        if (value === ".") {
+          if (state.braces > 0 && prev.type === "dot") {
+            if (prev.value === ".") prev.output = DOT_LITERAL;
+            const brace = braces[braces.length - 1];
+            prev.type = "dots";
+            prev.output += value;
+            prev.value += value;
+            brace.dots = true;
+            continue;
+          }
+          if (state.braces + state.parens === 0 && prev.type !== "bos" && prev.type !== "slash") {
+            push({ type: "text", value, output: DOT_LITERAL });
+            continue;
+          }
+          push({ type: "dot", value, output: DOT_LITERAL });
+          continue;
+        }
+        if (value === "?") {
+          const isGroup = prev && prev.value === "(";
+          if (!isGroup && opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+            extglobOpen("qmark", value);
+            continue;
+          }
+          if (prev && prev.type === "paren") {
+            const next = peek();
+            let output = value;
+            if (prev.value === "(" && !/[!=<:]/.test(next) || next === "<" && !/<([!=]|\w+>)/.test(remaining())) {
+              output = `\\${value}`;
+            }
+            push({ type: "text", value, output });
+            continue;
+          }
+          if (opts.dot !== true && (prev.type === "slash" || prev.type === "bos")) {
+            push({ type: "qmark", value, output: QMARK_NO_DOT });
+            continue;
+          }
+          push({ type: "qmark", value, output: QMARK });
+          continue;
+        }
+        if (value === "!") {
+          if (opts.noextglob !== true && peek() === "(") {
+            if (peek(2) !== "?" || !/[!=<:]/.test(peek(3))) {
+              extglobOpen("negate", value);
+              continue;
+            }
+          }
+          if (opts.nonegate !== true && state.index === 0) {
+            negate();
+            continue;
+          }
+        }
+        if (value === "+") {
+          if (opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+            extglobOpen("plus", value);
+            continue;
+          }
+          if (prev && prev.value === "(" || opts.regex === false) {
+            push({ type: "plus", value, output: PLUS_LITERAL });
+            continue;
+          }
+          if (prev && (prev.type === "bracket" || prev.type === "paren" || prev.type === "brace") || state.parens > 0) {
+            push({ type: "plus", value });
+            continue;
+          }
+          push({ type: "plus", value: PLUS_LITERAL });
+          continue;
+        }
+        if (value === "@") {
+          if (opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+            push({ type: "at", extglob: true, value, output: "" });
+            continue;
+          }
+          push({ type: "text", value });
+          continue;
+        }
+        if (value !== "*") {
+          if (value === "$" || value === "^") {
+            value = `\\${value}`;
+          }
+          const match = REGEX_NON_SPECIAL_CHARS.exec(remaining());
+          if (match) {
+            value += match[0];
+            state.index += match[0].length;
+          }
+          push({ type: "text", value });
+          continue;
+        }
+        if (prev && (prev.type === "globstar" || prev.star === true)) {
+          prev.type = "star";
+          prev.star = true;
+          prev.value += value;
+          prev.output = star;
+          state.backtrack = true;
+          state.globstar = true;
+          consume(value);
+          continue;
+        }
+        let rest = remaining();
+        if (opts.noextglob !== true && /^\([^?]/.test(rest)) {
+          extglobOpen("star", value);
+          continue;
+        }
+        if (prev.type === "star") {
+          if (opts.noglobstar === true) {
+            consume(value);
+            continue;
+          }
+          const prior = prev.prev;
+          const before = prior.prev;
+          const isStart = prior.type === "slash" || prior.type === "bos";
+          const afterStar = before && (before.type === "star" || before.type === "globstar");
+          if (opts.bash === true && (!isStart || rest[0] && rest[0] !== "/")) {
+            push({ type: "star", value, output: "" });
+            continue;
+          }
+          const isBrace = state.braces > 0 && (prior.type === "comma" || prior.type === "brace");
+          const isExtglob = extglobs.length && (prior.type === "pipe" || prior.type === "paren");
+          if (!isStart && prior.type !== "paren" && !isBrace && !isExtglob) {
+            push({ type: "star", value, output: "" });
+            continue;
+          }
+          while (rest.slice(0, 3) === "/**") {
+            const after = input[state.index + 4];
+            if (after && after !== "/") {
+              break;
+            }
+            rest = rest.slice(3);
+            consume("/**", 3);
+          }
+          if (prior.type === "bos" && eos()) {
+            prev.type = "globstar";
+            prev.value += value;
+            prev.output = globstar(opts);
+            state.output = prev.output;
+            state.globstar = true;
+            consume(value);
+            continue;
+          }
+          if (prior.type === "slash" && prior.prev.type !== "bos" && !afterStar && eos()) {
+            state.output = state.output.slice(0, -(prior.output + prev.output).length);
+            prior.output = `(?:${prior.output}`;
+            prev.type = "globstar";
+            prev.output = globstar(opts) + (opts.strictSlashes ? ")" : "|$)");
+            prev.value += value;
+            state.globstar = true;
+            state.output += prior.output + prev.output;
+            consume(value);
+            continue;
+          }
+          if (prior.type === "slash" && prior.prev.type !== "bos" && rest[0] === "/") {
+            const end = rest[1] !== void 0 ? "|$" : "";
+            state.output = state.output.slice(0, -(prior.output + prev.output).length);
+            prior.output = `(?:${prior.output}`;
+            prev.type = "globstar";
+            prev.output = `${globstar(opts)}${SLASH_LITERAL}|${SLASH_LITERAL}${end})`;
+            prev.value += value;
+            state.output += prior.output + prev.output;
+            state.globstar = true;
+            consume(value + advance());
+            push({ type: "slash", value: "/", output: "" });
+            continue;
+          }
+          if (prior.type === "bos" && rest[0] === "/") {
+            prev.type = "globstar";
+            prev.value += value;
+            prev.output = `(?:^|${SLASH_LITERAL}|${globstar(opts)}${SLASH_LITERAL})`;
+            state.output = prev.output;
+            state.globstar = true;
+            consume(value + advance());
+            push({ type: "slash", value: "/", output: "" });
+            continue;
+          }
+          state.output = state.output.slice(0, -prev.output.length);
+          prev.type = "globstar";
+          prev.output = globstar(opts);
+          prev.value += value;
+          state.output += prev.output;
+          state.globstar = true;
+          consume(value);
+          continue;
+        }
+        const token = { type: "star", value, output: star };
+        if (opts.bash === true) {
+          token.output = ".*?";
+          if (prev.type === "bos" || prev.type === "slash") {
+            token.output = nodot + token.output;
+          }
+          push(token);
+          continue;
+        }
+        if (prev && (prev.type === "bracket" || prev.type === "paren") && opts.regex === true) {
+          token.output = value;
+          push(token);
+          continue;
+        }
+        if (state.index === state.start || prev.type === "slash" || prev.type === "dot") {
+          if (prev.type === "dot") {
+            state.output += NO_DOT_SLASH;
+            prev.output += NO_DOT_SLASH;
+          } else if (opts.dot === true) {
+            state.output += NO_DOTS_SLASH;
+            prev.output += NO_DOTS_SLASH;
+          } else {
+            state.output += nodot;
+            prev.output += nodot;
+          }
+          if (peek() !== "*") {
+            state.output += ONE_CHAR;
+            prev.output += ONE_CHAR;
+          }
+        }
+        push(token);
+      }
+      while (state.brackets > 0) {
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", "]"));
+        state.output = utils.escapeLast(state.output, "[");
+        decrement("brackets");
+      }
+      while (state.parens > 0) {
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", ")"));
+        state.output = utils.escapeLast(state.output, "(");
+        decrement("parens");
+      }
+      while (state.braces > 0) {
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", "}"));
+        state.output = utils.escapeLast(state.output, "{");
+        decrement("braces");
+      }
+      if (opts.strictSlashes !== true && (prev.type === "star" || prev.type === "bracket")) {
+        push({ type: "maybe_slash", value: "", output: `${SLASH_LITERAL}?` });
+      }
+      if (state.backtrack === true) {
+        state.output = "";
+        for (const token of state.tokens) {
+          state.output += token.output != null ? token.output : token.value;
+          if (token.suffix) {
+            state.output += token.suffix;
+          }
+        }
+      }
+      return state;
+    };
+    parse.fastpaths = (input, options) => {
+      const opts = { ...options };
+      const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
+      const len = input.length;
+      if (len > max) {
+        throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
+      }
+      input = REPLACEMENTS[input] || input;
+      const {
+        DOT_LITERAL,
+        SLASH_LITERAL,
+        ONE_CHAR,
+        DOTS_SLASH,
+        NO_DOT,
+        NO_DOTS,
+        NO_DOTS_SLASH,
+        STAR,
+        START_ANCHOR
+      } = constants.globChars(opts.windows);
+      const nodot = opts.dot ? NO_DOTS : NO_DOT;
+      const slashDot = opts.dot ? NO_DOTS_SLASH : NO_DOT;
+      const capture = opts.capture ? "" : "?:";
+      const state = { negated: false, prefix: "" };
+      let star = opts.bash === true ? ".*?" : STAR;
+      if (opts.capture) {
+        star = `(${star})`;
+      }
+      const globstar = (opts2) => {
+        if (opts2.noglobstar === true) return star;
+        return `(${capture}(?:(?!${START_ANCHOR}${opts2.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
+      };
+      const create = (str) => {
+        switch (str) {
+          case "*":
+            return `${nodot}${ONE_CHAR}${star}`;
+          case ".*":
+            return `${DOT_LITERAL}${ONE_CHAR}${star}`;
+          case "*.*":
+            return `${nodot}${star}${DOT_LITERAL}${ONE_CHAR}${star}`;
+          case "*/*":
+            return `${nodot}${star}${SLASH_LITERAL}${ONE_CHAR}${slashDot}${star}`;
+          case "**":
+            return nodot + globstar(opts);
+          case "**/*":
+            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${slashDot}${ONE_CHAR}${star}`;
+          case "**/*.*":
+            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${slashDot}${star}${DOT_LITERAL}${ONE_CHAR}${star}`;
+          case "**/.*":
+            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${DOT_LITERAL}${ONE_CHAR}${star}`;
+          default: {
+            const match = /^(.*?)\.(\w+)$/.exec(str);
+            if (!match) return;
+            const source2 = create(match[1]);
+            if (!source2) return;
+            return source2 + DOT_LITERAL + match[2];
+          }
+        }
+      };
+      const output = utils.removePrefix(input, state);
+      let source = create(output);
+      if (source && opts.strictSlashes !== true) {
+        source += `${SLASH_LITERAL}?`;
+      }
+      return source;
+    };
+    module2.exports = parse;
+  }
+});
+
+// ../../node_modules/picomatch/lib/picomatch.js
+var require_picomatch = __commonJS({
+  "../../node_modules/picomatch/lib/picomatch.js"(exports2, module2) {
+    "use strict";
+    var scan = require_scan();
+    var parse = require_parse();
+    var utils = require_utils3();
+    var constants = require_constants();
+    var isObject = (val) => val && typeof val === "object" && !Array.isArray(val);
+    var picomatch2 = (glob, options, returnState = false) => {
+      if (Array.isArray(glob)) {
+        const fns = glob.map((input) => picomatch2(input, options, returnState));
+        const arrayMatcher = (str) => {
+          for (const isMatch of fns) {
+            const state2 = isMatch(str);
+            if (state2) return state2;
+          }
+          return false;
+        };
+        return arrayMatcher;
+      }
+      const isState = isObject(glob) && glob.tokens && glob.input;
+      if (glob === "" || typeof glob !== "string" && !isState) {
+        throw new TypeError("Expected pattern to be a non-empty string");
+      }
+      const opts = options || {};
+      const posix = opts.windows;
+      const regex = isState ? picomatch2.compileRe(glob, options) : picomatch2.makeRe(glob, options, false, true);
+      const state = regex.state;
+      delete regex.state;
+      let isIgnored = () => false;
+      if (opts.ignore) {
+        const ignoreOpts = { ...options, ignore: null, onMatch: null, onResult: null };
+        isIgnored = picomatch2(opts.ignore, ignoreOpts, returnState);
+      }
+      const matcher = (input, returnObject = false) => {
+        const { isMatch, match, output } = picomatch2.test(input, regex, options, { glob, posix });
+        const result = { glob, state, regex, posix, input, output, match, isMatch };
+        if (typeof opts.onResult === "function") {
+          opts.onResult(result);
+        }
+        if (isMatch === false) {
+          result.isMatch = false;
+          return returnObject ? result : false;
+        }
+        if (isIgnored(input)) {
+          if (typeof opts.onIgnore === "function") {
+            opts.onIgnore(result);
+          }
+          result.isMatch = false;
+          return returnObject ? result : false;
+        }
+        if (typeof opts.onMatch === "function") {
+          opts.onMatch(result);
+        }
+        return returnObject ? result : true;
+      };
+      if (returnState) {
+        matcher.state = state;
+      }
+      return matcher;
+    };
+    picomatch2.test = (input, regex, options, { glob, posix } = {}) => {
+      if (typeof input !== "string") {
+        throw new TypeError("Expected input to be a string");
+      }
+      if (input === "") {
+        return { isMatch: false, output: "" };
+      }
+      const opts = options || {};
+      const format = opts.format || (posix ? utils.toPosixSlashes : null);
+      let match = input === glob;
+      let output = match && format ? format(input) : input;
+      if (match === false) {
+        output = format ? format(input) : input;
+        match = output === glob;
+      }
+      if (match === false || opts.capture === true) {
+        if (opts.matchBase === true || opts.basename === true) {
+          match = picomatch2.matchBase(input, regex, options, posix);
+        } else {
+          match = regex.exec(output);
+        }
+      }
+      return { isMatch: Boolean(match), match, output };
+    };
+    picomatch2.matchBase = (input, glob, options) => {
+      const regex = glob instanceof RegExp ? glob : picomatch2.makeRe(glob, options);
+      return regex.test(utils.basename(input));
+    };
+    picomatch2.isMatch = (str, patterns, options) => picomatch2(patterns, options)(str);
+    picomatch2.parse = (pattern, options) => {
+      if (Array.isArray(pattern)) return pattern.map((p) => picomatch2.parse(p, options));
+      return parse(pattern, { ...options, fastpaths: false });
+    };
+    picomatch2.scan = (input, options) => scan(input, options);
+    picomatch2.compileRe = (state, options, returnOutput = false, returnState = false) => {
+      if (returnOutput === true) {
+        return state.output;
+      }
+      const opts = options || {};
+      const prepend = opts.contains ? "" : "^";
+      const append = opts.contains ? "" : "$";
+      let source = `${prepend}(?:${state.output})${append}`;
+      if (state && state.negated === true) {
+        source = `^(?!${source}).*$`;
+      }
+      const regex = picomatch2.toRegex(source, options);
+      if (returnState === true) {
+        regex.state = state;
+      }
+      return regex;
+    };
+    picomatch2.makeRe = (input, options = {}, returnOutput = false, returnState = false) => {
+      if (!input || typeof input !== "string") {
+        throw new TypeError("Expected a non-empty string");
+      }
+      let parsed = { negated: false, fastpaths: true };
+      if (options.fastpaths !== false && (input[0] === "." || input[0] === "*")) {
+        parsed.output = parse.fastpaths(input, options);
+      }
+      if (!parsed.output) {
+        parsed = parse(input, options);
+      }
+      return picomatch2.compileRe(parsed, options, returnOutput, returnState);
+    };
+    picomatch2.toRegex = (source, options) => {
+      try {
+        const opts = options || {};
+        return new RegExp(source, opts.flags || (opts.nocase ? "i" : ""));
+      } catch (err) {
+        if (options && options.debug === true) throw err;
+        return /$^/;
+      }
+    };
+    picomatch2.constants = constants;
+    module2.exports = picomatch2;
+  }
+});
+
+// ../../node_modules/picomatch/index.js
+var require_picomatch2 = __commonJS({
+  "../../node_modules/picomatch/index.js"(exports2, module2) {
+    "use strict";
+    var pico = require_picomatch();
+    var utils = require_utils3();
+    function picomatch2(glob, options, returnState = false) {
+      if (options && (options.windows === null || options.windows === void 0)) {
+        options = { ...options, windows: utils.isWindows() };
+      }
+      return pico(glob, options, returnState);
+    }
+    Object.assign(picomatch2, pico);
+    module2.exports = picomatch2;
   }
 });
 
@@ -39995,11 +41516,11 @@ var DevTunnelHostAdapter = class {
    * Check if network is available by attempting DNS resolution with timeout.
    */
   async checkNetworkAvailable() {
-    return new Promise((resolve2) => {
-      const timeout = setTimeout(() => resolve2(false), DNS_TIMEOUT_MS);
+    return new Promise((resolve3) => {
+      const timeout = setTimeout(() => resolve3(false), DNS_TIMEOUT_MS);
       dns.resolve("github.com", (err) => {
         clearTimeout(timeout);
-        resolve2(!err);
+        resolve3(!err);
       });
     });
   }
@@ -40285,8 +41806,8 @@ var DevTunnelHostAdapter = class {
     this.tunnel = null;
     this.managementClient = null;
     if (this.server) {
-      await new Promise((resolve2) => {
-        this.server.close(() => resolve2());
+      await new Promise((resolve3) => {
+        this.server.close(() => resolve3());
       });
       this.server = null;
     }
@@ -40310,7 +41831,7 @@ var DevTunnelHostAdapter = class {
     };
   }
   createServer() {
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       const server = net.createServer((socket) => {
         if (this.isDisposed) {
           socket.destroy();
@@ -40334,7 +41855,7 @@ var DevTunnelHostAdapter = class {
       });
       server.on("error", reject);
       server.listen(this.config.port || 0, () => {
-        resolve2(server);
+        resolve3(server);
       });
     });
   }
@@ -40574,7 +42095,7 @@ var DevTunnelHostAdapter = class {
     throw new Error("Device code expired before authentication completed.");
   }
   sleep(ms) {
-    return new Promise((resolve2) => setTimeout(resolve2, ms));
+    return new Promise((resolve3) => setTimeout(resolve3, ms));
   }
 };
 function createTunnelHostAdapter(config) {
@@ -40662,8 +42183,8 @@ var CopilotSession = class {
     const effectiveTimeout = timeout ?? 6e4;
     let resolveIdle;
     let rejectWithError;
-    const idlePromise = new Promise((resolve2, reject) => {
-      resolveIdle = resolve2;
+    const idlePromise = new Promise((resolve3, reject) => {
+      resolveIdle = resolve3;
       rejectWithError = reject;
     });
     let lastAssistantMessage;
@@ -41035,7 +42556,7 @@ var CopilotClient = class {
           lastError = error instanceof Error ? error : new Error(String(error));
           if (attempt < 3) {
             const delay = 100 * Math.pow(2, attempt - 1);
-            await new Promise((resolve2) => setTimeout(resolve2, delay));
+            await new Promise((resolve3) => setTimeout(resolve3, delay));
           }
         }
       }
@@ -41431,7 +42952,7 @@ var CopilotClient = class {
    * Start the CLI server process
    */
   async startCLIServer() {
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       const args = [
         ...this.options.cliArgs,
         "--server",
@@ -41468,7 +42989,7 @@ var CopilotClient = class {
       let resolved = false;
       if (this.options.useStdio) {
         resolved = true;
-        resolve2();
+        resolve3();
       } else {
         this.cliProcess.stdout?.on("data", (data) => {
           stdout += data.toString();
@@ -41476,7 +42997,7 @@ var CopilotClient = class {
           if (match && !resolved) {
             this.actualPort = parseInt(match[1], 10);
             resolved = true;
-            resolve2();
+            resolve3();
           }
         });
       }
@@ -41547,7 +43068,7 @@ var CopilotClient = class {
     if (!this.actualPort) {
       throw new Error("Server port not available");
     }
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       this.socket = new import_node_net.Socket();
       this.socket.connect(this.actualPort, this.actualHost, () => {
         this.connection = (0, import_node.createMessageConnection)(
@@ -41556,7 +43077,7 @@ var CopilotClient = class {
         );
         this.attachConnectionHandlers();
         this.connection.listen();
-        resolve2();
+        resolve3();
       });
       this.socket.on("error", (error) => {
         reject(new Error(`Failed to connect to CLI server: ${error.message}`));
@@ -41706,6 +43227,518 @@ function encodeJsonRpcMessageToBuffer(message) {
 // src/file-search-service.ts
 var import_promises = require("fs/promises");
 var import_node_path = require("path");
+
+// ../../node_modules/fdir/dist/index.mjs
+var import_module = require("module");
+var import_path = require("path");
+var nativeFs = __toESM(require("fs"), 1);
+var __require = /* @__PURE__ */ (0, import_module.createRequire)(__bundled_import_meta_url);
+function cleanPath(path2) {
+  let normalized = (0, import_path.normalize)(path2);
+  if (normalized.length > 1 && normalized[normalized.length - 1] === import_path.sep) normalized = normalized.substring(0, normalized.length - 1);
+  return normalized;
+}
+var SLASHES_REGEX = /[\\/]/g;
+function convertSlashes(path2, separator) {
+  return path2.replace(SLASHES_REGEX, separator);
+}
+var WINDOWS_ROOT_DIR_REGEX = /^[a-z]:[\\/]$/i;
+function isRootDirectory(path2) {
+  return path2 === "/" || WINDOWS_ROOT_DIR_REGEX.test(path2);
+}
+function normalizePath(path2, options) {
+  const { resolvePaths, normalizePath: normalizePath$1, pathSeparator } = options;
+  const pathNeedsCleaning = process.platform === "win32" && path2.includes("/") || path2.startsWith(".");
+  if (resolvePaths) path2 = (0, import_path.resolve)(path2);
+  if (normalizePath$1 || pathNeedsCleaning) path2 = cleanPath(path2);
+  if (path2 === ".") return "";
+  const needsSeperator = path2[path2.length - 1] !== pathSeparator;
+  return convertSlashes(needsSeperator ? path2 + pathSeparator : path2, pathSeparator);
+}
+function joinPathWithBasePath(filename, directoryPath) {
+  return directoryPath + filename;
+}
+function joinPathWithRelativePath(root, options) {
+  return function(filename, directoryPath) {
+    const sameRoot = directoryPath.startsWith(root);
+    if (sameRoot) return directoryPath.slice(root.length) + filename;
+    else return convertSlashes((0, import_path.relative)(root, directoryPath), options.pathSeparator) + options.pathSeparator + filename;
+  };
+}
+function joinPath(filename) {
+  return filename;
+}
+function joinDirectoryPath(filename, directoryPath, separator) {
+  return directoryPath + filename + separator;
+}
+function build$7(root, options) {
+  const { relativePaths, includeBasePath } = options;
+  return relativePaths && root ? joinPathWithRelativePath(root, options) : includeBasePath ? joinPathWithBasePath : joinPath;
+}
+function pushDirectoryWithRelativePath(root) {
+  return function(directoryPath, paths) {
+    paths.push(directoryPath.substring(root.length) || ".");
+  };
+}
+function pushDirectoryFilterWithRelativePath(root) {
+  return function(directoryPath, paths, filters) {
+    const relativePath = directoryPath.substring(root.length) || ".";
+    if (filters.every((filter) => filter(relativePath, true))) paths.push(relativePath);
+  };
+}
+var pushDirectory = (directoryPath, paths) => {
+  paths.push(directoryPath || ".");
+};
+var pushDirectoryFilter = (directoryPath, paths, filters) => {
+  const path2 = directoryPath || ".";
+  if (filters.every((filter) => filter(path2, true))) paths.push(path2);
+};
+var empty$2 = () => {
+};
+function build$6(root, options) {
+  const { includeDirs, filters, relativePaths } = options;
+  if (!includeDirs) return empty$2;
+  if (relativePaths) return filters && filters.length ? pushDirectoryFilterWithRelativePath(root) : pushDirectoryWithRelativePath(root);
+  return filters && filters.length ? pushDirectoryFilter : pushDirectory;
+}
+var pushFileFilterAndCount = (filename, _paths, counts, filters) => {
+  if (filters.every((filter) => filter(filename, false))) counts.files++;
+};
+var pushFileFilter = (filename, paths, _counts, filters) => {
+  if (filters.every((filter) => filter(filename, false))) paths.push(filename);
+};
+var pushFileCount = (_filename, _paths, counts, _filters) => {
+  counts.files++;
+};
+var pushFile = (filename, paths) => {
+  paths.push(filename);
+};
+var empty$1 = () => {
+};
+function build$5(options) {
+  const { excludeFiles, filters, onlyCounts } = options;
+  if (excludeFiles) return empty$1;
+  if (filters && filters.length) return onlyCounts ? pushFileFilterAndCount : pushFileFilter;
+  else if (onlyCounts) return pushFileCount;
+  else return pushFile;
+}
+var getArray = (paths) => {
+  return paths;
+};
+var getArrayGroup = () => {
+  return [""].slice(0, 0);
+};
+function build$4(options) {
+  return options.group ? getArrayGroup : getArray;
+}
+var groupFiles = (groups, directory, files) => {
+  groups.push({
+    directory,
+    files,
+    dir: directory
+  });
+};
+var empty = () => {
+};
+function build$3(options) {
+  return options.group ? groupFiles : empty;
+}
+var resolveSymlinksAsync = function(path2, state, callback$1) {
+  const { queue, fs: fs2, options: { suppressErrors } } = state;
+  queue.enqueue();
+  fs2.realpath(path2, (error, resolvedPath) => {
+    if (error) return queue.dequeue(suppressErrors ? null : error, state);
+    fs2.stat(resolvedPath, (error$1, stat) => {
+      if (error$1) return queue.dequeue(suppressErrors ? null : error$1, state);
+      if (stat.isDirectory() && isRecursive(path2, resolvedPath, state)) return queue.dequeue(null, state);
+      callback$1(stat, resolvedPath);
+      queue.dequeue(null, state);
+    });
+  });
+};
+var resolveSymlinks = function(path2, state, callback$1) {
+  const { queue, fs: fs2, options: { suppressErrors } } = state;
+  queue.enqueue();
+  try {
+    const resolvedPath = fs2.realpathSync(path2);
+    const stat = fs2.statSync(resolvedPath);
+    if (stat.isDirectory() && isRecursive(path2, resolvedPath, state)) return;
+    callback$1(stat, resolvedPath);
+  } catch (e) {
+    if (!suppressErrors) throw e;
+  }
+};
+function build$2(options, isSynchronous) {
+  if (!options.resolveSymlinks || options.excludeSymlinks) return null;
+  return isSynchronous ? resolveSymlinks : resolveSymlinksAsync;
+}
+function isRecursive(path2, resolved, state) {
+  if (state.options.useRealPaths) return isRecursiveUsingRealPaths(resolved, state);
+  let parent = (0, import_path.dirname)(path2);
+  let depth = 1;
+  while (parent !== state.root && depth < 2) {
+    const resolvedPath = state.symlinks.get(parent);
+    const isSameRoot = !!resolvedPath && (resolvedPath === resolved || resolvedPath.startsWith(resolved) || resolved.startsWith(resolvedPath));
+    if (isSameRoot) depth++;
+    else parent = (0, import_path.dirname)(parent);
+  }
+  state.symlinks.set(path2, resolved);
+  return depth > 1;
+}
+function isRecursiveUsingRealPaths(resolved, state) {
+  return state.visited.includes(resolved + state.options.pathSeparator);
+}
+var onlyCountsSync = (state) => {
+  return state.counts;
+};
+var groupsSync = (state) => {
+  return state.groups;
+};
+var defaultSync = (state) => {
+  return state.paths;
+};
+var limitFilesSync = (state) => {
+  return state.paths.slice(0, state.options.maxFiles);
+};
+var onlyCountsAsync = (state, error, callback$1) => {
+  report(error, callback$1, state.counts, state.options.suppressErrors);
+  return null;
+};
+var defaultAsync = (state, error, callback$1) => {
+  report(error, callback$1, state.paths, state.options.suppressErrors);
+  return null;
+};
+var limitFilesAsync = (state, error, callback$1) => {
+  report(error, callback$1, state.paths.slice(0, state.options.maxFiles), state.options.suppressErrors);
+  return null;
+};
+var groupsAsync = (state, error, callback$1) => {
+  report(error, callback$1, state.groups, state.options.suppressErrors);
+  return null;
+};
+function report(error, callback$1, output, suppressErrors) {
+  if (error && !suppressErrors) callback$1(error, output);
+  else callback$1(null, output);
+}
+function build$1(options, isSynchronous) {
+  const { onlyCounts, group, maxFiles } = options;
+  if (onlyCounts) return isSynchronous ? onlyCountsSync : onlyCountsAsync;
+  else if (group) return isSynchronous ? groupsSync : groupsAsync;
+  else if (maxFiles) return isSynchronous ? limitFilesSync : limitFilesAsync;
+  else return isSynchronous ? defaultSync : defaultAsync;
+}
+var readdirOpts = { withFileTypes: true };
+var walkAsync = (state, crawlPath, directoryPath, currentDepth, callback$1) => {
+  state.queue.enqueue();
+  if (currentDepth < 0) return state.queue.dequeue(null, state);
+  const { fs: fs2 } = state;
+  state.visited.push(crawlPath);
+  state.counts.directories++;
+  fs2.readdir(crawlPath || ".", readdirOpts, (error, entries = []) => {
+    callback$1(entries, directoryPath, currentDepth);
+    state.queue.dequeue(state.options.suppressErrors ? null : error, state);
+  });
+};
+var walkSync = (state, crawlPath, directoryPath, currentDepth, callback$1) => {
+  const { fs: fs2 } = state;
+  if (currentDepth < 0) return;
+  state.visited.push(crawlPath);
+  state.counts.directories++;
+  let entries = [];
+  try {
+    entries = fs2.readdirSync(crawlPath || ".", readdirOpts);
+  } catch (e) {
+    if (!state.options.suppressErrors) throw e;
+  }
+  callback$1(entries, directoryPath, currentDepth);
+};
+function build(isSynchronous) {
+  return isSynchronous ? walkSync : walkAsync;
+}
+var Queue = class {
+  count = 0;
+  constructor(onQueueEmpty) {
+    this.onQueueEmpty = onQueueEmpty;
+  }
+  enqueue() {
+    this.count++;
+    return this.count;
+  }
+  dequeue(error, output) {
+    if (this.onQueueEmpty && (--this.count <= 0 || error)) {
+      this.onQueueEmpty(error, output);
+      if (error) {
+        output.controller.abort();
+        this.onQueueEmpty = void 0;
+      }
+    }
+  }
+};
+var Counter = class {
+  _files = 0;
+  _directories = 0;
+  set files(num) {
+    this._files = num;
+  }
+  get files() {
+    return this._files;
+  }
+  set directories(num) {
+    this._directories = num;
+  }
+  get directories() {
+    return this._directories;
+  }
+  /**
+  * @deprecated use `directories` instead
+  */
+  /* c8 ignore next 3 */
+  get dirs() {
+    return this._directories;
+  }
+};
+var Aborter = class {
+  aborted = false;
+  abort() {
+    this.aborted = true;
+  }
+};
+var Walker = class {
+  root;
+  isSynchronous;
+  state;
+  joinPath;
+  pushDirectory;
+  pushFile;
+  getArray;
+  groupFiles;
+  resolveSymlink;
+  walkDirectory;
+  callbackInvoker;
+  constructor(root, options, callback$1) {
+    this.isSynchronous = !callback$1;
+    this.callbackInvoker = build$1(options, this.isSynchronous);
+    this.root = normalizePath(root, options);
+    this.state = {
+      root: isRootDirectory(this.root) ? this.root : this.root.slice(0, -1),
+      paths: [""].slice(0, 0),
+      groups: [],
+      counts: new Counter(),
+      options,
+      queue: new Queue((error, state) => this.callbackInvoker(state, error, callback$1)),
+      symlinks: /* @__PURE__ */ new Map(),
+      visited: [""].slice(0, 0),
+      controller: new Aborter(),
+      fs: options.fs || nativeFs
+    };
+    this.joinPath = build$7(this.root, options);
+    this.pushDirectory = build$6(this.root, options);
+    this.pushFile = build$5(options);
+    this.getArray = build$4(options);
+    this.groupFiles = build$3(options);
+    this.resolveSymlink = build$2(options, this.isSynchronous);
+    this.walkDirectory = build(this.isSynchronous);
+  }
+  start() {
+    this.pushDirectory(this.root, this.state.paths, this.state.options.filters);
+    this.walkDirectory(this.state, this.root, this.root, this.state.options.maxDepth, this.walk);
+    return this.isSynchronous ? this.callbackInvoker(this.state, null) : null;
+  }
+  walk = (entries, directoryPath, depth) => {
+    const { paths, options: { filters, resolveSymlinks: resolveSymlinks$1, excludeSymlinks, exclude, maxFiles, signal, useRealPaths, pathSeparator }, controller } = this.state;
+    if (controller.aborted || signal && signal.aborted || maxFiles && paths.length > maxFiles) return;
+    const files = this.getArray(this.state.paths);
+    for (let i = 0; i < entries.length; ++i) {
+      const entry = entries[i];
+      if (entry.isFile() || entry.isSymbolicLink() && !resolveSymlinks$1 && !excludeSymlinks) {
+        const filename = this.joinPath(entry.name, directoryPath);
+        this.pushFile(filename, files, this.state.counts, filters);
+      } else if (entry.isDirectory()) {
+        let path2 = joinDirectoryPath(entry.name, directoryPath, this.state.options.pathSeparator);
+        if (exclude && exclude(entry.name, path2)) continue;
+        this.pushDirectory(path2, paths, filters);
+        this.walkDirectory(this.state, path2, path2, depth - 1, this.walk);
+      } else if (this.resolveSymlink && entry.isSymbolicLink()) {
+        let path2 = joinPathWithBasePath(entry.name, directoryPath);
+        this.resolveSymlink(path2, this.state, (stat, resolvedPath) => {
+          if (stat.isDirectory()) {
+            resolvedPath = normalizePath(resolvedPath, this.state.options);
+            if (exclude && exclude(entry.name, useRealPaths ? resolvedPath : path2 + pathSeparator)) return;
+            this.walkDirectory(this.state, resolvedPath, useRealPaths ? resolvedPath : path2 + pathSeparator, depth - 1, this.walk);
+          } else {
+            resolvedPath = useRealPaths ? resolvedPath : path2;
+            const filename = (0, import_path.basename)(resolvedPath);
+            const directoryPath$1 = normalizePath((0, import_path.dirname)(resolvedPath), this.state.options);
+            resolvedPath = this.joinPath(filename, directoryPath$1);
+            this.pushFile(resolvedPath, files, this.state.counts, filters);
+          }
+        });
+      }
+    }
+    this.groupFiles(this.state.groups, directoryPath, files);
+  };
+};
+function promise(root, options) {
+  return new Promise((resolve$1, reject) => {
+    callback(root, options, (err, output) => {
+      if (err) return reject(err);
+      resolve$1(output);
+    });
+  });
+}
+function callback(root, options, callback$1) {
+  let walker = new Walker(root, options, callback$1);
+  walker.start();
+}
+function sync(root, options) {
+  const walker = new Walker(root, options);
+  return walker.start();
+}
+var APIBuilder = class {
+  constructor(root, options) {
+    this.root = root;
+    this.options = options;
+  }
+  withPromise() {
+    return promise(this.root, this.options);
+  }
+  withCallback(cb) {
+    callback(this.root, this.options, cb);
+  }
+  sync() {
+    return sync(this.root, this.options);
+  }
+};
+var pm = null;
+try {
+  __require.resolve("picomatch");
+  pm = __require("picomatch");
+} catch {
+}
+var Builder = class {
+  globCache = {};
+  options = {
+    maxDepth: Infinity,
+    suppressErrors: true,
+    pathSeparator: import_path.sep,
+    filters: []
+  };
+  globFunction;
+  constructor(options) {
+    this.options = {
+      ...this.options,
+      ...options
+    };
+    this.globFunction = this.options.globFunction;
+  }
+  group() {
+    this.options.group = true;
+    return this;
+  }
+  withPathSeparator(separator) {
+    this.options.pathSeparator = separator;
+    return this;
+  }
+  withBasePath() {
+    this.options.includeBasePath = true;
+    return this;
+  }
+  withRelativePaths() {
+    this.options.relativePaths = true;
+    return this;
+  }
+  withDirs() {
+    this.options.includeDirs = true;
+    return this;
+  }
+  withMaxDepth(depth) {
+    this.options.maxDepth = depth;
+    return this;
+  }
+  withMaxFiles(limit) {
+    this.options.maxFiles = limit;
+    return this;
+  }
+  withFullPaths() {
+    this.options.resolvePaths = true;
+    this.options.includeBasePath = true;
+    return this;
+  }
+  withErrors() {
+    this.options.suppressErrors = false;
+    return this;
+  }
+  withSymlinks({ resolvePaths = true } = {}) {
+    this.options.resolveSymlinks = true;
+    this.options.useRealPaths = resolvePaths;
+    return this.withFullPaths();
+  }
+  withAbortSignal(signal) {
+    this.options.signal = signal;
+    return this;
+  }
+  normalize() {
+    this.options.normalizePath = true;
+    return this;
+  }
+  filter(predicate) {
+    this.options.filters.push(predicate);
+    return this;
+  }
+  onlyDirs() {
+    this.options.excludeFiles = true;
+    this.options.includeDirs = true;
+    return this;
+  }
+  exclude(predicate) {
+    this.options.exclude = predicate;
+    return this;
+  }
+  onlyCounts() {
+    this.options.onlyCounts = true;
+    return this;
+  }
+  crawl(root) {
+    return new APIBuilder(root || ".", this.options);
+  }
+  withGlobFunction(fn) {
+    this.globFunction = fn;
+    return this;
+  }
+  /**
+  * @deprecated Pass options using the constructor instead:
+  * ```ts
+  * new fdir(options).crawl("/path/to/root");
+  * ```
+  * This method will be removed in v7.0
+  */
+  /* c8 ignore next 4 */
+  crawlWithOptions(root, options) {
+    this.options = {
+      ...this.options,
+      ...options
+    };
+    return new APIBuilder(root || ".", this.options);
+  }
+  glob(...patterns) {
+    if (this.globFunction) return this.globWithOptions(patterns);
+    return this.globWithOptions(patterns, ...[{ dot: true }]);
+  }
+  globWithOptions(patterns, ...options) {
+    const globFn = this.globFunction || pm;
+    if (!globFn) throw new Error("Please specify a glob function to use glob matching.");
+    var isMatch = this.globCache[patterns.join("\0")];
+    if (!isMatch) {
+      isMatch = globFn(patterns, ...options);
+      this.globCache[patterns.join("\0")] = isMatch;
+    }
+    this.options.filters.push((path2) => isMatch(path2));
+    return this;
+  }
+};
+
+// src/file-search-service.ts
+var import_picomatch = __toESM(require_picomatch2(), 1);
 var ALWAYS_IGNORED_DIRS = [
   "node_modules",
   ".git",
@@ -41774,9 +43807,6 @@ function fuzzyMatch(query, target) {
 var FileSearchService = class {
   indexes = /* @__PURE__ */ new Map();
   cacheTtl;
-  // Lazily loaded modules
-  fdirClass = null;
-  picomatchFn = null;
   constructor(options = {}) {
     this.cacheTtl = options.cacheTtl ?? 5 * 60 * 1e3;
   }
@@ -41806,20 +43836,6 @@ var FileSearchService = class {
   // ===========================================================================
   // Private Methods
   // ===========================================================================
-  async loadFdir() {
-    if (!this.fdirClass) {
-      const mod = await import("fdir");
-      this.fdirClass = mod.fdir;
-    }
-    return this.fdirClass;
-  }
-  async loadPicomatch() {
-    if (!this.picomatchFn) {
-      const mod = await import("picomatch");
-      this.picomatchFn = mod.default;
-    }
-    return this.picomatchFn;
-  }
   async getIndex(cwd, includeDirs) {
     const key = `${cwd}:${includeDirs}`;
     const cached = this.indexes.get(key);
@@ -41831,13 +43847,11 @@ var FileSearchService = class {
     return { files, freshIndex: true };
   }
   async buildIndex(cwd, includeDirs) {
-    const fdir = await this.loadFdir();
-    const picomatch = await this.loadPicomatch();
     const ignorePatterns = await this.loadIgnorePatterns(cwd);
     const allIgnorePatterns = [...ALWAYS_IGNORED_PATTERNS, ...ignorePatterns];
-    const isIgnoredFile = picomatch(allIgnorePatterns, { dot: true });
+    const isIgnoredFile = (0, import_picomatch.default)(allIgnorePatterns, { dot: true });
     const ignoredDirSet = new Set(ALWAYS_IGNORED_DIRS);
-    const crawler = new fdir().withRelativePaths().exclude((dirName) => {
+    const crawler = new Builder().withRelativePaths().exclude((dirName) => {
       return ignoredDirSet.has(dirName);
     });
     if (includeDirs) {
@@ -41870,8 +43884,7 @@ var FileSearchService = class {
       }));
     }
     if (query.includes("*") || query.includes("?")) {
-      const picomatch = await this.loadPicomatch();
-      const matcher = picomatch(query, { nocase: true, dot: true });
+      const matcher = (0, import_picomatch.default)(query, { nocase: true, dot: true });
       return files.filter((f) => matcher(f)).slice(0, maxResults).map((path2) => ({
         path: path2,
         type: this.getType(path2),
@@ -42669,7 +44682,7 @@ var ClientConnection = class {
         arguments: args
       }
     });
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       const timeout = setTimeout(() => {
         this.pendingToolCallRequests.delete(callbackId);
         reject(new Error("Tool call request timeout"));
@@ -42677,7 +44690,7 @@ var ClientConnection = class {
       this.pendingToolCallRequests.set(callbackId, {
         resolve: (result) => {
           clearTimeout(timeout);
-          resolve2(result);
+          resolve3(result);
         },
         reject: (error) => {
           clearTimeout(timeout);
@@ -42698,7 +44711,7 @@ var ClientConnection = class {
         permissionRequest: request
       }
     });
-    return new Promise((resolve2, reject) => {
+    return new Promise((resolve3, reject) => {
       const timeout = setTimeout(() => {
         this.pendingPermissionRequests.delete(callbackId);
         reject(new Error("Permission request timeout"));
@@ -42706,7 +44719,7 @@ var ClientConnection = class {
       this.pendingPermissionRequests.set(callbackId, {
         resolve: (result) => {
           clearTimeout(timeout);
-          resolve2(result);
+          resolve3(result);
         },
         reject: (error) => {
           clearTimeout(timeout);
