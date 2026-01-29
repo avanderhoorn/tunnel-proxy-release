@@ -45576,7 +45576,7 @@ function createLogCallback(logger) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.1.3";
+var CURRENT_VERSION = "0.1.4";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";
