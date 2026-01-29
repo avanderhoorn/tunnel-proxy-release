@@ -44455,7 +44455,7 @@ async function clearTunnelConfig() {
 }
 
 // src/tunnel-adapter.ts
-var DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS = 30;
+var DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS = 5;
 var DEFAULT_CONNECTION_TIMEOUT_MS = 3e4;
 var NETWORK_CHECK_INTERVAL_MS = 5e3;
 var MIN_RETRY_DELAY_MS = 1e3;
@@ -44476,8 +44476,12 @@ var DevTunnelHostAdapter = class {
   disconnectHandlers = [];
   clientCounter = 0;
   clients = /* @__PURE__ */ new Map();
+  disconnectedClients = /* @__PURE__ */ new Set();
+  // Track already-disconnected clients to avoid duplicate notifications
   isDisposed = false;
   username;
+  hasEverConnected = false;
+  // Track initial connection for logging
   // Network monitoring state
   lastNetworkInterfaces = "";
   networkCheckTimer = null;
@@ -44576,11 +44580,20 @@ var DevTunnelHostAdapter = class {
    */
   handleConnectionStatusChange(status, reason) {
     if (status === "disconnected") {
-      this.log("info", "Tunnel disconnected");
+      this.log("info", "Tunnel disconnected" + (reason ? ` (${reason})` : ""));
       this.startNetworkMonitoring();
+      if (this.clients.size > 0) {
+        this.log("info", `Closing ${this.clients.size} orphaned client connection(s)`);
+        for (const [clientId, socket] of this.clients) {
+          this.disconnectedClients.add(clientId);
+          socket.destroy();
+        }
+      }
     } else if (status === "connected") {
-      if (this.retryCount > 0) {
+      if (this.hasEverConnected) {
         this.log("info", "Tunnel reconnected");
+      } else {
+        this.hasEverConnected = true;
       }
       this.stopNetworkMonitoring();
       this.retryCount = 0;
@@ -44639,6 +44652,31 @@ var DevTunnelHostAdapter = class {
       enableReconnect: true
     };
     await this.connectWithTimeout(connectionOptions, DEFAULT_CONNECTION_TIMEOUT_MS);
+    this.setupHostKeepAlive();
+  }
+  /**
+   * Workaround for Dev Tunnels SDK bug: manually configure keepAlive on the host's SSH session.
+   * The SDK only configures keepAlive for client→host sessions, not host→relay sessions.
+   */
+  setupHostKeepAlive() {
+    const sshSession = this.host?.sshSession;
+    if (!sshSession?.config || !sshSession.startKeepAliveTimer) {
+      this.log("warn", "Unable to configure host keepAlive - sshSession not accessible");
+      return;
+    }
+    sshSession.config.keepAliveTimeoutInSeconds = DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS;
+    sshSession.onKeepAliveSucceeded?.(() => {
+      this.log("debug", `KeepAlive success (count: ${sshSession.keepAliveSuccessCount})`);
+    });
+    sshSession.onKeepAliveFailed?.(() => {
+      const failureCount = sshSession.keepAliveFailureCount ?? 0;
+      this.log("warn", `KeepAlive failed (count: ${failureCount})`);
+      if (failureCount >= 3) {
+        this.log("error", "Multiple keepAlive failures - connection may be stale");
+      }
+    });
+    sshSession.startKeepAliveTimer();
+    this.log("debug", `Host keepAlive configured (interval: ${DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS}s)`);
   }
   async start() {
     if (this.server) {
@@ -44798,8 +44836,11 @@ var DevTunnelHostAdapter = class {
     this.isDisposed = true;
     this.stopNetworkMonitoring();
     for (const [clientId, socket] of this.clients) {
-      socket.destroy();
-      this.disconnectHandlers.forEach((h) => h(clientId));
+      if (!this.disconnectedClients.has(clientId)) {
+        this.disconnectedClients.add(clientId);
+        socket.destroy();
+        this.disconnectHandlers.forEach((h) => h(clientId));
+      }
     }
     this.clients.clear();
     if (this.host) {
@@ -44814,6 +44855,7 @@ var DevTunnelHostAdapter = class {
       });
       this.server = null;
     }
+    this.disconnectedClients.clear();
   }
   onClientConnected(handler) {
     this.clientHandlers.push(handler);
@@ -44845,12 +44887,23 @@ var DevTunnelHostAdapter = class {
         this.log("debug", `Client ${clientId} connected (total clients: ${this.clients.size})`);
         this.clientHandlers.forEach((h) => h(socket, clientId));
         socket.on("close", (hadError) => {
+          if (this.disconnectedClients.has(clientId)) {
+            this.log("debug", `Client ${clientId} already notified, skipping duplicate close event`);
+            this.clients.delete(clientId);
+            return;
+          }
+          this.disconnectedClients.add(clientId);
           const reason = hadError ? "connection_error" : "remote_closed";
           this.log("debug", `Client ${clientId} disconnected (${reason})`);
           this.clients.delete(clientId);
           this.disconnectHandlers.forEach((h) => h(clientId));
         });
         socket.on("error", (err) => {
+          if (this.disconnectedClients.has(clientId)) {
+            this.log("debug", `Client ${clientId} already notified, skipping duplicate error event`);
+            return;
+          }
+          this.disconnectedClients.add(clientId);
           this.log("warn", `Client ${clientId} socket error: ${err.message}`);
           this.clients.delete(clientId);
           this.disconnectHandlers.forEach((h) => h(clientId));
@@ -47028,6 +47081,8 @@ var ClientConnection = class {
   pendingToolCallRequests = /* @__PURE__ */ new Map();
   pendingPermissionRequests = /* @__PURE__ */ new Map();
   nextCallbackId = 1;
+  // Guard against double cleanup
+  isCleanedUp = false;
   log(level, message) {
     if (level === "debug" && this.logLevel !== "debug") {
       return;
@@ -47089,35 +47144,43 @@ var ClientConnection = class {
   stop() {
     this.cleanup();
   }
-  async cleanup() {
+  cleanup() {
+    if (this.isCleanedUp) {
+      this.log("debug", `[${this.clientId}] Cleanup already done, skipping`);
+      return;
+    }
+    this.isCleanedUp = true;
     for (const unsubscribe of this.sessionUnsubscribers.values()) {
       unsubscribe();
     }
     this.sessionUnsubscribers.clear();
-    for (const [sessionId, session] of this.sessions) {
-      try {
-        await session.destroy();
-      } catch (err) {
-        this.log("error", `[${this.clientId}] Failed to destroy session ${sessionId}: ${err}`);
-      }
+    if (this.sessions.size > 0) {
+      this.log("debug", `[${this.clientId}] Clearing ${this.sessions.size} session(s)`);
     }
     this.sessions.clear();
     this.sessionCwds.clear();
     this.sessionTools.clear();
-    for (const [cwd, client] of this.clientPool) {
-      try {
-        await client.stop();
-      } catch (err) {
-        this.log("error", `[${this.clientId}] Failed to stop SDK client (cwd: ${cwd}): ${err}`);
-      }
-    }
-    this.clientPool.clear();
+    void this.stopClients();
     if (!this.clientStream.destroyed) {
       try {
         this.clientStream.destroy();
       } catch {
       }
     }
+  }
+  /**
+   * Stop all CopilotClients in the pool.
+   * Separated to handle async cleanup without blocking the main cleanup flow.
+   */
+  async stopClients() {
+    for (const [cwd, client] of this.clientPool) {
+      try {
+        await client.stop();
+      } catch (err) {
+        this.log("debug", `[${this.clientId}] SDK client stop error (cwd: ${cwd}): ${err}`);
+      }
+    }
+    this.clientPool.clear();
   }
   handleClientData(data) {
     this.receiveBuffer = Buffer.concat([this.receiveBuffer, data]);
@@ -47833,7 +47896,7 @@ function createLogCallback(logger) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.1.6";
+var CURRENT_VERSION = "0.1.7";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";
@@ -47982,11 +48045,28 @@ async function runHost(options) {
   logger.info(`Cluster:   ${tunnelInfo.clusterId}`);
   logger.info(`Port:      ${tunnelInfo.port}`);
   logger.blank();
+  let isShuttingDown = false;
   const shutdown = async () => {
+    if (isShuttingDown) return;
+    isShuttingDown = true;
     logger.blank();
     logger.info("Shutting down...");
-    await proxyHost.stop();
-    await tunnelAdapter.stop();
+    const ignoreShutdownErrors = (err) => {
+      if (err.message?.includes("stream was destroyed") || err.message?.includes("ERR_STREAM_DESTROYED")) {
+        return;
+      }
+      logger.warn(`Shutdown error: ${err.message}`);
+    };
+    process.on("uncaughtException", ignoreShutdownErrors);
+    process.on("unhandledRejection", ignoreShutdownErrors);
+    try {
+      await proxyHost.stop();
+    } catch {
+    }
+    try {
+      await tunnelAdapter.stop();
+    } catch {
+    }
     process.exit(0);
   };
   process.on("SIGINT", shutdown);

@@ -60,8 +60,10 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
     private disconnectHandlers;
     private clientCounter;
     private clients;
+    private disconnectedClients;
     private isDisposed;
     private username;
+    private hasEverConnected;
     private lastNetworkInterfaces;
     private networkCheckTimer;
     private isNetworkAvailable;
@@ -108,6 +110,11 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
      * Connect to the tunnel relay and set up event handlers.
      */
     private connectToTunnel;
+    /**
+     * Workaround for Dev Tunnels SDK bug: manually configure keepAlive on the host's SSH session.
+     * The SDK only configures keepAlive for client→host sessions, not host→relay sessions.
+     */
+    private setupHostKeepAlive;
     start(): Promise<TunnelInfo>;
     stop(): Promise<void>;
     onClientConnected(handler: (stream: Duplex, clientId: string) => void): () => void;
