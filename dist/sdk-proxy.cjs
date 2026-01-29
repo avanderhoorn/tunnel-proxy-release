@@ -44706,11 +44706,226 @@ function encodeJsonRpcMessageToBuffer(message) {
   return Buffer.from(header + json, "utf-8");
 }
 
+// src/file-search-service.ts
+var import_promises = require("fs/promises");
+var import_node_path = require("path");
+var ALWAYS_IGNORED_DIRS = [
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  ".next",
+  "coverage",
+  "__pycache__",
+  ".cache",
+  ".turbo",
+  ".parcel-cache",
+  "out",
+  ".svn",
+  ".hg",
+  "vendor",
+  ".venv",
+  "venv",
+  ".tox"
+];
+var ALWAYS_IGNORED_PATTERNS = [
+  "*.pyc",
+  "*.pyo",
+  "*.class",
+  "*.o",
+  "*.obj",
+  "*.swp",
+  "*.swo",
+  "*~",
+  ".DS_Store",
+  "Thumbs.db",
+  "*.log",
+  "*.tmp",
+  "*.lock",
+  "package-lock.json",
+  "yarn.lock",
+  "pnpm-lock.yaml"
+];
+function fuzzyMatch(query, target) {
+  const lowerQuery = query.toLowerCase();
+  const lowerTarget = target.toLowerCase();
+  let queryIdx = 0;
+  let score = 0;
+  let consecutiveMatches = 0;
+  let lastMatchIdx = -1;
+  for (let i = 0; i < lowerTarget.length && queryIdx < lowerQuery.length; i++) {
+    if (lowerTarget[i] === lowerQuery[queryIdx]) {
+      if (lastMatchIdx === i - 1) {
+        consecutiveMatches++;
+        score += consecutiveMatches * 2;
+      } else {
+        consecutiveMatches = 1;
+        score += 1;
+      }
+      if (i === 0 || lowerTarget[i - 1] === "/" || lowerTarget[i - 1] === "-" || lowerTarget[i - 1] === "_" || lowerTarget[i - 1] === ".") {
+        score += 5;
+      }
+      lastMatchIdx = i;
+      queryIdx++;
+    }
+  }
+  return {
+    match: queryIdx === lowerQuery.length,
+    score
+  };
+}
+var FileSearchService = class {
+  indexes = /* @__PURE__ */ new Map();
+  cacheTtl;
+  // Lazily loaded modules
+  fdirClass = null;
+  picomatchFn = null;
+  constructor(options = {}) {
+    this.cacheTtl = options.cacheTtl ?? 5 * 60 * 1e3;
+  }
+  /**
+   * Search for files matching a query.
+   */
+  async search(request) {
+    const { query, cwd, maxResults = 50, includeDirs = false } = request;
+    const { files, freshIndex } = await this.getIndex(cwd, includeDirs);
+    const results = await this.performSearch(files, query, maxResults);
+    return {
+      results,
+      totalIndexed: files.length,
+      freshIndex
+    };
+  }
+  /**
+   * Force refresh index for a working directory.
+   */
+  invalidate(cwd) {
+    for (const key of this.indexes.keys()) {
+      if (key.startsWith(cwd)) {
+        this.indexes.delete(key);
+      }
+    }
+  }
+  // ===========================================================================
+  // Private Methods
+  // ===========================================================================
+  async loadFdir() {
+    if (!this.fdirClass) {
+      const mod = await import("fdir");
+      this.fdirClass = mod.fdir;
+    }
+    return this.fdirClass;
+  }
+  async loadPicomatch() {
+    if (!this.picomatchFn) {
+      const mod = await import("picomatch");
+      this.picomatchFn = mod.default;
+    }
+    return this.picomatchFn;
+  }
+  async getIndex(cwd, includeDirs) {
+    const key = `${cwd}:${includeDirs}`;
+    const cached = this.indexes.get(key);
+    if (cached && Date.now() - cached.createdAt < this.cacheTtl) {
+      return { files: cached.files, freshIndex: false };
+    }
+    const files = await this.buildIndex(cwd, includeDirs);
+    this.indexes.set(key, { files, createdAt: Date.now() });
+    return { files, freshIndex: true };
+  }
+  async buildIndex(cwd, includeDirs) {
+    const fdir = await this.loadFdir();
+    const picomatch = await this.loadPicomatch();
+    const ignorePatterns = await this.loadIgnorePatterns(cwd);
+    const allIgnorePatterns = [...ALWAYS_IGNORED_PATTERNS, ...ignorePatterns];
+    const isIgnoredFile = picomatch(allIgnorePatterns, { dot: true });
+    const ignoredDirSet = new Set(ALWAYS_IGNORED_DIRS);
+    const crawler = new fdir().withRelativePaths().exclude((dirName) => {
+      return ignoredDirSet.has(dirName);
+    });
+    if (includeDirs) {
+      crawler.withDirs();
+    }
+    const allPaths = await crawler.crawl(cwd).withPromise();
+    const filteredFiles = allPaths.filter((filePath) => {
+      const fileName = (0, import_node_path.basename)(filePath);
+      return !isIgnoredFile(fileName);
+    });
+    return filteredFiles;
+  }
+  async loadIgnorePatterns(cwd) {
+    const patterns = [];
+    try {
+      const gitignorePath = (0, import_node_path.join)(cwd, ".gitignore");
+      const content = await (0, import_promises.readFile)(gitignorePath, "utf-8");
+      const lines = content.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
+      patterns.push(...lines);
+    } catch {
+    }
+    return patterns;
+  }
+  async performSearch(files, query, maxResults) {
+    if (!query) {
+      return files.slice().sort((a, b) => a.length - b.length).slice(0, maxResults).map((path2) => ({
+        path: path2,
+        type: this.getType(path2),
+        score: 0
+      }));
+    }
+    if (query.includes("*") || query.includes("?")) {
+      const picomatch = await this.loadPicomatch();
+      const matcher = picomatch(query, { nocase: true, dot: true });
+      return files.filter((f) => matcher(f)).slice(0, maxResults).map((path2) => ({
+        path: path2,
+        type: this.getType(path2),
+        score: 1
+      }));
+    }
+    const results = [];
+    for (const filePath of files) {
+      const { match, score: fuzzyScore } = fuzzyMatch(query, filePath);
+      if (match) {
+        const totalScore = this.calculateScore(filePath, query, fuzzyScore);
+        results.push({ path: filePath, score: totalScore });
+      }
+    }
+    return results.sort((a, b) => b.score - a.score).slice(0, maxResults).map(({ path: path2, score }) => ({
+      path: path2,
+      type: this.getType(path2),
+      score
+    }));
+  }
+  calculateScore(filePath, query, fuzzyScore) {
+    const lowerPath = filePath.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    const filename = (0, import_node_path.basename)(filePath).toLowerCase();
+    if (lowerPath === lowerQuery) {
+      return 1e3 + fuzzyScore;
+    }
+    if (filename === lowerQuery) {
+      return 800 + fuzzyScore;
+    }
+    if (filename.startsWith(lowerQuery)) {
+      return 600 + fuzzyScore;
+    }
+    if (lowerPath.includes("/" + lowerQuery) || lowerPath.includes(lowerQuery + "/")) {
+      return 500 + fuzzyScore;
+    }
+    if (lowerPath.includes(lowerQuery)) {
+      return 400 + fuzzyScore;
+    }
+    return fuzzyScore;
+  }
+  getType(filePath) {
+    return filePath.endsWith("/") ? "directory" : "file";
+  }
+};
+
 // src/jsonrpc-proxy.ts
 var import_node_child_process2 = require("child_process");
-var import_promises = require("fs/promises");
+var import_promises2 = require("fs/promises");
 var import_node_os = require("os");
-var import_node_path = require("path");
+var import_node_path2 = require("path");
 function getGhCliToken() {
   try {
     const token = (0, import_node_child_process2.execSync)("gh auth token", {
@@ -44724,9 +44939,9 @@ function getGhCliToken() {
   }
 }
 async function discoverSessionCwd(sessionId) {
-  const sessionDir = (0, import_node_path.join)((0, import_node_os.homedir)(), ".copilot", "session-state", sessionId);
+  const sessionDir = (0, import_node_path2.join)((0, import_node_os.homedir)(), ".copilot", "session-state", sessionId);
   try {
-    const yaml = await (0, import_promises.readFile)((0, import_node_path.join)(sessionDir, "workspace.yaml"), "utf-8");
+    const yaml = await (0, import_promises2.readFile)((0, import_node_path2.join)(sessionDir, "workspace.yaml"), "utf-8");
     const match = yaml.match(/^cwd:\s*(.+)$/m);
     if (match) {
       return match[1].trim();
@@ -44734,7 +44949,7 @@ async function discoverSessionCwd(sessionId) {
   } catch {
   }
   try {
-    const content = await (0, import_promises.readFile)((0, import_node_path.join)(sessionDir, "events.jsonl"), "utf-8");
+    const content = await (0, import_promises2.readFile)((0, import_node_path2.join)(sessionDir, "events.jsonl"), "utf-8");
     const firstLine = content.slice(0, content.indexOf("\n"));
     if (firstLine.startsWith('{"type":"session.start"')) {
       const cwdMatch = firstLine.match(/"cwd":"([^"]+)"/);
@@ -44794,6 +45009,8 @@ var ClientConnection = class {
   // Pool of CopilotClients keyed by cwd — each unique working directory gets its own CLI process
   clientPool = /* @__PURE__ */ new Map();
   cliEnv = {};
+  // File search service for @-mention file picking
+  fileSearchService = new FileSearchService();
   // Pending callback requests from SDK -> client
   pendingToolCallRequests = /* @__PURE__ */ new Map();
   pendingPermissionRequests = /* @__PURE__ */ new Map();
@@ -44965,6 +45182,10 @@ var ClientConnection = class {
             break;
           case "executeSlashCommand":
             await this.handleExecuteSlashCommand(request);
+            break;
+          // File search
+          case "searchFiles":
+            await this.handleSearchFiles(request);
             break;
           // Session methods
           case "session.send":
@@ -45262,6 +45483,29 @@ var ClientConnection = class {
           type: "error",
           text: `Unknown command: ${cmd.name}`
         };
+    }
+  }
+  // ==========================================================================
+  // File Search
+  // ==========================================================================
+  async handleSearchFiles(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> searchFiles: "${params.query}" in ${params.cwd}`);
+    try {
+      const result = await this.fileSearchService.search(params);
+      this.log("debug", `[${this.clientId}] RPC <- searchFiles: ${result.results.length} results`);
+      this.sendToClient({
+        jsonrpc: "2.0",
+        id: request.id,
+        result
+      });
+    } catch (err) {
+      this.log("error", `[${this.clientId}] File search failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `File search failed: ${err}`);
     }
   }
   // ==========================================================================
@@ -45576,7 +45820,7 @@ function createLogCallback(logger) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.1.4";
+var CURRENT_VERSION = "0.1.5";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";
