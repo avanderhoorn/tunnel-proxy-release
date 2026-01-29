@@ -39936,6 +39936,7 @@ var DEFAULT_CONNECTION_TIMEOUT_MS = 3e4;
 var NETWORK_CHECK_INTERVAL_MS = 5e3;
 var MIN_RETRY_DELAY_MS = 1e3;
 var DNS_TIMEOUT_MS = 5e3;
+var TUNNEL_LABEL = "copilot-tunnel-session";
 var GITHUB_CLIENT_ID = "Iv1.e7b89e013f801f03";
 var GITHUB_SCOPES = "read:user,read:org";
 var GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code";
@@ -40182,8 +40183,69 @@ var DevTunnelHostAdapter = class {
         }
       }
     }
+    this.log("info", "Searching for existing tunnel by label...");
+    const labeledTunnels = await this.managementClient.listTunnels(
+      void 0,
+      // global search (no cluster filter)
+      void 0,
+      // default domain
+      { labels: [TUNNEL_LABEL] }
+    );
+    if (labeledTunnels.length > 0) {
+      labeledTunnels.sort(
+        (a, b) => new Date(b.created ?? 0).getTime() - new Date(a.created ?? 0).getTime()
+      );
+      const foundTunnel = labeledTunnels[0];
+      this.log("info", `Found existing tunnel via label: ${foundTunnel.tunnelId}`);
+      this.tunnel = await this.managementClient.getTunnel(
+        { tunnelId: foundTunnel.tunnelId, clusterId: foundTunnel.clusterId },
+        { tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect], includePorts: true }
+      );
+      if (!this.tunnel) {
+        throw new Error("Failed to fetch tunnel details");
+      }
+      if (this.tunnel.ports && this.tunnel.ports.length > 0) {
+        for (const port of this.tunnel.ports) {
+          if (port.portNumber) {
+            this.log("debug", `Removing old port ${port.portNumber} from tunnel`);
+            try {
+              await this.managementClient.deleteTunnelPort(this.tunnel, port.portNumber);
+            } catch {
+            }
+          }
+        }
+      }
+      this.log("debug", `Adding port ${rpcPort} to tunnel`);
+      await this.managementClient.createTunnelPort(this.tunnel, {
+        portNumber: rpcPort,
+        protocol: "auto"
+      });
+      this.tunnel = await this.managementClient.getTunnel(this.tunnel, {
+        tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
+        includePorts: true
+      });
+      if (!this.tunnel) {
+        throw new Error("Failed to refresh tunnel details");
+      }
+      await saveTunnelConfig({
+        tunnelId: this.tunnel.tunnelId,
+        clusterId: this.tunnel.clusterId,
+        createdAt: (/* @__PURE__ */ new Date()).toISOString()
+      });
+      this.log("debug", "Tunnel config saved");
+      this.log("debug", "Connecting to existing tunnel...");
+      await this.connectToTunnel(rpcPort);
+      this.log("info", "Connected to existing tunnel");
+      return {
+        tunnelId: this.tunnel.tunnelId,
+        clusterId: this.tunnel.clusterId,
+        port: rpcPort,
+        username: this.username
+      };
+    }
     this.log("info", "Creating new tunnel...");
     const tunnelConfig = {
+      labels: [TUNNEL_LABEL],
       ports: [
         { portNumber: rpcPort, protocol: "auto" }
       ]

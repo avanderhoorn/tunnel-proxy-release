@@ -3026,465 +3026,6 @@ var require_commander = __commonJS({
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-connections/tunnelClient.js
-var require_tunnelClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelClient.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/tunnelHost.js
-var require_tunnelHost = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelHost.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessScopes.js
-var require_tunnelAccessScopes = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessScopes.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelAccessScopes = void 0;
-    var TunnelAccessScopes2;
-    (function(TunnelAccessScopes3) {
-      TunnelAccessScopes3["Create"] = "create";
-      TunnelAccessScopes3["Manage"] = "manage";
-      TunnelAccessScopes3["ManagePorts"] = "manage:ports";
-      TunnelAccessScopes3["Host"] = "host";
-      TunnelAccessScopes3["Inspect"] = "inspect";
-      TunnelAccessScopes3["Connect"] = "connect";
-    })(TunnelAccessScopes2 = exports2.TunnelAccessScopes || (exports2.TunnelAccessScopes = {}));
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlStatics.js
-var require_tunnelAccessControlStatics = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlStatics.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.validateScopes = void 0;
-    var tunnelAccessScopes_1 = require_tunnelAccessScopes();
-    var allScopes = [
-      tunnelAccessScopes_1.TunnelAccessScopes.Manage,
-      tunnelAccessScopes_1.TunnelAccessScopes.ManagePorts,
-      tunnelAccessScopes_1.TunnelAccessScopes.Host,
-      tunnelAccessScopes_1.TunnelAccessScopes.Inspect,
-      tunnelAccessScopes_1.TunnelAccessScopes.Connect
-    ];
-    function validateScopes(scopes, validScopes, allowMultiple) {
-      if (!Array.isArray(scopes)) {
-        throw new TypeError("A scopes array was expected.");
-      }
-      if (allowMultiple) {
-        scopes = scopes.map((s) => s.split(" ")).reduce((a, b) => a.concat(b), []);
-      }
-      scopes.forEach((scope) => {
-        if (!scope) {
-          throw new Error("Tunnel access scopes include a null/empty item.");
-        } else if (!allScopes.includes(scope)) {
-          throw new Error("Invalid tunnel access scope: " + scope);
-        }
-      });
-      if (Array.isArray(validScopes)) {
-        scopes.forEach((scope) => {
-          if (!validScopes.includes(scope)) {
-            throw new Error("Tunnel access scope is invalid for current request: scope");
-          }
-        });
-      }
-    }
-    exports2.validateScopes = validateScopes;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControl.js
-var require_tunnelAccessControl = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControl.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelAccessControl = void 0;
-    var tunnelAccessControlStatics_1 = require_tunnelAccessControlStatics();
-    exports2.TunnelAccessControl = {
-      validateScopes: tunnelAccessControlStatics_1.validateScopes
-    };
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntry.js
-var require_tunnelAccessControlEntry = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntry.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelAccessControlEntry = void 0;
-    var TunnelAccessControlEntry;
-    (function(TunnelAccessControlEntry2) {
-      let Providers;
-      (function(Providers2) {
-        Providers2["Microsoft"] = "microsoft";
-        Providers2["GitHub"] = "github";
-        Providers2["Ssh"] = "ssh";
-        Providers2["IPv4"] = "ipv4";
-        Providers2["IPv6"] = "ipv6";
-        Providers2["ServiceTag"] = "service-tag";
-      })(Providers = TunnelAccessControlEntry2.Providers || (TunnelAccessControlEntry2.Providers = {}));
-    })(TunnelAccessControlEntry = exports2.TunnelAccessControlEntry || (exports2.TunnelAccessControlEntry = {}));
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntryType.js
-var require_tunnelAccessControlEntryType = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntryType.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelAccessControlEntryType = void 0;
-    var TunnelAccessControlEntryType;
-    (function(TunnelAccessControlEntryType2) {
-      TunnelAccessControlEntryType2["None"] = "None";
-      TunnelAccessControlEntryType2["Anonymous"] = "Anonymous";
-      TunnelAccessControlEntryType2["Users"] = "Users";
-      TunnelAccessControlEntryType2["Groups"] = "Groups";
-      TunnelAccessControlEntryType2["Organizations"] = "Organizations";
-      TunnelAccessControlEntryType2["Repositories"] = "Repositories";
-      TunnelAccessControlEntryType2["PublicKeys"] = "PublicKeys";
-      TunnelAccessControlEntryType2["IPAddressRanges"] = "IPAddressRanges";
-    })(TunnelAccessControlEntryType = exports2.TunnelAccessControlEntryType || (exports2.TunnelAccessControlEntryType = {}));
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConnectionMode.js
-var require_tunnelConnectionMode = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConnectionMode.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelConnectionMode = void 0;
-    var TunnelConnectionMode;
-    (function(TunnelConnectionMode2) {
-      TunnelConnectionMode2["LocalNetwork"] = "LocalNetwork";
-      TunnelConnectionMode2["TunnelRelay"] = "TunnelRelay";
-    })(TunnelConnectionMode = exports2.TunnelConnectionMode || (exports2.TunnelConnectionMode = {}));
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpointStatics.js
-var require_tunnelEndpointStatics = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpointStatics.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.getPortSshCommand = exports2.getPortUri = void 0;
-    var tunnelEndpoint_1 = require_tunnelEndpoint();
-    function getPortUri(endpoint, portNumber) {
-      if (!endpoint) {
-        throw new TypeError("A tunnel endpoint is required.");
-      }
-      if (typeof portNumber !== "number" && !endpoint.tunnelUri) {
-        return endpoint.tunnelUri;
-      }
-      if (typeof portNumber !== "number" || !endpoint.portUriFormat) {
-        return void 0;
-      }
-      return endpoint.portUriFormat.replace(tunnelEndpoint_1.portToken, portNumber.toString());
-    }
-    exports2.getPortUri = getPortUri;
-    function getPortSshCommand(endpoint, portNumber) {
-      if (!endpoint) {
-        throw new TypeError("A tunnel endpoint is required.");
-      }
-      if (typeof portNumber !== "number" && !endpoint.tunnelSshCommand) {
-        return endpoint.tunnelSshCommand;
-      }
-      if (typeof portNumber !== "number" || !endpoint.portSshCommandFormat) {
-        return void 0;
-      }
-      return endpoint.portSshCommandFormat.replace(tunnelEndpoint_1.portToken, portNumber.toString());
-    }
-    exports2.getPortSshCommand = getPortSshCommand;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpoint.js
-var require_tunnelEndpoint = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpoint.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelEndpoint = exports2.portToken = void 0;
-    exports2.portToken = "{port}";
-    var tunnelEndpointStatics_1 = require_tunnelEndpointStatics();
-    exports2.TunnelEndpoint = {
-      portToken: exports2.portToken,
-      getPortUri: tunnelEndpointStatics_1.getPortUri,
-      getPortSshCommand: tunnelEndpointStatics_1.getPortSshCommand
-    };
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEvent.js
-var require_tunnelEvent = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEvent.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelEvent = exports2.error = exports2.warning = exports2.info = void 0;
-    exports2.info = "info";
-    exports2.warning = "warning";
-    exports2.error = "error";
-    exports2.TunnelEvent = {
-      info: exports2.info,
-      warning: exports2.warning,
-      error: exports2.error
-    };
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelHeaderNames.js
-var require_tunnelHeaderNames = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelHeaderNames.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelHeaderNames = void 0;
-    var TunnelHeaderNames;
-    (function(TunnelHeaderNames2) {
-      TunnelHeaderNames2["XTunnelAuthorization"] = "X-Tunnel-Authorization";
-      TunnelHeaderNames2["XRequestID"] = "X-Request-ID";
-      TunnelHeaderNames2["XGithubSshKey"] = "X-Github-Ssh-Key";
-      TunnelHeaderNames2["XTunnelSkipAntiPhishingPage"] = "X-Tunnel-Skip-AntiPhishing-Page";
-    })(TunnelHeaderNames = exports2.TunnelHeaderNames || (exports2.TunnelHeaderNames = {}));
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProtocol.js
-var require_tunnelProtocol = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProtocol.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelProtocol = void 0;
-    var TunnelProtocol;
-    (function(TunnelProtocol2) {
-      TunnelProtocol2["Auto"] = "auto";
-      TunnelProtocol2["Tcp"] = "tcp";
-      TunnelProtocol2["Udp"] = "udp";
-      TunnelProtocol2["Ssh"] = "ssh";
-      TunnelProtocol2["Rdp"] = "rdp";
-      TunnelProtocol2["Http"] = "http";
-      TunnelProtocol2["Https"] = "https";
-    })(TunnelProtocol = exports2.TunnelProtocol || (exports2.TunnelProtocol = {}));
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServicePropertiesStatics.js
-var require_tunnelServicePropertiesStatics = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServicePropertiesStatics.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.environment = exports2.development = exports2.staging = exports2.production = void 0;
-    var tunnelServiceProperties_1 = require_tunnelServiceProperties();
-    exports2.production = {
-      serviceUri: `https://${tunnelServiceProperties_1.prodDnsName}/`,
-      serviceAppId: tunnelServiceProperties_1.prodFirstPartyAppId,
-      serviceInternalAppId: tunnelServiceProperties_1.prodThirdPartyAppId,
-      gitHubAppClientId: tunnelServiceProperties_1.prodGitHubAppClientId
-    };
-    exports2.staging = {
-      serviceUri: `https://${tunnelServiceProperties_1.ppeDnsName}/`,
-      serviceAppId: tunnelServiceProperties_1.ppeFirstPartyAppId,
-      serviceInternalAppId: tunnelServiceProperties_1.ppeThirdPartyAppId,
-      gitHubAppClientId: tunnelServiceProperties_1.nonProdGitHubAppClientId
-    };
-    exports2.development = {
-      serviceUri: `https://${tunnelServiceProperties_1.devDnsName}/`,
-      serviceAppId: tunnelServiceProperties_1.devFirstPartyAppId,
-      serviceInternalAppId: tunnelServiceProperties_1.devThirdPartyAppId,
-      gitHubAppClientId: tunnelServiceProperties_1.nonProdGitHubAppClientId
-    };
-    function environment(environmentName) {
-      if (!environmentName) {
-        throw new Error(`Invalid argument: ${environmentName}`);
-      }
-      switch (environmentName.toLowerCase()) {
-        case "prod":
-        case "production":
-          return exports2.production;
-        case "ppe":
-        case "preprod":
-          return exports2.staging;
-        case "dev":
-        case "development":
-          return exports2.development;
-        default:
-          throw new Error(`Invalid service environment: ${environmentName}`);
-      }
-    }
-    exports2.environment = environment;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServiceProperties.js
-var require_tunnelServiceProperties = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServiceProperties.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelServiceProperties = exports2.nonProdGitHubAppClientId = exports2.prodGitHubAppClientId = exports2.devThirdPartyAppId = exports2.ppeThirdPartyAppId = exports2.prodThirdPartyAppId = exports2.devFirstPartyAppId = exports2.ppeFirstPartyAppId = exports2.prodFirstPartyAppId = exports2.devDnsName = exports2.ppeDnsName = exports2.prodDnsName = void 0;
-    exports2.prodDnsName = "global.rel.tunnels.api.visualstudio.com";
-    exports2.ppeDnsName = "global.rel.tunnels.ppe.api.visualstudio.com";
-    exports2.devDnsName = "global.ci.tunnels.dev.api.visualstudio.com";
-    exports2.prodFirstPartyAppId = "46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2";
-    exports2.ppeFirstPartyAppId = "54c45752-bacd-424a-b928-652f3eca2b18";
-    exports2.devFirstPartyAppId = "9c63851a-ba2b-40a5-94bd-890be43b9284";
-    exports2.prodThirdPartyAppId = "ce65d243-a913-4cae-a7dd-cb52e9f77647";
-    exports2.ppeThirdPartyAppId = "544167a6-f431-4518-aac6-2fd50071928e";
-    exports2.devThirdPartyAppId = "a118c979-0249-44bb-8f95-eb0457127aeb";
-    exports2.prodGitHubAppClientId = "Iv1.e7b89e013f801f03";
-    exports2.nonProdGitHubAppClientId = "Iv1.b231c327f1eaa229";
-    var tunnelServicePropertiesStatics_1 = require_tunnelServicePropertiesStatics();
-    exports2.TunnelServiceProperties = {
-      production: tunnelServicePropertiesStatics_1.production,
-      staging: tunnelServicePropertiesStatics_1.staging,
-      development: tunnelServicePropertiesStatics_1.development,
-      environment: tunnelServicePropertiesStatics_1.environment
-    };
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConstraints.js
-var require_tunnelConstraints = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConstraints.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelConstraints = void 0;
-    var TunnelConstraints;
-    (function(TunnelConstraints2) {
-      TunnelConstraints2.clusterIdMinLength = 3;
-      TunnelConstraints2.clusterIdMaxLength = 12;
-      TunnelConstraints2.oldTunnelIdLength = 8;
-      TunnelConstraints2.newTunnelIdMinLength = 3;
-      TunnelConstraints2.newTunnelIdMaxLength = 60;
-      TunnelConstraints2.tunnelAliasLength = 8;
-      TunnelConstraints2.tunnelNameMinLength = 3;
-      TunnelConstraints2.tunnelNameMaxLength = 60;
-      TunnelConstraints2.descriptionMaxLength = 400;
-      TunnelConstraints2.eventDetailsMaxLength = 4e3;
-      TunnelConstraints2.maxEventProperties = 100;
-      TunnelConstraints2.eventPropertyValueMaxLength = 4e3;
-      TunnelConstraints2.labelMinLength = 1;
-      TunnelConstraints2.labelMaxLength = 50;
-      TunnelConstraints2.maxLabels = 100;
-      TunnelConstraints2.tunnelDomainMinLength = 4;
-      TunnelConstraints2.tunnelDomainMaxLength = 180;
-      TunnelConstraints2.tunnelMaxPorts = 1e3;
-      TunnelConstraints2.accessControlMaxEntries = 40;
-      TunnelConstraints2.accessControlMaxSubjects = 100;
-      TunnelConstraints2.accessControlSubjectMaxLength = 200;
-      TunnelConstraints2.accessControlSubjectNameMaxLength = 200;
-      TunnelConstraints2.accessControlMaxScopes = 10;
-      TunnelConstraints2.eventNamePattern = "^[a-z0-9_]{3,80}$";
-      TunnelConstraints2.eventSeverityPattern = "^(info)|(warning)|(error)$";
-      TunnelConstraints2.eventPropertyNamePattern = "^[a-zA-Z0-9_.]{3,200}$";
-      TunnelConstraints2.clusterIdPattern = "^(([a-z]{3,4}[0-9]{1,3})|asse|aue|brs|euw|use)$";
-      TunnelConstraints2.clusterIdRegex = new RegExp(TunnelConstraints2.clusterIdPattern);
-      TunnelConstraints2.clusterIdPrefixRegex = new RegExp(TunnelConstraints2.clusterIdPattern.replace("$", "\\."));
-      TunnelConstraints2.oldTunnelIdChars = "0123456789bcdfghjklmnpqrstvwxz";
-      TunnelConstraints2.oldTunnelIdPattern = "[" + TunnelConstraints2.oldTunnelIdChars + "]{8}";
-      TunnelConstraints2.oldTunnelIdRegex = new RegExp(TunnelConstraints2.oldTunnelIdPattern);
-      TunnelConstraints2.newTunnelIdChars = "0123456789abcdefghijklmnopqrstuvwxyz-";
-      TunnelConstraints2.newTunnelIdPattern = "[a-z0-9][a-z0-9-]{1,58}[a-z0-9]";
-      TunnelConstraints2.newTunnelIdRegex = new RegExp(TunnelConstraints2.newTunnelIdPattern);
-      TunnelConstraints2.tunnelAliasChars = "0123456789bcdfghjklmnpqrstvwxz";
-      TunnelConstraints2.tunnelAliasPattern = "[" + TunnelConstraints2.tunnelAliasChars + "]{3,60}";
-      TunnelConstraints2.tunnelAliasRegex = new RegExp(TunnelConstraints2.tunnelAliasPattern);
-      TunnelConstraints2.tunnelNamePattern = "([a-z0-9][a-z0-9-]{1,58}[a-z0-9])|(^$)";
-      TunnelConstraints2.tunnelNameRegex = new RegExp(TunnelConstraints2.tunnelNamePattern);
-      TunnelConstraints2.labelPattern = "[\\w-=]{1,50}";
-      TunnelConstraints2.labelRegex = new RegExp(TunnelConstraints2.labelPattern);
-      TunnelConstraints2.tunnelDomainPattern = "[0-9a-z][0-9a-z-.]{1,158}[0-9a-z]|(^$)";
-      TunnelConstraints2.tunnelDomainRegex = new RegExp(TunnelConstraints2.tunnelDomainPattern);
-      TunnelConstraints2.accessControlSubjectPattern = "[0-9a-zA-Z-._:/@]{0,200}";
-      TunnelConstraints2.accessControlSubjectRegex = new RegExp(TunnelConstraints2.accessControlSubjectPattern);
-      TunnelConstraints2.accessControlSubjectNamePattern = `[ \\w\\d-.,/'"_@()<>]{0,200}`;
-      TunnelConstraints2.accessControlSubjectNameRegex = new RegExp(TunnelConstraints2.accessControlSubjectNamePattern);
-    })(TunnelConstraints = exports2.TunnelConstraints || (exports2.TunnelConstraints = {}));
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProgress.js
-var require_tunnelProgress = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProgress.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelProgress = void 0;
-    var TunnelProgress;
-    (function(TunnelProgress2) {
-      TunnelProgress2["StartingRefreshPorts"] = "StartingRefreshPorts";
-      TunnelProgress2["CompletedRefreshPorts"] = "CompletedRefreshPorts";
-      TunnelProgress2["StartingRequestUri"] = "StartingRequestUri";
-      TunnelProgress2["StartingRequestConfig"] = "StartingRequestConfig";
-      TunnelProgress2["StartingSendTunnelRequest"] = "StartingSendTunnelRequest";
-      TunnelProgress2["CompletedSendTunnelRequest"] = "CompletedSendTunnelRequest";
-      TunnelProgress2["StartingCreateTunnelPort"] = "StartingCreateTunnelPort";
-      TunnelProgress2["CompletedCreateTunnelPort"] = "CompletedCreateTunnelPort";
-      TunnelProgress2["StartingGetTunnelPort"] = "StartingGetTunnelPort";
-      TunnelProgress2["CompletedGetTunnelPort"] = "CompletedGetTunnelPort";
-    })(TunnelProgress = exports2.TunnelProgress || (exports2.TunnelProgress = {}));
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-contracts/index.js
-var require_dev_tunnels_contracts = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-contracts/index.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelProgress = exports2.TunnelConstraints = exports2.TunnelServiceProperties = exports2.TunnelProtocol = exports2.TunnelHeaderNames = exports2.TunnelEvent = exports2.TunnelEndpoint = exports2.TunnelConnectionMode = exports2.TunnelAccessScopes = exports2.TunnelAccessControlEntryType = exports2.TunnelAccessControlEntry = exports2.TunnelAccessControl = void 0;
-    var tunnelAccessControl_1 = require_tunnelAccessControl();
-    Object.defineProperty(exports2, "TunnelAccessControl", { enumerable: true, get: function() {
-      return tunnelAccessControl_1.TunnelAccessControl;
-    } });
-    var tunnelAccessControlEntry_1 = require_tunnelAccessControlEntry();
-    Object.defineProperty(exports2, "TunnelAccessControlEntry", { enumerable: true, get: function() {
-      return tunnelAccessControlEntry_1.TunnelAccessControlEntry;
-    } });
-    var tunnelAccessControlEntryType_1 = require_tunnelAccessControlEntryType();
-    Object.defineProperty(exports2, "TunnelAccessControlEntryType", { enumerable: true, get: function() {
-      return tunnelAccessControlEntryType_1.TunnelAccessControlEntryType;
-    } });
-    var tunnelAccessScopes_1 = require_tunnelAccessScopes();
-    Object.defineProperty(exports2, "TunnelAccessScopes", { enumerable: true, get: function() {
-      return tunnelAccessScopes_1.TunnelAccessScopes;
-    } });
-    var tunnelConnectionMode_1 = require_tunnelConnectionMode();
-    Object.defineProperty(exports2, "TunnelConnectionMode", { enumerable: true, get: function() {
-      return tunnelConnectionMode_1.TunnelConnectionMode;
-    } });
-    var tunnelEndpoint_1 = require_tunnelEndpoint();
-    Object.defineProperty(exports2, "TunnelEndpoint", { enumerable: true, get: function() {
-      return tunnelEndpoint_1.TunnelEndpoint;
-    } });
-    var tunnelEvent_1 = require_tunnelEvent();
-    Object.defineProperty(exports2, "TunnelEvent", { enumerable: true, get: function() {
-      return tunnelEvent_1.TunnelEvent;
-    } });
-    var tunnelHeaderNames_1 = require_tunnelHeaderNames();
-    Object.defineProperty(exports2, "TunnelHeaderNames", { enumerable: true, get: function() {
-      return tunnelHeaderNames_1.TunnelHeaderNames;
-    } });
-    var tunnelProtocol_1 = require_tunnelProtocol();
-    Object.defineProperty(exports2, "TunnelProtocol", { enumerable: true, get: function() {
-      return tunnelProtocol_1.TunnelProtocol;
-    } });
-    var tunnelServiceProperties_1 = require_tunnelServiceProperties();
-    Object.defineProperty(exports2, "TunnelServiceProperties", { enumerable: true, get: function() {
-      return tunnelServiceProperties_1.TunnelServiceProperties;
-    } });
-    var tunnelConstraints_1 = require_tunnelConstraints();
-    Object.defineProperty(exports2, "TunnelConstraints", { enumerable: true, get: function() {
-      return tunnelConstraints_1.TunnelConstraints;
-    } });
-    var tunnelProgress_1 = require_tunnelProgress();
-    Object.defineProperty(exports2, "TunnelProgress", { enumerable: true, get: function() {
-      return tunnelProgress_1.TunnelProgress;
-    } });
-  }
-});
-
 // ../../node_modules/vscode-jsonrpc/lib/is.js
 var require_is = __commonJS({
   "../../node_modules/vscode-jsonrpc/lib/is.js"(exports2) {
@@ -15950,5677 +15491,446 @@ var require_dev_tunnels_ssh = __commonJS({
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-connections/connectionStatus.js
-var require_connectionStatus = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/connectionStatus.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessScopes.js
+var require_tunnelAccessScopes = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessScopes.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.ConnectionStatus = void 0;
-    var ConnectionStatus;
-    (function(ConnectionStatus2) {
-      ConnectionStatus2["None"] = "none";
-      ConnectionStatus2["Connecting"] = "connecting";
-      ConnectionStatus2["RefreshingTunnelAccessToken"] = "refreshingTunnelAccessToken";
-      ConnectionStatus2["Connected"] = "connected";
-      ConnectionStatus2["Disconnected"] = "disconnected";
-      ConnectionStatus2["RefreshingTunnelHostPublicKey"] = "refreshingTunnelHostPublicKey";
-    })(ConnectionStatus = exports2.ConnectionStatus || (exports2.ConnectionStatus = {}));
+    exports2.TunnelAccessScopes = void 0;
+    var TunnelAccessScopes2;
+    (function(TunnelAccessScopes3) {
+      TunnelAccessScopes3["Create"] = "create";
+      TunnelAccessScopes3["Manage"] = "manage";
+      TunnelAccessScopes3["ManagePorts"] = "manage:ports";
+      TunnelAccessScopes3["Host"] = "host";
+      TunnelAccessScopes3["Inspect"] = "inspect";
+      TunnelAccessScopes3["Connect"] = "connect";
+    })(TunnelAccessScopes2 = exports2.TunnelAccessScopes || (exports2.TunnelAccessScopes = {}));
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-connections/connectionStatusChangedEventArgs.js
-var require_connectionStatusChangedEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/connectionStatusChangedEventArgs.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlStatics.js
+var require_tunnelAccessControlStatics = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlStatics.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.ConnectionStatusChangedEventArgs = void 0;
-    var ConnectionStatusChangedEventArgs = class {
-      /**
-       * Creates a new instance of ConnectionStatusChangedEventArgs.
-       */
-      constructor(previousStatus, status, disconnectError) {
-        this.previousStatus = previousStatus;
-        this.status = status;
-        this.disconnectError = disconnectError;
-      }
-    };
-    exports2.ConnectionStatusChangedEventArgs = ConnectionStatusChangedEventArgs;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelAccessTokenEventArgs.js
-var require_refreshingTunnelAccessTokenEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelAccessTokenEventArgs.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.RefreshingTunnelAccessTokenEventArgs = void 0;
-    var RefreshingTunnelAccessTokenEventArgs = class {
-      /**
-       * Creates a new instance of RefreshingTunnelAccessTokenEventArgs class.
-       */
-      constructor(tunnelAccessScope, cancellation) {
-        this.tunnelAccessScope = tunnelAccessScope;
-        this.cancellation = cancellation;
-      }
-    };
-    exports2.RefreshingTunnelAccessTokenEventArgs = RefreshingTunnelAccessTokenEventArgs;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/utils.js
-var require_utils = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/utils.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TrackingEmitter = exports2.withCancellation = exports2.getError = exports2.getErrorMessage = exports2.delay = exports2.List = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var vscode_jsonrpc_1 = require_main();
-    var List = class {
-      static groupBy(list, keyGetter) {
-        const map = /* @__PURE__ */ new Map();
-        list.forEach((item) => {
-          const key = keyGetter(item);
-          const collection = map.get(key);
-          if (!collection) {
-            map.set(key, [item]);
-          } else {
-            collection.push(item);
-          }
-        });
-        return map;
-      }
-    };
-    exports2.List = List;
-    function delay(milliseconds, cancellation) {
-      return new Promise((resolve2, reject) => {
-        let cancellationDisposable;
-        let timeout = void 0;
-        if (cancellation) {
-          if (cancellation.isCancellationRequested) {
-            reject(new dev_tunnels_ssh_1.CancellationError());
-            return;
-          }
-          cancellationDisposable = cancellation.onCancellationRequested(() => {
-            if (timeout) {
-              clearTimeout(timeout);
-            }
-            cancellationDisposable === null || cancellationDisposable === void 0 ? void 0 : cancellationDisposable.dispose();
-            reject(new dev_tunnels_ssh_1.CancellationError());
-          });
-        }
-        timeout = setTimeout(() => {
-          cancellationDisposable === null || cancellationDisposable === void 0 ? void 0 : cancellationDisposable.dispose();
-          resolve2();
-        }, milliseconds);
-      });
-    }
-    exports2.delay = delay;
-    function getErrorMessage(e) {
-      var _a;
-      return String((_a = e === null || e === void 0 ? void 0 : e.message) !== null && _a !== void 0 ? _a : e);
-    }
-    exports2.getErrorMessage = getErrorMessage;
-    function getError(e, messagePrefix) {
-      return e instanceof Error ? e : new Error(`${messagePrefix !== null && messagePrefix !== void 0 ? messagePrefix : ""}${e}`);
-    }
-    exports2.getError = getError;
-    function withCancellation(promise, cancellation) {
-      if (!cancellation) {
-        return promise;
-      }
-      return Promise.race([
-        promise,
-        new Promise((resolve2, reject) => {
-          if (cancellation.isCancellationRequested) {
-            reject(new dev_tunnels_ssh_1.CancellationError());
-          } else {
-            cancellation.onCancellationRequested(() => {
-              reject(new dev_tunnels_ssh_1.CancellationError());
-            });
-          }
-        })
-      ]);
-    }
-    exports2.withCancellation = withCancellation;
-    var TrackingEmitter = class extends vscode_jsonrpc_1.Emitter {
-      constructor() {
-        super({
-          onFirstListenerAdd: () => this.subscribed = true,
-          onLastListenerRemove: () => this.subscribed = false
-        });
-        this.subscribed = false;
-      }
-      /**
-       * A value indicating whether there event handlers subscribed to the event emitter.
-       */
-      get isSubscribed() {
-        return this.subscribed;
-      }
-    };
-    exports2.TrackingEmitter = TrackingEmitter;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/sshKeepAliveEventArgs.js
-var require_sshKeepAliveEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/sshKeepAliveEventArgs.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.SshKeepAliveEventArgs = void 0;
-    var SshKeepAliveEventArgs = class {
-      constructor(count) {
-        this.count = count;
-      }
-    };
-    exports2.SshKeepAliveEventArgs = SshKeepAliveEventArgs;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionBase.js
-var require_tunnelConnectionBase = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionBase.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.TunnelConnectionBase = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var vscode_jsonrpc_1 = require_main();
-    var connectionStatus_1 = require_connectionStatus();
-    var connectionStatusChangedEventArgs_1 = require_connectionStatusChangedEventArgs();
-    var refreshingTunnelAccessTokenEventArgs_1 = require_refreshingTunnelAccessTokenEventArgs();
-    var utils_1 = require_utils();
-    var sshKeepAliveEventArgs_1 = require_sshKeepAliveEventArgs();
-    var TunnelConnectionBase = class {
-      constructor(tunnelAccessScope) {
-        this.tunnelAccessScope = tunnelAccessScope;
-        this.disposeCts = new vscode_jsonrpc_1.CancellationTokenSource();
-        this.status = connectionStatus_1.ConnectionStatus.None;
-        this.refreshingTunnelAccessTokenEmitter = new utils_1.TrackingEmitter();
-        this.connectionStatusChangedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.retryingTunnelConnectionEmitter = new vscode_jsonrpc_1.Emitter();
-        this.forwardedPortConnectingEmitter = new vscode_jsonrpc_1.Emitter();
-        this.keepAliveFailedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.keepAliveSucceededEmitter = new vscode_jsonrpc_1.Emitter();
-        this.refreshingTunnelAccessToken = this.refreshingTunnelAccessTokenEmitter.event;
-        this.connectionStatusChanged = this.connectionStatusChangedEmitter.event;
-        this.retryingTunnelConnection = this.retryingTunnelConnectionEmitter.event;
-        this.forwardedPortConnecting = this.forwardedPortConnectingEmitter.event;
-        this.keepAliveFailed = this.keepAliveFailedEmitter.event;
-        this.keepAliveSucceeded = this.keepAliveSucceededEmitter.event;
-      }
-      /**
-       * Gets a value indicathing that this tunnel connection session is disposed.
-       */
-      get isDisposed() {
-        return this.disposeCts.token.isCancellationRequested;
-      }
-      get isRefreshingTunnelAccessTokenEventHandled() {
-        return this.refreshingTunnelAccessTokenEmitter.isSubscribed;
-      }
-      /**
-       * Gets dispose cancellation token.
-       */
-      get disposeToken() {
-        return this.disposeCts.token;
-      }
-      /**
-       * Gets the connection status.
-       */
-      get connectionStatus() {
-        return this.status;
-      }
-      /**
-       * Sets the connection status.
-       * Throws CancellationError if the session is disposed and the status being set is not ConnectionStatus.Disconnected.
-       */
-      set connectionStatus(value) {
-        if (this.isDisposed && value !== connectionStatus_1.ConnectionStatus.Disconnected) {
-          this.throwIfDisposed(`ConnectionStatus: ${value}`);
-        }
-        if (value === connectionStatus_1.ConnectionStatus.RefreshingTunnelAccessToken && this.status !== connectionStatus_1.ConnectionStatus.Connecting) {
-          throw new Error("Refreshing tunnel access token is allowed only when connecting.");
-        }
-        if (value !== this.status) {
-          const previousStatus = this.connectionStatus;
-          this.status = value;
-          this.onConnectionStatusChanged(previousStatus, value);
-        }
-      }
-      /**
-       * Gets the error that caused disconnection.
-       * Undefined if not yet connected or disconnection was caused by disposing of this object.
-       */
-      get disconnectError() {
-        return this.error;
-      }
-      /**
-       * Sets the error that caused disconnection.
-       */
-      set disconnectError(e) {
-        this.error = e;
-      }
-      onForwardedPortConnecting(e) {
-        this.forwardedPortConnectingEmitter.fire(e);
-      }
-      /**
-       * Raises the keep-alive failed event.
-       */
-      onKeepAliveFailed(count) {
-        this.keepAliveFailedEmitter.fire(new sshKeepAliveEventArgs_1.SshKeepAliveEventArgs(count));
-      }
-      /**
-       * Raises the keep-alive succeeded event.
-       */
-      onKeepAliveSucceeded(count) {
-        this.keepAliveSucceededEmitter.fire(new sshKeepAliveEventArgs_1.SshKeepAliveEventArgs(count));
-      }
-      /**
-       * Closes and disposes the tunnel session.
-       */
-      dispose() {
-        this.disposeCts.cancel();
-        this.connectionStatus = connectionStatus_1.ConnectionStatus.Disconnected;
-        return Promise.resolve();
-      }
-      /**
-       *  Notifies about a connection retry, giving the relay client a chance to delay or cancel it.
-       */
-      onRetrying(event) {
-        this.retryingTunnelConnectionEmitter.fire(event);
-      }
-      /**
-       * Gets the fresh tunnel access token or undefined if it cannot.
-       */
-      async getFreshTunnelAccessToken(cancellation) {
-        const event = new refreshingTunnelAccessTokenEventArgs_1.RefreshingTunnelAccessTokenEventArgs(this.tunnelAccessScope, cancellation);
-        this.refreshingTunnelAccessTokenEmitter.fire(event);
-        return event.tunnelAccessToken ? await event.tunnelAccessToken : void 0;
-      }
-      /**
-       * Event fired when the connection status has changed.
-       */
-      onConnectionStatusChanged(previousStatus, status) {
-        const disconnectError = this.connectionStatus === connectionStatus_1.ConnectionStatus.Disconnected && !this.isDisposed ? this.disconnectError : void 0;
-        const event = new connectionStatusChangedEventArgs_1.ConnectionStatusChangedEventArgs(previousStatus, status, disconnectError);
-        this.connectionStatusChangedEmitter.fire(event);
-      }
-      /**
-       * Throws CancellationError if the tunnel connection is disposed.
-       */
-      throwIfDisposed(message, stack) {
-        if (this.isDisposed) {
-          const error = new dev_tunnels_ssh_1.ObjectDisposedError(`The tunnel connection is disposed. ${message}`);
-          if (stack) {
-            error.stack = stack;
-          }
-          throw error;
-        }
-      }
-    };
-    exports2.TunnelConnectionBase = TunnelConnectionBase;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelClient.js
-var require_multiModeTunnelClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelClient.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.MultiModeTunnelClient = void 0;
-    var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
-    var tunnelConnectionBase_1 = require_tunnelConnectionBase();
-    var MultiModeTunnelClient = class extends tunnelConnectionBase_1.TunnelConnectionBase {
-      constructor() {
-        super(dev_tunnels_contracts_1.TunnelAccessScopes.Connect);
-        this.clients = [];
-        this.connectionModes = this.clients ? [...new Set(...this.clients.map((c) => c.connectionModes))] : [];
-      }
-      /**
-       * A value indicating whether local connections for forwarded ports are accepted.
-       * Local connections are not accepted if the host process is not NodeJS (e.g. browser).
-       */
-      get acceptLocalConnectionsForForwardedPorts() {
-        return !!this.clients.find((c) => c.acceptLocalConnectionsForForwardedPorts);
-      }
-      set acceptLocalConnectionsForForwardedPorts(value) {
-        this.clients.forEach((c) => c.acceptLocalConnectionsForForwardedPorts = value);
-      }
-      get localForwardingHostAddress() {
-        var _a;
-        return (_a = this.clients[0]) === null || _a === void 0 ? void 0 : _a.localForwardingHostAddress;
-      }
-      set localForwardingHostAddress(value) {
-        this.clients.forEach((c) => c.localForwardingHostAddress = value);
-      }
-      connect(tunnel, options, cancellation) {
-        if (!tunnel) {
-          throw new Error("Tunnel cannot be null");
-        }
-        return new Promise((resolve2) => {
-        });
-      }
-      get portForwarding() {
-        throw new Error("Not supported.");
-      }
-      connectToForwardedPort(fowardedPort, cancellation) {
-        throw new Error("Method not implemented.");
-      }
-      waitForForwardedPort(forwardedPort, cancellation) {
-        throw new Error("Method not implemented.");
-      }
-      async refreshPorts() {
-        throw new Error("Method not implemented.");
-      }
-      async dispose() {
-        await super.dispose();
-        await Promise.all(this.clients.map((client) => client.dispose()));
-      }
-    };
-    exports2.MultiModeTunnelClient = MultiModeTunnelClient;
-  }
-});
-
-// ../../node_modules/uuid/lib/rng.js
-var require_rng = __commonJS({
-  "../../node_modules/uuid/lib/rng.js"(exports2, module2) {
-    "use strict";
-    var crypto2 = require("crypto");
-    module2.exports = function nodeRNG() {
-      return crypto2.randomBytes(16);
-    };
-  }
-});
-
-// ../../node_modules/uuid/lib/bytesToUuid.js
-var require_bytesToUuid = __commonJS({
-  "../../node_modules/uuid/lib/bytesToUuid.js"(exports2, module2) {
-    "use strict";
-    var byteToHex = [];
-    for (i = 0; i < 256; ++i) {
-      byteToHex[i] = (i + 256).toString(16).substr(1);
-    }
-    var i;
-    function bytesToUuid(buf, offset) {
-      var i2 = offset || 0;
-      var bth = byteToHex;
-      return [
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        "-",
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        "-",
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        "-",
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        "-",
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]],
-        bth[buf[i2++]]
-      ].join("");
-    }
-    module2.exports = bytesToUuid;
-  }
-});
-
-// ../../node_modules/uuid/v1.js
-var require_v1 = __commonJS({
-  "../../node_modules/uuid/v1.js"(exports2, module2) {
-    "use strict";
-    var rng = require_rng();
-    var bytesToUuid = require_bytesToUuid();
-    var _nodeId;
-    var _clockseq;
-    var _lastMSecs = 0;
-    var _lastNSecs = 0;
-    function v1(options, buf, offset) {
-      var i = buf && offset || 0;
-      var b = buf || [];
-      options = options || {};
-      var node = options.node || _nodeId;
-      var clockseq = options.clockseq !== void 0 ? options.clockseq : _clockseq;
-      if (node == null || clockseq == null) {
-        var seedBytes = rng();
-        if (node == null) {
-          node = _nodeId = [
-            seedBytes[0] | 1,
-            seedBytes[1],
-            seedBytes[2],
-            seedBytes[3],
-            seedBytes[4],
-            seedBytes[5]
-          ];
-        }
-        if (clockseq == null) {
-          clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 16383;
-        }
-      }
-      var msecs = options.msecs !== void 0 ? options.msecs : (/* @__PURE__ */ new Date()).getTime();
-      var nsecs = options.nsecs !== void 0 ? options.nsecs : _lastNSecs + 1;
-      var dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 1e4;
-      if (dt < 0 && options.clockseq === void 0) {
-        clockseq = clockseq + 1 & 16383;
-      }
-      if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === void 0) {
-        nsecs = 0;
-      }
-      if (nsecs >= 1e4) {
-        throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
-      }
-      _lastMSecs = msecs;
-      _lastNSecs = nsecs;
-      _clockseq = clockseq;
-      msecs += 122192928e5;
-      var tl = ((msecs & 268435455) * 1e4 + nsecs) % 4294967296;
-      b[i++] = tl >>> 24 & 255;
-      b[i++] = tl >>> 16 & 255;
-      b[i++] = tl >>> 8 & 255;
-      b[i++] = tl & 255;
-      var tmh = msecs / 4294967296 * 1e4 & 268435455;
-      b[i++] = tmh >>> 8 & 255;
-      b[i++] = tmh & 255;
-      b[i++] = tmh >>> 24 & 15 | 16;
-      b[i++] = tmh >>> 16 & 255;
-      b[i++] = clockseq >>> 8 | 128;
-      b[i++] = clockseq & 255;
-      for (var n = 0; n < 6; ++n) {
-        b[i + n] = node[n];
-      }
-      return buf ? buf : bytesToUuid(b);
-    }
-    module2.exports = v1;
-  }
-});
-
-// ../../node_modules/uuid/v4.js
-var require_v4 = __commonJS({
-  "../../node_modules/uuid/v4.js"(exports2, module2) {
-    "use strict";
-    var rng = require_rng();
-    var bytesToUuid = require_bytesToUuid();
-    function v4(options, buf, offset) {
-      var i = buf && offset || 0;
-      if (typeof options == "string") {
-        buf = options === "binary" ? new Array(16) : null;
-        options = null;
-      }
-      options = options || {};
-      var rnds = options.random || (options.rng || rng)();
-      rnds[6] = rnds[6] & 15 | 64;
-      rnds[8] = rnds[8] & 63 | 128;
-      if (buf) {
-        for (var ii = 0; ii < 16; ++ii) {
-          buf[i + ii] = rnds[ii];
-        }
-      }
-      return buf || bytesToUuid(rnds);
-    }
-    module2.exports = v4;
-  }
-});
-
-// ../../node_modules/uuid/index.js
-var require_uuid = __commonJS({
-  "../../node_modules/uuid/index.js"(exports2, module2) {
-    "use strict";
-    var v1 = require_v1();
-    var v4 = require_v4();
-    var uuid = v4;
-    uuid.v1 = v1;
-    uuid.v4 = v4;
-    module2.exports = uuid;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelHost.js
-var require_multiModeTunnelHost = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelHost.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.MultiModeTunnelHost = void 0;
-    var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
-    var uuid_1 = require_uuid();
-    var tunnelConnectionBase_1 = require_tunnelConnectionBase();
-    var MultiModeTunnelHost = class extends tunnelConnectionBase_1.TunnelConnectionBase {
-      constructor() {
-        super(dev_tunnels_contracts_1.TunnelAccessScopes.Host);
-        this.hosts = [];
-      }
-      /**
-       * @deprecated Use `connect()` instead.
-       */
-      async start(tunnel) {
-        await this.connect(tunnel);
-      }
-      async connect(tunnel, options, cancellation) {
-        const startTasks = [];
-        this.hosts.forEach((host) => {
-          startTasks.push(host.connect(tunnel, options, cancellation));
-        });
-        await Promise.all(startTasks);
-      }
-      async refreshPorts() {
-        const refreshTasks = [];
-        this.hosts.forEach((host) => {
-          refreshTasks.push(host.refreshPorts());
-        });
-        await Promise.all(refreshTasks);
-      }
-      async dispose() {
-        await Promise.all(this.hosts.map((host) => host.dispose()));
-        await super.dispose();
-      }
-    };
-    exports2.MultiModeTunnelHost = MultiModeTunnelHost;
-    MultiModeTunnelHost.hostId = (0, uuid_1.v4)();
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/retryTcpListenerFactory.js
-var require_retryTcpListenerFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/retryTcpListenerFactory.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.RetryTcpListenerFactory = void 0;
-    var net2 = require("net");
-    var RetryTcpListenerFactory = class {
-      constructor(localAddress) {
-        this.localAddress = localAddress;
-      }
-      async createTcpListener(remotePort, localIPAddress, localPort, canChangeLocalPort, cancellation) {
-        if (localIPAddress.indexOf(":") >= 0) {
-          if (this.localAddress === "0.0.0.0") {
-            localIPAddress = "::";
-          } else if (this.localAddress === "127.0.0.1") {
-            localIPAddress = "::1";
-          }
-        } else {
-          localIPAddress = this.localAddress;
-        }
-        const maxOffset = 10;
-        const listener = net2.createServer();
-        for (let offset = 0; ; offset++) {
-          const localPortNumber = offset === maxOffset ? 0 : localPort + offset;
-          try {
-            return await new Promise((resolve2, reject) => {
-              listener.listen({
-                host: localIPAddress,
-                port: localPortNumber,
-                ipv6Only: net2.isIPv6(localIPAddress)
-              });
-              listener.on("listening", () => {
-                if (remotePort) {
-                  const { address, port } = listener.address();
-                  console.log(`Forwarding from ${address}:${port} to host port ${remotePort}.`);
-                }
-                resolve2(listener);
-              });
-              listener.on("error", (err) => {
-                reject(err);
-              });
-            });
-          } catch (err) {
-            if (offset < maxOffset && canChangeLocalPort) {
-              console.log("Listening on port " + localPortNumber + " failed: " + err);
-              console.log("Incrementing port and trying again");
-              continue;
-            } else {
-              throw err;
-            }
-          }
-        }
-      }
-    };
-    exports2.RetryTcpListenerFactory = RetryTcpListenerFactory;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/sessionPortKey.js
-var require_sessionPortKey = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/sessionPortKey.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.SessionPortKey = void 0;
-    var SessionPortKey = class {
-      constructor(sessionId, port) {
-        this.sessionId = sessionId !== null && sessionId !== void 0 ? sessionId : null;
-        this.port = port;
-      }
-      equals(other) {
-        return this.port === other.port && (!this.sessionId && !other.sessionId || this.sessionId && other.sessionId && this.sessionId === other.sessionId);
-      }
-      toString() {
-        return this.port + (this.sessionId ? "_" + this.sessionId.toString("base64") : "");
-      }
-    };
-    exports2.SessionPortKey = SessionPortKey;
-  }
-});
-
-// ../../node_modules/websocket/node_modules/ms/index.js
-var require_ms = __commonJS({
-  "../../node_modules/websocket/node_modules/ms/index.js"(exports2, module2) {
-    "use strict";
-    var s = 1e3;
-    var m = s * 60;
-    var h = m * 60;
-    var d = h * 24;
-    var y = d * 365.25;
-    module2.exports = function(val, options) {
-      options = options || {};
-      var type = typeof val;
-      if (type === "string" && val.length > 0) {
-        return parse(val);
-      } else if (type === "number" && isNaN(val) === false) {
-        return options.long ? fmtLong(val) : fmtShort(val);
-      }
-      throw new Error(
-        "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
-      );
-    };
-    function parse(str) {
-      str = String(str);
-      if (str.length > 100) {
-        return;
-      }
-      var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
-        str
-      );
-      if (!match) {
-        return;
-      }
-      var n = parseFloat(match[1]);
-      var type = (match[2] || "ms").toLowerCase();
-      switch (type) {
-        case "years":
-        case "year":
-        case "yrs":
-        case "yr":
-        case "y":
-          return n * y;
-        case "days":
-        case "day":
-        case "d":
-          return n * d;
-        case "hours":
-        case "hour":
-        case "hrs":
-        case "hr":
-        case "h":
-          return n * h;
-        case "minutes":
-        case "minute":
-        case "mins":
-        case "min":
-        case "m":
-          return n * m;
-        case "seconds":
-        case "second":
-        case "secs":
-        case "sec":
-        case "s":
-          return n * s;
-        case "milliseconds":
-        case "millisecond":
-        case "msecs":
-        case "msec":
-        case "ms":
-          return n;
-        default:
-          return void 0;
-      }
-    }
-    function fmtShort(ms) {
-      if (ms >= d) {
-        return Math.round(ms / d) + "d";
-      }
-      if (ms >= h) {
-        return Math.round(ms / h) + "h";
-      }
-      if (ms >= m) {
-        return Math.round(ms / m) + "m";
-      }
-      if (ms >= s) {
-        return Math.round(ms / s) + "s";
-      }
-      return ms + "ms";
-    }
-    function fmtLong(ms) {
-      return plural(ms, d, "day") || plural(ms, h, "hour") || plural(ms, m, "minute") || plural(ms, s, "second") || ms + " ms";
-    }
-    function plural(ms, n, name) {
-      if (ms < n) {
-        return;
-      }
-      if (ms < n * 1.5) {
-        return Math.floor(ms / n) + " " + name;
-      }
-      return Math.ceil(ms / n) + " " + name + "s";
-    }
-  }
-});
-
-// ../../node_modules/websocket/node_modules/debug/src/debug.js
-var require_debug = __commonJS({
-  "../../node_modules/websocket/node_modules/debug/src/debug.js"(exports2, module2) {
-    "use strict";
-    exports2 = module2.exports = createDebug.debug = createDebug["default"] = createDebug;
-    exports2.coerce = coerce;
-    exports2.disable = disable;
-    exports2.enable = enable;
-    exports2.enabled = enabled;
-    exports2.humanize = require_ms();
-    exports2.names = [];
-    exports2.skips = [];
-    exports2.formatters = {};
-    var prevTime;
-    function selectColor(namespace) {
-      var hash = 0, i;
-      for (i in namespace) {
-        hash = (hash << 5) - hash + namespace.charCodeAt(i);
-        hash |= 0;
-      }
-      return exports2.colors[Math.abs(hash) % exports2.colors.length];
-    }
-    function createDebug(namespace) {
-      function debug() {
-        if (!debug.enabled) return;
-        var self2 = debug;
-        var curr = +/* @__PURE__ */ new Date();
-        var ms = curr - (prevTime || curr);
-        self2.diff = ms;
-        self2.prev = prevTime;
-        self2.curr = curr;
-        prevTime = curr;
-        var args = new Array(arguments.length);
-        for (var i = 0; i < args.length; i++) {
-          args[i] = arguments[i];
-        }
-        args[0] = exports2.coerce(args[0]);
-        if ("string" !== typeof args[0]) {
-          args.unshift("%O");
-        }
-        var index = 0;
-        args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
-          if (match === "%%") return match;
-          index++;
-          var formatter = exports2.formatters[format];
-          if ("function" === typeof formatter) {
-            var val = args[index];
-            match = formatter.call(self2, val);
-            args.splice(index, 1);
-            index--;
-          }
-          return match;
-        });
-        exports2.formatArgs.call(self2, args);
-        var logFn = debug.log || exports2.log || console.log.bind(console);
-        logFn.apply(self2, args);
-      }
-      debug.namespace = namespace;
-      debug.enabled = exports2.enabled(namespace);
-      debug.useColors = exports2.useColors();
-      debug.color = selectColor(namespace);
-      if ("function" === typeof exports2.init) {
-        exports2.init(debug);
-      }
-      return debug;
-    }
-    function enable(namespaces) {
-      exports2.save(namespaces);
-      exports2.names = [];
-      exports2.skips = [];
-      var split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
-      var len = split.length;
-      for (var i = 0; i < len; i++) {
-        if (!split[i]) continue;
-        namespaces = split[i].replace(/\*/g, ".*?");
-        if (namespaces[0] === "-") {
-          exports2.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
-        } else {
-          exports2.names.push(new RegExp("^" + namespaces + "$"));
-        }
-      }
-    }
-    function disable() {
-      exports2.enable("");
-    }
-    function enabled(name) {
-      var i, len;
-      for (i = 0, len = exports2.skips.length; i < len; i++) {
-        if (exports2.skips[i].test(name)) {
-          return false;
-        }
-      }
-      for (i = 0, len = exports2.names.length; i < len; i++) {
-        if (exports2.names[i].test(name)) {
-          return true;
-        }
-      }
-      return false;
-    }
-    function coerce(val) {
-      if (val instanceof Error) return val.stack || val.message;
-      return val;
-    }
-  }
-});
-
-// ../../node_modules/websocket/node_modules/debug/src/browser.js
-var require_browser = __commonJS({
-  "../../node_modules/websocket/node_modules/debug/src/browser.js"(exports2, module2) {
-    "use strict";
-    exports2 = module2.exports = require_debug();
-    exports2.log = log;
-    exports2.formatArgs = formatArgs;
-    exports2.save = save;
-    exports2.load = load;
-    exports2.useColors = useColors;
-    exports2.storage = "undefined" != typeof chrome && "undefined" != typeof chrome.storage ? chrome.storage.local : localstorage();
-    exports2.colors = [
-      "lightseagreen",
-      "forestgreen",
-      "goldenrod",
-      "dodgerblue",
-      "darkorchid",
-      "crimson"
+    exports2.validateScopes = void 0;
+    var tunnelAccessScopes_1 = require_tunnelAccessScopes();
+    var allScopes = [
+      tunnelAccessScopes_1.TunnelAccessScopes.Manage,
+      tunnelAccessScopes_1.TunnelAccessScopes.ManagePorts,
+      tunnelAccessScopes_1.TunnelAccessScopes.Host,
+      tunnelAccessScopes_1.TunnelAccessScopes.Inspect,
+      tunnelAccessScopes_1.TunnelAccessScopes.Connect
     ];
-    function useColors() {
-      if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
-        return true;
+    function validateScopes(scopes, validScopes, allowMultiple) {
+      if (!Array.isArray(scopes)) {
+        throw new TypeError("A scopes array was expected.");
       }
-      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // is firebug? http://stackoverflow.com/a/398120/376773
-      typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // is firefox >= v31?
-      // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
-      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || // double check webkit in userAgent just in case we are in a worker
-      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
-    }
-    exports2.formatters.j = function(v) {
-      try {
-        return JSON.stringify(v);
-      } catch (err) {
-        return "[UnexpectedJSONParseError]: " + err.message;
+      if (allowMultiple) {
+        scopes = scopes.map((s) => s.split(" ")).reduce((a, b) => a.concat(b), []);
       }
-    };
-    function formatArgs(args) {
-      var useColors2 = this.useColors;
-      args[0] = (useColors2 ? "%c" : "") + this.namespace + (useColors2 ? " %c" : " ") + args[0] + (useColors2 ? "%c " : " ") + "+" + exports2.humanize(this.diff);
-      if (!useColors2) return;
-      var c = "color: " + this.color;
-      args.splice(1, 0, c, "color: inherit");
-      var index = 0;
-      var lastC = 0;
-      args[0].replace(/%[a-zA-Z%]/g, function(match) {
-        if ("%%" === match) return;
-        index++;
-        if ("%c" === match) {
-          lastC = index;
+      scopes.forEach((scope) => {
+        if (!scope) {
+          throw new Error("Tunnel access scopes include a null/empty item.");
+        } else if (!allScopes.includes(scope)) {
+          throw new Error("Invalid tunnel access scope: " + scope);
         }
       });
-      args.splice(lastC, 0, c);
-    }
-    function log() {
-      return "object" === typeof console && console.log && Function.prototype.apply.call(console.log, console, arguments);
-    }
-    function save(namespaces) {
-      try {
-        if (null == namespaces) {
-          exports2.storage.removeItem("debug");
-        } else {
-          exports2.storage.debug = namespaces;
-        }
-      } catch (e) {
-      }
-    }
-    function load() {
-      var r;
-      try {
-        r = exports2.storage.debug;
-      } catch (e) {
-      }
-      if (!r && typeof process !== "undefined" && "env" in process) {
-        r = process.env.DEBUG;
-      }
-      return r;
-    }
-    exports2.enable(load());
-    function localstorage() {
-      try {
-        return window.localStorage;
-      } catch (e) {
-      }
-    }
-  }
-});
-
-// ../../node_modules/websocket/node_modules/debug/src/node.js
-var require_node = __commonJS({
-  "../../node_modules/websocket/node_modules/debug/src/node.js"(exports2, module2) {
-    "use strict";
-    var tty = require("tty");
-    var util = require("util");
-    exports2 = module2.exports = require_debug();
-    exports2.init = init;
-    exports2.log = log;
-    exports2.formatArgs = formatArgs;
-    exports2.save = save;
-    exports2.load = load;
-    exports2.useColors = useColors;
-    exports2.colors = [6, 2, 3, 4, 5, 1];
-    exports2.inspectOpts = Object.keys(process.env).filter(function(key) {
-      return /^debug_/i.test(key);
-    }).reduce(function(obj, key) {
-      var prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, function(_, k) {
-        return k.toUpperCase();
-      });
-      var val = process.env[key];
-      if (/^(yes|on|true|enabled)$/i.test(val)) val = true;
-      else if (/^(no|off|false|disabled)$/i.test(val)) val = false;
-      else if (val === "null") val = null;
-      else val = Number(val);
-      obj[prop] = val;
-      return obj;
-    }, {});
-    var fd = parseInt(process.env.DEBUG_FD, 10) || 2;
-    if (1 !== fd && 2 !== fd) {
-      util.deprecate(function() {
-      }, "except for stderr(2) and stdout(1), any other usage of DEBUG_FD is deprecated. Override debug.log if you want to use a different log function (https://git.io/debug_fd)")();
-    }
-    var stream = 1 === fd ? process.stdout : 2 === fd ? process.stderr : createWritableStdioStream(fd);
-    function useColors() {
-      return "colors" in exports2.inspectOpts ? Boolean(exports2.inspectOpts.colors) : tty.isatty(fd);
-    }
-    exports2.formatters.o = function(v) {
-      this.inspectOpts.colors = this.useColors;
-      return util.inspect(v, this.inspectOpts).split("\n").map(function(str) {
-        return str.trim();
-      }).join(" ");
-    };
-    exports2.formatters.O = function(v) {
-      this.inspectOpts.colors = this.useColors;
-      return util.inspect(v, this.inspectOpts);
-    };
-    function formatArgs(args) {
-      var name = this.namespace;
-      var useColors2 = this.useColors;
-      if (useColors2) {
-        var c = this.color;
-        var prefix = "  \x1B[3" + c + ";1m" + name + " \x1B[0m";
-        args[0] = prefix + args[0].split("\n").join("\n" + prefix);
-        args.push("\x1B[3" + c + "m+" + exports2.humanize(this.diff) + "\x1B[0m");
-      } else {
-        args[0] = (/* @__PURE__ */ new Date()).toUTCString() + " " + name + " " + args[0];
-      }
-    }
-    function log() {
-      return stream.write(util.format.apply(util, arguments) + "\n");
-    }
-    function save(namespaces) {
-      if (null == namespaces) {
-        delete process.env.DEBUG;
-      } else {
-        process.env.DEBUG = namespaces;
-      }
-    }
-    function load() {
-      return process.env.DEBUG;
-    }
-    function createWritableStdioStream(fd2) {
-      var stream2;
-      var tty_wrap = process.binding("tty_wrap");
-      switch (tty_wrap.guessHandleType(fd2)) {
-        case "TTY":
-          stream2 = new tty.WriteStream(fd2);
-          stream2._type = "tty";
-          if (stream2._handle && stream2._handle.unref) {
-            stream2._handle.unref();
+      if (Array.isArray(validScopes)) {
+        scopes.forEach((scope) => {
+          if (!validScopes.includes(scope)) {
+            throw new Error("Tunnel access scope is invalid for current request: scope");
           }
-          break;
-        case "FILE":
-          var fs2 = require("fs");
-          stream2 = new fs2.SyncWriteStream(fd2, { autoClose: false });
-          stream2._type = "fs";
-          break;
-        case "PIPE":
-        case "TCP":
-          var net2 = require("net");
-          stream2 = new net2.Socket({
-            fd: fd2,
-            readable: false,
-            writable: true
-          });
-          stream2.readable = false;
-          stream2.read = null;
-          stream2._type = "pipe";
-          if (stream2._handle && stream2._handle.unref) {
-            stream2._handle.unref();
-          }
-          break;
-        default:
-          throw new Error("Implement me. Unknown stream file type!");
-      }
-      stream2.fd = fd2;
-      stream2._isStdio = true;
-      return stream2;
-    }
-    function init(debug) {
-      debug.inspectOpts = {};
-      var keys = Object.keys(exports2.inspectOpts);
-      for (var i = 0; i < keys.length; i++) {
-        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
-      }
-    }
-    exports2.enable(load());
-  }
-});
-
-// ../../node_modules/websocket/node_modules/debug/src/index.js
-var require_src = __commonJS({
-  "../../node_modules/websocket/node_modules/debug/src/index.js"(exports2, module2) {
-    "use strict";
-    if (typeof process !== "undefined" && process.type === "renderer") {
-      module2.exports = require_browser();
-    } else {
-      module2.exports = require_node();
-    }
-  }
-});
-
-// ../../node_modules/websocket/lib/utils.js
-var require_utils2 = __commonJS({
-  "../../node_modules/websocket/lib/utils.js"(exports2) {
-    "use strict";
-    var noop = exports2.noop = function() {
-    };
-    exports2.extend = function extend(dest, source) {
-      for (var prop in source) {
-        dest[prop] = source[prop];
-      }
-    };
-    exports2.eventEmitterListenerCount = require("events").EventEmitter.listenerCount || function(emitter, type) {
-      return emitter.listeners(type).length;
-    };
-    exports2.bufferAllocUnsafe = Buffer.allocUnsafe ? Buffer.allocUnsafe : function oldBufferAllocUnsafe(size) {
-      return new Buffer(size);
-    };
-    exports2.bufferFromString = Buffer.from ? Buffer.from : function oldBufferFromString(string, encoding) {
-      return new Buffer(string, encoding);
-    };
-    exports2.BufferingLogger = function createBufferingLogger(identifier, uniqueID) {
-      var logFunction = require_src()(identifier);
-      if (logFunction.enabled) {
-        var logger = new BufferingLogger(identifier, uniqueID, logFunction);
-        var debug = logger.log.bind(logger);
-        debug.printOutput = logger.printOutput.bind(logger);
-        debug.enabled = logFunction.enabled;
-        return debug;
-      }
-      logFunction.printOutput = noop;
-      return logFunction;
-    };
-    function BufferingLogger(identifier, uniqueID, logFunction) {
-      this.logFunction = logFunction;
-      this.identifier = identifier;
-      this.uniqueID = uniqueID;
-      this.buffer = [];
-    }
-    BufferingLogger.prototype.log = function() {
-      this.buffer.push([/* @__PURE__ */ new Date(), Array.prototype.slice.call(arguments)]);
-      return this;
-    };
-    BufferingLogger.prototype.clear = function() {
-      this.buffer = [];
-      return this;
-    };
-    BufferingLogger.prototype.printOutput = function(logFunction) {
-      if (!logFunction) {
-        logFunction = this.logFunction;
-      }
-      var uniqueID = this.uniqueID;
-      this.buffer.forEach(function(entry) {
-        var date = entry[0].toLocaleString();
-        var args = entry[1].slice();
-        var formatString = args[0];
-        if (formatString !== void 0 && formatString !== null) {
-          formatString = "%s - %s - " + formatString.toString();
-          args.splice(0, 1, formatString, date, uniqueID);
-          logFunction.apply(global, args);
-        }
-      });
-    };
-  }
-});
-
-// ../../node_modules/node-gyp-build/node-gyp-build.js
-var require_node_gyp_build = __commonJS({
-  "../../node_modules/node-gyp-build/node-gyp-build.js"(exports2, module2) {
-    "use strict";
-    var fs2 = require("fs");
-    var path2 = require("path");
-    var os3 = require("os");
-    var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-    var vars = process.config && process.config.variables || {};
-    var prebuildsOnly = !!process.env.PREBUILDS_ONLY;
-    var abi = process.versions.modules;
-    var runtime = isElectron() ? "electron" : isNwjs() ? "node-webkit" : "node";
-    var arch = process.env.npm_config_arch || os3.arch();
-    var platform = process.env.npm_config_platform || os3.platform();
-    var libc = process.env.LIBC || (isAlpine(platform) ? "musl" : "glibc");
-    var armv = process.env.ARM_VERSION || (arch === "arm64" ? "8" : vars.arm_version) || "";
-    var uv = (process.versions.uv || "").split(".")[0];
-    module2.exports = load;
-    function load(dir) {
-      return runtimeRequire(load.resolve(dir));
-    }
-    load.resolve = load.path = function(dir) {
-      dir = path2.resolve(dir || ".");
-      try {
-        var name = runtimeRequire(path2.join(dir, "package.json")).name.toUpperCase().replace(/-/g, "_");
-        if (process.env[name + "_PREBUILD"]) dir = process.env[name + "_PREBUILD"];
-      } catch (err) {
-      }
-      if (!prebuildsOnly) {
-        var release = getFirst(path2.join(dir, "build/Release"), matchBuild);
-        if (release) return release;
-        var debug = getFirst(path2.join(dir, "build/Debug"), matchBuild);
-        if (debug) return debug;
-      }
-      var prebuild = resolve2(dir);
-      if (prebuild) return prebuild;
-      var nearby = resolve2(path2.dirname(process.execPath));
-      if (nearby) return nearby;
-      var target = [
-        "platform=" + platform,
-        "arch=" + arch,
-        "runtime=" + runtime,
-        "abi=" + abi,
-        "uv=" + uv,
-        armv ? "armv=" + armv : "",
-        "libc=" + libc,
-        "node=" + process.versions.node,
-        process.versions.electron ? "electron=" + process.versions.electron : "",
-        typeof __webpack_require__ === "function" ? "webpack=true" : ""
-        // eslint-disable-line
-      ].filter(Boolean).join(" ");
-      throw new Error("No native build was found for " + target + "\n    loaded from: " + dir + "\n");
-      function resolve2(dir2) {
-        var tuples = readdirSync(path2.join(dir2, "prebuilds")).map(parseTuple);
-        var tuple = tuples.filter(matchTuple(platform, arch)).sort(compareTuples)[0];
-        if (!tuple) return;
-        var prebuilds = path2.join(dir2, "prebuilds", tuple.name);
-        var parsed = readdirSync(prebuilds).map(parseTags);
-        var candidates = parsed.filter(matchTags(runtime, abi));
-        var winner = candidates.sort(compareTags(runtime))[0];
-        if (winner) return path2.join(prebuilds, winner.file);
-      }
-    };
-    function readdirSync(dir) {
-      try {
-        return fs2.readdirSync(dir);
-      } catch (err) {
-        return [];
-      }
-    }
-    function getFirst(dir, filter) {
-      var files = readdirSync(dir).filter(filter);
-      return files[0] && path2.join(dir, files[0]);
-    }
-    function matchBuild(name) {
-      return /\.node$/.test(name);
-    }
-    function parseTuple(name) {
-      var arr = name.split("-");
-      if (arr.length !== 2) return;
-      var platform2 = arr[0];
-      var architectures = arr[1].split("+");
-      if (!platform2) return;
-      if (!architectures.length) return;
-      if (!architectures.every(Boolean)) return;
-      return { name, platform: platform2, architectures };
-    }
-    function matchTuple(platform2, arch2) {
-      return function(tuple) {
-        if (tuple == null) return false;
-        if (tuple.platform !== platform2) return false;
-        return tuple.architectures.includes(arch2);
-      };
-    }
-    function compareTuples(a, b) {
-      return a.architectures.length - b.architectures.length;
-    }
-    function parseTags(file) {
-      var arr = file.split(".");
-      var extension = arr.pop();
-      var tags = { file, specificity: 0 };
-      if (extension !== "node") return;
-      for (var i = 0; i < arr.length; i++) {
-        var tag = arr[i];
-        if (tag === "node" || tag === "electron" || tag === "node-webkit") {
-          tags.runtime = tag;
-        } else if (tag === "napi") {
-          tags.napi = true;
-        } else if (tag.slice(0, 3) === "abi") {
-          tags.abi = tag.slice(3);
-        } else if (tag.slice(0, 2) === "uv") {
-          tags.uv = tag.slice(2);
-        } else if (tag.slice(0, 4) === "armv") {
-          tags.armv = tag.slice(4);
-        } else if (tag === "glibc" || tag === "musl") {
-          tags.libc = tag;
-        } else {
-          continue;
-        }
-        tags.specificity++;
-      }
-      return tags;
-    }
-    function matchTags(runtime2, abi2) {
-      return function(tags) {
-        if (tags == null) return false;
-        if (tags.runtime && tags.runtime !== runtime2 && !runtimeAgnostic(tags)) return false;
-        if (tags.abi && tags.abi !== abi2 && !tags.napi) return false;
-        if (tags.uv && tags.uv !== uv) return false;
-        if (tags.armv && tags.armv !== armv) return false;
-        if (tags.libc && tags.libc !== libc) return false;
-        return true;
-      };
-    }
-    function runtimeAgnostic(tags) {
-      return tags.runtime === "node" && tags.napi;
-    }
-    function compareTags(runtime2) {
-      return function(a, b) {
-        if (a.runtime !== b.runtime) {
-          return a.runtime === runtime2 ? -1 : 1;
-        } else if (a.abi !== b.abi) {
-          return a.abi ? -1 : 1;
-        } else if (a.specificity !== b.specificity) {
-          return a.specificity > b.specificity ? -1 : 1;
-        } else {
-          return 0;
-        }
-      };
-    }
-    function isNwjs() {
-      return !!(process.versions && process.versions.nw);
-    }
-    function isElectron() {
-      if (process.versions && process.versions.electron) return true;
-      if (process.env.ELECTRON_RUN_AS_NODE) return true;
-      return typeof window !== "undefined" && window.process && window.process.type === "renderer";
-    }
-    function isAlpine(platform2) {
-      return platform2 === "linux" && fs2.existsSync("/etc/alpine-release");
-    }
-    load.parseTags = parseTags;
-    load.matchTags = matchTags;
-    load.compareTags = compareTags;
-    load.parseTuple = parseTuple;
-    load.matchTuple = matchTuple;
-    load.compareTuples = compareTuples;
-  }
-});
-
-// ../../node_modules/node-gyp-build/index.js
-var require_node_gyp_build2 = __commonJS({
-  "../../node_modules/node-gyp-build/index.js"(exports2, module2) {
-    "use strict";
-    var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
-    if (typeof runtimeRequire.addon === "function") {
-      module2.exports = runtimeRequire.addon.bind(runtimeRequire);
-    } else {
-      module2.exports = require_node_gyp_build();
-    }
-  }
-});
-
-// ../../node_modules/bufferutil/fallback.js
-var require_fallback = __commonJS({
-  "../../node_modules/bufferutil/fallback.js"(exports2, module2) {
-    "use strict";
-    var mask = (source, mask2, output, offset, length) => {
-      for (var i = 0; i < length; i++) {
-        output[offset + i] = source[i] ^ mask2[i & 3];
-      }
-    };
-    var unmask = (buffer, mask2) => {
-      const length = buffer.length;
-      for (var i = 0; i < length; i++) {
-        buffer[i] ^= mask2[i & 3];
-      }
-    };
-    module2.exports = { mask, unmask };
-  }
-});
-
-// ../../node_modules/bufferutil/index.js
-var require_bufferutil = __commonJS({
-  "../../node_modules/bufferutil/index.js"(exports2, module2) {
-    "use strict";
-    try {
-      module2.exports = require_node_gyp_build2()(__dirname);
-    } catch (e) {
-      module2.exports = require_fallback();
-    }
-  }
-});
-
-// ../../node_modules/websocket/lib/WebSocketFrame.js
-var require_WebSocketFrame = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketFrame.js"(exports2, module2) {
-    "use strict";
-    var bufferUtil = require_bufferutil();
-    var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
-    var DECODE_HEADER = 1;
-    var WAITING_FOR_16_BIT_LENGTH = 2;
-    var WAITING_FOR_64_BIT_LENGTH = 3;
-    var WAITING_FOR_MASK_KEY = 4;
-    var WAITING_FOR_PAYLOAD = 5;
-    var COMPLETE = 6;
-    function WebSocketFrame(maskBytes, frameHeader, config) {
-      this.maskBytes = maskBytes;
-      this.frameHeader = frameHeader;
-      this.config = config;
-      this.maxReceivedFrameSize = config.maxReceivedFrameSize;
-      this.protocolError = false;
-      this.frameTooLarge = false;
-      this.invalidCloseFrameLength = false;
-      this.parseState = DECODE_HEADER;
-      this.closeStatus = -1;
-    }
-    WebSocketFrame.prototype.addData = function(bufferList) {
-      if (this.parseState === DECODE_HEADER) {
-        if (bufferList.length >= 2) {
-          bufferList.joinInto(this.frameHeader, 0, 0, 2);
-          bufferList.advance(2);
-          var firstByte = this.frameHeader[0];
-          var secondByte = this.frameHeader[1];
-          this.fin = Boolean(firstByte & 128);
-          this.rsv1 = Boolean(firstByte & 64);
-          this.rsv2 = Boolean(firstByte & 32);
-          this.rsv3 = Boolean(firstByte & 16);
-          this.mask = Boolean(secondByte & 128);
-          this.opcode = firstByte & 15;
-          this.length = secondByte & 127;
-          if (this.opcode >= 8) {
-            if (this.length > 125) {
-              this.protocolError = true;
-              this.dropReason = "Illegal control frame longer than 125 bytes.";
-              return true;
-            }
-            if (!this.fin) {
-              this.protocolError = true;
-              this.dropReason = "Control frames must not be fragmented.";
-              return true;
-            }
-          }
-          if (this.length === 126) {
-            this.parseState = WAITING_FOR_16_BIT_LENGTH;
-          } else if (this.length === 127) {
-            this.parseState = WAITING_FOR_64_BIT_LENGTH;
-          } else {
-            this.parseState = WAITING_FOR_MASK_KEY;
-          }
-        }
-      }
-      if (this.parseState === WAITING_FOR_16_BIT_LENGTH) {
-        if (bufferList.length >= 2) {
-          bufferList.joinInto(this.frameHeader, 2, 0, 2);
-          bufferList.advance(2);
-          this.length = this.frameHeader.readUInt16BE(2);
-          this.parseState = WAITING_FOR_MASK_KEY;
-        }
-      } else if (this.parseState === WAITING_FOR_64_BIT_LENGTH) {
-        if (bufferList.length >= 8) {
-          bufferList.joinInto(this.frameHeader, 2, 0, 8);
-          bufferList.advance(8);
-          var lengthPair = [
-            this.frameHeader.readUInt32BE(2),
-            this.frameHeader.readUInt32BE(2 + 4)
-          ];
-          if (lengthPair[0] !== 0) {
-            this.protocolError = true;
-            this.dropReason = "Unsupported 64-bit length frame received";
-            return true;
-          }
-          this.length = lengthPair[1];
-          this.parseState = WAITING_FOR_MASK_KEY;
-        }
-      }
-      if (this.parseState === WAITING_FOR_MASK_KEY) {
-        if (this.mask) {
-          if (bufferList.length >= 4) {
-            bufferList.joinInto(this.maskBytes, 0, 0, 4);
-            bufferList.advance(4);
-            this.parseState = WAITING_FOR_PAYLOAD;
-          }
-        } else {
-          this.parseState = WAITING_FOR_PAYLOAD;
-        }
-      }
-      if (this.parseState === WAITING_FOR_PAYLOAD) {
-        if (this.length > this.maxReceivedFrameSize) {
-          this.frameTooLarge = true;
-          this.dropReason = "Frame size of " + this.length.toString(10) + " bytes exceeds maximum accepted frame size";
-          return true;
-        }
-        if (this.length === 0) {
-          this.binaryPayload = bufferAllocUnsafe(0);
-          this.parseState = COMPLETE;
-          return true;
-        }
-        if (bufferList.length >= this.length) {
-          this.binaryPayload = bufferList.take(this.length);
-          bufferList.advance(this.length);
-          if (this.mask) {
-            bufferUtil.unmask(this.binaryPayload, this.maskBytes);
-          }
-          if (this.opcode === 8) {
-            if (this.length === 1) {
-              this.binaryPayload = bufferAllocUnsafe(0);
-              this.invalidCloseFrameLength = true;
-            }
-            if (this.length >= 2) {
-              this.closeStatus = this.binaryPayload.readUInt16BE(0);
-              this.binaryPayload = this.binaryPayload.slice(2);
-            }
-          }
-          this.parseState = COMPLETE;
-          return true;
-        }
-      }
-      return false;
-    };
-    WebSocketFrame.prototype.throwAwayPayload = function(bufferList) {
-      if (bufferList.length >= this.length) {
-        bufferList.advance(this.length);
-        this.parseState = COMPLETE;
-        return true;
-      }
-      return false;
-    };
-    WebSocketFrame.prototype.toBuffer = function(nullMask) {
-      var maskKey;
-      var headerLength = 2;
-      var data;
-      var outputPos;
-      var firstByte = 0;
-      var secondByte = 0;
-      if (this.fin) {
-        firstByte |= 128;
-      }
-      if (this.rsv1) {
-        firstByte |= 64;
-      }
-      if (this.rsv2) {
-        firstByte |= 32;
-      }
-      if (this.rsv3) {
-        firstByte |= 16;
-      }
-      if (this.mask) {
-        secondByte |= 128;
-      }
-      firstByte |= this.opcode & 15;
-      if (this.opcode === 8) {
-        this.length = 2;
-        if (this.binaryPayload) {
-          this.length += this.binaryPayload.length;
-        }
-        data = bufferAllocUnsafe(this.length);
-        data.writeUInt16BE(this.closeStatus, 0);
-        if (this.length > 2) {
-          this.binaryPayload.copy(data, 2);
-        }
-      } else if (this.binaryPayload) {
-        data = this.binaryPayload;
-        this.length = data.length;
-      } else {
-        this.length = 0;
-      }
-      if (this.length <= 125) {
-        secondByte |= this.length & 127;
-      } else if (this.length > 125 && this.length <= 65535) {
-        secondByte |= 126;
-        headerLength += 2;
-      } else if (this.length > 65535) {
-        secondByte |= 127;
-        headerLength += 8;
-      }
-      var output = bufferAllocUnsafe(this.length + headerLength + (this.mask ? 4 : 0));
-      output[0] = firstByte;
-      output[1] = secondByte;
-      outputPos = 2;
-      if (this.length > 125 && this.length <= 65535) {
-        output.writeUInt16BE(this.length, outputPos);
-        outputPos += 2;
-      } else if (this.length > 65535) {
-        output.writeUInt32BE(0, outputPos);
-        output.writeUInt32BE(this.length, outputPos + 4);
-        outputPos += 8;
-      }
-      if (this.mask) {
-        maskKey = nullMask ? 0 : Math.random() * 4294967295 >>> 0;
-        this.maskBytes.writeUInt32BE(maskKey, 0);
-        this.maskBytes.copy(output, outputPos);
-        outputPos += 4;
-        if (data) {
-          bufferUtil.mask(data, this.maskBytes, output, outputPos, this.length);
-        }
-      } else if (data) {
-        data.copy(output, outputPos);
-      }
-      return output;
-    };
-    WebSocketFrame.prototype.toString = function() {
-      return "Opcode: " + this.opcode + ", fin: " + this.fin + ", length: " + this.length + ", hasPayload: " + Boolean(this.binaryPayload) + ", masked: " + this.mask;
-    };
-    module2.exports = WebSocketFrame;
-  }
-});
-
-// ../../node_modules/websocket/vendor/FastBufferList.js
-var require_FastBufferList = __commonJS({
-  "../../node_modules/websocket/vendor/FastBufferList.js"(exports2, module2) {
-    "use strict";
-    var Buffer2 = require("buffer").Buffer;
-    var EventEmitter = require("events").EventEmitter;
-    var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
-    module2.exports = BufferList;
-    module2.exports.BufferList = BufferList;
-    function BufferList(opts) {
-      if (!(this instanceof BufferList)) return new BufferList(opts);
-      EventEmitter.call(this);
-      var self2 = this;
-      if (typeof opts == "undefined") opts = {};
-      self2.encoding = opts.encoding;
-      var head = { next: null, buffer: null };
-      var last = { next: null, buffer: null };
-      var length = 0;
-      self2.__defineGetter__("length", function() {
-        return length;
-      });
-      var offset = 0;
-      self2.write = function(buf) {
-        if (!head.buffer) {
-          head.buffer = buf;
-          last = head;
-        } else {
-          last.next = { next: null, buffer: buf };
-          last = last.next;
-        }
-        length += buf.length;
-        self2.emit("write", buf);
-        return true;
-      };
-      self2.end = function(buf) {
-        if (Buffer2.isBuffer(buf)) self2.write(buf);
-      };
-      self2.push = function() {
-        var args = [].concat.apply([], arguments);
-        args.forEach(self2.write);
-        return self2;
-      };
-      self2.forEach = function(fn) {
-        if (!head.buffer) return bufferAllocUnsafe(0);
-        if (head.buffer.length - offset <= 0) return self2;
-        var firstBuf = head.buffer.slice(offset);
-        var b = { buffer: firstBuf, next: head.next };
-        while (b && b.buffer) {
-          var r = fn(b.buffer);
-          if (r) break;
-          b = b.next;
-        }
-        return self2;
-      };
-      self2.join = function(start, end) {
-        if (!head.buffer) return bufferAllocUnsafe(0);
-        if (start == void 0) start = 0;
-        if (end == void 0) end = self2.length;
-        var big = bufferAllocUnsafe(end - start);
-        var ix = 0;
-        self2.forEach(function(buffer) {
-          if (start < ix + buffer.length && ix < end) {
-            buffer.copy(
-              big,
-              Math.max(0, ix - start),
-              Math.max(0, start - ix),
-              Math.min(buffer.length, end - ix)
-            );
-          }
-          ix += buffer.length;
-          if (ix > end) return true;
-        });
-        return big;
-      };
-      self2.joinInto = function(targetBuffer, targetStart, sourceStart, sourceEnd) {
-        if (!head.buffer) return new bufferAllocUnsafe(0);
-        if (sourceStart == void 0) sourceStart = 0;
-        if (sourceEnd == void 0) sourceEnd = self2.length;
-        var big = targetBuffer;
-        if (big.length - targetStart < sourceEnd - sourceStart) {
-          throw new Error("Insufficient space available in target Buffer.");
-        }
-        var ix = 0;
-        self2.forEach(function(buffer) {
-          if (sourceStart < ix + buffer.length && ix < sourceEnd) {
-            buffer.copy(
-              big,
-              Math.max(targetStart, targetStart + ix - sourceStart),
-              Math.max(0, sourceStart - ix),
-              Math.min(buffer.length, sourceEnd - ix)
-            );
-          }
-          ix += buffer.length;
-          if (ix > sourceEnd) return true;
-        });
-        return big;
-      };
-      self2.advance = function(n) {
-        offset += n;
-        length -= n;
-        while (head.buffer && offset >= head.buffer.length) {
-          offset -= head.buffer.length;
-          head = head.next ? head.next : { buffer: null, next: null };
-        }
-        if (head.buffer === null) last = { next: null, buffer: null };
-        self2.emit("advance", n);
-        return self2;
-      };
-      self2.take = function(n, encoding) {
-        if (n == void 0) n = self2.length;
-        else if (typeof n !== "number") {
-          encoding = n;
-          n = self2.length;
-        }
-        var b = head;
-        if (!encoding) encoding = self2.encoding;
-        if (encoding) {
-          var acc = "";
-          self2.forEach(function(buffer) {
-            if (n <= 0) return true;
-            acc += buffer.toString(
-              encoding,
-              0,
-              Math.min(n, buffer.length)
-            );
-            n -= buffer.length;
-          });
-          return acc;
-        } else {
-          return self2.join(0, n);
-        }
-      };
-      self2.toString = function() {
-        return self2.take("binary");
-      };
-    }
-    require("util").inherits(BufferList, EventEmitter);
-  }
-});
-
-// ../../node_modules/utf-8-validate/fallback.js
-var require_fallback2 = __commonJS({
-  "../../node_modules/utf-8-validate/fallback.js"(exports2, module2) {
-    "use strict";
-    function isValidUTF8(buf) {
-      const len = buf.length;
-      let i = 0;
-      while (i < len) {
-        if ((buf[i] & 128) === 0) {
-          i++;
-        } else if ((buf[i] & 224) === 192) {
-          if (i + 1 === len || (buf[i + 1] & 192) !== 128 || (buf[i] & 254) === 192) {
-            return false;
-          }
-          i += 2;
-        } else if ((buf[i] & 240) === 224) {
-          if (i + 2 >= len || (buf[i + 1] & 192) !== 128 || (buf[i + 2] & 192) !== 128 || buf[i] === 224 && (buf[i + 1] & 224) === 128 || // overlong
-          buf[i] === 237 && (buf[i + 1] & 224) === 160) {
-            return false;
-          }
-          i += 3;
-        } else if ((buf[i] & 248) === 240) {
-          if (i + 3 >= len || (buf[i + 1] & 192) !== 128 || (buf[i + 2] & 192) !== 128 || (buf[i + 3] & 192) !== 128 || buf[i] === 240 && (buf[i + 1] & 240) === 128 || // overlong
-          buf[i] === 244 && buf[i + 1] > 143 || buf[i] > 244) {
-            return false;
-          }
-          i += 4;
-        } else {
-          return false;
-        }
-      }
-      return true;
-    }
-    module2.exports = isValidUTF8;
-  }
-});
-
-// ../../node_modules/utf-8-validate/index.js
-var require_utf_8_validate = __commonJS({
-  "../../node_modules/utf-8-validate/index.js"(exports2, module2) {
-    "use strict";
-    try {
-      module2.exports = require_node_gyp_build2()(__dirname);
-    } catch (e) {
-      module2.exports = require_fallback2();
-    }
-  }
-});
-
-// ../../node_modules/websocket/lib/WebSocketConnection.js
-var require_WebSocketConnection = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketConnection.js"(exports2, module2) {
-    "use strict";
-    var util = require("util");
-    var utils = require_utils2();
-    var EventEmitter = require("events").EventEmitter;
-    var WebSocketFrame = require_WebSocketFrame();
-    var BufferList = require_FastBufferList();
-    var isValidUTF8 = require_utf_8_validate();
-    var bufferAllocUnsafe = utils.bufferAllocUnsafe;
-    var bufferFromString = utils.bufferFromString;
-    var STATE_OPEN = "open";
-    var STATE_PEER_REQUESTED_CLOSE = "peer_requested_close";
-    var STATE_ENDING = "ending";
-    var STATE_CLOSED = "closed";
-    var setImmediateImpl = "setImmediate" in global ? global.setImmediate.bind(global) : process.nextTick.bind(process);
-    var idCounter = 0;
-    function WebSocketConnection(socket, extensions, protocol, maskOutgoingPackets, config) {
-      this._debug = utils.BufferingLogger("websocket:connection", ++idCounter);
-      this._debug("constructor");
-      if (this._debug.enabled) {
-        instrumentSocketForDebugging(this, socket);
-      }
-      EventEmitter.call(this);
-      this._pingListenerCount = 0;
-      this.on("newListener", function(ev) {
-        if (ev === "ping") {
-          this._pingListenerCount++;
-        }
-      }).on("removeListener", function(ev) {
-        if (ev === "ping") {
-          this._pingListenerCount--;
-        }
-      });
-      this.config = config;
-      this.socket = socket;
-      this.protocol = protocol;
-      this.extensions = extensions;
-      this.remoteAddress = socket.remoteAddress;
-      this.closeReasonCode = -1;
-      this.closeDescription = null;
-      this.closeEventEmitted = false;
-      this.maskOutgoingPackets = maskOutgoingPackets;
-      this.maskBytes = bufferAllocUnsafe(4);
-      this.frameHeader = bufferAllocUnsafe(10);
-      this.bufferList = new BufferList();
-      this.currentFrame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
-      this.fragmentationSize = 0;
-      this.frameQueue = [];
-      this.connected = true;
-      this.state = STATE_OPEN;
-      this.waitingForCloseResponse = false;
-      this.receivedEnd = false;
-      this.closeTimeout = this.config.closeTimeout;
-      this.assembleFragments = this.config.assembleFragments;
-      this.maxReceivedMessageSize = this.config.maxReceivedMessageSize;
-      this.outputBufferFull = false;
-      this.inputPaused = false;
-      this.receivedDataHandler = this.processReceivedData.bind(this);
-      this._closeTimerHandler = this.handleCloseTimer.bind(this);
-      this.socket.setNoDelay(this.config.disableNagleAlgorithm);
-      this.socket.setTimeout(0);
-      if (this.config.keepalive && !this.config.useNativeKeepalive) {
-        if (typeof this.config.keepaliveInterval !== "number") {
-          throw new Error("keepaliveInterval must be specified and numeric if keepalive is true.");
-        }
-        this._keepaliveTimerHandler = this.handleKeepaliveTimer.bind(this);
-        this.setKeepaliveTimer();
-        if (this.config.dropConnectionOnKeepaliveTimeout) {
-          if (typeof this.config.keepaliveGracePeriod !== "number") {
-            throw new Error("keepaliveGracePeriod  must be specified and numeric if dropConnectionOnKeepaliveTimeout is true.");
-          }
-          this._gracePeriodTimerHandler = this.handleGracePeriodTimer.bind(this);
-        }
-      } else if (this.config.keepalive && this.config.useNativeKeepalive) {
-        if (!("setKeepAlive" in this.socket)) {
-          throw new Error("Unable to use native keepalive: unsupported by this version of Node.");
-        }
-        this.socket.setKeepAlive(true, this.config.keepaliveInterval);
-      }
-      this.socket.removeAllListeners("error");
-    }
-    WebSocketConnection.CLOSE_REASON_NORMAL = 1e3;
-    WebSocketConnection.CLOSE_REASON_GOING_AWAY = 1001;
-    WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR = 1002;
-    WebSocketConnection.CLOSE_REASON_UNPROCESSABLE_INPUT = 1003;
-    WebSocketConnection.CLOSE_REASON_RESERVED = 1004;
-    WebSocketConnection.CLOSE_REASON_NOT_PROVIDED = 1005;
-    WebSocketConnection.CLOSE_REASON_ABNORMAL = 1006;
-    WebSocketConnection.CLOSE_REASON_INVALID_DATA = 1007;
-    WebSocketConnection.CLOSE_REASON_POLICY_VIOLATION = 1008;
-    WebSocketConnection.CLOSE_REASON_MESSAGE_TOO_BIG = 1009;
-    WebSocketConnection.CLOSE_REASON_EXTENSION_REQUIRED = 1010;
-    WebSocketConnection.CLOSE_REASON_INTERNAL_SERVER_ERROR = 1011;
-    WebSocketConnection.CLOSE_REASON_TLS_HANDSHAKE_FAILED = 1015;
-    WebSocketConnection.CLOSE_DESCRIPTIONS = {
-      1e3: "Normal connection closure",
-      1001: "Remote peer is going away",
-      1002: "Protocol error",
-      1003: "Unprocessable input",
-      1004: "Reserved",
-      1005: "Reason not provided",
-      1006: "Abnormal closure, no further detail available",
-      1007: "Invalid data received",
-      1008: "Policy violation",
-      1009: "Message too big",
-      1010: "Extension requested by client is required",
-      1011: "Internal Server Error",
-      1015: "TLS Handshake Failed"
-    };
-    function validateCloseReason(code) {
-      if (code < 1e3) {
-        return false;
-      }
-      if (code >= 1e3 && code <= 2999) {
-        return [1e3, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015].indexOf(code) !== -1;
-      }
-      if (code >= 3e3 && code <= 3999) {
-        return true;
-      }
-      if (code >= 4e3 && code <= 4999) {
-        return true;
-      }
-      if (code >= 5e3) {
-        return false;
-      }
-    }
-    util.inherits(WebSocketConnection, EventEmitter);
-    WebSocketConnection.prototype._addSocketEventListeners = function() {
-      this.socket.on("error", this.handleSocketError.bind(this));
-      this.socket.on("end", this.handleSocketEnd.bind(this));
-      this.socket.on("close", this.handleSocketClose.bind(this));
-      this.socket.on("drain", this.handleSocketDrain.bind(this));
-      this.socket.on("pause", this.handleSocketPause.bind(this));
-      this.socket.on("resume", this.handleSocketResume.bind(this));
-      this.socket.on("data", this.handleSocketData.bind(this));
-    };
-    WebSocketConnection.prototype.setKeepaliveTimer = function() {
-      this._debug("setKeepaliveTimer");
-      if (!this.config.keepalive || this.config.useNativeKeepalive) {
-        return;
-      }
-      this.clearKeepaliveTimer();
-      this.clearGracePeriodTimer();
-      this._keepaliveTimeoutID = setTimeout(this._keepaliveTimerHandler, this.config.keepaliveInterval);
-    };
-    WebSocketConnection.prototype.clearKeepaliveTimer = function() {
-      if (this._keepaliveTimeoutID) {
-        clearTimeout(this._keepaliveTimeoutID);
-      }
-    };
-    WebSocketConnection.prototype.handleKeepaliveTimer = function() {
-      this._debug("handleKeepaliveTimer");
-      this._keepaliveTimeoutID = null;
-      this.ping();
-      if (this.config.dropConnectionOnKeepaliveTimeout) {
-        this.setGracePeriodTimer();
-      } else {
-        this.setKeepaliveTimer();
-      }
-    };
-    WebSocketConnection.prototype.setGracePeriodTimer = function() {
-      this._debug("setGracePeriodTimer");
-      this.clearGracePeriodTimer();
-      this._gracePeriodTimeoutID = setTimeout(this._gracePeriodTimerHandler, this.config.keepaliveGracePeriod);
-    };
-    WebSocketConnection.prototype.clearGracePeriodTimer = function() {
-      if (this._gracePeriodTimeoutID) {
-        clearTimeout(this._gracePeriodTimeoutID);
-      }
-    };
-    WebSocketConnection.prototype.handleGracePeriodTimer = function() {
-      this._debug("handleGracePeriodTimer");
-      this._gracePeriodTimeoutID = null;
-      this.drop(WebSocketConnection.CLOSE_REASON_ABNORMAL, "Peer not responding.", true);
-    };
-    WebSocketConnection.prototype.handleSocketData = function(data) {
-      this._debug("handleSocketData");
-      this.setKeepaliveTimer();
-      this.bufferList.write(data);
-      this.processReceivedData();
-    };
-    WebSocketConnection.prototype.processReceivedData = function() {
-      this._debug("processReceivedData");
-      if (!this.connected) {
-        return;
-      }
-      if (this.inputPaused) {
-        return;
-      }
-      var frame = this.currentFrame;
-      if (!frame.addData(this.bufferList)) {
-        this._debug("-- insufficient data for frame");
-        return;
-      }
-      var self2 = this;
-      if (frame.protocolError) {
-        this._debug("-- protocol error");
-        process.nextTick(function() {
-          self2.drop(WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR, frame.dropReason);
-        });
-        return;
-      } else if (frame.frameTooLarge) {
-        this._debug("-- frame too large");
-        process.nextTick(function() {
-          self2.drop(WebSocketConnection.CLOSE_REASON_MESSAGE_TOO_BIG, frame.dropReason);
-        });
-        return;
-      }
-      if (frame.rsv1 || frame.rsv2 || frame.rsv3) {
-        this._debug("-- illegal rsv flag");
-        process.nextTick(function() {
-          self2.drop(
-            WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
-            "Unsupported usage of rsv bits without negotiated extension."
-          );
-        });
-        return;
-      }
-      if (!this.assembleFragments) {
-        this._debug("-- emitting frame");
-        process.nextTick(function() {
-          self2.emit("frame", frame);
         });
       }
-      process.nextTick(function() {
-        self2.processFrame(frame);
-      });
-      this.currentFrame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
-      if (this.bufferList.length > 0) {
-        setImmediateImpl(this.receivedDataHandler);
-      }
-    };
-    WebSocketConnection.prototype.handleSocketError = function(error) {
-      this._debug("handleSocketError: %j", error);
-      if (this.state === STATE_CLOSED) {
-        this._debug("  --- Socket 'error' after 'close'");
-        return;
-      }
-      this.closeReasonCode = WebSocketConnection.CLOSE_REASON_ABNORMAL;
-      this.closeDescription = "Socket Error: " + error.syscall + " " + error.code;
-      this.connected = false;
-      this.state = STATE_CLOSED;
-      this.fragmentationSize = 0;
-      if (utils.eventEmitterListenerCount(this, "error") > 0) {
-        this.emit("error", error);
-      }
-      this.socket.destroy();
-      this._debug.printOutput();
-    };
-    WebSocketConnection.prototype.handleSocketEnd = function() {
-      this._debug("handleSocketEnd: received socket end.  state = %s", this.state);
-      this.receivedEnd = true;
-      if (this.state === STATE_CLOSED) {
-        this._debug("  --- Socket 'end' after 'close'");
-        return;
-      }
-      if (this.state !== STATE_PEER_REQUESTED_CLOSE && this.state !== STATE_ENDING) {
-        this._debug("  --- UNEXPECTED socket end.");
-        this.socket.end();
-      }
-    };
-    WebSocketConnection.prototype.handleSocketClose = function(hadError) {
-      this._debug("handleSocketClose: received socket close");
-      this.socketHadError = hadError;
-      this.connected = false;
-      this.state = STATE_CLOSED;
-      if (this.closeReasonCode === -1) {
-        this.closeReasonCode = WebSocketConnection.CLOSE_REASON_ABNORMAL;
-        this.closeDescription = "Connection dropped by remote peer.";
-      }
-      this.clearCloseTimer();
-      this.clearKeepaliveTimer();
-      this.clearGracePeriodTimer();
-      if (!this.closeEventEmitted) {
-        this.closeEventEmitted = true;
-        this._debug("-- Emitting WebSocketConnection close event");
-        this.emit("close", this.closeReasonCode, this.closeDescription);
-      }
-    };
-    WebSocketConnection.prototype.handleSocketDrain = function() {
-      this._debug("handleSocketDrain: socket drain event");
-      this.outputBufferFull = false;
-      this.emit("drain");
-    };
-    WebSocketConnection.prototype.handleSocketPause = function() {
-      this._debug("handleSocketPause: socket pause event");
-      this.inputPaused = true;
-      this.emit("pause");
-    };
-    WebSocketConnection.prototype.handleSocketResume = function() {
-      this._debug("handleSocketResume: socket resume event");
-      this.inputPaused = false;
-      this.emit("resume");
-      this.processReceivedData();
-    };
-    WebSocketConnection.prototype.pause = function() {
-      this._debug("pause: pause requested");
-      this.socket.pause();
-    };
-    WebSocketConnection.prototype.resume = function() {
-      this._debug("resume: resume requested");
-      this.socket.resume();
-    };
-    WebSocketConnection.prototype.close = function(reasonCode, description) {
-      if (this.connected) {
-        this._debug("close: Initating clean WebSocket close sequence.");
-        if ("number" !== typeof reasonCode) {
-          reasonCode = WebSocketConnection.CLOSE_REASON_NORMAL;
-        }
-        if (!validateCloseReason(reasonCode)) {
-          throw new Error("Close code " + reasonCode + " is not valid.");
-        }
-        if ("string" !== typeof description) {
-          description = WebSocketConnection.CLOSE_DESCRIPTIONS[reasonCode];
-        }
-        this.closeReasonCode = reasonCode;
-        this.closeDescription = description;
-        this.setCloseTimer();
-        this.sendCloseFrame(this.closeReasonCode, this.closeDescription);
-        this.state = STATE_ENDING;
-        this.connected = false;
-      }
-    };
-    WebSocketConnection.prototype.drop = function(reasonCode, description, skipCloseFrame) {
-      this._debug("drop");
-      if (typeof reasonCode !== "number") {
-        reasonCode = WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR;
-      }
-      if (typeof description !== "string") {
-        description = WebSocketConnection.CLOSE_DESCRIPTIONS[reasonCode];
-      }
-      this._debug(
-        "Forcefully dropping connection. skipCloseFrame: %s, code: %d, description: %s",
-        skipCloseFrame,
-        reasonCode,
-        description
-      );
-      this.closeReasonCode = reasonCode;
-      this.closeDescription = description;
-      this.frameQueue = [];
-      this.fragmentationSize = 0;
-      if (!skipCloseFrame) {
-        this.sendCloseFrame(reasonCode, description);
-      }
-      this.connected = false;
-      this.state = STATE_CLOSED;
-      this.clearCloseTimer();
-      this.clearKeepaliveTimer();
-      this.clearGracePeriodTimer();
-      if (!this.closeEventEmitted) {
-        this.closeEventEmitted = true;
-        this._debug("Emitting WebSocketConnection close event");
-        this.emit("close", this.closeReasonCode, this.closeDescription);
-      }
-      this._debug("Drop: destroying socket");
-      this.socket.destroy();
-    };
-    WebSocketConnection.prototype.setCloseTimer = function() {
-      this._debug("setCloseTimer");
-      this.clearCloseTimer();
-      this._debug("Setting close timer");
-      this.waitingForCloseResponse = true;
-      this.closeTimer = setTimeout(this._closeTimerHandler, this.closeTimeout);
-    };
-    WebSocketConnection.prototype.clearCloseTimer = function() {
-      this._debug("clearCloseTimer");
-      if (this.closeTimer) {
-        this._debug("Clearing close timer");
-        clearTimeout(this.closeTimer);
-        this.waitingForCloseResponse = false;
-        this.closeTimer = null;
-      }
-    };
-    WebSocketConnection.prototype.handleCloseTimer = function() {
-      this._debug("handleCloseTimer");
-      this.closeTimer = null;
-      if (this.waitingForCloseResponse) {
-        this._debug("Close response not received from client.  Forcing socket end.");
-        this.waitingForCloseResponse = false;
-        this.state = STATE_CLOSED;
-        this.socket.end();
-      }
-    };
-    WebSocketConnection.prototype.processFrame = function(frame) {
-      this._debug("processFrame");
-      this._debug(" -- frame: %s", frame);
-      if (this.frameQueue.length !== 0 && (frame.opcode > 0 && frame.opcode < 8)) {
-        this.drop(
-          WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
-          "Illegal frame opcode 0x" + frame.opcode.toString(16) + " received in middle of fragmented message."
-        );
-        return;
-      }
-      switch (frame.opcode) {
-        case 2:
-          this._debug("-- Binary Frame");
-          if (this.assembleFragments) {
-            if (frame.fin) {
-              this._debug("---- Emitting 'message' event");
-              this.emit("message", {
-                type: "binary",
-                binaryData: frame.binaryPayload
-              });
-            } else {
-              this.frameQueue.push(frame);
-              this.fragmentationSize = frame.length;
-            }
-          }
-          break;
-        case 1:
-          this._debug("-- Text Frame");
-          if (this.assembleFragments) {
-            if (frame.fin) {
-              if (!isValidUTF8(frame.binaryPayload)) {
-                this.drop(
-                  WebSocketConnection.CLOSE_REASON_INVALID_DATA,
-                  "Invalid UTF-8 Data Received"
-                );
-                return;
-              }
-              this._debug("---- Emitting 'message' event");
-              this.emit("message", {
-                type: "utf8",
-                utf8Data: frame.binaryPayload.toString("utf8")
-              });
-            } else {
-              this.frameQueue.push(frame);
-              this.fragmentationSize = frame.length;
-            }
-          }
-          break;
-        case 0:
-          this._debug("-- Continuation Frame");
-          if (this.assembleFragments) {
-            if (this.frameQueue.length === 0) {
-              this.drop(
-                WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
-                "Unexpected Continuation Frame"
-              );
-              return;
-            }
-            this.fragmentationSize += frame.length;
-            if (this.fragmentationSize > this.maxReceivedMessageSize) {
-              this.drop(
-                WebSocketConnection.CLOSE_REASON_MESSAGE_TOO_BIG,
-                "Maximum message size exceeded."
-              );
-              return;
-            }
-            this.frameQueue.push(frame);
-            if (frame.fin) {
-              var bytesCopied = 0;
-              var binaryPayload = bufferAllocUnsafe(this.fragmentationSize);
-              var opcode = this.frameQueue[0].opcode;
-              this.frameQueue.forEach(function(currentFrame) {
-                currentFrame.binaryPayload.copy(binaryPayload, bytesCopied);
-                bytesCopied += currentFrame.binaryPayload.length;
-              });
-              this.frameQueue = [];
-              this.fragmentationSize = 0;
-              switch (opcode) {
-                case 2:
-                  this.emit("message", {
-                    type: "binary",
-                    binaryData: binaryPayload
-                  });
-                  break;
-                case 1:
-                  if (!isValidUTF8(binaryPayload)) {
-                    this.drop(
-                      WebSocketConnection.CLOSE_REASON_INVALID_DATA,
-                      "Invalid UTF-8 Data Received"
-                    );
-                    return;
-                  }
-                  this.emit("message", {
-                    type: "utf8",
-                    utf8Data: binaryPayload.toString("utf8")
-                  });
-                  break;
-                default:
-                  this.drop(
-                    WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
-                    "Unexpected first opcode in fragmentation sequence: 0x" + opcode.toString(16)
-                  );
-                  return;
-              }
-            }
-          }
-          break;
-        case 9:
-          this._debug("-- Ping Frame");
-          if (this._pingListenerCount > 0) {
-            var cancelled = false;
-            var cancel = function() {
-              cancelled = true;
-            };
-            this.emit("ping", cancel, frame.binaryPayload);
-            if (!cancelled) {
-              this.pong(frame.binaryPayload);
-            }
-          } else {
-            this.pong(frame.binaryPayload);
-          }
-          break;
-        case 10:
-          this._debug("-- Pong Frame");
-          this.emit("pong", frame.binaryPayload);
-          break;
-        case 8:
-          this._debug("-- Close Frame");
-          if (this.waitingForCloseResponse) {
-            this._debug("---- Got close response from peer.  Completing closing handshake.");
-            this.clearCloseTimer();
-            this.waitingForCloseResponse = false;
-            this.state = STATE_CLOSED;
-            this.socket.end();
-            return;
-          }
-          this._debug("---- Closing handshake initiated by peer.");
-          this.state = STATE_PEER_REQUESTED_CLOSE;
-          var respondCloseReasonCode;
-          if (frame.invalidCloseFrameLength) {
-            this.closeReasonCode = 1005;
-            respondCloseReasonCode = WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR;
-          } else if (frame.closeStatus === -1 || validateCloseReason(frame.closeStatus)) {
-            this.closeReasonCode = frame.closeStatus;
-            respondCloseReasonCode = WebSocketConnection.CLOSE_REASON_NORMAL;
-          } else {
-            this.closeReasonCode = frame.closeStatus;
-            respondCloseReasonCode = WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR;
-          }
-          if (frame.binaryPayload.length > 1) {
-            if (!isValidUTF8(frame.binaryPayload)) {
-              this.drop(
-                WebSocketConnection.CLOSE_REASON_INVALID_DATA,
-                "Invalid UTF-8 Data Received"
-              );
-              return;
-            }
-            this.closeDescription = frame.binaryPayload.toString("utf8");
-          } else {
-            this.closeDescription = WebSocketConnection.CLOSE_DESCRIPTIONS[this.closeReasonCode];
-          }
-          this._debug(
-            "------ Remote peer %s - code: %d - %s - close frame payload length: %d",
-            this.remoteAddress,
-            this.closeReasonCode,
-            this.closeDescription,
-            frame.length
-          );
-          this._debug("------ responding to remote peer's close request.");
-          this.sendCloseFrame(respondCloseReasonCode, null);
-          this.connected = false;
-          break;
-        default:
-          this._debug("-- Unrecognized Opcode %d", frame.opcode);
-          this.drop(
-            WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
-            "Unrecognized Opcode: 0x" + frame.opcode.toString(16)
-          );
-          break;
-      }
-    };
-    WebSocketConnection.prototype.send = function(data, cb) {
-      this._debug("send");
-      if (Buffer.isBuffer(data)) {
-        this.sendBytes(data, cb);
-      } else if (typeof data["toString"] === "function") {
-        this.sendUTF(data, cb);
-      } else {
-        throw new Error("Data provided must either be a Node Buffer or implement toString()");
-      }
-    };
-    WebSocketConnection.prototype.sendUTF = function(data, cb) {
-      data = bufferFromString(data.toString(), "utf8");
-      this._debug("sendUTF: %d bytes", data.length);
-      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
-      frame.opcode = 1;
-      frame.binaryPayload = data;
-      this.fragmentAndSend(frame, cb);
-    };
-    WebSocketConnection.prototype.sendBytes = function(data, cb) {
-      this._debug("sendBytes");
-      if (!Buffer.isBuffer(data)) {
-        throw new Error("You must pass a Node Buffer object to WebSocketConnection.prototype.sendBytes()");
-      }
-      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
-      frame.opcode = 2;
-      frame.binaryPayload = data;
-      this.fragmentAndSend(frame, cb);
-    };
-    WebSocketConnection.prototype.ping = function(data) {
-      this._debug("ping");
-      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
-      frame.opcode = 9;
-      frame.fin = true;
-      if (data) {
-        if (!Buffer.isBuffer(data)) {
-          data = bufferFromString(data.toString(), "utf8");
-        }
-        if (data.length > 125) {
-          this._debug("WebSocket: Data for ping is longer than 125 bytes.  Truncating.");
-          data = data.slice(0, 124);
-        }
-        frame.binaryPayload = data;
-      }
-      this.sendFrame(frame);
-    };
-    WebSocketConnection.prototype.pong = function(binaryPayload) {
-      this._debug("pong");
-      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
-      frame.opcode = 10;
-      if (Buffer.isBuffer(binaryPayload) && binaryPayload.length > 125) {
-        this._debug("WebSocket: Data for pong is longer than 125 bytes.  Truncating.");
-        binaryPayload = binaryPayload.slice(0, 124);
-      }
-      frame.binaryPayload = binaryPayload;
-      frame.fin = true;
-      this.sendFrame(frame);
-    };
-    WebSocketConnection.prototype.fragmentAndSend = function(frame, cb) {
-      this._debug("fragmentAndSend");
-      if (frame.opcode > 7) {
-        throw new Error("You cannot fragment control frames.");
-      }
-      var threshold = this.config.fragmentationThreshold;
-      var length = frame.binaryPayload.length;
-      if (!this.config.fragmentOutgoingMessages || frame.binaryPayload && length <= threshold) {
-        frame.fin = true;
-        this.sendFrame(frame, cb);
-        return;
-      }
-      var numFragments = Math.ceil(length / threshold);
-      var sentFragments = 0;
-      var sentCallback = function fragmentSentCallback(err) {
-        if (err) {
-          if (typeof cb === "function") {
-            cb(err);
-            cb = null;
-          }
-          return;
-        }
-        ++sentFragments;
-        if (sentFragments === numFragments && typeof cb === "function") {
-          cb();
-        }
-      };
-      for (var i = 1; i <= numFragments; i++) {
-        var currentFrame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
-        currentFrame.opcode = i === 1 ? frame.opcode : 0;
-        currentFrame.fin = i === numFragments;
-        var currentLength = i === numFragments ? length - threshold * (i - 1) : threshold;
-        var sliceStart = threshold * (i - 1);
-        currentFrame.binaryPayload = frame.binaryPayload.slice(sliceStart, sliceStart + currentLength);
-        this.sendFrame(currentFrame, sentCallback);
-      }
-    };
-    WebSocketConnection.prototype.sendCloseFrame = function(reasonCode, description, cb) {
-      if (typeof reasonCode !== "number") {
-        reasonCode = WebSocketConnection.CLOSE_REASON_NORMAL;
-      }
-      this._debug("sendCloseFrame state: %s, reasonCode: %d, description: %s", this.state, reasonCode, description);
-      if (this.state !== STATE_OPEN && this.state !== STATE_PEER_REQUESTED_CLOSE) {
-        return;
-      }
-      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
-      frame.fin = true;
-      frame.opcode = 8;
-      frame.closeStatus = reasonCode;
-      if (typeof description === "string") {
-        frame.binaryPayload = bufferFromString(description, "utf8");
-      }
-      this.sendFrame(frame, cb);
-      this.socket.end();
-    };
-    WebSocketConnection.prototype.sendFrame = function(frame, cb) {
-      this._debug("sendFrame");
-      frame.mask = this.maskOutgoingPackets;
-      var flushed = this.socket.write(frame.toBuffer(), cb);
-      this.outputBufferFull = !flushed;
-      return flushed;
-    };
-    module2.exports = WebSocketConnection;
-    function instrumentSocketForDebugging(connection, socket) {
-      if (!connection._debug.enabled) {
-        return;
-      }
-      var originalSocketEmit = socket.emit;
-      socket.emit = function(event) {
-        connection._debug("||| Socket Event  '%s'", event);
-        originalSocketEmit.apply(this, arguments);
-      };
-      for (var key in socket) {
-        if ("function" !== typeof socket[key]) {
-          continue;
-        }
-        if (["emit"].indexOf(key) !== -1) {
-          continue;
-        }
-        (function(key2) {
-          var original = socket[key2];
-          if (key2 === "on") {
-            socket[key2] = function proxyMethod__EventEmitter__On() {
-              connection._debug("||| Socket method called:  %s (%s)", key2, arguments[0]);
-              return original.apply(this, arguments);
-            };
-            return;
-          }
-          socket[key2] = function proxyMethod() {
-            connection._debug("||| Socket method called:  %s", key2);
-            return original.apply(this, arguments);
-          };
-        })(key);
-      }
     }
+    exports2.validateScopes = validateScopes;
   }
 });
 
-// ../../node_modules/websocket/lib/WebSocketRequest.js
-var require_WebSocketRequest = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketRequest.js"(exports2, module2) {
-    "use strict";
-    var crypto2 = require("crypto");
-    var util = require("util");
-    var url = require("url");
-    var EventEmitter = require("events").EventEmitter;
-    var WebSocketConnection = require_WebSocketConnection();
-    var headerValueSplitRegExp = /,\s*/;
-    var headerParamSplitRegExp = /;\s*/;
-    var headerSanitizeRegExp = /[\r\n]/g;
-    var xForwardedForSeparatorRegExp = /,\s*/;
-    var separators = [
-      "(",
-      ")",
-      "<",
-      ">",
-      "@",
-      ",",
-      ";",
-      ":",
-      "\\",
-      '"',
-      "/",
-      "[",
-      "]",
-      "?",
-      "=",
-      "{",
-      "}",
-      " ",
-      String.fromCharCode(9)
-    ];
-    var controlChars = [
-      String.fromCharCode(127)
-      /* DEL */
-    ];
-    for (i = 0; i < 31; i++) {
-      controlChars.push(String.fromCharCode(i));
-    }
-    var i;
-    var cookieNameValidateRegEx = /([\x00-\x20\x22\x28\x29\x2c\x2f\x3a-\x3f\x40\x5b-\x5e\x7b\x7d\x7f])/;
-    var cookieValueValidateRegEx = /[^\x21\x23-\x2b\x2d-\x3a\x3c-\x5b\x5d-\x7e]/;
-    var cookieValueDQuoteValidateRegEx = /^"[^"]*"$/;
-    var controlCharsAndSemicolonRegEx = /[\x00-\x20\x3b]/g;
-    var cookieSeparatorRegEx = /[;,] */;
-    var httpStatusDescriptions = {
-      100: "Continue",
-      101: "Switching Protocols",
-      200: "OK",
-      201: "Created",
-      203: "Non-Authoritative Information",
-      204: "No Content",
-      205: "Reset Content",
-      206: "Partial Content",
-      300: "Multiple Choices",
-      301: "Moved Permanently",
-      302: "Found",
-      303: "See Other",
-      304: "Not Modified",
-      305: "Use Proxy",
-      307: "Temporary Redirect",
-      400: "Bad Request",
-      401: "Unauthorized",
-      402: "Payment Required",
-      403: "Forbidden",
-      404: "Not Found",
-      406: "Not Acceptable",
-      407: "Proxy Authorization Required",
-      408: "Request Timeout",
-      409: "Conflict",
-      410: "Gone",
-      411: "Length Required",
-      412: "Precondition Failed",
-      413: "Request Entity Too Long",
-      414: "Request-URI Too Long",
-      415: "Unsupported Media Type",
-      416: "Requested Range Not Satisfiable",
-      417: "Expectation Failed",
-      426: "Upgrade Required",
-      500: "Internal Server Error",
-      501: "Not Implemented",
-      502: "Bad Gateway",
-      503: "Service Unavailable",
-      504: "Gateway Timeout",
-      505: "HTTP Version Not Supported"
-    };
-    function WebSocketRequest(socket, httpRequest, serverConfig) {
-      EventEmitter.call(this);
-      this.socket = socket;
-      this.httpRequest = httpRequest;
-      this.resource = httpRequest.url;
-      this.remoteAddress = socket.remoteAddress;
-      this.remoteAddresses = [this.remoteAddress];
-      this.serverConfig = serverConfig;
-      this._socketIsClosing = false;
-      this._socketCloseHandler = this._handleSocketCloseBeforeAccept.bind(this);
-      this.socket.on("end", this._socketCloseHandler);
-      this.socket.on("close", this._socketCloseHandler);
-      this._resolved = false;
-    }
-    util.inherits(WebSocketRequest, EventEmitter);
-    WebSocketRequest.prototype.readHandshake = function() {
-      var self2 = this;
-      var request = this.httpRequest;
-      this.resourceURL = url.parse(this.resource, true);
-      this.host = request.headers["host"];
-      if (!this.host) {
-        throw new Error("Client must provide a Host header.");
-      }
-      this.key = request.headers["sec-websocket-key"];
-      if (!this.key) {
-        throw new Error("Client must provide a value for Sec-WebSocket-Key.");
-      }
-      this.webSocketVersion = parseInt(request.headers["sec-websocket-version"], 10);
-      if (!this.webSocketVersion || isNaN(this.webSocketVersion)) {
-        throw new Error("Client must provide a value for Sec-WebSocket-Version.");
-      }
-      switch (this.webSocketVersion) {
-        case 8:
-        case 13:
-          break;
-        default:
-          var e = new Error("Unsupported websocket client version: " + this.webSocketVersion + "Only versions 8 and 13 are supported.");
-          e.httpCode = 426;
-          e.headers = {
-            "Sec-WebSocket-Version": "13"
-          };
-          throw e;
-      }
-      if (this.webSocketVersion === 13) {
-        this.origin = request.headers["origin"];
-      } else if (this.webSocketVersion === 8) {
-        this.origin = request.headers["sec-websocket-origin"];
-      }
-      var protocolString = request.headers["sec-websocket-protocol"];
-      this.protocolFullCaseMap = {};
-      this.requestedProtocols = [];
-      if (protocolString) {
-        var requestedProtocolsFullCase = protocolString.split(headerValueSplitRegExp);
-        requestedProtocolsFullCase.forEach(function(protocol) {
-          var lcProtocol = protocol.toLocaleLowerCase();
-          self2.requestedProtocols.push(lcProtocol);
-          self2.protocolFullCaseMap[lcProtocol] = protocol;
-        });
-      }
-      if (!this.serverConfig.ignoreXForwardedFor && request.headers["x-forwarded-for"]) {
-        var immediatePeerIP = this.remoteAddress;
-        this.remoteAddresses = request.headers["x-forwarded-for"].split(xForwardedForSeparatorRegExp);
-        this.remoteAddresses.push(immediatePeerIP);
-        this.remoteAddress = this.remoteAddresses[0];
-      }
-      if (this.serverConfig.parseExtensions) {
-        var extensionsString = request.headers["sec-websocket-extensions"];
-        this.requestedExtensions = this.parseExtensions(extensionsString);
-      } else {
-        this.requestedExtensions = [];
-      }
-      if (this.serverConfig.parseCookies) {
-        var cookieString = request.headers["cookie"];
-        this.cookies = this.parseCookies(cookieString);
-      } else {
-        this.cookies = [];
-      }
-    };
-    WebSocketRequest.prototype.parseExtensions = function(extensionsString) {
-      if (!extensionsString || extensionsString.length === 0) {
-        return [];
-      }
-      var extensions = extensionsString.toLocaleLowerCase().split(headerValueSplitRegExp);
-      extensions.forEach(function(extension, index, array) {
-        var params = extension.split(headerParamSplitRegExp);
-        var extensionName = params[0];
-        var extensionParams = params.slice(1);
-        extensionParams.forEach(function(rawParam, index2, array2) {
-          var arr = rawParam.split("=");
-          var obj2 = {
-            name: arr[0],
-            value: arr[1]
-          };
-          array2.splice(index2, 1, obj2);
-        });
-        var obj = {
-          name: extensionName,
-          params: extensionParams
-        };
-        array.splice(index, 1, obj);
-      });
-      return extensions;
-    };
-    WebSocketRequest.prototype.parseCookies = function(str) {
-      if (!str || typeof str !== "string") {
-        return [];
-      }
-      var cookies = [];
-      var pairs = str.split(cookieSeparatorRegEx);
-      pairs.forEach(function(pair) {
-        var eq_idx = pair.indexOf("=");
-        if (eq_idx === -1) {
-          cookies.push({
-            name: pair,
-            value: null
-          });
-          return;
-        }
-        var key = pair.substr(0, eq_idx).trim();
-        var val = pair.substr(++eq_idx, pair.length).trim();
-        if ('"' === val[0]) {
-          val = val.slice(1, -1);
-        }
-        cookies.push({
-          name: key,
-          value: decodeURIComponent(val)
-        });
-      });
-      return cookies;
-    };
-    WebSocketRequest.prototype.accept = function(acceptedProtocol, allowedOrigin, cookies) {
-      this._verifyResolution();
-      var protocolFullCase;
-      if (acceptedProtocol) {
-        protocolFullCase = this.protocolFullCaseMap[acceptedProtocol.toLocaleLowerCase()];
-        if (typeof protocolFullCase === "undefined") {
-          protocolFullCase = acceptedProtocol;
-        }
-      } else {
-        protocolFullCase = acceptedProtocol;
-      }
-      this.protocolFullCaseMap = null;
-      var sha1 = crypto2.createHash("sha1");
-      sha1.update(this.key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-      var acceptKey = sha1.digest("base64");
-      var response = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: " + acceptKey + "\r\n";
-      if (protocolFullCase) {
-        for (var i2 = 0; i2 < protocolFullCase.length; i2++) {
-          var charCode = protocolFullCase.charCodeAt(i2);
-          var character = protocolFullCase.charAt(i2);
-          if (charCode < 33 || charCode > 126 || separators.indexOf(character) !== -1) {
-            this.reject(500);
-            throw new Error('Illegal character "' + String.fromCharCode(character) + '" in subprotocol.');
-          }
-        }
-        if (this.requestedProtocols.indexOf(acceptedProtocol) === -1) {
-          this.reject(500);
-          throw new Error("Specified protocol was not requested by the client.");
-        }
-        protocolFullCase = protocolFullCase.replace(headerSanitizeRegExp, "");
-        response += "Sec-WebSocket-Protocol: " + protocolFullCase + "\r\n";
-      }
-      this.requestedProtocols = null;
-      if (allowedOrigin) {
-        allowedOrigin = allowedOrigin.replace(headerSanitizeRegExp, "");
-        if (this.webSocketVersion === 13) {
-          response += "Origin: " + allowedOrigin + "\r\n";
-        } else if (this.webSocketVersion === 8) {
-          response += "Sec-WebSocket-Origin: " + allowedOrigin + "\r\n";
-        }
-      }
-      if (cookies) {
-        if (!Array.isArray(cookies)) {
-          this.reject(500);
-          throw new Error('Value supplied for "cookies" argument must be an array.');
-        }
-        var seenCookies = {};
-        cookies.forEach(function(cookie) {
-          if (!cookie.name || !cookie.value) {
-            this.reject(500);
-            throw new Error('Each cookie to set must at least provide a "name" and "value"');
-          }
-          cookie.name = cookie.name.replace(controlCharsAndSemicolonRegEx, "");
-          cookie.value = cookie.value.replace(controlCharsAndSemicolonRegEx, "");
-          if (seenCookies[cookie.name]) {
-            this.reject(500);
-            throw new Error("You may not specify the same cookie name twice.");
-          }
-          seenCookies[cookie.name] = true;
-          var invalidChar = cookie.name.match(cookieNameValidateRegEx);
-          if (invalidChar) {
-            this.reject(500);
-            throw new Error("Illegal character " + invalidChar[0] + " in cookie name");
-          }
-          if (cookie.value.match(cookieValueDQuoteValidateRegEx)) {
-            invalidChar = cookie.value.slice(1, -1).match(cookieValueValidateRegEx);
-          } else {
-            invalidChar = cookie.value.match(cookieValueValidateRegEx);
-          }
-          if (invalidChar) {
-            this.reject(500);
-            throw new Error("Illegal character " + invalidChar[0] + " in cookie value");
-          }
-          var cookieParts = [cookie.name + "=" + cookie.value];
-          if (cookie.path) {
-            invalidChar = cookie.path.match(controlCharsAndSemicolonRegEx);
-            if (invalidChar) {
-              this.reject(500);
-              throw new Error("Illegal character " + invalidChar[0] + " in cookie path");
-            }
-            cookieParts.push("Path=" + cookie.path);
-          }
-          if (cookie.domain) {
-            if (typeof cookie.domain !== "string") {
-              this.reject(500);
-              throw new Error("Domain must be specified and must be a string.");
-            }
-            invalidChar = cookie.domain.match(controlCharsAndSemicolonRegEx);
-            if (invalidChar) {
-              this.reject(500);
-              throw new Error("Illegal character " + invalidChar[0] + " in cookie domain");
-            }
-            cookieParts.push("Domain=" + cookie.domain.toLowerCase());
-          }
-          if (cookie.expires) {
-            if (!(cookie.expires instanceof Date)) {
-              this.reject(500);
-              throw new Error('Value supplied for cookie "expires" must be a vaild date object');
-            }
-            cookieParts.push("Expires=" + cookie.expires.toGMTString());
-          }
-          if (cookie.maxage) {
-            var maxage = cookie.maxage;
-            if (typeof maxage === "string") {
-              maxage = parseInt(maxage, 10);
-            }
-            if (isNaN(maxage) || maxage <= 0) {
-              this.reject(500);
-              throw new Error('Value supplied for cookie "maxage" must be a non-zero number');
-            }
-            maxage = Math.round(maxage);
-            cookieParts.push("Max-Age=" + maxage.toString(10));
-          }
-          if (cookie.secure) {
-            if (typeof cookie.secure !== "boolean") {
-              this.reject(500);
-              throw new Error('Value supplied for cookie "secure" must be of type boolean');
-            }
-            cookieParts.push("Secure");
-          }
-          if (cookie.httponly) {
-            if (typeof cookie.httponly !== "boolean") {
-              this.reject(500);
-              throw new Error('Value supplied for cookie "httponly" must be of type boolean');
-            }
-            cookieParts.push("HttpOnly");
-          }
-          response += "Set-Cookie: " + cookieParts.join(";") + "\r\n";
-        }.bind(this));
-      }
-      this._resolved = true;
-      this.emit("requestResolved", this);
-      response += "\r\n";
-      var connection = new WebSocketConnection(this.socket, [], acceptedProtocol, false, this.serverConfig);
-      connection.webSocketVersion = this.webSocketVersion;
-      connection.remoteAddress = this.remoteAddress;
-      connection.remoteAddresses = this.remoteAddresses;
-      var self2 = this;
-      if (this._socketIsClosing) {
-        cleanupFailedConnection(connection);
-      } else {
-        this.socket.write(response, "ascii", function(error) {
-          if (error) {
-            cleanupFailedConnection(connection);
-            return;
-          }
-          self2._removeSocketCloseListeners();
-          connection._addSocketEventListeners();
-        });
-      }
-      this.emit("requestAccepted", connection);
-      return connection;
-    };
-    WebSocketRequest.prototype.reject = function(status, reason, extraHeaders) {
-      this._verifyResolution();
-      this._resolved = true;
-      this.emit("requestResolved", this);
-      if (typeof status !== "number") {
-        status = 403;
-      }
-      var response = "HTTP/1.1 " + status + " " + httpStatusDescriptions[status] + "\r\nConnection: close\r\n";
-      if (reason) {
-        reason = reason.replace(headerSanitizeRegExp, "");
-        response += "X-WebSocket-Reject-Reason: " + reason + "\r\n";
-      }
-      if (extraHeaders) {
-        for (var key in extraHeaders) {
-          var sanitizedValue = extraHeaders[key].toString().replace(headerSanitizeRegExp, "");
-          var sanitizedKey = key.replace(headerSanitizeRegExp, "");
-          response += sanitizedKey + ": " + sanitizedValue + "\r\n";
-        }
-      }
-      response += "\r\n";
-      this.socket.end(response, "ascii");
-      this.emit("requestRejected", this);
-    };
-    WebSocketRequest.prototype._handleSocketCloseBeforeAccept = function() {
-      this._socketIsClosing = true;
-      this._removeSocketCloseListeners();
-    };
-    WebSocketRequest.prototype._removeSocketCloseListeners = function() {
-      this.socket.removeListener("end", this._socketCloseHandler);
-      this.socket.removeListener("close", this._socketCloseHandler);
-    };
-    WebSocketRequest.prototype._verifyResolution = function() {
-      if (this._resolved) {
-        throw new Error("WebSocketRequest may only be accepted or rejected one time.");
-      }
-    };
-    function cleanupFailedConnection(connection) {
-      process.nextTick(function() {
-        connection.drop(1006, "TCP connection lost before handshake completed.", true);
-      });
-    }
-    module2.exports = WebSocketRequest;
-  }
-});
-
-// ../../node_modules/websocket/lib/WebSocketServer.js
-var require_WebSocketServer = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketServer.js"(exports2, module2) {
-    "use strict";
-    var extend = require_utils2().extend;
-    var utils = require_utils2();
-    var util = require("util");
-    var debug = require_src()("websocket:server");
-    var EventEmitter = require("events").EventEmitter;
-    var WebSocketRequest = require_WebSocketRequest();
-    var WebSocketServer = function WebSocketServer2(config) {
-      EventEmitter.call(this);
-      this._handlers = {
-        upgrade: this.handleUpgrade.bind(this),
-        requestAccepted: this.handleRequestAccepted.bind(this),
-        requestResolved: this.handleRequestResolved.bind(this)
-      };
-      this.connections = [];
-      this.pendingRequests = [];
-      if (config) {
-        this.mount(config);
-      }
-    };
-    util.inherits(WebSocketServer, EventEmitter);
-    WebSocketServer.prototype.mount = function(config) {
-      this.config = {
-        // The http server instance to attach to.  Required.
-        httpServer: null,
-        // 64KiB max frame size.
-        maxReceivedFrameSize: 65536,
-        // 1MiB max message size, only applicable if
-        // assembleFragments is true
-        maxReceivedMessageSize: 1048576,
-        // Outgoing messages larger than fragmentationThreshold will be
-        // split into multiple fragments.
-        fragmentOutgoingMessages: true,
-        // Outgoing frames are fragmented if they exceed this threshold.
-        // Default is 16KiB
-        fragmentationThreshold: 16384,
-        // If true, the server will automatically send a ping to all
-        // clients every 'keepaliveInterval' milliseconds.  The timer is
-        // reset on any received data from the client.
-        keepalive: true,
-        // The interval to send keepalive pings to connected clients if the
-        // connection is idle.  Any received data will reset the counter.
-        keepaliveInterval: 2e4,
-        // If true, the server will consider any connection that has not
-        // received any data within the amount of time specified by
-        // 'keepaliveGracePeriod' after a keepalive ping has been sent to
-        // be dead, and will drop the connection.
-        // Ignored if keepalive is false.
-        dropConnectionOnKeepaliveTimeout: true,
-        // The amount of time to wait after sending a keepalive ping before
-        // closing the connection if the connected peer does not respond.
-        // Ignored if keepalive is false.
-        keepaliveGracePeriod: 1e4,
-        // Whether to use native TCP keep-alive instead of WebSockets ping
-        // and pong packets.  Native TCP keep-alive sends smaller packets
-        // on the wire and so uses bandwidth more efficiently.  This may
-        // be more important when talking to mobile devices.
-        // If this value is set to true, then these values will be ignored:
-        //   keepaliveGracePeriod
-        //   dropConnectionOnKeepaliveTimeout
-        useNativeKeepalive: false,
-        // If true, fragmented messages will be automatically assembled
-        // and the full message will be emitted via a 'message' event.
-        // If false, each frame will be emitted via a 'frame' event and
-        // the application will be responsible for aggregating multiple
-        // fragmented frames.  Single-frame messages will emit a 'message'
-        // event in addition to the 'frame' event.
-        // Most users will want to leave this set to 'true'
-        assembleFragments: true,
-        // If this is true, websocket connections will be accepted
-        // regardless of the path and protocol specified by the client.
-        // The protocol accepted will be the first that was requested
-        // by the client.  Clients from any origin will be accepted.
-        // This should only be used in the simplest of cases.  You should
-        // probably leave this set to 'false' and inspect the request
-        // object to make sure it's acceptable before accepting it.
-        autoAcceptConnections: false,
-        // Whether or not the X-Forwarded-For header should be respected.
-        // It's important to set this to 'true' when accepting connections
-        // from untrusted clients, as a malicious client could spoof its
-        // IP address by simply setting this header.  It's meant to be added
-        // by a trusted proxy or other intermediary within your own
-        // infrastructure.
-        // See:  http://en.wikipedia.org/wiki/X-Forwarded-For
-        ignoreXForwardedFor: false,
-        // If this is true, 'cookie' headers are parsed and exposed as WebSocketRequest.cookies
-        parseCookies: true,
-        // If this is true, 'sec-websocket-extensions' headers are parsed and exposed as WebSocketRequest.requestedExtensions
-        parseExtensions: true,
-        // The Nagle Algorithm makes more efficient use of network resources
-        // by introducing a small delay before sending small packets so that
-        // multiple messages can be batched together before going onto the
-        // wire.  This however comes at the cost of latency, so the default
-        // is to disable it.  If you don't need low latency and are streaming
-        // lots of small messages, you can change this to 'false'
-        disableNagleAlgorithm: true,
-        // The number of milliseconds to wait after sending a close frame
-        // for an acknowledgement to come back before giving up and just
-        // closing the socket.
-        closeTimeout: 5e3
-      };
-      extend(this.config, config);
-      if (this.config.httpServer) {
-        if (!Array.isArray(this.config.httpServer)) {
-          this.config.httpServer = [this.config.httpServer];
-        }
-        var upgradeHandler = this._handlers.upgrade;
-        this.config.httpServer.forEach(function(httpServer) {
-          httpServer.on("upgrade", upgradeHandler);
-        });
-      } else {
-        throw new Error("You must specify an httpServer on which to mount the WebSocket server.");
-      }
-    };
-    WebSocketServer.prototype.unmount = function() {
-      var upgradeHandler = this._handlers.upgrade;
-      this.config.httpServer.forEach(function(httpServer) {
-        httpServer.removeListener("upgrade", upgradeHandler);
-      });
-    };
-    WebSocketServer.prototype.closeAllConnections = function() {
-      this.connections.forEach(function(connection) {
-        connection.close();
-      });
-      this.pendingRequests.forEach(function(request) {
-        process.nextTick(function() {
-          request.reject(503);
-        });
-      });
-    };
-    WebSocketServer.prototype.broadcast = function(data) {
-      if (Buffer.isBuffer(data)) {
-        this.broadcastBytes(data);
-      } else if (typeof data.toString === "function") {
-        this.broadcastUTF(data);
-      }
-    };
-    WebSocketServer.prototype.broadcastUTF = function(utfData) {
-      this.connections.forEach(function(connection) {
-        connection.sendUTF(utfData);
-      });
-    };
-    WebSocketServer.prototype.broadcastBytes = function(binaryData) {
-      this.connections.forEach(function(connection) {
-        connection.sendBytes(binaryData);
-      });
-    };
-    WebSocketServer.prototype.shutDown = function() {
-      this.unmount();
-      this.closeAllConnections();
-    };
-    WebSocketServer.prototype.handleUpgrade = function(request, socket) {
-      var self2 = this;
-      var wsRequest = new WebSocketRequest(socket, request, this.config);
-      try {
-        wsRequest.readHandshake();
-      } catch (e) {
-        wsRequest.reject(
-          e.httpCode ? e.httpCode : 400,
-          e.message,
-          e.headers
-        );
-        debug("Invalid handshake: %s", e.message);
-        this.emit("upgradeError", e);
-        return;
-      }
-      this.pendingRequests.push(wsRequest);
-      wsRequest.once("requestAccepted", this._handlers.requestAccepted);
-      wsRequest.once("requestResolved", this._handlers.requestResolved);
-      socket.once("close", function() {
-        self2._handlers.requestResolved(wsRequest);
-      });
-      if (!this.config.autoAcceptConnections && utils.eventEmitterListenerCount(this, "request") > 0) {
-        this.emit("request", wsRequest);
-      } else if (this.config.autoAcceptConnections) {
-        wsRequest.accept(wsRequest.requestedProtocols[0], wsRequest.origin);
-      } else {
-        wsRequest.reject(404, "No handler is configured to accept the connection.");
-      }
-    };
-    WebSocketServer.prototype.handleRequestAccepted = function(connection) {
-      var self2 = this;
-      connection.once("close", function(closeReason, description) {
-        self2.handleConnectionClose(connection, closeReason, description);
-      });
-      this.connections.push(connection);
-      this.emit("connect", connection);
-    };
-    WebSocketServer.prototype.handleConnectionClose = function(connection, closeReason, description) {
-      var index = this.connections.indexOf(connection);
-      if (index !== -1) {
-        this.connections.splice(index, 1);
-      }
-      this.emit("close", connection, closeReason, description);
-    };
-    WebSocketServer.prototype.handleRequestResolved = function(request) {
-      var index = this.pendingRequests.indexOf(request);
-      if (index !== -1) {
-        this.pendingRequests.splice(index, 1);
-      }
-    };
-    module2.exports = WebSocketServer;
-  }
-});
-
-// ../../node_modules/websocket/lib/WebSocketClient.js
-var require_WebSocketClient = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketClient.js"(exports2, module2) {
-    "use strict";
-    var utils = require_utils2();
-    var extend = utils.extend;
-    var util = require("util");
-    var EventEmitter = require("events").EventEmitter;
-    var http = require("http");
-    var https = require("https");
-    var url = require("url");
-    var crypto2 = require("crypto");
-    var WebSocketConnection = require_WebSocketConnection();
-    var bufferAllocUnsafe = utils.bufferAllocUnsafe;
-    var protocolSeparators = [
-      "(",
-      ")",
-      "<",
-      ">",
-      "@",
-      ",",
-      ";",
-      ":",
-      "\\",
-      '"',
-      "/",
-      "[",
-      "]",
-      "?",
-      "=",
-      "{",
-      "}",
-      " ",
-      String.fromCharCode(9)
-    ];
-    var excludedTlsOptions = ["hostname", "port", "method", "path", "headers"];
-    function WebSocketClient(config) {
-      EventEmitter.call(this);
-      this.config = {
-        // 1MiB max frame size.
-        maxReceivedFrameSize: 1048576,
-        // 8MiB max message size, only applicable if
-        // assembleFragments is true
-        maxReceivedMessageSize: 8388608,
-        // Outgoing messages larger than fragmentationThreshold will be
-        // split into multiple fragments.
-        fragmentOutgoingMessages: true,
-        // Outgoing frames are fragmented if they exceed this threshold.
-        // Default is 16KiB
-        fragmentationThreshold: 16384,
-        // Which version of the protocol to use for this session.  This
-        // option will be removed once the protocol is finalized by the IETF
-        // It is only available to ease the transition through the
-        // intermediate draft protocol versions.
-        // At present, it only affects the name of the Origin header.
-        webSocketVersion: 13,
-        // If true, fragmented messages will be automatically assembled
-        // and the full message will be emitted via a 'message' event.
-        // If false, each frame will be emitted via a 'frame' event and
-        // the application will be responsible for aggregating multiple
-        // fragmented frames.  Single-frame messages will emit a 'message'
-        // event in addition to the 'frame' event.
-        // Most users will want to leave this set to 'true'
-        assembleFragments: true,
-        // The Nagle Algorithm makes more efficient use of network resources
-        // by introducing a small delay before sending small packets so that
-        // multiple messages can be batched together before going onto the
-        // wire.  This however comes at the cost of latency, so the default
-        // is to disable it.  If you don't need low latency and are streaming
-        // lots of small messages, you can change this to 'false'
-        disableNagleAlgorithm: true,
-        // The number of milliseconds to wait after sending a close frame
-        // for an acknowledgement to come back before giving up and just
-        // closing the socket.
-        closeTimeout: 5e3,
-        // Options to pass to https.connect if connecting via TLS
-        tlsOptions: {}
-      };
-      if (config) {
-        var tlsOptions;
-        if (config.tlsOptions) {
-          tlsOptions = config.tlsOptions;
-          delete config.tlsOptions;
-        } else {
-          tlsOptions = {};
-        }
-        extend(this.config, config);
-        extend(this.config.tlsOptions, tlsOptions);
-      }
-      this._req = null;
-      switch (this.config.webSocketVersion) {
-        case 8:
-        case 13:
-          break;
-        default:
-          throw new Error("Requested webSocketVersion is not supported. Allowed values are 8 and 13.");
-      }
-    }
-    util.inherits(WebSocketClient, EventEmitter);
-    WebSocketClient.prototype.connect = function(requestUrl, protocols, origin, headers, extraRequestOptions) {
-      var self2 = this;
-      if (typeof protocols === "string") {
-        if (protocols.length > 0) {
-          protocols = [protocols];
-        } else {
-          protocols = [];
-        }
-      }
-      if (!(protocols instanceof Array)) {
-        protocols = [];
-      }
-      this.protocols = protocols;
-      this.origin = origin;
-      if (typeof requestUrl === "string") {
-        this.url = url.parse(requestUrl);
-      } else {
-        this.url = requestUrl;
-      }
-      if (!this.url.protocol) {
-        throw new Error("You must specify a full WebSocket URL, including protocol.");
-      }
-      if (!this.url.host) {
-        throw new Error("You must specify a full WebSocket URL, including hostname. Relative URLs are not supported.");
-      }
-      this.secure = this.url.protocol === "wss:";
-      this.protocols.forEach(function(protocol) {
-        for (var i2 = 0; i2 < protocol.length; i2++) {
-          var charCode = protocol.charCodeAt(i2);
-          var character = protocol.charAt(i2);
-          if (charCode < 33 || charCode > 126 || protocolSeparators.indexOf(character) !== -1) {
-            throw new Error('Protocol list contains invalid character "' + String.fromCharCode(charCode) + '"');
-          }
-        }
-      });
-      var defaultPorts = {
-        "ws:": "80",
-        "wss:": "443"
-      };
-      if (!this.url.port) {
-        this.url.port = defaultPorts[this.url.protocol];
-      }
-      var nonce = bufferAllocUnsafe(16);
-      for (var i = 0; i < 16; i++) {
-        nonce[i] = Math.round(Math.random() * 255);
-      }
-      this.base64nonce = nonce.toString("base64");
-      var hostHeaderValue = this.url.hostname;
-      if (this.url.protocol === "ws:" && this.url.port !== "80" || this.url.protocol === "wss:" && this.url.port !== "443") {
-        hostHeaderValue += ":" + this.url.port;
-      }
-      var reqHeaders = {};
-      if (this.secure && this.config.tlsOptions.hasOwnProperty("headers")) {
-        extend(reqHeaders, this.config.tlsOptions.headers);
-      }
-      if (headers) {
-        extend(reqHeaders, headers);
-      }
-      extend(reqHeaders, {
-        "Upgrade": "websocket",
-        "Connection": "Upgrade",
-        "Sec-WebSocket-Version": this.config.webSocketVersion.toString(10),
-        "Sec-WebSocket-Key": this.base64nonce,
-        "Host": reqHeaders.Host || hostHeaderValue
-      });
-      if (this.protocols.length > 0) {
-        reqHeaders["Sec-WebSocket-Protocol"] = this.protocols.join(", ");
-      }
-      if (this.origin) {
-        if (this.config.webSocketVersion === 13) {
-          reqHeaders["Origin"] = this.origin;
-        } else if (this.config.webSocketVersion === 8) {
-          reqHeaders["Sec-WebSocket-Origin"] = this.origin;
-        }
-      }
-      var pathAndQuery;
-      if (this.url.pathname) {
-        pathAndQuery = this.url.path;
-      } else if (this.url.path) {
-        pathAndQuery = "/" + this.url.path;
-      } else {
-        pathAndQuery = "/";
-      }
-      function handleRequestError(error) {
-        self2._req = null;
-        self2.emit("connectFailed", error);
-      }
-      var requestOptions = {
-        agent: false
-      };
-      if (extraRequestOptions) {
-        extend(requestOptions, extraRequestOptions);
-      }
-      extend(requestOptions, {
-        hostname: this.url.hostname,
-        port: this.url.port,
-        method: "GET",
-        path: pathAndQuery,
-        headers: reqHeaders
-      });
-      if (this.secure) {
-        var tlsOptions = this.config.tlsOptions;
-        for (var key in tlsOptions) {
-          if (tlsOptions.hasOwnProperty(key) && excludedTlsOptions.indexOf(key) === -1) {
-            requestOptions[key] = tlsOptions[key];
-          }
-        }
-      }
-      var req = this._req = (this.secure ? https : http).request(requestOptions);
-      req.on("upgrade", function handleRequestUpgrade(response, socket, head) {
-        self2._req = null;
-        req.removeListener("error", handleRequestError);
-        self2.socket = socket;
-        self2.response = response;
-        self2.firstDataChunk = head;
-        self2.validateHandshake();
-      });
-      req.on("error", handleRequestError);
-      req.on("response", function(response) {
-        self2._req = null;
-        if (utils.eventEmitterListenerCount(self2, "httpResponse") > 0) {
-          self2.emit("httpResponse", response, self2);
-          if (response.socket) {
-            response.socket.end();
-          }
-        } else {
-          var headerDumpParts = [];
-          for (var headerName in response.headers) {
-            headerDumpParts.push(headerName + ": " + response.headers[headerName]);
-          }
-          self2.failHandshake(
-            "Server responded with a non-101 status: " + response.statusCode + " " + response.statusMessage + "\nResponse Headers Follow:\n" + headerDumpParts.join("\n") + "\n"
-          );
-        }
-      });
-      req.end();
-    };
-    WebSocketClient.prototype.validateHandshake = function() {
-      var headers = this.response.headers;
-      if (this.protocols.length > 0) {
-        this.protocol = headers["sec-websocket-protocol"];
-        if (this.protocol) {
-          if (this.protocols.indexOf(this.protocol) === -1) {
-            this.failHandshake("Server did not respond with a requested protocol.");
-            return;
-          }
-        } else {
-          this.failHandshake("Expected a Sec-WebSocket-Protocol header.");
-          return;
-        }
-      }
-      if (!(headers["connection"] && headers["connection"].toLocaleLowerCase() === "upgrade")) {
-        this.failHandshake("Expected a Connection: Upgrade header from the server");
-        return;
-      }
-      if (!(headers["upgrade"] && headers["upgrade"].toLocaleLowerCase() === "websocket")) {
-        this.failHandshake("Expected an Upgrade: websocket header from the server");
-        return;
-      }
-      var sha1 = crypto2.createHash("sha1");
-      sha1.update(this.base64nonce + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
-      var expectedKey = sha1.digest("base64");
-      if (!headers["sec-websocket-accept"]) {
-        this.failHandshake("Expected Sec-WebSocket-Accept header from server");
-        return;
-      }
-      if (headers["sec-websocket-accept"] !== expectedKey) {
-        this.failHandshake("Sec-WebSocket-Accept header from server didn't match expected value of " + expectedKey);
-        return;
-      }
-      this.succeedHandshake();
-    };
-    WebSocketClient.prototype.failHandshake = function(errorDescription) {
-      if (this.socket && this.socket.writable) {
-        this.socket.end();
-      }
-      this.emit("connectFailed", new Error(errorDescription));
-    };
-    WebSocketClient.prototype.succeedHandshake = function() {
-      var connection = new WebSocketConnection(this.socket, [], this.protocol, true, this.config);
-      connection.webSocketVersion = this.config.webSocketVersion;
-      connection._addSocketEventListeners();
-      this.emit("connect", connection);
-      if (this.firstDataChunk.length > 0) {
-        connection.handleSocketData(this.firstDataChunk);
-      }
-      this.firstDataChunk = null;
-    };
-    WebSocketClient.prototype.abort = function() {
-      if (this._req) {
-        this._req.abort();
-      }
-    };
-    module2.exports = WebSocketClient;
-  }
-});
-
-// ../../node_modules/websocket/lib/WebSocketRouterRequest.js
-var require_WebSocketRouterRequest = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketRouterRequest.js"(exports2, module2) {
-    "use strict";
-    var util = require("util");
-    var EventEmitter = require("events").EventEmitter;
-    function WebSocketRouterRequest(webSocketRequest, resolvedProtocol) {
-      EventEmitter.call(this);
-      this.webSocketRequest = webSocketRequest;
-      if (resolvedProtocol === "____no_protocol____") {
-        this.protocol = null;
-      } else {
-        this.protocol = resolvedProtocol;
-      }
-      this.origin = webSocketRequest.origin;
-      this.resource = webSocketRequest.resource;
-      this.resourceURL = webSocketRequest.resourceURL;
-      this.httpRequest = webSocketRequest.httpRequest;
-      this.remoteAddress = webSocketRequest.remoteAddress;
-      this.webSocketVersion = webSocketRequest.webSocketVersion;
-      this.requestedExtensions = webSocketRequest.requestedExtensions;
-      this.cookies = webSocketRequest.cookies;
-    }
-    util.inherits(WebSocketRouterRequest, EventEmitter);
-    WebSocketRouterRequest.prototype.accept = function(origin, cookies) {
-      var connection = this.webSocketRequest.accept(this.protocol, origin, cookies);
-      this.emit("requestAccepted", connection);
-      return connection;
-    };
-    WebSocketRouterRequest.prototype.reject = function(status, reason, extraHeaders) {
-      this.webSocketRequest.reject(status, reason, extraHeaders);
-      this.emit("requestRejected", this);
-    };
-    module2.exports = WebSocketRouterRequest;
-  }
-});
-
-// ../../node_modules/websocket/lib/WebSocketRouter.js
-var require_WebSocketRouter = __commonJS({
-  "../../node_modules/websocket/lib/WebSocketRouter.js"(exports2, module2) {
-    "use strict";
-    var extend = require_utils2().extend;
-    var util = require("util");
-    var EventEmitter = require("events").EventEmitter;
-    var WebSocketRouterRequest = require_WebSocketRouterRequest();
-    function WebSocketRouter(config) {
-      EventEmitter.call(this);
-      this.config = {
-        // The WebSocketServer instance to attach to.
-        server: null
-      };
-      if (config) {
-        extend(this.config, config);
-      }
-      this.handlers = [];
-      this._requestHandler = this.handleRequest.bind(this);
-      if (this.config.server) {
-        this.attachServer(this.config.server);
-      }
-    }
-    util.inherits(WebSocketRouter, EventEmitter);
-    WebSocketRouter.prototype.attachServer = function(server) {
-      if (server) {
-        this.server = server;
-        this.server.on("request", this._requestHandler);
-      } else {
-        throw new Error("You must specify a WebSocketServer instance to attach to.");
-      }
-    };
-    WebSocketRouter.prototype.detachServer = function() {
-      if (this.server) {
-        this.server.removeListener("request", this._requestHandler);
-        this.server = null;
-      } else {
-        throw new Error("Cannot detach from server: not attached.");
-      }
-    };
-    WebSocketRouter.prototype.mount = function(path2, protocol, callback) {
-      if (!path2) {
-        throw new Error("You must specify a path for this handler.");
-      }
-      if (!protocol) {
-        protocol = "____no_protocol____";
-      }
-      if (!callback) {
-        throw new Error("You must specify a callback for this handler.");
-      }
-      path2 = this.pathToRegExp(path2);
-      if (!(path2 instanceof RegExp)) {
-        throw new Error("Path must be specified as either a string or a RegExp.");
-      }
-      var pathString = path2.toString();
-      protocol = protocol.toLocaleLowerCase();
-      if (this.findHandlerIndex(pathString, protocol) !== -1) {
-        throw new Error("You may only mount one handler per path/protocol combination.");
-      }
-      this.handlers.push({
-        "path": path2,
-        "pathString": pathString,
-        "protocol": protocol,
-        "callback": callback
-      });
-    };
-    WebSocketRouter.prototype.unmount = function(path2, protocol) {
-      var index = this.findHandlerIndex(this.pathToRegExp(path2).toString(), protocol);
-      if (index !== -1) {
-        this.handlers.splice(index, 1);
-      } else {
-        throw new Error("Unable to find a route matching the specified path and protocol.");
-      }
-    };
-    WebSocketRouter.prototype.findHandlerIndex = function(pathString, protocol) {
-      protocol = protocol.toLocaleLowerCase();
-      for (var i = 0, len = this.handlers.length; i < len; i++) {
-        var handler = this.handlers[i];
-        if (handler.pathString === pathString && handler.protocol === protocol) {
-          return i;
-        }
-      }
-      return -1;
-    };
-    WebSocketRouter.prototype.pathToRegExp = function(path2) {
-      if (typeof path2 === "string") {
-        if (path2 === "*") {
-          path2 = /^.*$/;
-        } else {
-          path2 = path2.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-          path2 = new RegExp("^" + path2 + "$");
-        }
-      }
-      return path2;
-    };
-    WebSocketRouter.prototype.handleRequest = function(request) {
-      var requestedProtocols = request.requestedProtocols;
-      if (requestedProtocols.length === 0) {
-        requestedProtocols = ["____no_protocol____"];
-      }
-      for (var i = 0; i < requestedProtocols.length; i++) {
-        var requestedProtocol = requestedProtocols[i].toLocaleLowerCase();
-        for (var j = 0, len = this.handlers.length; j < len; j++) {
-          var handler = this.handlers[j];
-          if (handler.path.test(request.resourceURL.pathname)) {
-            if (requestedProtocol === handler.protocol || handler.protocol === "*") {
-              var routerRequest = new WebSocketRouterRequest(request, requestedProtocol);
-              handler.callback(routerRequest);
-              return;
-            }
-          }
-        }
-      }
-      request.reject(404, "No handler is available for the given request.");
-    };
-    module2.exports = WebSocketRouter;
-  }
-});
-
-// ../../node_modules/is-typedarray/index.js
-var require_is_typedarray = __commonJS({
-  "../../node_modules/is-typedarray/index.js"(exports2, module2) {
-    "use strict";
-    module2.exports = isTypedArray;
-    isTypedArray.strict = isStrictTypedArray;
-    isTypedArray.loose = isLooseTypedArray;
-    var toString = Object.prototype.toString;
-    var names = {
-      "[object Int8Array]": true,
-      "[object Int16Array]": true,
-      "[object Int32Array]": true,
-      "[object Uint8Array]": true,
-      "[object Uint8ClampedArray]": true,
-      "[object Uint16Array]": true,
-      "[object Uint32Array]": true,
-      "[object Float32Array]": true,
-      "[object Float64Array]": true
-    };
-    function isTypedArray(arr) {
-      return isStrictTypedArray(arr) || isLooseTypedArray(arr);
-    }
-    function isStrictTypedArray(arr) {
-      return arr instanceof Int8Array || arr instanceof Int16Array || arr instanceof Int32Array || arr instanceof Uint8Array || arr instanceof Uint8ClampedArray || arr instanceof Uint16Array || arr instanceof Uint32Array || arr instanceof Float32Array || arr instanceof Float64Array;
-    }
-    function isLooseTypedArray(arr) {
-      return names[toString.call(arr)];
-    }
-  }
-});
-
-// ../../node_modules/typedarray-to-buffer/index.js
-var require_typedarray_to_buffer = __commonJS({
-  "../../node_modules/typedarray-to-buffer/index.js"(exports2, module2) {
-    "use strict";
-    var isTypedArray = require_is_typedarray().strict;
-    module2.exports = function typedarrayToBuffer(arr) {
-      if (isTypedArray(arr)) {
-        var buf = Buffer.from(arr.buffer);
-        if (arr.byteLength !== arr.buffer.byteLength) {
-          buf = buf.slice(arr.byteOffset, arr.byteOffset + arr.byteLength);
-        }
-        return buf;
-      } else {
-        return Buffer.from(arr);
-      }
-    };
-  }
-});
-
-// ../../node_modules/yaeti/lib/EventTarget.js
-var require_EventTarget = __commonJS({
-  "../../node_modules/yaeti/lib/EventTarget.js"(exports2, module2) {
-    "use strict";
-    module2.exports = _EventTarget;
-    function _EventTarget() {
-      if (typeof this.addEventListener === "function") {
-        return;
-      }
-      this._listeners = {};
-      this.addEventListener = _addEventListener;
-      this.removeEventListener = _removeEventListener;
-      this.dispatchEvent = _dispatchEvent;
-    }
-    Object.defineProperties(_EventTarget.prototype, {
-      listeners: {
-        get: function() {
-          return this._listeners;
-        }
-      }
-    });
-    function _addEventListener(type, newListener) {
-      var listenersType, i, listener;
-      if (!type || !newListener) {
-        return;
-      }
-      listenersType = this._listeners[type];
-      if (listenersType === void 0) {
-        this._listeners[type] = listenersType = [];
-      }
-      for (i = 0; !!(listener = listenersType[i]); i++) {
-        if (listener === newListener) {
-          return;
-        }
-      }
-      listenersType.push(newListener);
-    }
-    function _removeEventListener(type, oldListener) {
-      var listenersType, i, listener;
-      if (!type || !oldListener) {
-        return;
-      }
-      listenersType = this._listeners[type];
-      if (listenersType === void 0) {
-        return;
-      }
-      for (i = 0; !!(listener = listenersType[i]); i++) {
-        if (listener === oldListener) {
-          listenersType.splice(i, 1);
-          break;
-        }
-      }
-      if (listenersType.length === 0) {
-        delete this._listeners[type];
-      }
-    }
-    function _dispatchEvent(event) {
-      var type, listenersType, dummyListener, stopImmediatePropagation = false, i, listener;
-      if (!event || typeof event.type !== "string") {
-        throw new Error("`event` must have a valid `type` property");
-      }
-      if (event._yaeti) {
-        event.target = this;
-        event.cancelable = true;
-      }
-      try {
-        event.stopImmediatePropagation = function() {
-          stopImmediatePropagation = true;
-        };
-      } catch (error) {
-      }
-      type = event.type;
-      listenersType = this._listeners[type] || [];
-      dummyListener = this["on" + type];
-      if (typeof dummyListener === "function") {
-        dummyListener.call(this, event);
-      }
-      for (i = 0; !!(listener = listenersType[i]); i++) {
-        if (stopImmediatePropagation) {
-          break;
-        }
-        listener.call(this, event);
-      }
-      return !event.defaultPrevented;
-    }
-  }
-});
-
-// ../../node_modules/yaeti/lib/Event.js
-var require_Event = __commonJS({
-  "../../node_modules/yaeti/lib/Event.js"(exports2, module2) {
-    "use strict";
-    module2.exports = _Event;
-    function _Event(type) {
-      this.type = type;
-      this.isTrusted = false;
-      this._yaeti = true;
-    }
-  }
-});
-
-// ../../node_modules/yaeti/index.js
-var require_yaeti = __commonJS({
-  "../../node_modules/yaeti/index.js"(exports2, module2) {
-    "use strict";
-    module2.exports = {
-      EventTarget: require_EventTarget(),
-      Event: require_Event()
-    };
-  }
-});
-
-// ../../node_modules/websocket/lib/W3CWebSocket.js
-var require_W3CWebSocket = __commonJS({
-  "../../node_modules/websocket/lib/W3CWebSocket.js"(exports2, module2) {
-    "use strict";
-    var WebSocketClient = require_WebSocketClient();
-    var toBuffer = require_typedarray_to_buffer();
-    var yaeti = require_yaeti();
-    var CONNECTING = 0;
-    var OPEN = 1;
-    var CLOSING = 2;
-    var CLOSED = 3;
-    module2.exports = W3CWebSocket;
-    function W3CWebSocket(url, protocols, origin, headers, requestOptions, clientConfig) {
-      yaeti.EventTarget.call(this);
-      clientConfig = clientConfig || {};
-      clientConfig.assembleFragments = true;
-      var self2 = this;
-      this._url = url;
-      this._readyState = CONNECTING;
-      this._protocol = void 0;
-      this._extensions = "";
-      this._bufferedAmount = 0;
-      this._binaryType = "arraybuffer";
-      this._connection = void 0;
-      this._client = new WebSocketClient(clientConfig);
-      this._client.on("connect", function(connection) {
-        onConnect.call(self2, connection);
-      });
-      this._client.on("connectFailed", function() {
-        onConnectFailed.call(self2);
-      });
-      this._client.connect(url, protocols, origin, headers, requestOptions);
-    }
-    Object.defineProperties(W3CWebSocket.prototype, {
-      url: { get: function() {
-        return this._url;
-      } },
-      readyState: { get: function() {
-        return this._readyState;
-      } },
-      protocol: { get: function() {
-        return this._protocol;
-      } },
-      extensions: { get: function() {
-        return this._extensions;
-      } },
-      bufferedAmount: { get: function() {
-        return this._bufferedAmount;
-      } }
-    });
-    Object.defineProperties(W3CWebSocket.prototype, {
-      binaryType: {
-        get: function() {
-          return this._binaryType;
-        },
-        set: function(type) {
-          if (type !== "arraybuffer") {
-            throw new SyntaxError('just "arraybuffer" type allowed for "binaryType" attribute');
-          }
-          this._binaryType = type;
-        }
-      }
-    });
-    [["CONNECTING", CONNECTING], ["OPEN", OPEN], ["CLOSING", CLOSING], ["CLOSED", CLOSED]].forEach(function(property) {
-      Object.defineProperty(W3CWebSocket.prototype, property[0], {
-        get: function() {
-          return property[1];
-        }
-      });
-    });
-    [["CONNECTING", CONNECTING], ["OPEN", OPEN], ["CLOSING", CLOSING], ["CLOSED", CLOSED]].forEach(function(property) {
-      Object.defineProperty(W3CWebSocket, property[0], {
-        get: function() {
-          return property[1];
-        }
-      });
-    });
-    W3CWebSocket.prototype.send = function(data) {
-      if (this._readyState !== OPEN) {
-        throw new Error("cannot call send() while not connected");
-      }
-      if (typeof data === "string" || data instanceof String) {
-        this._connection.sendUTF(data);
-      } else {
-        if (data instanceof Buffer) {
-          this._connection.sendBytes(data);
-        } else if (data.byteLength || data.byteLength === 0) {
-          data = toBuffer(data);
-          this._connection.sendBytes(data);
-        } else {
-          throw new Error("unknown binary data:", data);
-        }
-      }
-    };
-    W3CWebSocket.prototype.close = function(code, reason) {
-      switch (this._readyState) {
-        case CONNECTING:
-          onConnectFailed.call(this);
-          this._client.on("connect", function(connection) {
-            if (code) {
-              connection.close(code, reason);
-            } else {
-              connection.close();
-            }
-          });
-          break;
-        case OPEN:
-          this._readyState = CLOSING;
-          if (code) {
-            this._connection.close(code, reason);
-          } else {
-            this._connection.close();
-          }
-          break;
-        case CLOSING:
-        case CLOSED:
-          break;
-      }
-    };
-    function createCloseEvent(code, reason) {
-      var event = new yaeti.Event("close");
-      event.code = code;
-      event.reason = reason;
-      event.wasClean = typeof code === "undefined" || code === 1e3;
-      return event;
-    }
-    function createMessageEvent(data) {
-      var event = new yaeti.Event("message");
-      event.data = data;
-      return event;
-    }
-    function onConnect(connection) {
-      var self2 = this;
-      this._readyState = OPEN;
-      this._connection = connection;
-      this._protocol = connection.protocol;
-      this._extensions = connection.extensions;
-      this._connection.on("close", function(code, reason) {
-        onClose.call(self2, code, reason);
-      });
-      this._connection.on("message", function(msg) {
-        onMessage.call(self2, msg);
-      });
-      this.dispatchEvent(new yaeti.Event("open"));
-    }
-    function onConnectFailed() {
-      destroy.call(this);
-      this._readyState = CLOSED;
-      try {
-        this.dispatchEvent(new yaeti.Event("error"));
-      } finally {
-        this.dispatchEvent(createCloseEvent(1006, "connection failed"));
-      }
-    }
-    function onClose(code, reason) {
-      destroy.call(this);
-      this._readyState = CLOSED;
-      this.dispatchEvent(createCloseEvent(code, reason || ""));
-    }
-    function onMessage(message) {
-      if (message.utf8Data) {
-        this.dispatchEvent(createMessageEvent(message.utf8Data));
-      } else if (message.binaryData) {
-        if (this.binaryType === "arraybuffer") {
-          var buffer = message.binaryData;
-          var arraybuffer = new ArrayBuffer(buffer.length);
-          var view = new Uint8Array(arraybuffer);
-          for (var i = 0, len = buffer.length; i < len; ++i) {
-            view[i] = buffer[i];
-          }
-          this.dispatchEvent(createMessageEvent(arraybuffer));
-        }
-      }
-    }
-    function destroy() {
-      this._client.removeAllListeners();
-      if (this._connection) {
-        this._connection.removeAllListeners();
-      }
-    }
-  }
-});
-
-// ../../node_modules/websocket/lib/Deprecation.js
-var require_Deprecation = __commonJS({
-  "../../node_modules/websocket/lib/Deprecation.js"(exports2, module2) {
-    "use strict";
-    var Deprecation = {
-      disableWarnings: false,
-      deprecationWarningMap: {},
-      warn: function(deprecationName) {
-        if (!this.disableWarnings && this.deprecationWarningMap[deprecationName]) {
-          console.warn("DEPRECATION WARNING: " + this.deprecationWarningMap[deprecationName]);
-          this.deprecationWarningMap[deprecationName] = false;
-        }
-      }
-    };
-    module2.exports = Deprecation;
-  }
-});
-
-// ../../node_modules/websocket/package.json
-var require_package2 = __commonJS({
-  "../../node_modules/websocket/package.json"(exports2, module2) {
-    module2.exports = {
-      name: "websocket",
-      description: "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
-      keywords: [
-        "websocket",
-        "websockets",
-        "socket",
-        "networking",
-        "comet",
-        "push",
-        "RFC-6455",
-        "realtime",
-        "server",
-        "client"
-      ],
-      author: "Brian McKelvey <theturtle32@gmail.com> (https://github.com/theturtle32)",
-      contributors: [
-        "I\xF1aki Baz Castillo <ibc@aliax.net> (http://dev.sipdoc.net)"
-      ],
-      version: "1.0.35",
-      repository: {
-        type: "git",
-        url: "https://github.com/theturtle32/WebSocket-Node.git"
-      },
-      homepage: "https://github.com/theturtle32/WebSocket-Node",
-      engines: {
-        node: ">=4.0.0"
-      },
-      dependencies: {
-        bufferutil: "^4.0.1",
-        debug: "^2.2.0",
-        "es5-ext": "^0.10.63",
-        "typedarray-to-buffer": "^3.1.5",
-        "utf-8-validate": "^5.0.2",
-        yaeti: "^0.0.6"
-      },
-      devDependencies: {
-        "buffer-equal": "^1.0.0",
-        gulp: "^4.0.2",
-        "gulp-jshint": "^2.0.4",
-        "jshint-stylish": "^2.2.1",
-        jshint: "^2.0.0",
-        tape: "^4.9.1"
-      },
-      config: {
-        verbose: false
-      },
-      scripts: {
-        test: "tape test/unit/*.js",
-        gulp: "gulp"
-      },
-      main: "index",
-      directories: {
-        lib: "./lib"
-      },
-      browser: "lib/browser.js",
-      license: "Apache-2.0"
-    };
-  }
-});
-
-// ../../node_modules/websocket/lib/version.js
-var require_version = __commonJS({
-  "../../node_modules/websocket/lib/version.js"(exports2, module2) {
-    "use strict";
-    module2.exports = require_package2().version;
-  }
-});
-
-// ../../node_modules/websocket/lib/websocket.js
-var require_websocket = __commonJS({
-  "../../node_modules/websocket/lib/websocket.js"(exports2, module2) {
-    "use strict";
-    module2.exports = {
-      "server": require_WebSocketServer(),
-      "client": require_WebSocketClient(),
-      "router": require_WebSocketRouter(),
-      "frame": require_WebSocketFrame(),
-      "request": require_WebSocketRequest(),
-      "connection": require_WebSocketConnection(),
-      "w3cwebsocket": require_W3CWebSocket(),
-      "deprecation": require_Deprecation(),
-      "version": require_version()
-    };
-  }
-});
-
-// ../../node_modules/websocket/index.js
-var require_websocket2 = __commonJS({
-  "../../node_modules/websocket/index.js"(exports2, module2) {
-    "use strict";
-    module2.exports = require_websocket();
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/sshHelpers.js
-var require_sshHelpers = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/sshHelpers.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControl.js
+var require_tunnelAccessControl = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControl.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.RelayConnectionError = exports2.RelayErrorType = exports2.isNode = exports2.SshHelpers = exports2.BrowserWebSocketRelayError = void 0;
-    var ssh = require_dev_tunnels_ssh();
-    var websocket_1 = require_websocket2();
-    var BrowserWebSocketRelayError = class extends Error {
-      constructor(message) {
-        super(message);
-      }
+    exports2.TunnelAccessControl = void 0;
+    var tunnelAccessControlStatics_1 = require_tunnelAccessControlStatics();
+    exports2.TunnelAccessControl = {
+      validateScopes: tunnelAccessControlStatics_1.validateScopes
     };
-    exports2.BrowserWebSocketRelayError = BrowserWebSocketRelayError;
-    var SshHelpers = class _SshHelpers {
-      /**
-       * Open a connection to the relay uri depending on the running environment.
-       * @param relayUri
-       * @param protocols
-       * @param headers
-       * @param clientConfig
-       * @returns
-       */
-      static openConnection(relayUri, protocols, headers, clientConfig) {
-        if ((0, exports2.isNode)()) {
-          return _SshHelpers.nodeSshStreamFactory(relayUri, protocols, headers, clientConfig);
-        }
-        return _SshHelpers.webSshStreamFactory(new WebSocket(relayUri, protocols));
-      }
-      /**
-       * Creates a client SSH session with standard configuration for tunnels.
-       * @param configure Optional callback for additional session configuration.
-       * @returns The created SSH session.
-       */
-      static createSshClientSession(configure) {
-        return _SshHelpers.createSshSession((config) => {
-          if (configure)
-            configure(config);
-          return new ssh.SshClientSession(config);
-        });
-      }
-      /**
-       * Creates a SSH server session with standard configuration for tunnels.
-       * @param reconnectableSessions Optional list that tracks reconnectable sessions.
-       * @param configure Optional callback for additional session configuration.
-       * @returns The created SSH session.
-       */
-      static createSshServerSession(reconnectableSessions, configure) {
-        return _SshHelpers.createSshSession((config) => {
-          if (configure)
-            configure(config);
-          return new ssh.SshServerSession(config, reconnectableSessions);
-        });
-      }
-      /**
-       * Create a websocketStream from a connection.
-       * @param connection
-       * @returns
-       */
-      static createWebSocketStreamAdapter(connection) {
-        return new ssh.WebSocketStream(new WebsocketStreamAdapter(connection));
-      }
-      /**
-       * Set up a web Ssh stream factory.
-       * @param socket
-       * @returns
-       */
-      static webSshStreamFactory(socket) {
-        socket.binaryType = "arraybuffer";
-        return new Promise((resolve2, reject) => {
-          const relayError = "Failed to connect to relay url";
-          socket.onopen = () => {
-            resolve2(new ssh.WebSocketStream(socket));
-          };
-          socket.onerror = (e) => {
-            setTimeout(() => reject(new BrowserWebSocketRelayError(relayError)), 100);
-          };
-          socket.onclose = (e) => {
-            if (e.code !== 1e3) {
-              reject(new BrowserWebSocketRelayError(`${relayError} Code: ${e.code} Reason: ${e.reason}`));
-            }
-          };
-        });
-      }
-      static createSshSession(factoryCallback) {
-        const config = new ssh.SshSessionConfiguration();
-        config.keyExchangeAlgorithms.splice(0);
-        config.keyExchangeAlgorithms.push(ssh.SshAlgorithms.keyExchange.ecdhNistp384Sha384);
-        config.keyExchangeAlgorithms.push(ssh.SshAlgorithms.keyExchange.ecdhNistp256Sha256);
-        config.keyExchangeAlgorithms.push(ssh.SshAlgorithms.keyExchange.dhGroup14Sha256);
-        return factoryCallback(config);
-      }
-      static nodeSshStreamFactory(relayUri, protocols, headers, clientConfig) {
-        const client = new websocket_1.client(clientConfig);
-        return new Promise((resolve2, reject) => {
-          client.on("connect", (connection) => {
-            resolve2(new ssh.WebSocketStream(new WebsocketStreamAdapter(connection)));
-          });
-          client.on("httpResponse", ({ statusCode, statusMessage }) => {
-            var _a;
-            const errorContext = (_a = webSocketClientContexts.find((c) => c.statusCode === statusCode)) !== null && _a !== void 0 ? _a : {
-              statusCode,
-              errorType: RelayErrorType.ServerError,
-              error: `relayConnectionError Server responded with a non-101 status: ${statusCode} ${statusMessage}`
-            };
-            reject(new RelayConnectionError(`error.${errorContext.error}`, errorContext));
-          });
-          client.on("connectFailed", ({ message }) => {
-            var _a;
-            if (message && message.startsWith("Error: ")) {
-              message = message.substr(7);
-            }
-            const errorContext = (_a = webSocketClientContexts.find((c) => c.regex && c.regex.test(message))) !== null && _a !== void 0 ? _a : {
-              // Other errors are most likely connectivity issues.
-              // The original error message may have additional helpful details.
-              errorType: RelayErrorType.ServerError,
-              error: `relayConnectionError ${message}`
-            };
-            reject(new RelayConnectionError(`error.${errorContext.error}`, errorContext));
-          });
-          client.connect(relayUri, protocols, void 0, headers);
-        });
-      }
-    };
-    exports2.SshHelpers = SshHelpers;
-    var WebsocketStreamAdapter = class {
-      constructor(connection) {
-        this.connection = connection;
-      }
-      get protocol() {
-        return this.connection.protocol;
-      }
-      set onmessage(messageHandler) {
-        if (messageHandler) {
-          this.connection.on("message", (message) => {
-            messageHandler({ data: message.binaryData });
-          });
-        } else {
-        }
-      }
-      set onclose(closeHandler) {
-        if (closeHandler) {
-          this.connection.on("close", (code, reason) => {
-            closeHandler({ code, reason, wasClean: !(code || reason) });
-          });
-        } else {
-        }
-      }
-      send(data) {
-        if (Buffer.isBuffer(data)) {
-          this.connection.sendBytes(data);
-        } else {
-          this.connection.sendBytes(Buffer.from(data));
-        }
-      }
-      close(code, reason) {
-        if (code || reason) {
-          this.connection.drop(code, reason);
-        } else {
-          this.connection.close();
-        }
-      }
-    };
-    var isNode = () => typeof process !== "undefined" && typeof process.release !== "undefined" && process.release.name === "node";
-    exports2.isNode = isNode;
-    var RelayErrorType;
-    (function(RelayErrorType2) {
-      RelayErrorType2[RelayErrorType2["ConnectionError"] = 1] = "ConnectionError";
-      RelayErrorType2[RelayErrorType2["Unauthorized"] = 2] = "Unauthorized";
-      RelayErrorType2[RelayErrorType2["EndpointNotFound"] = 3] = "EndpointNotFound";
-      RelayErrorType2[RelayErrorType2["ListenerOffline"] = 4] = "ListenerOffline";
-      RelayErrorType2[RelayErrorType2["ServerError"] = 5] = "ServerError";
-      RelayErrorType2[RelayErrorType2["TunnelPortNotFound"] = 6] = "TunnelPortNotFound";
-      RelayErrorType2[RelayErrorType2["TooManyRequests"] = 7] = "TooManyRequests";
-      RelayErrorType2[RelayErrorType2["ServiceUnavailable"] = 8] = "ServiceUnavailable";
-      RelayErrorType2[RelayErrorType2["BadGateway"] = 9] = "BadGateway";
-    })(RelayErrorType = exports2.RelayErrorType || (exports2.RelayErrorType = {}));
-    var RelayConnectionError = class extends Error {
-      constructor(message, errorContext) {
-        super(message);
-        this.errorContext = errorContext;
-      }
-    };
-    exports2.RelayConnectionError = RelayConnectionError;
-    var webSocketClientContexts = [
-      {
-        regex: /status: 401/,
-        statusCode: 401,
-        error: "relayClientUnauthorized",
-        errorType: RelayErrorType.Unauthorized
-      },
-      {
-        regex: /status: 403/,
-        statusCode: 403,
-        error: "relayClientForbidden",
-        errorType: RelayErrorType.Unauthorized
-      },
-      {
-        regex: /status: 404/,
-        statusCode: 404,
-        error: "tunnelPortNotFound",
-        errorType: RelayErrorType.TunnelPortNotFound
-      },
-      {
-        regex: /status: 429/,
-        statusCode: 429,
-        error: "tooManyRequests",
-        errorType: RelayErrorType.TooManyRequests
-      },
-      {
-        regex: /status: 500/,
-        statusCode: 500,
-        error: "relayServerError",
-        errorType: RelayErrorType.ServerError
-      },
-      {
-        regex: /status: 502/,
-        statusCode: 502,
-        error: "badGateway",
-        errorType: RelayErrorType.BadGateway
-      },
-      {
-        regex: /status: 503/,
-        statusCode: 503,
-        error: "serviceUnavailable",
-        errorType: RelayErrorType.ServiceUnavailable
-      }
-    ];
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayStreamFactory.js
-var require_tunnelRelayStreamFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayStreamFactory.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntry.js
+var require_tunnelAccessControlEntry = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntry.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelAccessControlEntry = void 0;
+    var TunnelAccessControlEntry;
+    (function(TunnelAccessControlEntry2) {
+      let Providers;
+      (function(Providers2) {
+        Providers2["Microsoft"] = "microsoft";
+        Providers2["GitHub"] = "github";
+        Providers2["Ssh"] = "ssh";
+        Providers2["IPv4"] = "ipv4";
+        Providers2["IPv6"] = "ipv6";
+        Providers2["ServiceTag"] = "service-tag";
+      })(Providers = TunnelAccessControlEntry2.Providers || (TunnelAccessControlEntry2.Providers = {}));
+    })(TunnelAccessControlEntry = exports2.TunnelAccessControlEntry || (exports2.TunnelAccessControlEntry = {}));
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-connections/defaultTunnelRelayStreamFactory.js
-var require_defaultTunnelRelayStreamFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/defaultTunnelRelayStreamFactory.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntryType.js
+var require_tunnelAccessControlEntryType = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelAccessControlEntryType.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.DefaultTunnelRelayStreamFactory = void 0;
-    var sshHelpers_1 = require_sshHelpers();
-    var DefaultTunnelRelayStreamFactory = class {
-      async createRelayStream(relayUri, protocols, accessToken, clientConfig) {
-        if ((0, sshHelpers_1.isNode)()) {
-          const stream = await sshHelpers_1.SshHelpers.openConnection(relayUri, protocols, Object.assign({}, accessToken && { Authorization: `tunnel ${accessToken}` }), clientConfig);
-          return { stream, protocol: stream.protocol };
-        } else {
-          if (accessToken) {
-            protocols = [...protocols, accessToken];
-          }
-          const stream = await sshHelpers_1.SshHelpers.openConnection(relayUri, protocols);
-          return { stream, protocol: stream.protocol };
-        }
-      }
-    };
-    exports2.DefaultTunnelRelayStreamFactory = DefaultTunnelRelayStreamFactory;
+    exports2.TunnelAccessControlEntryType = void 0;
+    var TunnelAccessControlEntryType;
+    (function(TunnelAccessControlEntryType2) {
+      TunnelAccessControlEntryType2["None"] = "None";
+      TunnelAccessControlEntryType2["Anonymous"] = "Anonymous";
+      TunnelAccessControlEntryType2["Users"] = "Users";
+      TunnelAccessControlEntryType2["Groups"] = "Groups";
+      TunnelAccessControlEntryType2["Organizations"] = "Organizations";
+      TunnelAccessControlEntryType2["Repositories"] = "Repositories";
+      TunnelAccessControlEntryType2["PublicKeys"] = "PublicKeys";
+      TunnelAccessControlEntryType2["IPAddressRanges"] = "IPAddressRanges";
+    })(TunnelAccessControlEntryType = exports2.TunnelAccessControlEntryType || (exports2.TunnelAccessControlEntryType = {}));
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshClient.js
-var require_sshClient = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshClient.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConnectionMode.js
+var require_tunnelConnectionMode = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConnectionMode.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.SshClient = void 0;
-    var net2 = require("net");
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var SshClient = class _SshClient {
-      constructor(config) {
-        this.config = config;
-        this.sessions = [];
-        this.trace = (level, eventId, msg, err) => {
-        };
-        if (!config)
-          throw new TypeError("SshSessionConfiguration is required.");
-      }
-      async openSession(serverHost, serverPort, cancellation) {
-        if (!serverHost)
-          throw new TypeError("Server host is reqiured.");
-        const stream = await this.openConnection(serverHost, serverPort, cancellation);
-        const session = new dev_tunnels_ssh_1.SshClientSession(this.config);
-        session.trace = this.trace;
-        await session.connect(stream, cancellation);
-        this.sessions.push(session);
-        return session;
-      }
-      async openConnection(serverHost, serverPort, cancellation) {
-        const socket = new net2.Socket();
-        await new Promise((resolve2, reject) => {
-          socket.on("connect", resolve2);
-          socket.on("error", reject);
-          if (cancellation) {
-            if (cancellation.isCancellationRequested) {
-              reject(new dev_tunnels_ssh_1.CancellationError());
-              return;
-            }
-            cancellation.onCancellationRequested(reject);
-          }
-          socket.connect(serverPort || _SshClient.defaultServerPort, serverHost);
-        });
-        return new dev_tunnels_ssh_1.NodeStream(socket);
-      }
-      async reconnectSession(session, serverHost, serverPort, cancellation) {
-        const stream = await this.openConnection(serverHost, serverPort, cancellation);
-        await session.reconnect(stream, cancellation);
-      }
-      dispose() {
-        while (this.sessions.length > 0) {
-          const session = this.sessions.shift();
-          session.dispose();
-        }
-      }
-    };
-    exports2.SshClient = SshClient;
-    SshClient.defaultServerPort = 22;
+    exports2.TunnelConnectionMode = void 0;
+    var TunnelConnectionMode;
+    (function(TunnelConnectionMode2) {
+      TunnelConnectionMode2["LocalNetwork"] = "LocalNetwork";
+      TunnelConnectionMode2["TunnelRelay"] = "TunnelRelay";
+    })(TunnelConnectionMode = exports2.TunnelConnectionMode || (exports2.TunnelConnectionMode = {}));
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/tcpListenerFactory.js
-var require_tcpListenerFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/tcpListenerFactory.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpointStatics.js
+var require_tunnelEndpointStatics = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpointStatics.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.DefaultTcpListenerFactory = void 0;
-    var net2 = require("net");
-    var DefaultTcpListenerFactory = class {
-      async createTcpListener(remotePort, localIPAddress, localPort, canChangeLocalPort, cancellation) {
-        if (!localIPAddress)
-          throw new TypeError("Local IP address is required.");
-        if (!Number.isInteger(localPort) || localPort < 0)
-          throw new TypeError("Local port must be a non-negative integer.");
-        const listener = net2.createServer();
-        await new Promise((resolve2, reject) => {
-          listener.listen({
-            host: localIPAddress,
-            port: localPort,
-            ipv6Only: net2.isIPv6(localIPAddress),
-            exclusive: false
-          });
-          listener.on("listening", resolve2);
-          listener.on("error", reject);
-        });
-        return listener;
+    exports2.getPortSshCommand = exports2.getPortUri = void 0;
+    var tunnelEndpoint_1 = require_tunnelEndpoint();
+    function getPortUri(endpoint, portNumber) {
+      if (!endpoint) {
+        throw new TypeError("A tunnel endpoint is required.");
       }
-    };
-    exports2.DefaultTcpListenerFactory = DefaultTcpListenerFactory;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshServer.js
-var require_sshServer = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshServer.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.SshServer = void 0;
-    var vscode_jsonrpc_1 = require_main();
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var tcpListenerFactory_1 = require_tcpListenerFactory();
-    var SshServer = class {
-      constructor(config) {
-        this.config = config;
-        this.sessions = [];
-        this.trace = (level, eventId, msg, err) => {
-        };
-        this.errorEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onError = this.errorEmitter.event;
-        this.sessionOpenedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onSessionOpened = this.sessionOpenedEmitter.event;
-        this.credentials = { publicKeys: [] };
-        this.tcpListenerFactory = new tcpListenerFactory_1.DefaultTcpListenerFactory();
-        if (!config)
-          throw new TypeError("SshSessionConfiguration is required.");
-        if (config.protocolExtensions.includes(dev_tunnels_ssh_1.SshProtocolExtensionNames.sessionReconnect)) {
-          this.reconnectableSessions = [];
-        }
+      if (typeof portNumber !== "number" && !endpoint.tunnelUri) {
+        return endpoint.tunnelUri;
       }
-      async acceptSessions(localPort, localAddress) {
-        if (!localAddress) {
-          localAddress = "0.0.0.0";
-        }
-        const portPrefix = localAddress === "0.0.0.0" ? "port " : localAddress + ":";
-        try {
-          this.tcpListener = await this.tcpListenerFactory.createTcpListener(
-            void 0,
-            // remotePort
-            localAddress,
-            localPort,
-            false
-          );
-        } catch (e) {
-          if (!(e instanceof Error))
-            throw e;
-          this.trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.serverListenFailed, `SshServer failed to listen on ${portPrefix}${localPort}: ${e.message}`, e);
-          throw e;
-        }
-        this.tcpListener.addListener("connection", this.acceptSession.bind(this));
-        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.serverListening, `SshServer listening on ${portPrefix}${localPort}.`);
-      }
-      async acceptConnection(socket) {
-        socket.setNoDelay(true);
-        return new dev_tunnels_ssh_1.NodeStream(socket);
-      }
-      async acceptSession(socket) {
-        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.serverClientConnected, "SshServer client connected.");
-        const stream = await this.acceptConnection(socket);
-        const session = new dev_tunnels_ssh_1.SshServerSession(this.config, this.reconnectableSessions);
-        session.trace = this.trace;
-        session.credentials = this.credentials;
-        this.sessions.push(session);
-        session.onClosed((e) => {
-          const sessionIndex = this.sessions.indexOf(session);
-          if (sessionIndex >= 0) {
-            this.sessions.splice(sessionIndex, 1);
-          }
-        });
-        this.sessionOpenedEmitter.fire(session);
-        try {
-          await session.connect(stream);
-        } catch (e) {
-          if (!(e instanceof Error))
-            throw e;
-          if (e instanceof dev_tunnels_ssh_1.SshConnectionError) {
-            await session.close(e.reason || dev_tunnels_ssh_1.SshDisconnectReason.connectionLost, e.message, e);
-          } else {
-            await session.close(dev_tunnels_ssh_1.SshDisconnectReason.protocolError, e.message, e);
-          }
-          this.errorEmitter.fire(e);
-        }
-      }
-      dispose() {
-        var _a;
-        (_a = this.tcpListener) === null || _a === void 0 ? void 0 : _a.close();
-      }
-    };
-    exports2.SshServer = SshServer;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPort.js
-var require_forwardedPort = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPort.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.ForwardedPort = void 0;
-    var ForwardedPort = class {
-      /** @internal */
-      constructor(localPort, remotePort, isRemote) {
-        if (localPort === null && remotePort === null) {
-          throw new TypeError("Local and remote ports cannot both be null.");
-        } else if (!isRemote && remotePort === null) {
-          throw new TypeError("The report port number must not be null for locally forwarded ports.");
-        }
-        if (localPort !== null && (typeof localPort !== "number" || localPort <= 0)) {
-          throw new TypeError("Local port must be a positive integer.");
-        } else if (remotePort !== null && (typeof remotePort !== "number" || remotePort <= 0)) {
-          throw new TypeError("Remote port must be a positive integer: " + remotePort);
-        }
-        this.localPort = localPort;
-        this.remotePort = remotePort;
-        const arrow = isRemote ? "->" : "<-";
-        if (this.localPort === null) {
-          this.str = `${arrow}${this.remotePort}`;
-        } else if (this.remotePort == null) {
-          this.str = `${this.localPort}${arrow}`;
-        } else {
-          this.str = `${this.localPort}${arrow}${this.remotePort}`;
-        }
-      }
-      /**
-       * Gets a string representation of the forwarded port, which includes both
-       * local and remote port numbers if present.
-       *
-       * An arrow shows the direction of connections (channel open requests).
-       * Once connections are opened, data may flow in both directions.
-       */
-      toString() {
-        return this.str;
-      }
-    };
-    exports2.ForwardedPort = ForwardedPort;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortEventArgs.js
-var require_forwardedPortEventArgs = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortEventArgs.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.ForwardedPortConnectingEventArgs = exports2.ForwardedPortChannelEventArgs = exports2.ForwardedPortEventArgs = void 0;
-    var ForwardedPortEventArgs = class {
-      constructor(port) {
-        this.port = port;
-      }
-      toString() {
-        return this.port.toString();
-      }
-    };
-    exports2.ForwardedPortEventArgs = ForwardedPortEventArgs;
-    var ForwardedPortChannelEventArgs = class extends ForwardedPortEventArgs {
-      constructor(port, channel) {
-        super(port);
-        this.port = port;
-        this.channel = channel;
-      }
-      toString() {
-        return `${this.port} ${this.channel}`;
-      }
-    };
-    exports2.ForwardedPortChannelEventArgs = ForwardedPortChannelEventArgs;
-    var ForwardedPortConnectingEventArgs = class {
-      constructor(port, isIncoming, stream, cancellation) {
-        this.port = port;
-        this.isIncoming = isIncoming;
-        this.stream = stream;
-        this.cancellation = cancellation;
-      }
-      toString() {
-        return `${this.port} isIncoming=${this.isIncoming}`;
-      }
-    };
-    exports2.ForwardedPortConnectingEventArgs = ForwardedPortConnectingEventArgs;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortsCollection.js
-var require_forwardedPortsCollection = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortsCollection.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.ForwardedPortsCollection = void 0;
-    var vscode_jsonrpc_1 = require_main();
-    var forwardedPortEventArgs_1 = require_forwardedPortEventArgs();
-    var ForwardedPortsCollection = class {
-      constructor() {
-        this.portChannelMap = /* @__PURE__ */ new Map();
-        this.portAddedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onPortAdded = this.portAddedEmitter.event;
-        this.portUpdatedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onPortUpdated = this.portUpdatedEmitter.event;
-        this.portRemovedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onPortRemoved = this.portRemovedEmitter.event;
-        this.portChannelAddedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onPortChannelAdded = this.portChannelAddedEmitter.event;
-        this.portChannelRemovedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onPortChannelRemoved = this.portChannelRemovedEmitter.event;
-      }
-      /** Gets the number of ports in the collection. */
-      get size() {
-        return this.portChannelMap.size;
-      }
-      /** Checks whether a port is in the collection. */
-      has(port) {
-        return this.portChannelMap.has(port.toString());
-      }
-      /** Lists all the ports in the collection. */
-      *values() {
-        for (const [port, channels] of this.portChannelMap.values()) {
-          yield port;
-        }
-      }
-      /** Iterates over all the ports in the collection. */
-      [Symbol.iterator]() {
-        return this.values();
-      }
-      /** Lists all the ports in the collection. */
-      *entries() {
-        for (const [port, channels] of this.portChannelMap.values()) {
-          yield [port, port];
-        }
-      }
-      /**
-       * Lists all the ports in the collection.
-       * (In a set, the keys are the same as the values.)
-       */
-      keys() {
-        return this.values();
-      }
-      /** Iterates over all the ports in the collection, invoking a callback function on each. */
-      forEach(callbackfn, thisArg) {
-        for (const [port, channels] of this.portChannelMap.values()) {
-          callbackfn.apply(thisArg, [port, port, this]);
-        }
-      }
-      getChannels(port) {
-        const portAndChannels = this.portChannelMap.get(port.toString());
-        if (!portAndChannels) {
-          throw new Error(`Port ${port} is not in the collection.`);
-        }
-        return portAndChannels[1];
-      }
-      /** Finds the first port in the collection that matches a predicate. */
-      find(predicate) {
-        for (const port of this.values()) {
-          if (predicate(port)) {
-            return port;
-          }
-        }
+      if (typeof portNumber !== "number" || !endpoint.portUriFormat) {
         return void 0;
       }
-      /* @internal */
-      addOrUpdatePort(port) {
-        if (this.has(port)) {
-          this.portUpdatedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortEventArgs(port));
-        }
-        this.portChannelMap.set(port.toString(), [port, []]);
-        this.portAddedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortEventArgs(port));
+      return endpoint.portUriFormat.replace(tunnelEndpoint_1.portToken, portNumber.toString());
+    }
+    exports2.getPortUri = getPortUri;
+    function getPortSshCommand(endpoint, portNumber) {
+      if (!endpoint) {
+        throw new TypeError("A tunnel endpoint is required.");
       }
-      /* @internal */
-      removePort(port) {
-        if (!this.has(port)) {
-          return false;
-        }
-        this.portChannelMap.delete(port.toString());
-        this.portRemovedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortEventArgs(port));
-        return true;
+      if (typeof portNumber !== "number" && !endpoint.tunnelSshCommand) {
+        return endpoint.tunnelSshCommand;
       }
-      /* @internal */
-      addChannel(port, channel) {
-        const portAndChannels = this.portChannelMap.get(port.toString());
-        if (!portAndChannels) {
-          throw new Error(`Port ${port} is not in the collection.`);
-        }
-        const portChannels = portAndChannels[1];
-        if (portChannels.find((c) => c.channelId === channel.channelId)) {
-          throw new Error(`Channel ${channel.channelId} is already in the collection for port ${port}`);
-        }
-        portChannels.push(channel);
-        channel.onClosed(() => this.tryRemoveChannel(port, channel));
-        this.portChannelAddedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortChannelEventArgs(port, channel));
+      if (typeof portNumber !== "number" || !endpoint.portSshCommandFormat) {
+        return void 0;
       }
-      tryRemoveChannel(port, channel) {
-        const portAndChannels = this.portChannelMap.get(port.toString());
-        if (portAndChannels) {
-          const portChannels = portAndChannels[1];
-          const index = portChannels.findIndex((c) => c.channelId === channel.channelId);
-          if (index >= 0) {
-            portChannels.splice(index, 1);
-            this.portChannelRemovedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortChannelEventArgs(port, channel));
-          }
-        }
-      }
-      toString() {
-        return [...this].join(", ");
-      }
-    };
-    exports2.ForwardedPortsCollection = ForwardedPortsCollection;
+      return endpoint.portSshCommandFormat.replace(tunnelEndpoint_1.portToken, portNumber.toString());
+    }
+    exports2.getPortSshCommand = getPortSshCommand;
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/ipAddressConversions.js
-var require_ipAddressConversions = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/ipAddressConversions.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpoint.js
+var require_tunnelEndpoint = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEndpoint.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.IPAddressConversions = void 0;
-    var IPAddressConversions = class {
-      /**
-       * Converts from an SSH-protocol address string to an IP address string.
-       */
-      static fromSshAddress(address) {
-        if (!address) {
-          return "0.0.0.0";
-        } else if (address === "localhost") {
-          return "127.0.0.1";
-        } else {
-          return address;
-        }
-      }
-      /**
-       * Converts from an IP Address to an SSH-protocol address string.
-       */
-      static toSshAddress(ipAddress) {
-        if (!ipAddress) {
-          return null;
-        } else if (ipAddress === "0.0.0.0") {
-          return "";
-        } else if (ipAddress === "127.0.0.1") {
-          return "localhost";
-        } else {
-          return ipAddress;
-        }
-      }
+    exports2.TunnelEndpoint = exports2.portToken = void 0;
+    exports2.portToken = "{port}";
+    var tunnelEndpointStatics_1 = require_tunnelEndpointStatics();
+    exports2.TunnelEndpoint = {
+      portToken: exports2.portToken,
+      getPortUri: tunnelEndpointStatics_1.getPortUri,
+      getPortSshCommand: tunnelEndpointStatics_1.getPortSshCommand
     };
-    exports2.IPAddressConversions = IPAddressConversions;
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardChannelOpenMessage.js
-var require_portForwardChannelOpenMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardChannelOpenMessage.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEvent.js
+var require_tunnelEvent = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelEvent.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.PortForwardChannelOpenMessage = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var PortForwardChannelOpenMessage = class extends dev_tunnels_ssh_1.ChannelOpenMessage {
-      constructor() {
-        super(...arguments);
-        this.host = "";
-        this.port = 0;
-        this.originatorIPAddress = "";
-        this.originatorPort = 0;
-      }
-      onRead(reader) {
-        super.onRead(reader);
-        this.host = reader.readString("ascii");
-        this.port = reader.readUInt32();
-        this.originatorIPAddress = reader.readString("ascii");
-        this.originatorPort = reader.readUInt32();
-      }
-      onWrite(writer) {
-        super.onWrite(writer);
-        writer.writeString(this.validateField(this.host, "host"), "ascii");
-        writer.writeUInt32(this.validateField(this.port, "port"));
-        writer.writeString(this.originatorIPAddress || "", "ascii");
-        writer.writeUInt32(this.originatorPort || 0);
-      }
-      toString() {
-        return `${super.toString()} (host=${this.host} port=${this.port})`;
-      }
+    exports2.TunnelEvent = exports2.error = exports2.warning = exports2.info = void 0;
+    exports2.info = "info";
+    exports2.warning = "warning";
+    exports2.error = "error";
+    exports2.TunnelEvent = {
+      info: exports2.info,
+      warning: exports2.warning,
+      error: exports2.error
     };
-    exports2.PortForwardChannelOpenMessage = PortForwardChannelOpenMessage;
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardRequestMessage.js
-var require_portForwardRequestMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardRequestMessage.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelHeaderNames.js
+var require_tunnelHeaderNames = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelHeaderNames.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.PortForwardRequestMessage = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var portForwardingService_1 = require_portForwardingService();
-    var PortForwardRequestMessage = class extends dev_tunnels_ssh_1.SessionRequestMessage {
-      constructor() {
-        super();
-        this.addressToBind = "";
-        this.port = 0;
-        this.requestType = portForwardingService_1.PortForwardingService.portForwardRequestType;
-        this.wantReply = true;
-      }
-      onRead(reader) {
-        super.onRead(reader);
-        this.addressToBind = reader.readString("ascii");
-        this.port = reader.readUInt32();
-      }
-      onWrite(writer) {
-        super.onWrite(writer);
-        writer.writeString(this.validateField(this.addressToBind, "address"), "ascii");
-        writer.writeUInt32(this.validateField(this.port, "port"));
-      }
-      toString() {
-        return `${super.toString()} (addressToBind=${this.addressToBind} port=${this.port})`;
-      }
-    };
-    exports2.PortForwardRequestMessage = PortForwardRequestMessage;
+    exports2.TunnelHeaderNames = void 0;
+    var TunnelHeaderNames;
+    (function(TunnelHeaderNames2) {
+      TunnelHeaderNames2["XTunnelAuthorization"] = "X-Tunnel-Authorization";
+      TunnelHeaderNames2["XRequestID"] = "X-Request-ID";
+      TunnelHeaderNames2["XGithubSshKey"] = "X-Github-Ssh-Key";
+      TunnelHeaderNames2["XTunnelSkipAntiPhishingPage"] = "X-Tunnel-Skip-AntiPhishing-Page";
+    })(TunnelHeaderNames = exports2.TunnelHeaderNames || (exports2.TunnelHeaderNames = {}));
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardSuccessMessage.js
-var require_portForwardSuccessMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardSuccessMessage.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProtocol.js
+var require_tunnelProtocol = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProtocol.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.PortForwardSuccessMessage = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var PortForwardSuccessMessage = class extends dev_tunnels_ssh_1.SessionRequestSuccessMessage {
-      constructor() {
-        super(...arguments);
-        this.port = 0;
-      }
-      onRead(reader) {
-        super.onRead(reader);
-        if (reader.available >= 4) {
-          this.port = reader.readUInt32();
-        }
-      }
-      onWrite(writer) {
-        super.onWrite(writer);
-        writer.writeUInt32(this.validateField(this.port, "port"));
-      }
-      toString() {
-        return `${super.toString()} (port=${this.port})`;
-      }
-    };
-    exports2.PortForwardSuccessMessage = PortForwardSuccessMessage;
+    exports2.TunnelProtocol = void 0;
+    var TunnelProtocol;
+    (function(TunnelProtocol2) {
+      TunnelProtocol2["Auto"] = "auto";
+      TunnelProtocol2["Tcp"] = "tcp";
+      TunnelProtocol2["Udp"] = "udp";
+      TunnelProtocol2["Ssh"] = "ssh";
+      TunnelProtocol2["Rdp"] = "rdp";
+      TunnelProtocol2["Http"] = "http";
+      TunnelProtocol2["Https"] = "https";
+    })(TunnelProtocol = exports2.TunnelProtocol || (exports2.TunnelProtocol = {}));
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/portForwardMessageFactory.js
-var require_portForwardMessageFactory = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/portForwardMessageFactory.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServicePropertiesStatics.js
+var require_tunnelServicePropertiesStatics = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServicePropertiesStatics.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.DefaultPortForwardMessageFactory = void 0;
-    var portForwardChannelOpenMessage_1 = require_portForwardChannelOpenMessage();
-    var portForwardRequestMessage_1 = require_portForwardRequestMessage();
-    var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
-    var DefaultPortForwardMessageFactory = class {
-      createRequestMessageAsync(port) {
-        return Promise.resolve(new portForwardRequestMessage_1.PortForwardRequestMessage());
-      }
-      createSuccessMessageAsync(port) {
-        return Promise.resolve(new portForwardSuccessMessage_1.PortForwardSuccessMessage());
-      }
-      createChannelOpenMessageAsync(port) {
-        return Promise.resolve(new portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage());
-      }
+    exports2.environment = exports2.development = exports2.staging = exports2.production = void 0;
+    var tunnelServiceProperties_1 = require_tunnelServiceProperties();
+    exports2.production = {
+      serviceUri: `https://${tunnelServiceProperties_1.prodDnsName}/`,
+      serviceAppId: tunnelServiceProperties_1.prodFirstPartyAppId,
+      serviceInternalAppId: tunnelServiceProperties_1.prodThirdPartyAppId,
+      gitHubAppClientId: tunnelServiceProperties_1.prodGitHubAppClientId
     };
-    exports2.DefaultPortForwardMessageFactory = DefaultPortForwardMessageFactory;
+    exports2.staging = {
+      serviceUri: `https://${tunnelServiceProperties_1.ppeDnsName}/`,
+      serviceAppId: tunnelServiceProperties_1.ppeFirstPartyAppId,
+      serviceInternalAppId: tunnelServiceProperties_1.ppeThirdPartyAppId,
+      gitHubAppClientId: tunnelServiceProperties_1.nonProdGitHubAppClientId
+    };
+    exports2.development = {
+      serviceUri: `https://${tunnelServiceProperties_1.devDnsName}/`,
+      serviceAppId: tunnelServiceProperties_1.devFirstPartyAppId,
+      serviceInternalAppId: tunnelServiceProperties_1.devThirdPartyAppId,
+      gitHubAppClientId: tunnelServiceProperties_1.nonProdGitHubAppClientId
+    };
+    function environment(environmentName) {
+      if (!environmentName) {
+        throw new Error(`Invalid argument: ${environmentName}`);
+      }
+      switch (environmentName.toLowerCase()) {
+        case "prod":
+        case "production":
+          return exports2.production;
+        case "ppe":
+        case "preprod":
+          return exports2.staging;
+        case "dev":
+        case "development":
+          return exports2.development;
+        default:
+          throw new Error(`Invalid service environment: ${environmentName}`);
+      }
+    }
+    exports2.environment = environment;
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/streamForwarder.js
-var require_streamForwarder = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/streamForwarder.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServiceProperties.js
+var require_tunnelServiceProperties = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelServiceProperties.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.StreamForwarder = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var net_1 = require("net");
-    var StreamForwarder = class {
-      /* @internal */
-      constructor(localStream, remoteStream, trace) {
-        this.localStream = localStream;
-        this.remoteStream = remoteStream;
-        this.trace = trace;
-        this.disposed = false;
-        if (!localStream)
-          throw new TypeError("Local stream is required.");
-        if (!remoteStream)
-          throw new TypeError("Remote stream is required.");
-        localStream.pipe(remoteStream);
-        remoteStream.pipe(localStream);
-      }
-      close(abort, errorMessage) {
-        try {
-          if (abort && this.localStream instanceof net_1.Socket) {
-            this.localStream.destroy();
-          } else {
-            this.localStream.end();
-          }
-          if (this.remoteStream instanceof dev_tunnels_ssh_1.SshStream) {
-            this.remoteStream.channel.close("SIGABRT", errorMessage).catch((e) => {
-            });
-          } else {
-            this.remoteStream.end();
-          }
-          this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, dev_tunnels_ssh_1.SshTraceEventIds.portForwardChannelClosed, `Stream forwarder ${abort ? "aborted" : "closed"} connection.`);
-        } catch (e) {
-          if (!(e instanceof Error))
-            throw e;
-          this.trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.unknownError, `Stream forwarder unexpected error closing connection:  ${e.message}`);
-        }
-      }
-      dispose() {
-        if (!this.disposed) {
-          this.disposed = true;
-          this.close(true);
-        }
-      }
+    exports2.TunnelServiceProperties = exports2.nonProdGitHubAppClientId = exports2.prodGitHubAppClientId = exports2.devThirdPartyAppId = exports2.ppeThirdPartyAppId = exports2.prodThirdPartyAppId = exports2.devFirstPartyAppId = exports2.ppeFirstPartyAppId = exports2.prodFirstPartyAppId = exports2.devDnsName = exports2.ppeDnsName = exports2.prodDnsName = void 0;
+    exports2.prodDnsName = "global.rel.tunnels.api.visualstudio.com";
+    exports2.ppeDnsName = "global.rel.tunnels.ppe.api.visualstudio.com";
+    exports2.devDnsName = "global.ci.tunnels.dev.api.visualstudio.com";
+    exports2.prodFirstPartyAppId = "46da2f7e-b5ef-422a-88d4-2a7f9de6a0b2";
+    exports2.ppeFirstPartyAppId = "54c45752-bacd-424a-b928-652f3eca2b18";
+    exports2.devFirstPartyAppId = "9c63851a-ba2b-40a5-94bd-890be43b9284";
+    exports2.prodThirdPartyAppId = "ce65d243-a913-4cae-a7dd-cb52e9f77647";
+    exports2.ppeThirdPartyAppId = "544167a6-f431-4518-aac6-2fd50071928e";
+    exports2.devThirdPartyAppId = "a118c979-0249-44bb-8f95-eb0457127aeb";
+    exports2.prodGitHubAppClientId = "Iv1.e7b89e013f801f03";
+    exports2.nonProdGitHubAppClientId = "Iv1.b231c327f1eaa229";
+    var tunnelServicePropertiesStatics_1 = require_tunnelServicePropertiesStatics();
+    exports2.TunnelServiceProperties = {
+      production: tunnelServicePropertiesStatics_1.production,
+      staging: tunnelServicePropertiesStatics_1.staging,
+      development: tunnelServicePropertiesStatics_1.development,
+      environment: tunnelServicePropertiesStatics_1.environment
     };
-    exports2.StreamForwarder = StreamForwarder;
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/localPortForwarder.js
-var require_localPortForwarder = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/localPortForwarder.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConstraints.js
+var require_tunnelConstraints = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelConstraints.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.LocalPortForwarder = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var streamForwarder_1 = require_streamForwarder();
-    var LocalPortForwarder = class extends dev_tunnels_ssh_1.SshService {
-      /* @internal */
-      constructor(pfs, session, channelType, localIPAddress, localPort, remoteHost, remotePort) {
-        super(session);
-        this.pfs = pfs;
-        this.channelType = channelType;
-        this.localIPAddress = localIPAddress;
-        this.port = localPort;
-        this.remoteHost = remoteHost;
-        this.remotePort = remotePort !== null && remotePort !== void 0 ? remotePort : localPort !== 0 ? localPort : void 0;
-      }
-      /**
-       * Local port that the forwarder is listening on.
-       */
-      get localPort() {
-        return this.port;
-      }
-      /* @internal */
-      async startForwarding(cancellation) {
-        var _a;
-        let listenAddress = this.localIPAddress;
-        try {
-          this.tcpListener = await this.pfs.tcpListenerFactory.createTcpListener(this.remotePort, listenAddress, this.port, true);
-          const serverAddress = this.tcpListener.address();
-          if (!(serverAddress.port > 0)) {
-            this.tcpListener.close();
-            throw new Error("Could not get server port.");
-          }
-          this.port = serverAddress.port;
-          if (this.localIPAddress === "127.0.0.1" || this.localIPAddress === "0.0.0.0") {
-            listenAddress = this.localIPAddress === "0.0.0.0" ? "::" : "::1";
-            try {
-              this.tcpListener2 = await this.pfs.tcpListenerFactory.createTcpListener(this.remotePort, listenAddress, this.port, false);
-            } catch (e) {
-              if (!(e instanceof Error) || e.code !== "EADDRNOTAVAIL") {
-                throw e;
-              }
-              this.trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListenFailed, `PortForwardingService failed to listen on ${listenAddress}:{this.port}: ${e.message}`, e);
-            }
-          }
-        } catch (e) {
-          if (!(e instanceof Error))
-            throw e;
-          this.trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListenFailed, `PortForwardingService failed to listen on ${listenAddress}:${this.port}: ${e.message}`, e);
-          throw e;
-        }
-        this.tcpListener.on("connection", this.acceptConnection.bind(this));
-        (_a = this.tcpListener2) === null || _a === void 0 ? void 0 : _a.on("connection", this.acceptConnection.bind(this));
-        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService listening on ${this.localIPAddress}:${this.port}.`);
-        if (this.tcpListener2) {
-          this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService also listening on ${listenAddress}:${this.port}.`);
-        }
-      }
-      async acceptConnection(socket) {
-        var _a, _b, _c, _d, _e;
-        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionAccepted, `PortForwardingService accepted connection from: ${socket.remoteAddress} on port ${this.port}`);
-        let channel;
-        try {
-          channel = await this.pfs.openChannel(this.session, this.channelType, (_a = socket.remoteAddress) !== null && _a !== void 0 ? _a : null, (_b = socket.remotePort) !== null && _b !== void 0 ? _b : null, (_c = this.remoteHost) !== null && _c !== void 0 ? _c : this.localIPAddress, (_d = this.remotePort) !== null && _d !== void 0 ? _d : this.localPort);
-        } catch (e) {
-          if (!(e instanceof Error))
-            throw e;
-          socket.destroy();
-          return;
-        }
-        const forwardedStream = await this.pfs.forwardedPortConnecting((_e = this.remotePort) !== null && _e !== void 0 ? _e : this.localPort, false, new dev_tunnels_ssh_1.SshStream(channel));
-        if (!forwardedStream) {
-          return;
-        }
-        const forwarder = new streamForwarder_1.StreamForwarder(socket, forwardedStream, channel.session.trace);
-        this.pfs.streamForwarders.push(forwarder);
-      }
-      dispose() {
-        var _a, _b;
-        (_a = this.tcpListener) === null || _a === void 0 ? void 0 : _a.close();
-        (_b = this.tcpListener2) === null || _b === void 0 ? void 0 : _b.close();
-        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService stopped listening on ${this.localIPAddress}:${this.port}.`);
-        super.dispose();
-      }
-    };
-    exports2.LocalPortForwarder = LocalPortForwarder;
+    exports2.TunnelConstraints = void 0;
+    var TunnelConstraints;
+    (function(TunnelConstraints2) {
+      TunnelConstraints2.clusterIdMinLength = 3;
+      TunnelConstraints2.clusterIdMaxLength = 12;
+      TunnelConstraints2.oldTunnelIdLength = 8;
+      TunnelConstraints2.newTunnelIdMinLength = 3;
+      TunnelConstraints2.newTunnelIdMaxLength = 60;
+      TunnelConstraints2.tunnelAliasLength = 8;
+      TunnelConstraints2.tunnelNameMinLength = 3;
+      TunnelConstraints2.tunnelNameMaxLength = 60;
+      TunnelConstraints2.descriptionMaxLength = 400;
+      TunnelConstraints2.eventDetailsMaxLength = 4e3;
+      TunnelConstraints2.maxEventProperties = 100;
+      TunnelConstraints2.eventPropertyValueMaxLength = 4e3;
+      TunnelConstraints2.labelMinLength = 1;
+      TunnelConstraints2.labelMaxLength = 50;
+      TunnelConstraints2.maxLabels = 100;
+      TunnelConstraints2.tunnelDomainMinLength = 4;
+      TunnelConstraints2.tunnelDomainMaxLength = 180;
+      TunnelConstraints2.tunnelMaxPorts = 1e3;
+      TunnelConstraints2.accessControlMaxEntries = 40;
+      TunnelConstraints2.accessControlMaxSubjects = 100;
+      TunnelConstraints2.accessControlSubjectMaxLength = 200;
+      TunnelConstraints2.accessControlSubjectNameMaxLength = 200;
+      TunnelConstraints2.accessControlMaxScopes = 10;
+      TunnelConstraints2.eventNamePattern = "^[a-z0-9_]{3,80}$";
+      TunnelConstraints2.eventSeverityPattern = "^(info)|(warning)|(error)$";
+      TunnelConstraints2.eventPropertyNamePattern = "^[a-zA-Z0-9_.]{3,200}$";
+      TunnelConstraints2.clusterIdPattern = "^(([a-z]{3,4}[0-9]{1,3})|asse|aue|brs|euw|use)$";
+      TunnelConstraints2.clusterIdRegex = new RegExp(TunnelConstraints2.clusterIdPattern);
+      TunnelConstraints2.clusterIdPrefixRegex = new RegExp(TunnelConstraints2.clusterIdPattern.replace("$", "\\."));
+      TunnelConstraints2.oldTunnelIdChars = "0123456789bcdfghjklmnpqrstvwxz";
+      TunnelConstraints2.oldTunnelIdPattern = "[" + TunnelConstraints2.oldTunnelIdChars + "]{8}";
+      TunnelConstraints2.oldTunnelIdRegex = new RegExp(TunnelConstraints2.oldTunnelIdPattern);
+      TunnelConstraints2.newTunnelIdChars = "0123456789abcdefghijklmnopqrstuvwxyz-";
+      TunnelConstraints2.newTunnelIdPattern = "[a-z0-9][a-z0-9-]{1,58}[a-z0-9]";
+      TunnelConstraints2.newTunnelIdRegex = new RegExp(TunnelConstraints2.newTunnelIdPattern);
+      TunnelConstraints2.tunnelAliasChars = "0123456789bcdfghjklmnpqrstvwxz";
+      TunnelConstraints2.tunnelAliasPattern = "[" + TunnelConstraints2.tunnelAliasChars + "]{3,60}";
+      TunnelConstraints2.tunnelAliasRegex = new RegExp(TunnelConstraints2.tunnelAliasPattern);
+      TunnelConstraints2.tunnelNamePattern = "([a-z0-9][a-z0-9-]{1,58}[a-z0-9])|(^$)";
+      TunnelConstraints2.tunnelNameRegex = new RegExp(TunnelConstraints2.tunnelNamePattern);
+      TunnelConstraints2.labelPattern = "[\\w-=]{1,50}";
+      TunnelConstraints2.labelRegex = new RegExp(TunnelConstraints2.labelPattern);
+      TunnelConstraints2.tunnelDomainPattern = "[0-9a-z][0-9a-z-.]{1,158}[0-9a-z]|(^$)";
+      TunnelConstraints2.tunnelDomainRegex = new RegExp(TunnelConstraints2.tunnelDomainPattern);
+      TunnelConstraints2.accessControlSubjectPattern = "[0-9a-zA-Z-._:/@]{0,200}";
+      TunnelConstraints2.accessControlSubjectRegex = new RegExp(TunnelConstraints2.accessControlSubjectPattern);
+      TunnelConstraints2.accessControlSubjectNamePattern = `[ \\w\\d-.,/'"_@()<>]{0,200}`;
+      TunnelConstraints2.accessControlSubjectNameRegex = new RegExp(TunnelConstraints2.accessControlSubjectNamePattern);
+    })(TunnelConstraints = exports2.TunnelConstraints || (exports2.TunnelConstraints = {}));
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortConnector.js
-var require_remotePortConnector = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortConnector.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProgress.js
+var require_tunnelProgress = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/tunnelProgress.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.RemotePortConnector = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var portForwardRequestMessage_1 = require_portForwardRequestMessage();
-    var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
-    var portForwardingService_1 = require_portForwardingService();
-    var RemotePortConnector = class extends dev_tunnels_ssh_1.SshService {
-      /* @internal */
-      constructor(session, remoteIPAddress, remotePort) {
-        super(session);
-        this.forwarding = false;
-        this.remoteIPAddress = remoteIPAddress;
-        this.port = remotePort;
-      }
-      /**
-       * Port that the remote server is listening on. If the request specified port 0, this
-       * property returns the actual available port that was chosen by the server.
-       */
-      get remotePort() {
-        return this.port;
-      }
-      /* @internal */
-      async request(request, cancellation) {
-        if (this.forwarding) {
-          throw new Error("Already forwarding.");
-        }
-        request.addressToBind = this.remoteIPAddress;
-        request.port = this.remotePort;
-        request.wantReply = true;
-        const response = await this.session.requestResponse(request, portForwardSuccessMessage_1.PortForwardSuccessMessage, dev_tunnels_ssh_1.SessionRequestFailureMessage, cancellation);
-        let result = false;
-        if (response instanceof portForwardSuccessMessage_1.PortForwardSuccessMessage) {
-          if (response.port !== 0) {
-            this.port = response.port;
-          }
-          result = true;
-        }
-        this.forwarding = result;
-        return result;
-      }
-      dispose() {
-        if (this.forwarding) {
-          this.forwarding = false;
-          const request = new portForwardRequestMessage_1.PortForwardRequestMessage();
-          request.requestType = portForwardingService_1.PortForwardingService.cancelPortForwardRequestType;
-          request.addressToBind = this.remoteIPAddress;
-          request.port = this.remotePort;
-          request.wantReply = false;
-          try {
-            this.session.request(request).catch((e) => {
-            });
-          } catch (e) {
-          }
-        }
-        super.dispose();
-      }
-    };
-    exports2.RemotePortConnector = RemotePortConnector;
+    exports2.TunnelProgress = void 0;
+    var TunnelProgress;
+    (function(TunnelProgress2) {
+      TunnelProgress2["StartingRefreshPorts"] = "StartingRefreshPorts";
+      TunnelProgress2["CompletedRefreshPorts"] = "CompletedRefreshPorts";
+      TunnelProgress2["StartingRequestUri"] = "StartingRequestUri";
+      TunnelProgress2["StartingRequestConfig"] = "StartingRequestConfig";
+      TunnelProgress2["StartingSendTunnelRequest"] = "StartingSendTunnelRequest";
+      TunnelProgress2["CompletedSendTunnelRequest"] = "CompletedSendTunnelRequest";
+      TunnelProgress2["StartingCreateTunnelPort"] = "StartingCreateTunnelPort";
+      TunnelProgress2["CompletedCreateTunnelPort"] = "CompletedCreateTunnelPort";
+      TunnelProgress2["StartingGetTunnelPort"] = "StartingGetTunnelPort";
+      TunnelProgress2["CompletedGetTunnelPort"] = "CompletedGetTunnelPort";
+    })(TunnelProgress = exports2.TunnelProgress || (exports2.TunnelProgress = {}));
   }
 });
 
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortForwarder.js
-var require_remotePortForwarder = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortForwarder.js"(exports2) {
+// ../../node_modules/@microsoft/dev-tunnels-contracts/index.js
+var require_dev_tunnels_contracts = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-contracts/index.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.RemotePortForwarder = void 0;
-    var net2 = require("net");
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var streamForwarder_1 = require_streamForwarder();
-    var remotePortConnector_1 = require_remotePortConnector();
-    var RemotePortForwarder = class _RemotePortForwarder extends remotePortConnector_1.RemotePortConnector {
-      /* @internal */
-      constructor(pfs, session, remoteIPAddress, remotePort, localHost, localPort) {
-        super(session, remoteIPAddress, remotePort);
-        this.pfs = pfs;
-        this.localHost = localHost;
-        this.localPort = localPort;
-      }
-      /* @internal */
-      async onPortChannelOpening(request, cancellation) {
-        await _RemotePortForwarder.forwardChannel(this.pfs, request, this.localHost, this.localPort, this.remotePort, this.trace, cancellation);
-      }
-      /* @internal */
-      static async forwardChannel(pfs, request, localHost, localPort, remotePort, trace, cancellation) {
-        const channel = request.channel;
-        const forwardedStream = await pfs.forwardedPortConnecting(remotePort !== null && remotePort !== void 0 ? remotePort : localPort, true, new dev_tunnels_ssh_1.SshStream(channel), cancellation);
-        if (!forwardedStream) {
-          request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.connectFailed;
-          return;
-        }
-        const socket = net2.createConnection({
-          host: localHost,
-          port: localPort,
-          // This option enables connection attempts for multiple resolved IP addresses,
-          // aka "Happy Eyeballs" as described in https://datatracker.ietf.org/doc/html/rfc8305.
-          // Effectively this enables fast connections to either 127.0.0.1 or ::1 when 'localhost'
-          // is specified as the hostname. Note this option is available starting with Node.js
-          // v18.13 and is enabled by default starting with Node.js v20.0.
-          autoSelectFamily: true,
-          // Use the minimum supported connection attempt delay when connecting to 'localhost'.
-          // See https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
-          autoSelectFamilyAttemptTimeout: localHost === "localhost" ? 10 : 250
-        });
-        const connectCompletion = new dev_tunnels_ssh_1.PromiseCompletionSource();
-        const cancellationRegistration = cancellation ? cancellation.onCancellationRequested(() => socket.destroy(new Error("Cancelled."))) : null;
-        try {
-          socket.once("connect", () => {
-            connectCompletion.resolve();
-          });
-          socket.once("error", (e) => {
-            connectCompletion.reject(e);
-          });
-          await connectCompletion.promise;
-        } catch (e) {
-          if (!(e instanceof Error) || (cancellation === null || cancellation === void 0 ? void 0 : cancellation.isCancellationRequested)) {
-            throw e;
-          }
-          trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionFailed, `PortForwardingService connection to ${localHost}:${localPort} failed: ${e.message}`, e);
-          request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.connectFailed;
-          request.failureDescription = e.message;
-        } finally {
-          cancellationRegistration === null || cancellationRegistration === void 0 ? void 0 : cancellationRegistration.dispose();
-        }
-        const streamForwarder = new streamForwarder_1.StreamForwarder(socket, forwardedStream, channel.session.trace);
-        trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionOpened, `${channel.session} PortForwardingService forwarded channel #${channel.channelId} connection to ${localHost}:${localPort}.`);
-        pfs.streamForwarders.push(streamForwarder);
-      }
-    };
-    exports2.RemotePortForwarder = RemotePortForwarder;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortStreamer.js
-var require_remotePortStreamer = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortStreamer.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.RemotePortStreamer = void 0;
-    var vscode_jsonrpc_1 = require_main();
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var remotePortConnector_1 = require_remotePortConnector();
-    var RemotePortStreamer = class extends remotePortConnector_1.RemotePortConnector {
-      /* @internal */
-      constructor(session, remoteIPAddress, remotePort) {
-        super(session, remoteIPAddress, remotePort);
-        this.streamOpenedEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onStreamOpened = this.streamOpenedEmitter.event;
-      }
-      /* @internal */
-      async onPortChannelOpening(request, cancellation) {
-        const stream = new dev_tunnels_ssh_1.SshStream(request.channel);
-        this.streamOpenedEmitter.fire(stream);
-      }
-    };
-    exports2.RemotePortStreamer = RemotePortStreamer;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/portForwardingService.js
-var require_portForwardingService = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/portForwardingService.js"(exports2) {
-    "use strict";
-    var __decorate = exports2 && exports2.__decorate || function(decorators, target, key, desc) {
-      var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-      if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-      else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-      return c > 3 && r && Object.defineProperty(target, key, r), r;
-    };
-    var PortForwardingService_1;
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.PortForwardingService = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var vscode_jsonrpc_1 = require_main();
-    var forwardedPort_1 = require_forwardedPort();
-    var forwardedPortsCollection_1 = require_forwardedPortsCollection();
-    var ipAddressConversions_1 = require_ipAddressConversions();
-    var portForwardChannelOpenMessage_1 = require_portForwardChannelOpenMessage();
-    var portForwardRequestMessage_1 = require_portForwardRequestMessage();
-    var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
-    var tcpListenerFactory_1 = require_tcpListenerFactory();
-    var portForwardMessageFactory_1 = require_portForwardMessageFactory();
-    var localPortForwarder_1 = require_localPortForwarder();
-    var remotePortForwarder_1 = require_remotePortForwarder();
-    var remotePortStreamer_1 = require_remotePortStreamer();
-    var forwardedPortEventArgs_1 = require_forwardedPortEventArgs();
-    var PortForwardingService = PortForwardingService_1 = class PortForwardingService extends dev_tunnels_ssh_1.SshService {
-      /* @internal */
-      constructor(session) {
-        super(session);
-        this.localForwarders = /* @__PURE__ */ new Map();
-        this.remoteConnectors = /* @__PURE__ */ new Map();
-        this.streamForwarders = [];
-        this.acceptLocalConnectionsForForwardedPorts = true;
-        this.forwardConnectionsToLocalPorts = true;
-        this.acceptRemoteConnectionsForNonForwardedPorts = true;
-        this.localForwardedPorts = new forwardedPortsCollection_1.ForwardedPortsCollection();
-        this.remoteForwardedPorts = new forwardedPortsCollection_1.ForwardedPortsCollection();
-        this.tcpListenerFactory = new tcpListenerFactory_1.DefaultTcpListenerFactory();
-        this.messageFactory = new portForwardMessageFactory_1.DefaultPortForwardMessageFactory();
-        this.forwardedPortConnectingEmitter = new vscode_jsonrpc_1.Emitter();
-        this.onForwardedPortConnecting = this.forwardedPortConnectingEmitter.event;
-      }
-      /* @internal */
-      async forwardedPortConnecting(port, isIncoming, stream, cancellation) {
-        try {
-          const args = new forwardedPortEventArgs_1.ForwardedPortConnectingEventArgs(port, isIncoming, stream, cancellation);
-          this.forwardedPortConnectingEmitter.fire(args);
-          if (args.transformPromise) {
-            return await args.transformPromise;
-          }
-        } catch (e) {
-          if (!(e instanceof Error))
-            throw e;
-          this.trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionFailed, `Forwarded port connecting event-handler failed: ${e.message}`);
-          return null;
-        }
-        return stream;
-      }
-      async forwardFromRemotePort(remoteIPAddress, remotePort, localHostOrCancellation, localPort, cancellation) {
-        const localHost = typeof localHostOrCancellation === "string" ? localHostOrCancellation : "127.0.0.1";
-        if (typeof localPort === "undefined")
-          localPort = remotePort;
-        if (!remoteIPAddress)
-          throw new TypeError("Remote IP address is required.");
-        if (!Number.isInteger(remotePort) || remotePort < 0) {
-          throw new TypeError("Remote port must be a non-negative integer.");
-        }
-        if (!localHost)
-          throw new TypeError("Local host is required.");
-        if (!Number.isInteger(localPort) || localPort <= 0) {
-          throw new TypeError("Local port must be a positive integer.");
-        }
-        if (this.localForwardedPorts.find((p) => p.localPort === localPort)) {
-          throw new Error(`Local port ${localPort} is already forwarded.`);
-        } else if (remotePort > 0 && this.localForwardedPorts.find((p) => p.remotePort === remotePort)) {
-          throw new Error(`Remote port ${remotePort} is already forwarded.`);
-        }
-        const forwarder = new remotePortForwarder_1.RemotePortForwarder(this, this.session, remoteIPAddress, remotePort, localHost, localPort);
-        const request = await this.messageFactory.createRequestMessageAsync(remotePort);
-        if (!await forwarder.request(request, cancellation)) {
-          return null;
-        }
-        remotePort = forwarder.remotePort;
-        if (this.remoteConnectors.has(remotePort)) {
-          return null;
-        }
-        this.remoteConnectors.set(remotePort, forwarder);
-        const forwardedPort = new forwardedPort_1.ForwardedPort(localPort, remotePort, false);
-        this.localForwardedPorts.addOrUpdatePort(forwardedPort);
-        forwarder.onDisposed(() => {
-          this.localForwardedPorts.removePort(forwardedPort);
-          this.remoteConnectors.delete(remotePort);
-        });
-        return forwarder;
-      }
-      async forwardToRemotePort(localIPAddress, localPort, remoteHostOrCancellation, remotePort, cancellation) {
-        const remoteHost = typeof remoteHostOrCancellation === "string" ? remoteHostOrCancellation : "127.0.0.1";
-        if (typeof remotePort === "undefined")
-          remotePort = localPort;
-        if (!localIPAddress)
-          throw new TypeError("Local IP address is required.");
-        if (!Number.isInteger(localPort) || localPort < 0) {
-          throw new TypeError("Local port must be a non-negative integer.");
-        }
-        if (!remoteHost)
-          throw new TypeError("Remote host is required.");
-        if (!Number.isInteger(remotePort) || remotePort <= 0) {
-          throw new TypeError("Remote port must be a positive integer.");
-        }
-        if (this.localForwarders.has(remotePort)) {
-          throw new Error(`Port ${remotePort} is already forwarded.`);
-        }
-        const forwarder = new localPortForwarder_1.LocalPortForwarder(this, this.session, PortForwardingService_1.reversePortForwardChannelType, localIPAddress, localPort, remoteHost, remotePort);
-        await forwarder.startForwarding(cancellation);
-        this.localForwarders.set(remotePort, forwarder);
-        forwarder.onDisposed(() => {
-          this.localForwarders.delete(remotePort);
-        });
-        return forwarder;
-      }
-      /**
-       * Sends a request to the remote side to listen on a port and forward incoming connections as
-       * SSH channels of type 'forwarded-tcpip', which will then be relayed as local streams.
-       *
-       * @param remoteIPAddress IP address of the interface to bind to on the remote side.
-       * @param remotePort The remote port to listen on, or 0 to choose an available port.
-       * (The chosen port can then be obtained via the `remotePort` property on the returned object.)
-       * @param cancellation Cancellation token for the request; note this cannot cancel forwarding
-       * once it has started; use the returned disposable do do that.
-       * @returns A disposable object that when disposed will cancel forwarding the port, or `null`
-       * if the request was rejected by the remote side, possibly because the remote port was already
-       * in use. Handle the `onStreamOpened` event on this object to receive streams.
-       */
-      async streamFromRemotePort(remoteIPAddress, remotePort, cancellation) {
-        if (!remoteIPAddress)
-          throw new TypeError("Remote IP address is required.");
-        if (!Number.isInteger(remotePort) || remotePort < 0) {
-          throw new TypeError("Remote port must be a non-negative integer.");
-        }
-        const streamer = new remotePortStreamer_1.RemotePortStreamer(this.session, remoteIPAddress, remotePort);
-        const request = await this.messageFactory.createRequestMessageAsync(remotePort);
-        if (!await streamer.request(request, cancellation)) {
-          streamer.dispose();
-          return null;
-        }
-        remotePort = streamer.remotePort;
-        this.remoteConnectors.set(remotePort, streamer);
-        const forwardedPort = new forwardedPort_1.ForwardedPort(null, remotePort, false);
-        this.localForwardedPorts.addOrUpdatePort(forwardedPort);
-        streamer.onDisposed(() => {
-          this.localForwardedPorts.removePort(forwardedPort);
-          this.remoteConnectors.delete(remotePort);
-        });
-        return streamer;
-      }
-      /**
-       * Opens a stream for an SSH channel of type 'direct-tcpip' that is relayed to remote port,
-       * regardless of whether the remote side has explicitly forwarded that port.
-       *
-       * @param remoteHost The destination hostname or IP address for forwarded connections, to be
-       * resolved on the remote side. WARNING: Avoid using the hostname `localhost` as the destination
-       * host; use `127.0.0.1` or `::1` instead. (OpenSSH does not recognize `localhost` as a valid
-       * destination host.)
-       * @param remotePort The destination port for the forwarded stream. (Must not be 0.)
-       * @param cancellation Cancellation token for the request; note this cannot cancel streaming
-       * once it has started; dipose the returned stream for that.
-       * @returns A stream that is relayed to the remote port.
-       * @throws `SshChannelError` if the streaming channel could not be opened, either because it
-       * was rejected by the remote side, or the remote connection failed.
-       */
-      async streamToRemotePort(remoteHost, remotePort, cancellation) {
-        if (!remoteHost)
-          throw new TypeError("Remote host is required.");
-        if (!Number.isInteger(remotePort) || remotePort <= 0) {
-          throw new TypeError("Remote port must be a positive integer.");
-        }
-        const channel = await this.openChannel(this.session, PortForwardingService_1.reversePortForwardChannelType, null, null, remoteHost, remotePort, cancellation);
-        return new dev_tunnels_ssh_1.SshStream(channel);
-      }
-      /**
-       * Opens a stream for an SSH channel of type 'forwarded-tcpip' that is relayed to a remote
-       * port. The port must have been explicitly forwarded by the remote side.
-       *
-       * It may be necessary to call `waitForForwardedPort` before this method
-       * to ensure the port is ready for connections.
-       *
-       * An error is thrown if the requested port could not be forwarded, possibly because it was
-       * rejected by the remote side, or the remote connection failed.
-       *
-       * @param forwardedPort Remote port number that was forwarded.
-       * @param cancellation Cancellation token for the request; note this cannot
-       * cancel streaming once it has started; dipose the returned stream for that.
-       * @returns A stream that is relayed to the remote forwarded port.
-       */
-      async connectToForwardedPort(forwardedPort, cancellation) {
-        if (!Number.isInteger(forwardedPort) || forwardedPort <= 0) {
-          throw new TypeError("Forwarded port must be a positive integer.");
-        }
-        const channel = await this.openChannel(this.session, PortForwardingService_1.portForwardChannelType, null, null, "127.0.0.1", forwardedPort, cancellation);
-        const forwardedStream = await this.forwardedPortConnecting(forwardedPort, false, new dev_tunnels_ssh_1.SshStream(channel), cancellation);
-        if (!forwardedStream) {
-          channel.close().catch((e) => {
-          });
-          throw new dev_tunnels_ssh_1.SshChannelError("The connection to the forwarded port was rejected by the connecting event-handler.");
-        }
-        return forwardedStream;
-      }
-      /**
-       * Waits asynchronously for the remote side to forward an expected port number.
-       *
-       * A common pattern for some applications may be to call this method just before
-       * `ConnectToForwardedPortAsync`.
-       *
-       * @param forwardedPort Port number that is expected to be forwarded.
-       * @param cancellation Token that can be used to cancel waiting.
-       * @returns A promise that completes when the expected port number has been forwarded.
-       */
-      async waitForForwardedPort(forwardedPort, cancellation) {
-        if (this.remoteForwardedPorts.find((p) => p.remotePort === forwardedPort)) {
-          return;
-        }
-        const waitCompletion = new dev_tunnels_ssh_1.PromiseCompletionSource();
-        let cancellationRegistration;
-        if (cancellation) {
-          cancellationRegistration = cancellation.onCancellationRequested(() => waitCompletion.reject(new dev_tunnels_ssh_1.CancellationError()));
-        }
-        let portAddedRegistration;
-        let sessionClosedRegistration;
-        try {
-          portAddedRegistration = this.remoteForwardedPorts.onPortAdded((e) => {
-            if (e.port.remotePort === forwardedPort) {
-              waitCompletion.resolve();
-            }
-          });
-          sessionClosedRegistration = this.session.onClosed(() => {
-            waitCompletion.reject(new dev_tunnels_ssh_1.ObjectDisposedError("The session was closed."));
-          });
-          await waitCompletion.promise;
-        } finally {
-          portAddedRegistration === null || portAddedRegistration === void 0 ? void 0 : portAddedRegistration.dispose();
-          sessionClosedRegistration === null || sessionClosedRegistration === void 0 ? void 0 : sessionClosedRegistration.dispose();
-          cancellationRegistration === null || cancellationRegistration === void 0 ? void 0 : cancellationRegistration.dispose();
-        }
-      }
-      async onSessionRequest(request, cancellation) {
-        if (!request)
-          throw new TypeError("Request is required.");
-        else if (request.requestType !== PortForwardingService_1.portForwardRequestType && request.requestType !== PortForwardingService_1.cancelPortForwardRequestType) {
-          throw new Error(`Unexpected request type: ${request.requestType}`);
-        }
-        const portForwardRequest = request.request.convertTo(new portForwardRequestMessage_1.PortForwardRequestMessage());
-        const localIPAddress = ipAddressConversions_1.IPAddressConversions.fromSshAddress(portForwardRequest.addressToBind);
-        if (request.requestType === PortForwardingService_1.portForwardRequestType && portForwardRequest.port !== 0 && this.localForwarders.has(portForwardRequest.port)) {
-          const message = `PortForwardingService port ${portForwardRequest.port} is already forwarded.`;
-          this.session.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, dev_tunnels_ssh_1.SshTraceEventIds.portForwardRequestInvalid, message);
-          request.isAuthorized = false;
-          return;
-        }
-        const args = new dev_tunnels_ssh_1.SshRequestEventArgs(request.requestType, portForwardRequest, this.session.principal);
-        await super.onSessionRequest(args, cancellation);
-        let response;
-        let localPort = null;
-        if (args.isAuthorized) {
-          if (request.requestType === PortForwardingService_1.portForwardRequestType) {
-            try {
-              localPort = await this.startForwarding(localIPAddress, portForwardRequest.port, cancellation);
-            } catch (e) {
-            }
-            if (localPort !== null) {
-              const forwardedPort = portForwardRequest.port === 0 ? localPort : portForwardRequest.port;
-              const portResponse = await this.messageFactory.createSuccessMessageAsync(forwardedPort);
-              portResponse.port = forwardedPort;
-              response = portResponse;
-            }
-          } else if (request.requestType === PortForwardingService_1.cancelPortForwardRequestType) {
-            if (await this.cancelForwarding(portForwardRequest.port, cancellation)) {
-              response = new dev_tunnels_ssh_1.SessionRequestSuccessMessage();
-            }
-          }
-        }
-        request.responsePromise = Promise.resolve(response !== null && response !== void 0 ? response : new dev_tunnels_ssh_1.SessionRequestFailureMessage());
-        if (response instanceof portForwardSuccessMessage_1.PortForwardSuccessMessage) {
-          const forwardedPort = new forwardedPort_1.ForwardedPort(localPort !== null && localPort !== void 0 ? localPort : response.port, response.port, true);
-          this.remoteForwardedPorts.addOrUpdatePort(forwardedPort);
-        }
-      }
-      async startForwarding(localIPAddress, remotePort, cancellation) {
-        if (typeof remotePort !== "number")
-          throw new TypeError("Remote port must be an integer.");
-        if (this.acceptLocalConnectionsForForwardedPorts) {
-          let localPort = remotePort;
-          const forwarder = new localPortForwarder_1.LocalPortForwarder(this, this.session, PortForwardingService_1.portForwardChannelType, localIPAddress, localPort, void 0, remotePort === 0 ? void 0 : remotePort);
-          await forwarder.startForwarding(cancellation);
-          localPort = forwarder.localPort;
-          if (remotePort === 0) {
-            remotePort = localPort;
-          }
-          if (this.localForwarders.has(remotePort)) {
-            forwarder.dispose();
-            return null;
-          }
-          this.localForwarders.set(remotePort, forwarder);
-          localPort = forwarder.localPort;
-          forwarder.onDisposed(() => {
-            const forwardedPort = new forwardedPort_1.ForwardedPort(localPort, remotePort, true);
-            this.remoteForwardedPorts.removePort(forwardedPort);
-            this.localForwarders.delete(remotePort);
-          });
-          return localPort;
-        } else if (remotePort !== 0) {
-          return remotePort;
-        } else {
-          return null;
-        }
-      }
-      async cancelForwarding(forwardedPort, cancellation) {
-        const forwarder = this.localForwarders.get(forwardedPort);
-        if (forwarder) {
-          this.localForwarders.delete(forwardedPort);
-          forwarder.dispose();
-          return true;
-        }
-        const port = new forwardedPort_1.ForwardedPort(forwardedPort, forwardedPort, true);
-        if (this.remoteForwardedPorts.removePort(port)) {
-          return true;
-        }
-        return false;
-      }
-      async onChannelOpening(request, cancellation) {
-        var _a;
-        if (!request)
-          throw new TypeError("Request is required.");
-        const channelType = request.request.channelType;
-        if (channelType !== PortForwardingService_1.portForwardChannelType && channelType !== PortForwardingService_1.reversePortForwardChannelType) {
-          request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.unknownChannelType;
-          return;
-        }
-        let remoteConnector = null;
-        const portForwardMessage = request.request instanceof portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage ? request.request : request.request.convertTo(new portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage());
-        if (request.isRemoteRequest) {
-          if (channelType === PortForwardingService_1.portForwardChannelType) {
-            const remoteIPAddress = ipAddressConversions_1.IPAddressConversions.fromSshAddress(portForwardMessage.host);
-            const remoteEndPoint = `${remoteIPAddress}:${portForwardMessage.port}`;
-            remoteConnector = (_a = this.remoteConnectors.get(portForwardMessage.port)) !== null && _a !== void 0 ? _a : null;
-            if (!remoteConnector) {
-              this.trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.portForwardRequestInvalid, `PortForwardingService received forwarding channel for ${remoteEndPoint} that was not requested.`);
-              request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.connectFailed;
-              request.failureDescription = "Forwarding channel was not requested.";
-              return;
-            }
-          } else if (!this.acceptRemoteConnectionsForNonForwardedPorts) {
-            const errorMessage = "The session has disabled connections to non-forwarded ports.";
-            this.session.trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.portForwardChannelOpenFailed, errorMessage);
-            request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.administrativelyProhibited;
-            request.failureDescription = errorMessage;
-            return;
-          }
-        }
-        const portForwardRequest = new dev_tunnels_ssh_1.SshChannelOpeningEventArgs(portForwardMessage, request.channel, request.isRemoteRequest);
-        await super.onChannelOpening(portForwardRequest, cancellation);
-        request.failureReason = portForwardRequest.failureReason;
-        request.failureDescription = portForwardRequest.failureDescription;
-        request.openingPromise = portForwardRequest.openingPromise;
-        if (request.failureReason === dev_tunnels_ssh_1.SshChannelOpenFailureReason.none && request.isRemoteRequest && this.forwardConnectionsToLocalPorts) {
-          if (remoteConnector) {
-            await remoteConnector.onPortChannelOpening(request, cancellation);
-            const localPort = remoteConnector instanceof remotePortForwarder_1.RemotePortForwarder ? remoteConnector.localPort : null;
-            const remotePort = remoteConnector instanceof remotePortForwarder_1.RemotePortForwarder ? remoteConnector.remotePort : portForwardMessage.port;
-            const forwardedPort = new forwardedPort_1.ForwardedPort(localPort, remotePort, false);
-            this.localForwardedPorts.addChannel(forwardedPort, request.channel);
-          } else {
-            await remotePortForwarder_1.RemotePortForwarder.forwardChannel(this, request, portForwardMessage.host, portForwardMessage.port, portForwardMessage.port, this.trace, cancellation);
-            if (request.failureReason !== dev_tunnels_ssh_1.SshChannelOpenFailureReason.none) {
-              await request.channel.close(cancellation);
-            }
-          }
-        }
-      }
-      /* @internal */
-      async openChannel(session, channelType, originatorIPAddress, originatorPort, host, port, cancellation) {
-        let forwardedPort = void 0;
-        if (channelType === PortForwardingService_1.portForwardChannelType) {
-          forwardedPort = this.remoteForwardedPorts.find((p) => p.remotePort === port || p.remotePort === null && p.localPort === port);
-          if (!forwardedPort) {
-            throw new Error(`Port ${port} is not being forwarded.`);
-          }
-        }
-        const openMessage = await this.messageFactory.createChannelOpenMessageAsync(port);
-        openMessage.channelType = channelType;
-        openMessage.originatorIPAddress = originatorIPAddress !== null && originatorIPAddress !== void 0 ? originatorIPAddress : "";
-        openMessage.originatorPort = originatorPort !== null && originatorPort !== void 0 ? originatorPort : 0;
-        openMessage.host = host;
-        openMessage.port = port;
-        const trace = this.session.trace;
-        let channel;
-        try {
-          channel = await session.openChannel(openMessage, null, cancellation);
-          trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardChannelOpened, `PortForwardingService opened ${channelType} channel #${channel.channelId} for ${host}:${port}.`);
-        } catch (e) {
-          if (!(e instanceof Error))
-            throw e;
-          trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.portForwardChannelOpenFailed, `PortForwardingService failed to open ${channelType} channel for ${host}:${port}: ${e.message}`, e);
-          throw e;
-        }
-        if (channelType === PortForwardingService_1.portForwardChannelType) {
-          this.remoteForwardedPorts.addChannel(forwardedPort, channel);
-        }
-        return channel;
-      }
-      dispose() {
-        const disposables = [
-          ...this.localForwarders.values(),
-          ...this.remoteConnectors.values()
-        ];
-        this.streamForwarders.splice(0, this.streamForwarders.length);
-        this.localForwarders.clear();
-        this.remoteConnectors.clear();
-        for (const disposable of disposables) {
-          disposable.dispose();
-        }
-        super.dispose();
-      }
-    };
-    PortForwardingService.portForwardRequestType = "tcpip-forward";
-    PortForwardingService.cancelPortForwardRequestType = "cancel-tcpip-forward";
-    PortForwardingService.portForwardChannelType = "forwarded-tcpip";
-    PortForwardingService.reversePortForwardChannelType = "direct-tcpip";
-    PortForwardingService = PortForwardingService_1 = __decorate([
-      (0, dev_tunnels_ssh_1.serviceActivation)({ sessionRequest: PortForwardingService_1.portForwardRequestType }),
-      (0, dev_tunnels_ssh_1.serviceActivation)({ sessionRequest: PortForwardingService_1.cancelPortForwardRequestType }),
-      (0, dev_tunnels_ssh_1.serviceActivation)({ channelType: PortForwardingService_1.portForwardChannelType }),
-      (0, dev_tunnels_ssh_1.serviceActivation)({ channelType: PortForwardingService_1.reversePortForwardChannelType })
-    ], PortForwardingService);
-    exports2.PortForwardingService = PortForwardingService;
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/index.js
-var require_dev_tunnels_ssh_tcp = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/index.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.ForwardedPortConnectingEventArgs = exports2.ForwardedPortChannelEventArgs = exports2.ForwardedPortEventArgs = exports2.ForwardedPortsCollection = exports2.ForwardedPort = exports2.PortForwardChannelOpenMessage = exports2.PortForwardSuccessMessage = exports2.PortForwardRequestMessage = exports2.RemotePortStreamer = exports2.RemotePortForwarder = exports2.LocalPortForwarder = exports2.PortForwardingService = exports2.SshServer = exports2.SshClient = void 0;
-    var sshClient_1 = require_sshClient();
-    Object.defineProperty(exports2, "SshClient", { enumerable: true, get: function() {
-      return sshClient_1.SshClient;
+    exports2.TunnelProgress = exports2.TunnelConstraints = exports2.TunnelServiceProperties = exports2.TunnelProtocol = exports2.TunnelHeaderNames = exports2.TunnelEvent = exports2.TunnelEndpoint = exports2.TunnelConnectionMode = exports2.TunnelAccessScopes = exports2.TunnelAccessControlEntryType = exports2.TunnelAccessControlEntry = exports2.TunnelAccessControl = void 0;
+    var tunnelAccessControl_1 = require_tunnelAccessControl();
+    Object.defineProperty(exports2, "TunnelAccessControl", { enumerable: true, get: function() {
+      return tunnelAccessControl_1.TunnelAccessControl;
     } });
-    var sshServer_1 = require_sshServer();
-    Object.defineProperty(exports2, "SshServer", { enumerable: true, get: function() {
-      return sshServer_1.SshServer;
+    var tunnelAccessControlEntry_1 = require_tunnelAccessControlEntry();
+    Object.defineProperty(exports2, "TunnelAccessControlEntry", { enumerable: true, get: function() {
+      return tunnelAccessControlEntry_1.TunnelAccessControlEntry;
     } });
-    var portForwardingService_1 = require_portForwardingService();
-    Object.defineProperty(exports2, "PortForwardingService", { enumerable: true, get: function() {
-      return portForwardingService_1.PortForwardingService;
+    var tunnelAccessControlEntryType_1 = require_tunnelAccessControlEntryType();
+    Object.defineProperty(exports2, "TunnelAccessControlEntryType", { enumerable: true, get: function() {
+      return tunnelAccessControlEntryType_1.TunnelAccessControlEntryType;
     } });
-    var localPortForwarder_1 = require_localPortForwarder();
-    Object.defineProperty(exports2, "LocalPortForwarder", { enumerable: true, get: function() {
-      return localPortForwarder_1.LocalPortForwarder;
+    var tunnelAccessScopes_1 = require_tunnelAccessScopes();
+    Object.defineProperty(exports2, "TunnelAccessScopes", { enumerable: true, get: function() {
+      return tunnelAccessScopes_1.TunnelAccessScopes;
     } });
-    var remotePortForwarder_1 = require_remotePortForwarder();
-    Object.defineProperty(exports2, "RemotePortForwarder", { enumerable: true, get: function() {
-      return remotePortForwarder_1.RemotePortForwarder;
+    var tunnelConnectionMode_1 = require_tunnelConnectionMode();
+    Object.defineProperty(exports2, "TunnelConnectionMode", { enumerable: true, get: function() {
+      return tunnelConnectionMode_1.TunnelConnectionMode;
     } });
-    var remotePortStreamer_1 = require_remotePortStreamer();
-    Object.defineProperty(exports2, "RemotePortStreamer", { enumerable: true, get: function() {
-      return remotePortStreamer_1.RemotePortStreamer;
+    var tunnelEndpoint_1 = require_tunnelEndpoint();
+    Object.defineProperty(exports2, "TunnelEndpoint", { enumerable: true, get: function() {
+      return tunnelEndpoint_1.TunnelEndpoint;
     } });
-    var portForwardRequestMessage_1 = require_portForwardRequestMessage();
-    Object.defineProperty(exports2, "PortForwardRequestMessage", { enumerable: true, get: function() {
-      return portForwardRequestMessage_1.PortForwardRequestMessage;
+    var tunnelEvent_1 = require_tunnelEvent();
+    Object.defineProperty(exports2, "TunnelEvent", { enumerable: true, get: function() {
+      return tunnelEvent_1.TunnelEvent;
     } });
-    var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
-    Object.defineProperty(exports2, "PortForwardSuccessMessage", { enumerable: true, get: function() {
-      return portForwardSuccessMessage_1.PortForwardSuccessMessage;
+    var tunnelHeaderNames_1 = require_tunnelHeaderNames();
+    Object.defineProperty(exports2, "TunnelHeaderNames", { enumerable: true, get: function() {
+      return tunnelHeaderNames_1.TunnelHeaderNames;
     } });
-    var portForwardChannelOpenMessage_1 = require_portForwardChannelOpenMessage();
-    Object.defineProperty(exports2, "PortForwardChannelOpenMessage", { enumerable: true, get: function() {
-      return portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage;
+    var tunnelProtocol_1 = require_tunnelProtocol();
+    Object.defineProperty(exports2, "TunnelProtocol", { enumerable: true, get: function() {
+      return tunnelProtocol_1.TunnelProtocol;
     } });
-    var forwardedPort_1 = require_forwardedPort();
-    Object.defineProperty(exports2, "ForwardedPort", { enumerable: true, get: function() {
-      return forwardedPort_1.ForwardedPort;
+    var tunnelServiceProperties_1 = require_tunnelServiceProperties();
+    Object.defineProperty(exports2, "TunnelServiceProperties", { enumerable: true, get: function() {
+      return tunnelServiceProperties_1.TunnelServiceProperties;
     } });
-    var forwardedPortsCollection_1 = require_forwardedPortsCollection();
-    Object.defineProperty(exports2, "ForwardedPortsCollection", { enumerable: true, get: function() {
-      return forwardedPortsCollection_1.ForwardedPortsCollection;
+    var tunnelConstraints_1 = require_tunnelConstraints();
+    Object.defineProperty(exports2, "TunnelConstraints", { enumerable: true, get: function() {
+      return tunnelConstraints_1.TunnelConstraints;
     } });
-    var forwardedPortEventArgs_1 = require_forwardedPortEventArgs();
-    Object.defineProperty(exports2, "ForwardedPortEventArgs", { enumerable: true, get: function() {
-      return forwardedPortEventArgs_1.ForwardedPortEventArgs;
+    var tunnelProgress_1 = require_tunnelProgress();
+    Object.defineProperty(exports2, "TunnelProgress", { enumerable: true, get: function() {
+      return tunnelProgress_1.TunnelProgress;
     } });
-    Object.defineProperty(exports2, "ForwardedPortChannelEventArgs", { enumerable: true, get: function() {
-      return forwardedPortEventArgs_1.ForwardedPortChannelEventArgs;
-    } });
-    Object.defineProperty(exports2, "ForwardedPortConnectingEventArgs", { enumerable: true, get: function() {
-      return forwardedPortEventArgs_1.ForwardedPortConnectingEventArgs;
-    } });
-  }
-});
-
-// ../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectResponseMessage.js
-var require_portRelayConnectResponseMessage = __commonJS({
-  "../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectResponseMessage.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.PortRelayConnectResponseMessage = void 0;
-    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
-    var PortRelayConnectResponseMessage = class extends dev_tunnels_ssh_1.ChannelOpenConfirmationMessage {
-      constructor() {
-        super(...arguments);
-        this.isE2EEncryptionEnabled = false;
-      }
-      onWrite(writer) {
-        super.onWrite(writer);
-        writer.writeBoolean(this.isE2EEncryptionEnabled);
-      }
-      onRead(reader) {
-        super.onRead(reader);
-        this.isE2EEncryptionEnabled = reader.readBoolean();
-      }
-    };
-    exports2.PortRelayConnectResponseMessage = PortRelayConnectResponseMessage;
   }
 });
 
@@ -21779,7 +16089,7 @@ var require_tunnelAccessTokenProperties = __commonJS({
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-management/package.json
-var require_package3 = __commonJS({
+var require_package2 = __commonJS({
   "../../node_modules/@microsoft/dev-tunnels-management/package.json"(exports2, module2) {
     module2.exports = {
       name: "@microsoft/dev-tunnels-management",
@@ -21803,12 +16113,12 @@ var require_package3 = __commonJS({
 });
 
 // ../../node_modules/@microsoft/dev-tunnels-management/version.js
-var require_version2 = __commonJS({
+var require_version = __commonJS({
   "../../node_modules/@microsoft/dev-tunnels-management/version.js"(exports2) {
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.tunnelSdkUserAgent = void 0;
-    var packageJson = require_package3();
+    var packageJson = require_package2();
     var packageVersion = packageJson.version;
     exports2.tunnelSdkUserAgent = `Dev-Tunnels-Service-TypeScript-SDK/${packageVersion}`;
   }
@@ -32167,7 +26477,7 @@ var require_proxy_from_env = __commonJS({
 });
 
 // ../../node_modules/ms/index.js
-var require_ms2 = __commonJS({
+var require_ms = __commonJS({
   "../../node_modules/ms/index.js"(exports2, module2) {
     "use strict";
     var s = 1e3;
@@ -32294,7 +26604,7 @@ var require_common = __commonJS({
       createDebug.disable = disable;
       createDebug.enable = enable;
       createDebug.enabled = enabled;
-      createDebug.humanize = require_ms2();
+      createDebug.humanize = require_ms();
       createDebug.destroy = destroy;
       Object.keys(env).forEach((key) => {
         createDebug[key] = env[key];
@@ -32462,7 +26772,7 @@ var require_common = __commonJS({
 });
 
 // ../../node_modules/debug/src/browser.js
-var require_browser2 = __commonJS({
+var require_browser = __commonJS({
   "../../node_modules/debug/src/browser.js"(exports2, module2) {
     "use strict";
     exports2.formatArgs = formatArgs;
@@ -32633,7 +26943,7 @@ var require_browser2 = __commonJS({
 });
 
 // ../../node_modules/debug/src/node.js
-var require_node2 = __commonJS({
+var require_node = __commonJS({
   "../../node_modules/debug/src/node.js"(exports2, module2) {
     "use strict";
     var tty = require("tty");
@@ -32808,26 +27118,26 @@ var require_node2 = __commonJS({
 });
 
 // ../../node_modules/debug/src/index.js
-var require_src2 = __commonJS({
+var require_src = __commonJS({
   "../../node_modules/debug/src/index.js"(exports2, module2) {
     "use strict";
     if (typeof process === "undefined" || process.type === "renderer" || process.browser === true || process.__nwjs) {
-      module2.exports = require_browser2();
+      module2.exports = require_browser();
     } else {
-      module2.exports = require_node2();
+      module2.exports = require_node();
     }
   }
 });
 
 // ../../node_modules/follow-redirects/debug.js
-var require_debug2 = __commonJS({
+var require_debug = __commonJS({
   "../../node_modules/follow-redirects/debug.js"(exports2, module2) {
     "use strict";
     var debug;
     module2.exports = function() {
       if (!debug) {
         try {
-          debug = require_src2()("follow-redirects");
+          debug = require_src()("follow-redirects");
         } catch (error) {
         }
         if (typeof debug !== "function") {
@@ -32850,7 +27160,7 @@ var require_follow_redirects = __commonJS({
     var https = require("https");
     var Writable = require("stream").Writable;
     var assert = require("assert");
-    var debug = require_debug2();
+    var debug = require_debug();
     (function detectUnsupportedEnvironment() {
       var looksLikeNode = typeof process !== "undefined";
       var looksLikeBrowser = typeof window !== "undefined" && typeof document !== "undefined";
@@ -36935,7 +31245,7 @@ var require_tunnelManagementHttpClient = __commonJS({
     var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
     var tunnelManagementClient_1 = require_tunnelManagementClient();
     var tunnelAccessTokenProperties_1 = require_tunnelAccessTokenProperties();
-    var version_1 = require_version2();
+    var version_1 = require_version();
     var axios_1 = require_axios();
     var tunnelPlanTokenProperties_1 = require_tunnelPlanTokenProperties();
     var idGeneration_1 = require_idGeneration();
@@ -36948,10 +31258,10 @@ var require_tunnelManagementHttpClient = __commonJS({
     var tunnelAuthentication = "Authorization";
     var checkAvailablePath = ":checkNameAvailability";
     var createNameRetries = 3;
-    var ManagementApiVersions2;
-    (function(ManagementApiVersions3) {
-      ManagementApiVersions3["Version20230927preview"] = "2023-09-27-preview";
-    })(ManagementApiVersions2 = exports2.ManagementApiVersions || (exports2.ManagementApiVersions = {}));
+    var ManagementApiVersions3;
+    (function(ManagementApiVersions4) {
+      ManagementApiVersions4["Version20230927preview"] = "2023-09-27-preview";
+    })(ManagementApiVersions3 = exports2.ManagementApiVersions || (exports2.ManagementApiVersions = {}));
     function comparePorts(a, b) {
       var _a, _b;
       return ((_a = a.portNumber) !== null && _a !== void 0 ? _a : Number.MAX_SAFE_INTEGER) - ((_b = b.portNumber) !== null && _b !== void 0 ? _b : Number.MAX_SAFE_INTEGER);
@@ -37001,7 +31311,7 @@ var require_tunnelManagementHttpClient = __commonJS({
     ];
     var apiVersions = ["2023-09-27-preview"];
     var defaultRequestTimeoutMS = 2e4;
-    var TunnelManagementHttpClient2 = class _TunnelManagementHttpClient {
+    var TunnelManagementHttpClient3 = class _TunnelManagementHttpClient {
       /**
        * Initializes a new instance of the `TunnelManagementHttpClient` class
        * with a client authentication callback, service URI, and HTTP handler.
@@ -37748,7 +32058,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
         }
       }
     };
-    exports2.TunnelManagementHttpClient = TunnelManagementHttpClient2;
+    exports2.TunnelManagementHttpClient = TunnelManagementHttpClient3;
   }
 });
 
@@ -37785,6 +32095,5696 @@ var require_dev_tunnels_management = __commonJS({
     __exportStar(require_tunnelManagementClient(), exports2);
     __exportStar(require_tunnelRequestOptions(), exports2);
     __exportStar(require_tunnelAccessTokenProperties(), exports2);
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/tunnelClient.js
+var require_tunnelClient = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelClient.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/tunnelHost.js
+var require_tunnelHost = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelHost.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/connectionStatus.js
+var require_connectionStatus = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/connectionStatus.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ConnectionStatus = void 0;
+    var ConnectionStatus;
+    (function(ConnectionStatus2) {
+      ConnectionStatus2["None"] = "none";
+      ConnectionStatus2["Connecting"] = "connecting";
+      ConnectionStatus2["RefreshingTunnelAccessToken"] = "refreshingTunnelAccessToken";
+      ConnectionStatus2["Connected"] = "connected";
+      ConnectionStatus2["Disconnected"] = "disconnected";
+      ConnectionStatus2["RefreshingTunnelHostPublicKey"] = "refreshingTunnelHostPublicKey";
+    })(ConnectionStatus = exports2.ConnectionStatus || (exports2.ConnectionStatus = {}));
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/connectionStatusChangedEventArgs.js
+var require_connectionStatusChangedEventArgs = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/connectionStatusChangedEventArgs.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ConnectionStatusChangedEventArgs = void 0;
+    var ConnectionStatusChangedEventArgs = class {
+      /**
+       * Creates a new instance of ConnectionStatusChangedEventArgs.
+       */
+      constructor(previousStatus, status, disconnectError) {
+        this.previousStatus = previousStatus;
+        this.status = status;
+        this.disconnectError = disconnectError;
+      }
+    };
+    exports2.ConnectionStatusChangedEventArgs = ConnectionStatusChangedEventArgs;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelAccessTokenEventArgs.js
+var require_refreshingTunnelAccessTokenEventArgs = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/refreshingTunnelAccessTokenEventArgs.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RefreshingTunnelAccessTokenEventArgs = void 0;
+    var RefreshingTunnelAccessTokenEventArgs = class {
+      /**
+       * Creates a new instance of RefreshingTunnelAccessTokenEventArgs class.
+       */
+      constructor(tunnelAccessScope, cancellation) {
+        this.tunnelAccessScope = tunnelAccessScope;
+        this.cancellation = cancellation;
+      }
+    };
+    exports2.RefreshingTunnelAccessTokenEventArgs = RefreshingTunnelAccessTokenEventArgs;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/utils.js
+var require_utils = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/utils.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TrackingEmitter = exports2.withCancellation = exports2.getError = exports2.getErrorMessage = exports2.delay = exports2.List = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var vscode_jsonrpc_1 = require_main();
+    var List = class {
+      static groupBy(list, keyGetter) {
+        const map = /* @__PURE__ */ new Map();
+        list.forEach((item) => {
+          const key = keyGetter(item);
+          const collection = map.get(key);
+          if (!collection) {
+            map.set(key, [item]);
+          } else {
+            collection.push(item);
+          }
+        });
+        return map;
+      }
+    };
+    exports2.List = List;
+    function delay(milliseconds, cancellation) {
+      return new Promise((resolve2, reject) => {
+        let cancellationDisposable;
+        let timeout = void 0;
+        if (cancellation) {
+          if (cancellation.isCancellationRequested) {
+            reject(new dev_tunnels_ssh_1.CancellationError());
+            return;
+          }
+          cancellationDisposable = cancellation.onCancellationRequested(() => {
+            if (timeout) {
+              clearTimeout(timeout);
+            }
+            cancellationDisposable === null || cancellationDisposable === void 0 ? void 0 : cancellationDisposable.dispose();
+            reject(new dev_tunnels_ssh_1.CancellationError());
+          });
+        }
+        timeout = setTimeout(() => {
+          cancellationDisposable === null || cancellationDisposable === void 0 ? void 0 : cancellationDisposable.dispose();
+          resolve2();
+        }, milliseconds);
+      });
+    }
+    exports2.delay = delay;
+    function getErrorMessage(e) {
+      var _a;
+      return String((_a = e === null || e === void 0 ? void 0 : e.message) !== null && _a !== void 0 ? _a : e);
+    }
+    exports2.getErrorMessage = getErrorMessage;
+    function getError(e, messagePrefix) {
+      return e instanceof Error ? e : new Error(`${messagePrefix !== null && messagePrefix !== void 0 ? messagePrefix : ""}${e}`);
+    }
+    exports2.getError = getError;
+    function withCancellation(promise, cancellation) {
+      if (!cancellation) {
+        return promise;
+      }
+      return Promise.race([
+        promise,
+        new Promise((resolve2, reject) => {
+          if (cancellation.isCancellationRequested) {
+            reject(new dev_tunnels_ssh_1.CancellationError());
+          } else {
+            cancellation.onCancellationRequested(() => {
+              reject(new dev_tunnels_ssh_1.CancellationError());
+            });
+          }
+        })
+      ]);
+    }
+    exports2.withCancellation = withCancellation;
+    var TrackingEmitter = class extends vscode_jsonrpc_1.Emitter {
+      constructor() {
+        super({
+          onFirstListenerAdd: () => this.subscribed = true,
+          onLastListenerRemove: () => this.subscribed = false
+        });
+        this.subscribed = false;
+      }
+      /**
+       * A value indicating whether there event handlers subscribed to the event emitter.
+       */
+      get isSubscribed() {
+        return this.subscribed;
+      }
+    };
+    exports2.TrackingEmitter = TrackingEmitter;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/sshKeepAliveEventArgs.js
+var require_sshKeepAliveEventArgs = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/sshKeepAliveEventArgs.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshKeepAliveEventArgs = void 0;
+    var SshKeepAliveEventArgs = class {
+      constructor(count) {
+        this.count = count;
+      }
+    };
+    exports2.SshKeepAliveEventArgs = SshKeepAliveEventArgs;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionBase.js
+var require_tunnelConnectionBase = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelConnectionBase.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.TunnelConnectionBase = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var vscode_jsonrpc_1 = require_main();
+    var connectionStatus_1 = require_connectionStatus();
+    var connectionStatusChangedEventArgs_1 = require_connectionStatusChangedEventArgs();
+    var refreshingTunnelAccessTokenEventArgs_1 = require_refreshingTunnelAccessTokenEventArgs();
+    var utils_1 = require_utils();
+    var sshKeepAliveEventArgs_1 = require_sshKeepAliveEventArgs();
+    var TunnelConnectionBase = class {
+      constructor(tunnelAccessScope) {
+        this.tunnelAccessScope = tunnelAccessScope;
+        this.disposeCts = new vscode_jsonrpc_1.CancellationTokenSource();
+        this.status = connectionStatus_1.ConnectionStatus.None;
+        this.refreshingTunnelAccessTokenEmitter = new utils_1.TrackingEmitter();
+        this.connectionStatusChangedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.retryingTunnelConnectionEmitter = new vscode_jsonrpc_1.Emitter();
+        this.forwardedPortConnectingEmitter = new vscode_jsonrpc_1.Emitter();
+        this.keepAliveFailedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.keepAliveSucceededEmitter = new vscode_jsonrpc_1.Emitter();
+        this.refreshingTunnelAccessToken = this.refreshingTunnelAccessTokenEmitter.event;
+        this.connectionStatusChanged = this.connectionStatusChangedEmitter.event;
+        this.retryingTunnelConnection = this.retryingTunnelConnectionEmitter.event;
+        this.forwardedPortConnecting = this.forwardedPortConnectingEmitter.event;
+        this.keepAliveFailed = this.keepAliveFailedEmitter.event;
+        this.keepAliveSucceeded = this.keepAliveSucceededEmitter.event;
+      }
+      /**
+       * Gets a value indicathing that this tunnel connection session is disposed.
+       */
+      get isDisposed() {
+        return this.disposeCts.token.isCancellationRequested;
+      }
+      get isRefreshingTunnelAccessTokenEventHandled() {
+        return this.refreshingTunnelAccessTokenEmitter.isSubscribed;
+      }
+      /**
+       * Gets dispose cancellation token.
+       */
+      get disposeToken() {
+        return this.disposeCts.token;
+      }
+      /**
+       * Gets the connection status.
+       */
+      get connectionStatus() {
+        return this.status;
+      }
+      /**
+       * Sets the connection status.
+       * Throws CancellationError if the session is disposed and the status being set is not ConnectionStatus.Disconnected.
+       */
+      set connectionStatus(value) {
+        if (this.isDisposed && value !== connectionStatus_1.ConnectionStatus.Disconnected) {
+          this.throwIfDisposed(`ConnectionStatus: ${value}`);
+        }
+        if (value === connectionStatus_1.ConnectionStatus.RefreshingTunnelAccessToken && this.status !== connectionStatus_1.ConnectionStatus.Connecting) {
+          throw new Error("Refreshing tunnel access token is allowed only when connecting.");
+        }
+        if (value !== this.status) {
+          const previousStatus = this.connectionStatus;
+          this.status = value;
+          this.onConnectionStatusChanged(previousStatus, value);
+        }
+      }
+      /**
+       * Gets the error that caused disconnection.
+       * Undefined if not yet connected or disconnection was caused by disposing of this object.
+       */
+      get disconnectError() {
+        return this.error;
+      }
+      /**
+       * Sets the error that caused disconnection.
+       */
+      set disconnectError(e) {
+        this.error = e;
+      }
+      onForwardedPortConnecting(e) {
+        this.forwardedPortConnectingEmitter.fire(e);
+      }
+      /**
+       * Raises the keep-alive failed event.
+       */
+      onKeepAliveFailed(count) {
+        this.keepAliveFailedEmitter.fire(new sshKeepAliveEventArgs_1.SshKeepAliveEventArgs(count));
+      }
+      /**
+       * Raises the keep-alive succeeded event.
+       */
+      onKeepAliveSucceeded(count) {
+        this.keepAliveSucceededEmitter.fire(new sshKeepAliveEventArgs_1.SshKeepAliveEventArgs(count));
+      }
+      /**
+       * Closes and disposes the tunnel session.
+       */
+      dispose() {
+        this.disposeCts.cancel();
+        this.connectionStatus = connectionStatus_1.ConnectionStatus.Disconnected;
+        return Promise.resolve();
+      }
+      /**
+       *  Notifies about a connection retry, giving the relay client a chance to delay or cancel it.
+       */
+      onRetrying(event) {
+        this.retryingTunnelConnectionEmitter.fire(event);
+      }
+      /**
+       * Gets the fresh tunnel access token or undefined if it cannot.
+       */
+      async getFreshTunnelAccessToken(cancellation) {
+        const event = new refreshingTunnelAccessTokenEventArgs_1.RefreshingTunnelAccessTokenEventArgs(this.tunnelAccessScope, cancellation);
+        this.refreshingTunnelAccessTokenEmitter.fire(event);
+        return event.tunnelAccessToken ? await event.tunnelAccessToken : void 0;
+      }
+      /**
+       * Event fired when the connection status has changed.
+       */
+      onConnectionStatusChanged(previousStatus, status) {
+        const disconnectError = this.connectionStatus === connectionStatus_1.ConnectionStatus.Disconnected && !this.isDisposed ? this.disconnectError : void 0;
+        const event = new connectionStatusChangedEventArgs_1.ConnectionStatusChangedEventArgs(previousStatus, status, disconnectError);
+        this.connectionStatusChangedEmitter.fire(event);
+      }
+      /**
+       * Throws CancellationError if the tunnel connection is disposed.
+       */
+      throwIfDisposed(message, stack) {
+        if (this.isDisposed) {
+          const error = new dev_tunnels_ssh_1.ObjectDisposedError(`The tunnel connection is disposed. ${message}`);
+          if (stack) {
+            error.stack = stack;
+          }
+          throw error;
+        }
+      }
+    };
+    exports2.TunnelConnectionBase = TunnelConnectionBase;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelClient.js
+var require_multiModeTunnelClient = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelClient.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.MultiModeTunnelClient = void 0;
+    var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
+    var tunnelConnectionBase_1 = require_tunnelConnectionBase();
+    var MultiModeTunnelClient = class extends tunnelConnectionBase_1.TunnelConnectionBase {
+      constructor() {
+        super(dev_tunnels_contracts_1.TunnelAccessScopes.Connect);
+        this.clients = [];
+        this.connectionModes = this.clients ? [...new Set(...this.clients.map((c) => c.connectionModes))] : [];
+      }
+      /**
+       * A value indicating whether local connections for forwarded ports are accepted.
+       * Local connections are not accepted if the host process is not NodeJS (e.g. browser).
+       */
+      get acceptLocalConnectionsForForwardedPorts() {
+        return !!this.clients.find((c) => c.acceptLocalConnectionsForForwardedPorts);
+      }
+      set acceptLocalConnectionsForForwardedPorts(value) {
+        this.clients.forEach((c) => c.acceptLocalConnectionsForForwardedPorts = value);
+      }
+      get localForwardingHostAddress() {
+        var _a;
+        return (_a = this.clients[0]) === null || _a === void 0 ? void 0 : _a.localForwardingHostAddress;
+      }
+      set localForwardingHostAddress(value) {
+        this.clients.forEach((c) => c.localForwardingHostAddress = value);
+      }
+      connect(tunnel, options, cancellation) {
+        if (!tunnel) {
+          throw new Error("Tunnel cannot be null");
+        }
+        return new Promise((resolve2) => {
+        });
+      }
+      get portForwarding() {
+        throw new Error("Not supported.");
+      }
+      connectToForwardedPort(fowardedPort, cancellation) {
+        throw new Error("Method not implemented.");
+      }
+      waitForForwardedPort(forwardedPort, cancellation) {
+        throw new Error("Method not implemented.");
+      }
+      async refreshPorts() {
+        throw new Error("Method not implemented.");
+      }
+      async dispose() {
+        await super.dispose();
+        await Promise.all(this.clients.map((client) => client.dispose()));
+      }
+    };
+    exports2.MultiModeTunnelClient = MultiModeTunnelClient;
+  }
+});
+
+// ../../node_modules/uuid/lib/rng.js
+var require_rng = __commonJS({
+  "../../node_modules/uuid/lib/rng.js"(exports2, module2) {
+    "use strict";
+    var crypto2 = require("crypto");
+    module2.exports = function nodeRNG() {
+      return crypto2.randomBytes(16);
+    };
+  }
+});
+
+// ../../node_modules/uuid/lib/bytesToUuid.js
+var require_bytesToUuid = __commonJS({
+  "../../node_modules/uuid/lib/bytesToUuid.js"(exports2, module2) {
+    "use strict";
+    var byteToHex = [];
+    for (i = 0; i < 256; ++i) {
+      byteToHex[i] = (i + 256).toString(16).substr(1);
+    }
+    var i;
+    function bytesToUuid(buf, offset) {
+      var i2 = offset || 0;
+      var bth = byteToHex;
+      return [
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        "-",
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        "-",
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        "-",
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        "-",
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        bth[buf[i2++]],
+        bth[buf[i2++]]
+      ].join("");
+    }
+    module2.exports = bytesToUuid;
+  }
+});
+
+// ../../node_modules/uuid/v1.js
+var require_v1 = __commonJS({
+  "../../node_modules/uuid/v1.js"(exports2, module2) {
+    "use strict";
+    var rng = require_rng();
+    var bytesToUuid = require_bytesToUuid();
+    var _nodeId;
+    var _clockseq;
+    var _lastMSecs = 0;
+    var _lastNSecs = 0;
+    function v1(options, buf, offset) {
+      var i = buf && offset || 0;
+      var b = buf || [];
+      options = options || {};
+      var node = options.node || _nodeId;
+      var clockseq = options.clockseq !== void 0 ? options.clockseq : _clockseq;
+      if (node == null || clockseq == null) {
+        var seedBytes = rng();
+        if (node == null) {
+          node = _nodeId = [
+            seedBytes[0] | 1,
+            seedBytes[1],
+            seedBytes[2],
+            seedBytes[3],
+            seedBytes[4],
+            seedBytes[5]
+          ];
+        }
+        if (clockseq == null) {
+          clockseq = _clockseq = (seedBytes[6] << 8 | seedBytes[7]) & 16383;
+        }
+      }
+      var msecs = options.msecs !== void 0 ? options.msecs : (/* @__PURE__ */ new Date()).getTime();
+      var nsecs = options.nsecs !== void 0 ? options.nsecs : _lastNSecs + 1;
+      var dt = msecs - _lastMSecs + (nsecs - _lastNSecs) / 1e4;
+      if (dt < 0 && options.clockseq === void 0) {
+        clockseq = clockseq + 1 & 16383;
+      }
+      if ((dt < 0 || msecs > _lastMSecs) && options.nsecs === void 0) {
+        nsecs = 0;
+      }
+      if (nsecs >= 1e4) {
+        throw new Error("uuid.v1(): Can't create more than 10M uuids/sec");
+      }
+      _lastMSecs = msecs;
+      _lastNSecs = nsecs;
+      _clockseq = clockseq;
+      msecs += 122192928e5;
+      var tl = ((msecs & 268435455) * 1e4 + nsecs) % 4294967296;
+      b[i++] = tl >>> 24 & 255;
+      b[i++] = tl >>> 16 & 255;
+      b[i++] = tl >>> 8 & 255;
+      b[i++] = tl & 255;
+      var tmh = msecs / 4294967296 * 1e4 & 268435455;
+      b[i++] = tmh >>> 8 & 255;
+      b[i++] = tmh & 255;
+      b[i++] = tmh >>> 24 & 15 | 16;
+      b[i++] = tmh >>> 16 & 255;
+      b[i++] = clockseq >>> 8 | 128;
+      b[i++] = clockseq & 255;
+      for (var n = 0; n < 6; ++n) {
+        b[i + n] = node[n];
+      }
+      return buf ? buf : bytesToUuid(b);
+    }
+    module2.exports = v1;
+  }
+});
+
+// ../../node_modules/uuid/v4.js
+var require_v4 = __commonJS({
+  "../../node_modules/uuid/v4.js"(exports2, module2) {
+    "use strict";
+    var rng = require_rng();
+    var bytesToUuid = require_bytesToUuid();
+    function v4(options, buf, offset) {
+      var i = buf && offset || 0;
+      if (typeof options == "string") {
+        buf = options === "binary" ? new Array(16) : null;
+        options = null;
+      }
+      options = options || {};
+      var rnds = options.random || (options.rng || rng)();
+      rnds[6] = rnds[6] & 15 | 64;
+      rnds[8] = rnds[8] & 63 | 128;
+      if (buf) {
+        for (var ii = 0; ii < 16; ++ii) {
+          buf[i + ii] = rnds[ii];
+        }
+      }
+      return buf || bytesToUuid(rnds);
+    }
+    module2.exports = v4;
+  }
+});
+
+// ../../node_modules/uuid/index.js
+var require_uuid = __commonJS({
+  "../../node_modules/uuid/index.js"(exports2, module2) {
+    "use strict";
+    var v1 = require_v1();
+    var v4 = require_v4();
+    var uuid = v4;
+    uuid.v1 = v1;
+    uuid.v4 = v4;
+    module2.exports = uuid;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelHost.js
+var require_multiModeTunnelHost = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/multiModeTunnelHost.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.MultiModeTunnelHost = void 0;
+    var dev_tunnels_contracts_1 = require_dev_tunnels_contracts();
+    var uuid_1 = require_uuid();
+    var tunnelConnectionBase_1 = require_tunnelConnectionBase();
+    var MultiModeTunnelHost = class extends tunnelConnectionBase_1.TunnelConnectionBase {
+      constructor() {
+        super(dev_tunnels_contracts_1.TunnelAccessScopes.Host);
+        this.hosts = [];
+      }
+      /**
+       * @deprecated Use `connect()` instead.
+       */
+      async start(tunnel) {
+        await this.connect(tunnel);
+      }
+      async connect(tunnel, options, cancellation) {
+        const startTasks = [];
+        this.hosts.forEach((host) => {
+          startTasks.push(host.connect(tunnel, options, cancellation));
+        });
+        await Promise.all(startTasks);
+      }
+      async refreshPorts() {
+        const refreshTasks = [];
+        this.hosts.forEach((host) => {
+          refreshTasks.push(host.refreshPorts());
+        });
+        await Promise.all(refreshTasks);
+      }
+      async dispose() {
+        await Promise.all(this.hosts.map((host) => host.dispose()));
+        await super.dispose();
+      }
+    };
+    exports2.MultiModeTunnelHost = MultiModeTunnelHost;
+    MultiModeTunnelHost.hostId = (0, uuid_1.v4)();
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/retryTcpListenerFactory.js
+var require_retryTcpListenerFactory = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/retryTcpListenerFactory.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RetryTcpListenerFactory = void 0;
+    var net2 = require("net");
+    var RetryTcpListenerFactory = class {
+      constructor(localAddress) {
+        this.localAddress = localAddress;
+      }
+      async createTcpListener(remotePort, localIPAddress, localPort, canChangeLocalPort, cancellation) {
+        if (localIPAddress.indexOf(":") >= 0) {
+          if (this.localAddress === "0.0.0.0") {
+            localIPAddress = "::";
+          } else if (this.localAddress === "127.0.0.1") {
+            localIPAddress = "::1";
+          }
+        } else {
+          localIPAddress = this.localAddress;
+        }
+        const maxOffset = 10;
+        const listener = net2.createServer();
+        for (let offset = 0; ; offset++) {
+          const localPortNumber = offset === maxOffset ? 0 : localPort + offset;
+          try {
+            return await new Promise((resolve2, reject) => {
+              listener.listen({
+                host: localIPAddress,
+                port: localPortNumber,
+                ipv6Only: net2.isIPv6(localIPAddress)
+              });
+              listener.on("listening", () => {
+                if (remotePort) {
+                  const { address, port } = listener.address();
+                  console.log(`Forwarding from ${address}:${port} to host port ${remotePort}.`);
+                }
+                resolve2(listener);
+              });
+              listener.on("error", (err) => {
+                reject(err);
+              });
+            });
+          } catch (err) {
+            if (offset < maxOffset && canChangeLocalPort) {
+              console.log("Listening on port " + localPortNumber + " failed: " + err);
+              console.log("Incrementing port and trying again");
+              continue;
+            } else {
+              throw err;
+            }
+          }
+        }
+      }
+    };
+    exports2.RetryTcpListenerFactory = RetryTcpListenerFactory;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/sessionPortKey.js
+var require_sessionPortKey = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/sessionPortKey.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SessionPortKey = void 0;
+    var SessionPortKey = class {
+      constructor(sessionId, port) {
+        this.sessionId = sessionId !== null && sessionId !== void 0 ? sessionId : null;
+        this.port = port;
+      }
+      equals(other) {
+        return this.port === other.port && (!this.sessionId && !other.sessionId || this.sessionId && other.sessionId && this.sessionId === other.sessionId);
+      }
+      toString() {
+        return this.port + (this.sessionId ? "_" + this.sessionId.toString("base64") : "");
+      }
+    };
+    exports2.SessionPortKey = SessionPortKey;
+  }
+});
+
+// ../../node_modules/websocket/node_modules/ms/index.js
+var require_ms2 = __commonJS({
+  "../../node_modules/websocket/node_modules/ms/index.js"(exports2, module2) {
+    "use strict";
+    var s = 1e3;
+    var m = s * 60;
+    var h = m * 60;
+    var d = h * 24;
+    var y = d * 365.25;
+    module2.exports = function(val, options) {
+      options = options || {};
+      var type = typeof val;
+      if (type === "string" && val.length > 0) {
+        return parse(val);
+      } else if (type === "number" && isNaN(val) === false) {
+        return options.long ? fmtLong(val) : fmtShort(val);
+      }
+      throw new Error(
+        "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
+      );
+    };
+    function parse(str) {
+      str = String(str);
+      if (str.length > 100) {
+        return;
+      }
+      var match = /^((?:\d+)?\.?\d+) *(milliseconds?|msecs?|ms|seconds?|secs?|s|minutes?|mins?|m|hours?|hrs?|h|days?|d|years?|yrs?|y)?$/i.exec(
+        str
+      );
+      if (!match) {
+        return;
+      }
+      var n = parseFloat(match[1]);
+      var type = (match[2] || "ms").toLowerCase();
+      switch (type) {
+        case "years":
+        case "year":
+        case "yrs":
+        case "yr":
+        case "y":
+          return n * y;
+        case "days":
+        case "day":
+        case "d":
+          return n * d;
+        case "hours":
+        case "hour":
+        case "hrs":
+        case "hr":
+        case "h":
+          return n * h;
+        case "minutes":
+        case "minute":
+        case "mins":
+        case "min":
+        case "m":
+          return n * m;
+        case "seconds":
+        case "second":
+        case "secs":
+        case "sec":
+        case "s":
+          return n * s;
+        case "milliseconds":
+        case "millisecond":
+        case "msecs":
+        case "msec":
+        case "ms":
+          return n;
+        default:
+          return void 0;
+      }
+    }
+    function fmtShort(ms) {
+      if (ms >= d) {
+        return Math.round(ms / d) + "d";
+      }
+      if (ms >= h) {
+        return Math.round(ms / h) + "h";
+      }
+      if (ms >= m) {
+        return Math.round(ms / m) + "m";
+      }
+      if (ms >= s) {
+        return Math.round(ms / s) + "s";
+      }
+      return ms + "ms";
+    }
+    function fmtLong(ms) {
+      return plural(ms, d, "day") || plural(ms, h, "hour") || plural(ms, m, "minute") || plural(ms, s, "second") || ms + " ms";
+    }
+    function plural(ms, n, name) {
+      if (ms < n) {
+        return;
+      }
+      if (ms < n * 1.5) {
+        return Math.floor(ms / n) + " " + name;
+      }
+      return Math.ceil(ms / n) + " " + name + "s";
+    }
+  }
+});
+
+// ../../node_modules/websocket/node_modules/debug/src/debug.js
+var require_debug2 = __commonJS({
+  "../../node_modules/websocket/node_modules/debug/src/debug.js"(exports2, module2) {
+    "use strict";
+    exports2 = module2.exports = createDebug.debug = createDebug["default"] = createDebug;
+    exports2.coerce = coerce;
+    exports2.disable = disable;
+    exports2.enable = enable;
+    exports2.enabled = enabled;
+    exports2.humanize = require_ms2();
+    exports2.names = [];
+    exports2.skips = [];
+    exports2.formatters = {};
+    var prevTime;
+    function selectColor(namespace) {
+      var hash = 0, i;
+      for (i in namespace) {
+        hash = (hash << 5) - hash + namespace.charCodeAt(i);
+        hash |= 0;
+      }
+      return exports2.colors[Math.abs(hash) % exports2.colors.length];
+    }
+    function createDebug(namespace) {
+      function debug() {
+        if (!debug.enabled) return;
+        var self2 = debug;
+        var curr = +/* @__PURE__ */ new Date();
+        var ms = curr - (prevTime || curr);
+        self2.diff = ms;
+        self2.prev = prevTime;
+        self2.curr = curr;
+        prevTime = curr;
+        var args = new Array(arguments.length);
+        for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i];
+        }
+        args[0] = exports2.coerce(args[0]);
+        if ("string" !== typeof args[0]) {
+          args.unshift("%O");
+        }
+        var index = 0;
+        args[0] = args[0].replace(/%([a-zA-Z%])/g, function(match, format) {
+          if (match === "%%") return match;
+          index++;
+          var formatter = exports2.formatters[format];
+          if ("function" === typeof formatter) {
+            var val = args[index];
+            match = formatter.call(self2, val);
+            args.splice(index, 1);
+            index--;
+          }
+          return match;
+        });
+        exports2.formatArgs.call(self2, args);
+        var logFn = debug.log || exports2.log || console.log.bind(console);
+        logFn.apply(self2, args);
+      }
+      debug.namespace = namespace;
+      debug.enabled = exports2.enabled(namespace);
+      debug.useColors = exports2.useColors();
+      debug.color = selectColor(namespace);
+      if ("function" === typeof exports2.init) {
+        exports2.init(debug);
+      }
+      return debug;
+    }
+    function enable(namespaces) {
+      exports2.save(namespaces);
+      exports2.names = [];
+      exports2.skips = [];
+      var split = (typeof namespaces === "string" ? namespaces : "").split(/[\s,]+/);
+      var len = split.length;
+      for (var i = 0; i < len; i++) {
+        if (!split[i]) continue;
+        namespaces = split[i].replace(/\*/g, ".*?");
+        if (namespaces[0] === "-") {
+          exports2.skips.push(new RegExp("^" + namespaces.substr(1) + "$"));
+        } else {
+          exports2.names.push(new RegExp("^" + namespaces + "$"));
+        }
+      }
+    }
+    function disable() {
+      exports2.enable("");
+    }
+    function enabled(name) {
+      var i, len;
+      for (i = 0, len = exports2.skips.length; i < len; i++) {
+        if (exports2.skips[i].test(name)) {
+          return false;
+        }
+      }
+      for (i = 0, len = exports2.names.length; i < len; i++) {
+        if (exports2.names[i].test(name)) {
+          return true;
+        }
+      }
+      return false;
+    }
+    function coerce(val) {
+      if (val instanceof Error) return val.stack || val.message;
+      return val;
+    }
+  }
+});
+
+// ../../node_modules/websocket/node_modules/debug/src/browser.js
+var require_browser2 = __commonJS({
+  "../../node_modules/websocket/node_modules/debug/src/browser.js"(exports2, module2) {
+    "use strict";
+    exports2 = module2.exports = require_debug2();
+    exports2.log = log;
+    exports2.formatArgs = formatArgs;
+    exports2.save = save;
+    exports2.load = load;
+    exports2.useColors = useColors;
+    exports2.storage = "undefined" != typeof chrome && "undefined" != typeof chrome.storage ? chrome.storage.local : localstorage();
+    exports2.colors = [
+      "lightseagreen",
+      "forestgreen",
+      "goldenrod",
+      "dodgerblue",
+      "darkorchid",
+      "crimson"
+    ];
+    function useColors() {
+      if (typeof window !== "undefined" && window.process && window.process.type === "renderer") {
+        return true;
+      }
+      return typeof document !== "undefined" && document.documentElement && document.documentElement.style && document.documentElement.style.WebkitAppearance || // is firebug? http://stackoverflow.com/a/398120/376773
+      typeof window !== "undefined" && window.console && (window.console.firebug || window.console.exception && window.console.table) || // is firefox >= v31?
+      // https://developer.mozilla.org/en-US/docs/Tools/Web_Console#Styling_messages
+      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/firefox\/(\d+)/) && parseInt(RegExp.$1, 10) >= 31 || // double check webkit in userAgent just in case we are in a worker
+      typeof navigator !== "undefined" && navigator.userAgent && navigator.userAgent.toLowerCase().match(/applewebkit\/(\d+)/);
+    }
+    exports2.formatters.j = function(v) {
+      try {
+        return JSON.stringify(v);
+      } catch (err) {
+        return "[UnexpectedJSONParseError]: " + err.message;
+      }
+    };
+    function formatArgs(args) {
+      var useColors2 = this.useColors;
+      args[0] = (useColors2 ? "%c" : "") + this.namespace + (useColors2 ? " %c" : " ") + args[0] + (useColors2 ? "%c " : " ") + "+" + exports2.humanize(this.diff);
+      if (!useColors2) return;
+      var c = "color: " + this.color;
+      args.splice(1, 0, c, "color: inherit");
+      var index = 0;
+      var lastC = 0;
+      args[0].replace(/%[a-zA-Z%]/g, function(match) {
+        if ("%%" === match) return;
+        index++;
+        if ("%c" === match) {
+          lastC = index;
+        }
+      });
+      args.splice(lastC, 0, c);
+    }
+    function log() {
+      return "object" === typeof console && console.log && Function.prototype.apply.call(console.log, console, arguments);
+    }
+    function save(namespaces) {
+      try {
+        if (null == namespaces) {
+          exports2.storage.removeItem("debug");
+        } else {
+          exports2.storage.debug = namespaces;
+        }
+      } catch (e) {
+      }
+    }
+    function load() {
+      var r;
+      try {
+        r = exports2.storage.debug;
+      } catch (e) {
+      }
+      if (!r && typeof process !== "undefined" && "env" in process) {
+        r = process.env.DEBUG;
+      }
+      return r;
+    }
+    exports2.enable(load());
+    function localstorage() {
+      try {
+        return window.localStorage;
+      } catch (e) {
+      }
+    }
+  }
+});
+
+// ../../node_modules/websocket/node_modules/debug/src/node.js
+var require_node2 = __commonJS({
+  "../../node_modules/websocket/node_modules/debug/src/node.js"(exports2, module2) {
+    "use strict";
+    var tty = require("tty");
+    var util = require("util");
+    exports2 = module2.exports = require_debug2();
+    exports2.init = init;
+    exports2.log = log;
+    exports2.formatArgs = formatArgs;
+    exports2.save = save;
+    exports2.load = load;
+    exports2.useColors = useColors;
+    exports2.colors = [6, 2, 3, 4, 5, 1];
+    exports2.inspectOpts = Object.keys(process.env).filter(function(key) {
+      return /^debug_/i.test(key);
+    }).reduce(function(obj, key) {
+      var prop = key.substring(6).toLowerCase().replace(/_([a-z])/g, function(_, k) {
+        return k.toUpperCase();
+      });
+      var val = process.env[key];
+      if (/^(yes|on|true|enabled)$/i.test(val)) val = true;
+      else if (/^(no|off|false|disabled)$/i.test(val)) val = false;
+      else if (val === "null") val = null;
+      else val = Number(val);
+      obj[prop] = val;
+      return obj;
+    }, {});
+    var fd = parseInt(process.env.DEBUG_FD, 10) || 2;
+    if (1 !== fd && 2 !== fd) {
+      util.deprecate(function() {
+      }, "except for stderr(2) and stdout(1), any other usage of DEBUG_FD is deprecated. Override debug.log if you want to use a different log function (https://git.io/debug_fd)")();
+    }
+    var stream = 1 === fd ? process.stdout : 2 === fd ? process.stderr : createWritableStdioStream(fd);
+    function useColors() {
+      return "colors" in exports2.inspectOpts ? Boolean(exports2.inspectOpts.colors) : tty.isatty(fd);
+    }
+    exports2.formatters.o = function(v) {
+      this.inspectOpts.colors = this.useColors;
+      return util.inspect(v, this.inspectOpts).split("\n").map(function(str) {
+        return str.trim();
+      }).join(" ");
+    };
+    exports2.formatters.O = function(v) {
+      this.inspectOpts.colors = this.useColors;
+      return util.inspect(v, this.inspectOpts);
+    };
+    function formatArgs(args) {
+      var name = this.namespace;
+      var useColors2 = this.useColors;
+      if (useColors2) {
+        var c = this.color;
+        var prefix = "  \x1B[3" + c + ";1m" + name + " \x1B[0m";
+        args[0] = prefix + args[0].split("\n").join("\n" + prefix);
+        args.push("\x1B[3" + c + "m+" + exports2.humanize(this.diff) + "\x1B[0m");
+      } else {
+        args[0] = (/* @__PURE__ */ new Date()).toUTCString() + " " + name + " " + args[0];
+      }
+    }
+    function log() {
+      return stream.write(util.format.apply(util, arguments) + "\n");
+    }
+    function save(namespaces) {
+      if (null == namespaces) {
+        delete process.env.DEBUG;
+      } else {
+        process.env.DEBUG = namespaces;
+      }
+    }
+    function load() {
+      return process.env.DEBUG;
+    }
+    function createWritableStdioStream(fd2) {
+      var stream2;
+      var tty_wrap = process.binding("tty_wrap");
+      switch (tty_wrap.guessHandleType(fd2)) {
+        case "TTY":
+          stream2 = new tty.WriteStream(fd2);
+          stream2._type = "tty";
+          if (stream2._handle && stream2._handle.unref) {
+            stream2._handle.unref();
+          }
+          break;
+        case "FILE":
+          var fs2 = require("fs");
+          stream2 = new fs2.SyncWriteStream(fd2, { autoClose: false });
+          stream2._type = "fs";
+          break;
+        case "PIPE":
+        case "TCP":
+          var net2 = require("net");
+          stream2 = new net2.Socket({
+            fd: fd2,
+            readable: false,
+            writable: true
+          });
+          stream2.readable = false;
+          stream2.read = null;
+          stream2._type = "pipe";
+          if (stream2._handle && stream2._handle.unref) {
+            stream2._handle.unref();
+          }
+          break;
+        default:
+          throw new Error("Implement me. Unknown stream file type!");
+      }
+      stream2.fd = fd2;
+      stream2._isStdio = true;
+      return stream2;
+    }
+    function init(debug) {
+      debug.inspectOpts = {};
+      var keys = Object.keys(exports2.inspectOpts);
+      for (var i = 0; i < keys.length; i++) {
+        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
+      }
+    }
+    exports2.enable(load());
+  }
+});
+
+// ../../node_modules/websocket/node_modules/debug/src/index.js
+var require_src2 = __commonJS({
+  "../../node_modules/websocket/node_modules/debug/src/index.js"(exports2, module2) {
+    "use strict";
+    if (typeof process !== "undefined" && process.type === "renderer") {
+      module2.exports = require_browser2();
+    } else {
+      module2.exports = require_node2();
+    }
+  }
+});
+
+// ../../node_modules/websocket/lib/utils.js
+var require_utils2 = __commonJS({
+  "../../node_modules/websocket/lib/utils.js"(exports2) {
+    "use strict";
+    var noop = exports2.noop = function() {
+    };
+    exports2.extend = function extend(dest, source) {
+      for (var prop in source) {
+        dest[prop] = source[prop];
+      }
+    };
+    exports2.eventEmitterListenerCount = require("events").EventEmitter.listenerCount || function(emitter, type) {
+      return emitter.listeners(type).length;
+    };
+    exports2.bufferAllocUnsafe = Buffer.allocUnsafe ? Buffer.allocUnsafe : function oldBufferAllocUnsafe(size) {
+      return new Buffer(size);
+    };
+    exports2.bufferFromString = Buffer.from ? Buffer.from : function oldBufferFromString(string, encoding) {
+      return new Buffer(string, encoding);
+    };
+    exports2.BufferingLogger = function createBufferingLogger(identifier, uniqueID) {
+      var logFunction = require_src2()(identifier);
+      if (logFunction.enabled) {
+        var logger = new BufferingLogger(identifier, uniqueID, logFunction);
+        var debug = logger.log.bind(logger);
+        debug.printOutput = logger.printOutput.bind(logger);
+        debug.enabled = logFunction.enabled;
+        return debug;
+      }
+      logFunction.printOutput = noop;
+      return logFunction;
+    };
+    function BufferingLogger(identifier, uniqueID, logFunction) {
+      this.logFunction = logFunction;
+      this.identifier = identifier;
+      this.uniqueID = uniqueID;
+      this.buffer = [];
+    }
+    BufferingLogger.prototype.log = function() {
+      this.buffer.push([/* @__PURE__ */ new Date(), Array.prototype.slice.call(arguments)]);
+      return this;
+    };
+    BufferingLogger.prototype.clear = function() {
+      this.buffer = [];
+      return this;
+    };
+    BufferingLogger.prototype.printOutput = function(logFunction) {
+      if (!logFunction) {
+        logFunction = this.logFunction;
+      }
+      var uniqueID = this.uniqueID;
+      this.buffer.forEach(function(entry) {
+        var date = entry[0].toLocaleString();
+        var args = entry[1].slice();
+        var formatString = args[0];
+        if (formatString !== void 0 && formatString !== null) {
+          formatString = "%s - %s - " + formatString.toString();
+          args.splice(0, 1, formatString, date, uniqueID);
+          logFunction.apply(global, args);
+        }
+      });
+    };
+  }
+});
+
+// ../../node_modules/node-gyp-build/node-gyp-build.js
+var require_node_gyp_build = __commonJS({
+  "../../node_modules/node-gyp-build/node-gyp-build.js"(exports2, module2) {
+    "use strict";
+    var fs2 = require("fs");
+    var path2 = require("path");
+    var os3 = require("os");
+    var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+    var vars = process.config && process.config.variables || {};
+    var prebuildsOnly = !!process.env.PREBUILDS_ONLY;
+    var abi = process.versions.modules;
+    var runtime = isElectron() ? "electron" : isNwjs() ? "node-webkit" : "node";
+    var arch = process.env.npm_config_arch || os3.arch();
+    var platform = process.env.npm_config_platform || os3.platform();
+    var libc = process.env.LIBC || (isAlpine(platform) ? "musl" : "glibc");
+    var armv = process.env.ARM_VERSION || (arch === "arm64" ? "8" : vars.arm_version) || "";
+    var uv = (process.versions.uv || "").split(".")[0];
+    module2.exports = load;
+    function load(dir) {
+      return runtimeRequire(load.resolve(dir));
+    }
+    load.resolve = load.path = function(dir) {
+      dir = path2.resolve(dir || ".");
+      try {
+        var name = runtimeRequire(path2.join(dir, "package.json")).name.toUpperCase().replace(/-/g, "_");
+        if (process.env[name + "_PREBUILD"]) dir = process.env[name + "_PREBUILD"];
+      } catch (err) {
+      }
+      if (!prebuildsOnly) {
+        var release = getFirst(path2.join(dir, "build/Release"), matchBuild);
+        if (release) return release;
+        var debug = getFirst(path2.join(dir, "build/Debug"), matchBuild);
+        if (debug) return debug;
+      }
+      var prebuild = resolve2(dir);
+      if (prebuild) return prebuild;
+      var nearby = resolve2(path2.dirname(process.execPath));
+      if (nearby) return nearby;
+      var target = [
+        "platform=" + platform,
+        "arch=" + arch,
+        "runtime=" + runtime,
+        "abi=" + abi,
+        "uv=" + uv,
+        armv ? "armv=" + armv : "",
+        "libc=" + libc,
+        "node=" + process.versions.node,
+        process.versions.electron ? "electron=" + process.versions.electron : "",
+        typeof __webpack_require__ === "function" ? "webpack=true" : ""
+        // eslint-disable-line
+      ].filter(Boolean).join(" ");
+      throw new Error("No native build was found for " + target + "\n    loaded from: " + dir + "\n");
+      function resolve2(dir2) {
+        var tuples = readdirSync(path2.join(dir2, "prebuilds")).map(parseTuple);
+        var tuple = tuples.filter(matchTuple(platform, arch)).sort(compareTuples)[0];
+        if (!tuple) return;
+        var prebuilds = path2.join(dir2, "prebuilds", tuple.name);
+        var parsed = readdirSync(prebuilds).map(parseTags);
+        var candidates = parsed.filter(matchTags(runtime, abi));
+        var winner = candidates.sort(compareTags(runtime))[0];
+        if (winner) return path2.join(prebuilds, winner.file);
+      }
+    };
+    function readdirSync(dir) {
+      try {
+        return fs2.readdirSync(dir);
+      } catch (err) {
+        return [];
+      }
+    }
+    function getFirst(dir, filter) {
+      var files = readdirSync(dir).filter(filter);
+      return files[0] && path2.join(dir, files[0]);
+    }
+    function matchBuild(name) {
+      return /\.node$/.test(name);
+    }
+    function parseTuple(name) {
+      var arr = name.split("-");
+      if (arr.length !== 2) return;
+      var platform2 = arr[0];
+      var architectures = arr[1].split("+");
+      if (!platform2) return;
+      if (!architectures.length) return;
+      if (!architectures.every(Boolean)) return;
+      return { name, platform: platform2, architectures };
+    }
+    function matchTuple(platform2, arch2) {
+      return function(tuple) {
+        if (tuple == null) return false;
+        if (tuple.platform !== platform2) return false;
+        return tuple.architectures.includes(arch2);
+      };
+    }
+    function compareTuples(a, b) {
+      return a.architectures.length - b.architectures.length;
+    }
+    function parseTags(file) {
+      var arr = file.split(".");
+      var extension = arr.pop();
+      var tags = { file, specificity: 0 };
+      if (extension !== "node") return;
+      for (var i = 0; i < arr.length; i++) {
+        var tag = arr[i];
+        if (tag === "node" || tag === "electron" || tag === "node-webkit") {
+          tags.runtime = tag;
+        } else if (tag === "napi") {
+          tags.napi = true;
+        } else if (tag.slice(0, 3) === "abi") {
+          tags.abi = tag.slice(3);
+        } else if (tag.slice(0, 2) === "uv") {
+          tags.uv = tag.slice(2);
+        } else if (tag.slice(0, 4) === "armv") {
+          tags.armv = tag.slice(4);
+        } else if (tag === "glibc" || tag === "musl") {
+          tags.libc = tag;
+        } else {
+          continue;
+        }
+        tags.specificity++;
+      }
+      return tags;
+    }
+    function matchTags(runtime2, abi2) {
+      return function(tags) {
+        if (tags == null) return false;
+        if (tags.runtime && tags.runtime !== runtime2 && !runtimeAgnostic(tags)) return false;
+        if (tags.abi && tags.abi !== abi2 && !tags.napi) return false;
+        if (tags.uv && tags.uv !== uv) return false;
+        if (tags.armv && tags.armv !== armv) return false;
+        if (tags.libc && tags.libc !== libc) return false;
+        return true;
+      };
+    }
+    function runtimeAgnostic(tags) {
+      return tags.runtime === "node" && tags.napi;
+    }
+    function compareTags(runtime2) {
+      return function(a, b) {
+        if (a.runtime !== b.runtime) {
+          return a.runtime === runtime2 ? -1 : 1;
+        } else if (a.abi !== b.abi) {
+          return a.abi ? -1 : 1;
+        } else if (a.specificity !== b.specificity) {
+          return a.specificity > b.specificity ? -1 : 1;
+        } else {
+          return 0;
+        }
+      };
+    }
+    function isNwjs() {
+      return !!(process.versions && process.versions.nw);
+    }
+    function isElectron() {
+      if (process.versions && process.versions.electron) return true;
+      if (process.env.ELECTRON_RUN_AS_NODE) return true;
+      return typeof window !== "undefined" && window.process && window.process.type === "renderer";
+    }
+    function isAlpine(platform2) {
+      return platform2 === "linux" && fs2.existsSync("/etc/alpine-release");
+    }
+    load.parseTags = parseTags;
+    load.matchTags = matchTags;
+    load.compareTags = compareTags;
+    load.parseTuple = parseTuple;
+    load.matchTuple = matchTuple;
+    load.compareTuples = compareTuples;
+  }
+});
+
+// ../../node_modules/node-gyp-build/index.js
+var require_node_gyp_build2 = __commonJS({
+  "../../node_modules/node-gyp-build/index.js"(exports2, module2) {
+    "use strict";
+    var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
+    if (typeof runtimeRequire.addon === "function") {
+      module2.exports = runtimeRequire.addon.bind(runtimeRequire);
+    } else {
+      module2.exports = require_node_gyp_build();
+    }
+  }
+});
+
+// ../../node_modules/bufferutil/fallback.js
+var require_fallback = __commonJS({
+  "../../node_modules/bufferutil/fallback.js"(exports2, module2) {
+    "use strict";
+    var mask = (source, mask2, output, offset, length) => {
+      for (var i = 0; i < length; i++) {
+        output[offset + i] = source[i] ^ mask2[i & 3];
+      }
+    };
+    var unmask = (buffer, mask2) => {
+      const length = buffer.length;
+      for (var i = 0; i < length; i++) {
+        buffer[i] ^= mask2[i & 3];
+      }
+    };
+    module2.exports = { mask, unmask };
+  }
+});
+
+// ../../node_modules/bufferutil/index.js
+var require_bufferutil = __commonJS({
+  "../../node_modules/bufferutil/index.js"(exports2, module2) {
+    "use strict";
+    try {
+      module2.exports = require_node_gyp_build2()(__dirname);
+    } catch (e) {
+      module2.exports = require_fallback();
+    }
+  }
+});
+
+// ../../node_modules/websocket/lib/WebSocketFrame.js
+var require_WebSocketFrame = __commonJS({
+  "../../node_modules/websocket/lib/WebSocketFrame.js"(exports2, module2) {
+    "use strict";
+    var bufferUtil = require_bufferutil();
+    var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
+    var DECODE_HEADER = 1;
+    var WAITING_FOR_16_BIT_LENGTH = 2;
+    var WAITING_FOR_64_BIT_LENGTH = 3;
+    var WAITING_FOR_MASK_KEY = 4;
+    var WAITING_FOR_PAYLOAD = 5;
+    var COMPLETE = 6;
+    function WebSocketFrame(maskBytes, frameHeader, config) {
+      this.maskBytes = maskBytes;
+      this.frameHeader = frameHeader;
+      this.config = config;
+      this.maxReceivedFrameSize = config.maxReceivedFrameSize;
+      this.protocolError = false;
+      this.frameTooLarge = false;
+      this.invalidCloseFrameLength = false;
+      this.parseState = DECODE_HEADER;
+      this.closeStatus = -1;
+    }
+    WebSocketFrame.prototype.addData = function(bufferList) {
+      if (this.parseState === DECODE_HEADER) {
+        if (bufferList.length >= 2) {
+          bufferList.joinInto(this.frameHeader, 0, 0, 2);
+          bufferList.advance(2);
+          var firstByte = this.frameHeader[0];
+          var secondByte = this.frameHeader[1];
+          this.fin = Boolean(firstByte & 128);
+          this.rsv1 = Boolean(firstByte & 64);
+          this.rsv2 = Boolean(firstByte & 32);
+          this.rsv3 = Boolean(firstByte & 16);
+          this.mask = Boolean(secondByte & 128);
+          this.opcode = firstByte & 15;
+          this.length = secondByte & 127;
+          if (this.opcode >= 8) {
+            if (this.length > 125) {
+              this.protocolError = true;
+              this.dropReason = "Illegal control frame longer than 125 bytes.";
+              return true;
+            }
+            if (!this.fin) {
+              this.protocolError = true;
+              this.dropReason = "Control frames must not be fragmented.";
+              return true;
+            }
+          }
+          if (this.length === 126) {
+            this.parseState = WAITING_FOR_16_BIT_LENGTH;
+          } else if (this.length === 127) {
+            this.parseState = WAITING_FOR_64_BIT_LENGTH;
+          } else {
+            this.parseState = WAITING_FOR_MASK_KEY;
+          }
+        }
+      }
+      if (this.parseState === WAITING_FOR_16_BIT_LENGTH) {
+        if (bufferList.length >= 2) {
+          bufferList.joinInto(this.frameHeader, 2, 0, 2);
+          bufferList.advance(2);
+          this.length = this.frameHeader.readUInt16BE(2);
+          this.parseState = WAITING_FOR_MASK_KEY;
+        }
+      } else if (this.parseState === WAITING_FOR_64_BIT_LENGTH) {
+        if (bufferList.length >= 8) {
+          bufferList.joinInto(this.frameHeader, 2, 0, 8);
+          bufferList.advance(8);
+          var lengthPair = [
+            this.frameHeader.readUInt32BE(2),
+            this.frameHeader.readUInt32BE(2 + 4)
+          ];
+          if (lengthPair[0] !== 0) {
+            this.protocolError = true;
+            this.dropReason = "Unsupported 64-bit length frame received";
+            return true;
+          }
+          this.length = lengthPair[1];
+          this.parseState = WAITING_FOR_MASK_KEY;
+        }
+      }
+      if (this.parseState === WAITING_FOR_MASK_KEY) {
+        if (this.mask) {
+          if (bufferList.length >= 4) {
+            bufferList.joinInto(this.maskBytes, 0, 0, 4);
+            bufferList.advance(4);
+            this.parseState = WAITING_FOR_PAYLOAD;
+          }
+        } else {
+          this.parseState = WAITING_FOR_PAYLOAD;
+        }
+      }
+      if (this.parseState === WAITING_FOR_PAYLOAD) {
+        if (this.length > this.maxReceivedFrameSize) {
+          this.frameTooLarge = true;
+          this.dropReason = "Frame size of " + this.length.toString(10) + " bytes exceeds maximum accepted frame size";
+          return true;
+        }
+        if (this.length === 0) {
+          this.binaryPayload = bufferAllocUnsafe(0);
+          this.parseState = COMPLETE;
+          return true;
+        }
+        if (bufferList.length >= this.length) {
+          this.binaryPayload = bufferList.take(this.length);
+          bufferList.advance(this.length);
+          if (this.mask) {
+            bufferUtil.unmask(this.binaryPayload, this.maskBytes);
+          }
+          if (this.opcode === 8) {
+            if (this.length === 1) {
+              this.binaryPayload = bufferAllocUnsafe(0);
+              this.invalidCloseFrameLength = true;
+            }
+            if (this.length >= 2) {
+              this.closeStatus = this.binaryPayload.readUInt16BE(0);
+              this.binaryPayload = this.binaryPayload.slice(2);
+            }
+          }
+          this.parseState = COMPLETE;
+          return true;
+        }
+      }
+      return false;
+    };
+    WebSocketFrame.prototype.throwAwayPayload = function(bufferList) {
+      if (bufferList.length >= this.length) {
+        bufferList.advance(this.length);
+        this.parseState = COMPLETE;
+        return true;
+      }
+      return false;
+    };
+    WebSocketFrame.prototype.toBuffer = function(nullMask) {
+      var maskKey;
+      var headerLength = 2;
+      var data;
+      var outputPos;
+      var firstByte = 0;
+      var secondByte = 0;
+      if (this.fin) {
+        firstByte |= 128;
+      }
+      if (this.rsv1) {
+        firstByte |= 64;
+      }
+      if (this.rsv2) {
+        firstByte |= 32;
+      }
+      if (this.rsv3) {
+        firstByte |= 16;
+      }
+      if (this.mask) {
+        secondByte |= 128;
+      }
+      firstByte |= this.opcode & 15;
+      if (this.opcode === 8) {
+        this.length = 2;
+        if (this.binaryPayload) {
+          this.length += this.binaryPayload.length;
+        }
+        data = bufferAllocUnsafe(this.length);
+        data.writeUInt16BE(this.closeStatus, 0);
+        if (this.length > 2) {
+          this.binaryPayload.copy(data, 2);
+        }
+      } else if (this.binaryPayload) {
+        data = this.binaryPayload;
+        this.length = data.length;
+      } else {
+        this.length = 0;
+      }
+      if (this.length <= 125) {
+        secondByte |= this.length & 127;
+      } else if (this.length > 125 && this.length <= 65535) {
+        secondByte |= 126;
+        headerLength += 2;
+      } else if (this.length > 65535) {
+        secondByte |= 127;
+        headerLength += 8;
+      }
+      var output = bufferAllocUnsafe(this.length + headerLength + (this.mask ? 4 : 0));
+      output[0] = firstByte;
+      output[1] = secondByte;
+      outputPos = 2;
+      if (this.length > 125 && this.length <= 65535) {
+        output.writeUInt16BE(this.length, outputPos);
+        outputPos += 2;
+      } else if (this.length > 65535) {
+        output.writeUInt32BE(0, outputPos);
+        output.writeUInt32BE(this.length, outputPos + 4);
+        outputPos += 8;
+      }
+      if (this.mask) {
+        maskKey = nullMask ? 0 : Math.random() * 4294967295 >>> 0;
+        this.maskBytes.writeUInt32BE(maskKey, 0);
+        this.maskBytes.copy(output, outputPos);
+        outputPos += 4;
+        if (data) {
+          bufferUtil.mask(data, this.maskBytes, output, outputPos, this.length);
+        }
+      } else if (data) {
+        data.copy(output, outputPos);
+      }
+      return output;
+    };
+    WebSocketFrame.prototype.toString = function() {
+      return "Opcode: " + this.opcode + ", fin: " + this.fin + ", length: " + this.length + ", hasPayload: " + Boolean(this.binaryPayload) + ", masked: " + this.mask;
+    };
+    module2.exports = WebSocketFrame;
+  }
+});
+
+// ../../node_modules/websocket/vendor/FastBufferList.js
+var require_FastBufferList = __commonJS({
+  "../../node_modules/websocket/vendor/FastBufferList.js"(exports2, module2) {
+    "use strict";
+    var Buffer2 = require("buffer").Buffer;
+    var EventEmitter = require("events").EventEmitter;
+    var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
+    module2.exports = BufferList;
+    module2.exports.BufferList = BufferList;
+    function BufferList(opts) {
+      if (!(this instanceof BufferList)) return new BufferList(opts);
+      EventEmitter.call(this);
+      var self2 = this;
+      if (typeof opts == "undefined") opts = {};
+      self2.encoding = opts.encoding;
+      var head = { next: null, buffer: null };
+      var last = { next: null, buffer: null };
+      var length = 0;
+      self2.__defineGetter__("length", function() {
+        return length;
+      });
+      var offset = 0;
+      self2.write = function(buf) {
+        if (!head.buffer) {
+          head.buffer = buf;
+          last = head;
+        } else {
+          last.next = { next: null, buffer: buf };
+          last = last.next;
+        }
+        length += buf.length;
+        self2.emit("write", buf);
+        return true;
+      };
+      self2.end = function(buf) {
+        if (Buffer2.isBuffer(buf)) self2.write(buf);
+      };
+      self2.push = function() {
+        var args = [].concat.apply([], arguments);
+        args.forEach(self2.write);
+        return self2;
+      };
+      self2.forEach = function(fn) {
+        if (!head.buffer) return bufferAllocUnsafe(0);
+        if (head.buffer.length - offset <= 0) return self2;
+        var firstBuf = head.buffer.slice(offset);
+        var b = { buffer: firstBuf, next: head.next };
+        while (b && b.buffer) {
+          var r = fn(b.buffer);
+          if (r) break;
+          b = b.next;
+        }
+        return self2;
+      };
+      self2.join = function(start, end) {
+        if (!head.buffer) return bufferAllocUnsafe(0);
+        if (start == void 0) start = 0;
+        if (end == void 0) end = self2.length;
+        var big = bufferAllocUnsafe(end - start);
+        var ix = 0;
+        self2.forEach(function(buffer) {
+          if (start < ix + buffer.length && ix < end) {
+            buffer.copy(
+              big,
+              Math.max(0, ix - start),
+              Math.max(0, start - ix),
+              Math.min(buffer.length, end - ix)
+            );
+          }
+          ix += buffer.length;
+          if (ix > end) return true;
+        });
+        return big;
+      };
+      self2.joinInto = function(targetBuffer, targetStart, sourceStart, sourceEnd) {
+        if (!head.buffer) return new bufferAllocUnsafe(0);
+        if (sourceStart == void 0) sourceStart = 0;
+        if (sourceEnd == void 0) sourceEnd = self2.length;
+        var big = targetBuffer;
+        if (big.length - targetStart < sourceEnd - sourceStart) {
+          throw new Error("Insufficient space available in target Buffer.");
+        }
+        var ix = 0;
+        self2.forEach(function(buffer) {
+          if (sourceStart < ix + buffer.length && ix < sourceEnd) {
+            buffer.copy(
+              big,
+              Math.max(targetStart, targetStart + ix - sourceStart),
+              Math.max(0, sourceStart - ix),
+              Math.min(buffer.length, sourceEnd - ix)
+            );
+          }
+          ix += buffer.length;
+          if (ix > sourceEnd) return true;
+        });
+        return big;
+      };
+      self2.advance = function(n) {
+        offset += n;
+        length -= n;
+        while (head.buffer && offset >= head.buffer.length) {
+          offset -= head.buffer.length;
+          head = head.next ? head.next : { buffer: null, next: null };
+        }
+        if (head.buffer === null) last = { next: null, buffer: null };
+        self2.emit("advance", n);
+        return self2;
+      };
+      self2.take = function(n, encoding) {
+        if (n == void 0) n = self2.length;
+        else if (typeof n !== "number") {
+          encoding = n;
+          n = self2.length;
+        }
+        var b = head;
+        if (!encoding) encoding = self2.encoding;
+        if (encoding) {
+          var acc = "";
+          self2.forEach(function(buffer) {
+            if (n <= 0) return true;
+            acc += buffer.toString(
+              encoding,
+              0,
+              Math.min(n, buffer.length)
+            );
+            n -= buffer.length;
+          });
+          return acc;
+        } else {
+          return self2.join(0, n);
+        }
+      };
+      self2.toString = function() {
+        return self2.take("binary");
+      };
+    }
+    require("util").inherits(BufferList, EventEmitter);
+  }
+});
+
+// ../../node_modules/utf-8-validate/fallback.js
+var require_fallback2 = __commonJS({
+  "../../node_modules/utf-8-validate/fallback.js"(exports2, module2) {
+    "use strict";
+    function isValidUTF8(buf) {
+      const len = buf.length;
+      let i = 0;
+      while (i < len) {
+        if ((buf[i] & 128) === 0) {
+          i++;
+        } else if ((buf[i] & 224) === 192) {
+          if (i + 1 === len || (buf[i + 1] & 192) !== 128 || (buf[i] & 254) === 192) {
+            return false;
+          }
+          i += 2;
+        } else if ((buf[i] & 240) === 224) {
+          if (i + 2 >= len || (buf[i + 1] & 192) !== 128 || (buf[i + 2] & 192) !== 128 || buf[i] === 224 && (buf[i + 1] & 224) === 128 || // overlong
+          buf[i] === 237 && (buf[i + 1] & 224) === 160) {
+            return false;
+          }
+          i += 3;
+        } else if ((buf[i] & 248) === 240) {
+          if (i + 3 >= len || (buf[i + 1] & 192) !== 128 || (buf[i + 2] & 192) !== 128 || (buf[i + 3] & 192) !== 128 || buf[i] === 240 && (buf[i + 1] & 240) === 128 || // overlong
+          buf[i] === 244 && buf[i + 1] > 143 || buf[i] > 244) {
+            return false;
+          }
+          i += 4;
+        } else {
+          return false;
+        }
+      }
+      return true;
+    }
+    module2.exports = isValidUTF8;
+  }
+});
+
+// ../../node_modules/utf-8-validate/index.js
+var require_utf_8_validate = __commonJS({
+  "../../node_modules/utf-8-validate/index.js"(exports2, module2) {
+    "use strict";
+    try {
+      module2.exports = require_node_gyp_build2()(__dirname);
+    } catch (e) {
+      module2.exports = require_fallback2();
+    }
+  }
+});
+
+// ../../node_modules/websocket/lib/WebSocketConnection.js
+var require_WebSocketConnection = __commonJS({
+  "../../node_modules/websocket/lib/WebSocketConnection.js"(exports2, module2) {
+    "use strict";
+    var util = require("util");
+    var utils = require_utils2();
+    var EventEmitter = require("events").EventEmitter;
+    var WebSocketFrame = require_WebSocketFrame();
+    var BufferList = require_FastBufferList();
+    var isValidUTF8 = require_utf_8_validate();
+    var bufferAllocUnsafe = utils.bufferAllocUnsafe;
+    var bufferFromString = utils.bufferFromString;
+    var STATE_OPEN = "open";
+    var STATE_PEER_REQUESTED_CLOSE = "peer_requested_close";
+    var STATE_ENDING = "ending";
+    var STATE_CLOSED = "closed";
+    var setImmediateImpl = "setImmediate" in global ? global.setImmediate.bind(global) : process.nextTick.bind(process);
+    var idCounter = 0;
+    function WebSocketConnection(socket, extensions, protocol, maskOutgoingPackets, config) {
+      this._debug = utils.BufferingLogger("websocket:connection", ++idCounter);
+      this._debug("constructor");
+      if (this._debug.enabled) {
+        instrumentSocketForDebugging(this, socket);
+      }
+      EventEmitter.call(this);
+      this._pingListenerCount = 0;
+      this.on("newListener", function(ev) {
+        if (ev === "ping") {
+          this._pingListenerCount++;
+        }
+      }).on("removeListener", function(ev) {
+        if (ev === "ping") {
+          this._pingListenerCount--;
+        }
+      });
+      this.config = config;
+      this.socket = socket;
+      this.protocol = protocol;
+      this.extensions = extensions;
+      this.remoteAddress = socket.remoteAddress;
+      this.closeReasonCode = -1;
+      this.closeDescription = null;
+      this.closeEventEmitted = false;
+      this.maskOutgoingPackets = maskOutgoingPackets;
+      this.maskBytes = bufferAllocUnsafe(4);
+      this.frameHeader = bufferAllocUnsafe(10);
+      this.bufferList = new BufferList();
+      this.currentFrame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
+      this.fragmentationSize = 0;
+      this.frameQueue = [];
+      this.connected = true;
+      this.state = STATE_OPEN;
+      this.waitingForCloseResponse = false;
+      this.receivedEnd = false;
+      this.closeTimeout = this.config.closeTimeout;
+      this.assembleFragments = this.config.assembleFragments;
+      this.maxReceivedMessageSize = this.config.maxReceivedMessageSize;
+      this.outputBufferFull = false;
+      this.inputPaused = false;
+      this.receivedDataHandler = this.processReceivedData.bind(this);
+      this._closeTimerHandler = this.handleCloseTimer.bind(this);
+      this.socket.setNoDelay(this.config.disableNagleAlgorithm);
+      this.socket.setTimeout(0);
+      if (this.config.keepalive && !this.config.useNativeKeepalive) {
+        if (typeof this.config.keepaliveInterval !== "number") {
+          throw new Error("keepaliveInterval must be specified and numeric if keepalive is true.");
+        }
+        this._keepaliveTimerHandler = this.handleKeepaliveTimer.bind(this);
+        this.setKeepaliveTimer();
+        if (this.config.dropConnectionOnKeepaliveTimeout) {
+          if (typeof this.config.keepaliveGracePeriod !== "number") {
+            throw new Error("keepaliveGracePeriod  must be specified and numeric if dropConnectionOnKeepaliveTimeout is true.");
+          }
+          this._gracePeriodTimerHandler = this.handleGracePeriodTimer.bind(this);
+        }
+      } else if (this.config.keepalive && this.config.useNativeKeepalive) {
+        if (!("setKeepAlive" in this.socket)) {
+          throw new Error("Unable to use native keepalive: unsupported by this version of Node.");
+        }
+        this.socket.setKeepAlive(true, this.config.keepaliveInterval);
+      }
+      this.socket.removeAllListeners("error");
+    }
+    WebSocketConnection.CLOSE_REASON_NORMAL = 1e3;
+    WebSocketConnection.CLOSE_REASON_GOING_AWAY = 1001;
+    WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR = 1002;
+    WebSocketConnection.CLOSE_REASON_UNPROCESSABLE_INPUT = 1003;
+    WebSocketConnection.CLOSE_REASON_RESERVED = 1004;
+    WebSocketConnection.CLOSE_REASON_NOT_PROVIDED = 1005;
+    WebSocketConnection.CLOSE_REASON_ABNORMAL = 1006;
+    WebSocketConnection.CLOSE_REASON_INVALID_DATA = 1007;
+    WebSocketConnection.CLOSE_REASON_POLICY_VIOLATION = 1008;
+    WebSocketConnection.CLOSE_REASON_MESSAGE_TOO_BIG = 1009;
+    WebSocketConnection.CLOSE_REASON_EXTENSION_REQUIRED = 1010;
+    WebSocketConnection.CLOSE_REASON_INTERNAL_SERVER_ERROR = 1011;
+    WebSocketConnection.CLOSE_REASON_TLS_HANDSHAKE_FAILED = 1015;
+    WebSocketConnection.CLOSE_DESCRIPTIONS = {
+      1e3: "Normal connection closure",
+      1001: "Remote peer is going away",
+      1002: "Protocol error",
+      1003: "Unprocessable input",
+      1004: "Reserved",
+      1005: "Reason not provided",
+      1006: "Abnormal closure, no further detail available",
+      1007: "Invalid data received",
+      1008: "Policy violation",
+      1009: "Message too big",
+      1010: "Extension requested by client is required",
+      1011: "Internal Server Error",
+      1015: "TLS Handshake Failed"
+    };
+    function validateCloseReason(code) {
+      if (code < 1e3) {
+        return false;
+      }
+      if (code >= 1e3 && code <= 2999) {
+        return [1e3, 1001, 1002, 1003, 1007, 1008, 1009, 1010, 1011, 1012, 1013, 1014, 1015].indexOf(code) !== -1;
+      }
+      if (code >= 3e3 && code <= 3999) {
+        return true;
+      }
+      if (code >= 4e3 && code <= 4999) {
+        return true;
+      }
+      if (code >= 5e3) {
+        return false;
+      }
+    }
+    util.inherits(WebSocketConnection, EventEmitter);
+    WebSocketConnection.prototype._addSocketEventListeners = function() {
+      this.socket.on("error", this.handleSocketError.bind(this));
+      this.socket.on("end", this.handleSocketEnd.bind(this));
+      this.socket.on("close", this.handleSocketClose.bind(this));
+      this.socket.on("drain", this.handleSocketDrain.bind(this));
+      this.socket.on("pause", this.handleSocketPause.bind(this));
+      this.socket.on("resume", this.handleSocketResume.bind(this));
+      this.socket.on("data", this.handleSocketData.bind(this));
+    };
+    WebSocketConnection.prototype.setKeepaliveTimer = function() {
+      this._debug("setKeepaliveTimer");
+      if (!this.config.keepalive || this.config.useNativeKeepalive) {
+        return;
+      }
+      this.clearKeepaliveTimer();
+      this.clearGracePeriodTimer();
+      this._keepaliveTimeoutID = setTimeout(this._keepaliveTimerHandler, this.config.keepaliveInterval);
+    };
+    WebSocketConnection.prototype.clearKeepaliveTimer = function() {
+      if (this._keepaliveTimeoutID) {
+        clearTimeout(this._keepaliveTimeoutID);
+      }
+    };
+    WebSocketConnection.prototype.handleKeepaliveTimer = function() {
+      this._debug("handleKeepaliveTimer");
+      this._keepaliveTimeoutID = null;
+      this.ping();
+      if (this.config.dropConnectionOnKeepaliveTimeout) {
+        this.setGracePeriodTimer();
+      } else {
+        this.setKeepaliveTimer();
+      }
+    };
+    WebSocketConnection.prototype.setGracePeriodTimer = function() {
+      this._debug("setGracePeriodTimer");
+      this.clearGracePeriodTimer();
+      this._gracePeriodTimeoutID = setTimeout(this._gracePeriodTimerHandler, this.config.keepaliveGracePeriod);
+    };
+    WebSocketConnection.prototype.clearGracePeriodTimer = function() {
+      if (this._gracePeriodTimeoutID) {
+        clearTimeout(this._gracePeriodTimeoutID);
+      }
+    };
+    WebSocketConnection.prototype.handleGracePeriodTimer = function() {
+      this._debug("handleGracePeriodTimer");
+      this._gracePeriodTimeoutID = null;
+      this.drop(WebSocketConnection.CLOSE_REASON_ABNORMAL, "Peer not responding.", true);
+    };
+    WebSocketConnection.prototype.handleSocketData = function(data) {
+      this._debug("handleSocketData");
+      this.setKeepaliveTimer();
+      this.bufferList.write(data);
+      this.processReceivedData();
+    };
+    WebSocketConnection.prototype.processReceivedData = function() {
+      this._debug("processReceivedData");
+      if (!this.connected) {
+        return;
+      }
+      if (this.inputPaused) {
+        return;
+      }
+      var frame = this.currentFrame;
+      if (!frame.addData(this.bufferList)) {
+        this._debug("-- insufficient data for frame");
+        return;
+      }
+      var self2 = this;
+      if (frame.protocolError) {
+        this._debug("-- protocol error");
+        process.nextTick(function() {
+          self2.drop(WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR, frame.dropReason);
+        });
+        return;
+      } else if (frame.frameTooLarge) {
+        this._debug("-- frame too large");
+        process.nextTick(function() {
+          self2.drop(WebSocketConnection.CLOSE_REASON_MESSAGE_TOO_BIG, frame.dropReason);
+        });
+        return;
+      }
+      if (frame.rsv1 || frame.rsv2 || frame.rsv3) {
+        this._debug("-- illegal rsv flag");
+        process.nextTick(function() {
+          self2.drop(
+            WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
+            "Unsupported usage of rsv bits without negotiated extension."
+          );
+        });
+        return;
+      }
+      if (!this.assembleFragments) {
+        this._debug("-- emitting frame");
+        process.nextTick(function() {
+          self2.emit("frame", frame);
+        });
+      }
+      process.nextTick(function() {
+        self2.processFrame(frame);
+      });
+      this.currentFrame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
+      if (this.bufferList.length > 0) {
+        setImmediateImpl(this.receivedDataHandler);
+      }
+    };
+    WebSocketConnection.prototype.handleSocketError = function(error) {
+      this._debug("handleSocketError: %j", error);
+      if (this.state === STATE_CLOSED) {
+        this._debug("  --- Socket 'error' after 'close'");
+        return;
+      }
+      this.closeReasonCode = WebSocketConnection.CLOSE_REASON_ABNORMAL;
+      this.closeDescription = "Socket Error: " + error.syscall + " " + error.code;
+      this.connected = false;
+      this.state = STATE_CLOSED;
+      this.fragmentationSize = 0;
+      if (utils.eventEmitterListenerCount(this, "error") > 0) {
+        this.emit("error", error);
+      }
+      this.socket.destroy();
+      this._debug.printOutput();
+    };
+    WebSocketConnection.prototype.handleSocketEnd = function() {
+      this._debug("handleSocketEnd: received socket end.  state = %s", this.state);
+      this.receivedEnd = true;
+      if (this.state === STATE_CLOSED) {
+        this._debug("  --- Socket 'end' after 'close'");
+        return;
+      }
+      if (this.state !== STATE_PEER_REQUESTED_CLOSE && this.state !== STATE_ENDING) {
+        this._debug("  --- UNEXPECTED socket end.");
+        this.socket.end();
+      }
+    };
+    WebSocketConnection.prototype.handleSocketClose = function(hadError) {
+      this._debug("handleSocketClose: received socket close");
+      this.socketHadError = hadError;
+      this.connected = false;
+      this.state = STATE_CLOSED;
+      if (this.closeReasonCode === -1) {
+        this.closeReasonCode = WebSocketConnection.CLOSE_REASON_ABNORMAL;
+        this.closeDescription = "Connection dropped by remote peer.";
+      }
+      this.clearCloseTimer();
+      this.clearKeepaliveTimer();
+      this.clearGracePeriodTimer();
+      if (!this.closeEventEmitted) {
+        this.closeEventEmitted = true;
+        this._debug("-- Emitting WebSocketConnection close event");
+        this.emit("close", this.closeReasonCode, this.closeDescription);
+      }
+    };
+    WebSocketConnection.prototype.handleSocketDrain = function() {
+      this._debug("handleSocketDrain: socket drain event");
+      this.outputBufferFull = false;
+      this.emit("drain");
+    };
+    WebSocketConnection.prototype.handleSocketPause = function() {
+      this._debug("handleSocketPause: socket pause event");
+      this.inputPaused = true;
+      this.emit("pause");
+    };
+    WebSocketConnection.prototype.handleSocketResume = function() {
+      this._debug("handleSocketResume: socket resume event");
+      this.inputPaused = false;
+      this.emit("resume");
+      this.processReceivedData();
+    };
+    WebSocketConnection.prototype.pause = function() {
+      this._debug("pause: pause requested");
+      this.socket.pause();
+    };
+    WebSocketConnection.prototype.resume = function() {
+      this._debug("resume: resume requested");
+      this.socket.resume();
+    };
+    WebSocketConnection.prototype.close = function(reasonCode, description) {
+      if (this.connected) {
+        this._debug("close: Initating clean WebSocket close sequence.");
+        if ("number" !== typeof reasonCode) {
+          reasonCode = WebSocketConnection.CLOSE_REASON_NORMAL;
+        }
+        if (!validateCloseReason(reasonCode)) {
+          throw new Error("Close code " + reasonCode + " is not valid.");
+        }
+        if ("string" !== typeof description) {
+          description = WebSocketConnection.CLOSE_DESCRIPTIONS[reasonCode];
+        }
+        this.closeReasonCode = reasonCode;
+        this.closeDescription = description;
+        this.setCloseTimer();
+        this.sendCloseFrame(this.closeReasonCode, this.closeDescription);
+        this.state = STATE_ENDING;
+        this.connected = false;
+      }
+    };
+    WebSocketConnection.prototype.drop = function(reasonCode, description, skipCloseFrame) {
+      this._debug("drop");
+      if (typeof reasonCode !== "number") {
+        reasonCode = WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR;
+      }
+      if (typeof description !== "string") {
+        description = WebSocketConnection.CLOSE_DESCRIPTIONS[reasonCode];
+      }
+      this._debug(
+        "Forcefully dropping connection. skipCloseFrame: %s, code: %d, description: %s",
+        skipCloseFrame,
+        reasonCode,
+        description
+      );
+      this.closeReasonCode = reasonCode;
+      this.closeDescription = description;
+      this.frameQueue = [];
+      this.fragmentationSize = 0;
+      if (!skipCloseFrame) {
+        this.sendCloseFrame(reasonCode, description);
+      }
+      this.connected = false;
+      this.state = STATE_CLOSED;
+      this.clearCloseTimer();
+      this.clearKeepaliveTimer();
+      this.clearGracePeriodTimer();
+      if (!this.closeEventEmitted) {
+        this.closeEventEmitted = true;
+        this._debug("Emitting WebSocketConnection close event");
+        this.emit("close", this.closeReasonCode, this.closeDescription);
+      }
+      this._debug("Drop: destroying socket");
+      this.socket.destroy();
+    };
+    WebSocketConnection.prototype.setCloseTimer = function() {
+      this._debug("setCloseTimer");
+      this.clearCloseTimer();
+      this._debug("Setting close timer");
+      this.waitingForCloseResponse = true;
+      this.closeTimer = setTimeout(this._closeTimerHandler, this.closeTimeout);
+    };
+    WebSocketConnection.prototype.clearCloseTimer = function() {
+      this._debug("clearCloseTimer");
+      if (this.closeTimer) {
+        this._debug("Clearing close timer");
+        clearTimeout(this.closeTimer);
+        this.waitingForCloseResponse = false;
+        this.closeTimer = null;
+      }
+    };
+    WebSocketConnection.prototype.handleCloseTimer = function() {
+      this._debug("handleCloseTimer");
+      this.closeTimer = null;
+      if (this.waitingForCloseResponse) {
+        this._debug("Close response not received from client.  Forcing socket end.");
+        this.waitingForCloseResponse = false;
+        this.state = STATE_CLOSED;
+        this.socket.end();
+      }
+    };
+    WebSocketConnection.prototype.processFrame = function(frame) {
+      this._debug("processFrame");
+      this._debug(" -- frame: %s", frame);
+      if (this.frameQueue.length !== 0 && (frame.opcode > 0 && frame.opcode < 8)) {
+        this.drop(
+          WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
+          "Illegal frame opcode 0x" + frame.opcode.toString(16) + " received in middle of fragmented message."
+        );
+        return;
+      }
+      switch (frame.opcode) {
+        case 2:
+          this._debug("-- Binary Frame");
+          if (this.assembleFragments) {
+            if (frame.fin) {
+              this._debug("---- Emitting 'message' event");
+              this.emit("message", {
+                type: "binary",
+                binaryData: frame.binaryPayload
+              });
+            } else {
+              this.frameQueue.push(frame);
+              this.fragmentationSize = frame.length;
+            }
+          }
+          break;
+        case 1:
+          this._debug("-- Text Frame");
+          if (this.assembleFragments) {
+            if (frame.fin) {
+              if (!isValidUTF8(frame.binaryPayload)) {
+                this.drop(
+                  WebSocketConnection.CLOSE_REASON_INVALID_DATA,
+                  "Invalid UTF-8 Data Received"
+                );
+                return;
+              }
+              this._debug("---- Emitting 'message' event");
+              this.emit("message", {
+                type: "utf8",
+                utf8Data: frame.binaryPayload.toString("utf8")
+              });
+            } else {
+              this.frameQueue.push(frame);
+              this.fragmentationSize = frame.length;
+            }
+          }
+          break;
+        case 0:
+          this._debug("-- Continuation Frame");
+          if (this.assembleFragments) {
+            if (this.frameQueue.length === 0) {
+              this.drop(
+                WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
+                "Unexpected Continuation Frame"
+              );
+              return;
+            }
+            this.fragmentationSize += frame.length;
+            if (this.fragmentationSize > this.maxReceivedMessageSize) {
+              this.drop(
+                WebSocketConnection.CLOSE_REASON_MESSAGE_TOO_BIG,
+                "Maximum message size exceeded."
+              );
+              return;
+            }
+            this.frameQueue.push(frame);
+            if (frame.fin) {
+              var bytesCopied = 0;
+              var binaryPayload = bufferAllocUnsafe(this.fragmentationSize);
+              var opcode = this.frameQueue[0].opcode;
+              this.frameQueue.forEach(function(currentFrame) {
+                currentFrame.binaryPayload.copy(binaryPayload, bytesCopied);
+                bytesCopied += currentFrame.binaryPayload.length;
+              });
+              this.frameQueue = [];
+              this.fragmentationSize = 0;
+              switch (opcode) {
+                case 2:
+                  this.emit("message", {
+                    type: "binary",
+                    binaryData: binaryPayload
+                  });
+                  break;
+                case 1:
+                  if (!isValidUTF8(binaryPayload)) {
+                    this.drop(
+                      WebSocketConnection.CLOSE_REASON_INVALID_DATA,
+                      "Invalid UTF-8 Data Received"
+                    );
+                    return;
+                  }
+                  this.emit("message", {
+                    type: "utf8",
+                    utf8Data: binaryPayload.toString("utf8")
+                  });
+                  break;
+                default:
+                  this.drop(
+                    WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
+                    "Unexpected first opcode in fragmentation sequence: 0x" + opcode.toString(16)
+                  );
+                  return;
+              }
+            }
+          }
+          break;
+        case 9:
+          this._debug("-- Ping Frame");
+          if (this._pingListenerCount > 0) {
+            var cancelled = false;
+            var cancel = function() {
+              cancelled = true;
+            };
+            this.emit("ping", cancel, frame.binaryPayload);
+            if (!cancelled) {
+              this.pong(frame.binaryPayload);
+            }
+          } else {
+            this.pong(frame.binaryPayload);
+          }
+          break;
+        case 10:
+          this._debug("-- Pong Frame");
+          this.emit("pong", frame.binaryPayload);
+          break;
+        case 8:
+          this._debug("-- Close Frame");
+          if (this.waitingForCloseResponse) {
+            this._debug("---- Got close response from peer.  Completing closing handshake.");
+            this.clearCloseTimer();
+            this.waitingForCloseResponse = false;
+            this.state = STATE_CLOSED;
+            this.socket.end();
+            return;
+          }
+          this._debug("---- Closing handshake initiated by peer.");
+          this.state = STATE_PEER_REQUESTED_CLOSE;
+          var respondCloseReasonCode;
+          if (frame.invalidCloseFrameLength) {
+            this.closeReasonCode = 1005;
+            respondCloseReasonCode = WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR;
+          } else if (frame.closeStatus === -1 || validateCloseReason(frame.closeStatus)) {
+            this.closeReasonCode = frame.closeStatus;
+            respondCloseReasonCode = WebSocketConnection.CLOSE_REASON_NORMAL;
+          } else {
+            this.closeReasonCode = frame.closeStatus;
+            respondCloseReasonCode = WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR;
+          }
+          if (frame.binaryPayload.length > 1) {
+            if (!isValidUTF8(frame.binaryPayload)) {
+              this.drop(
+                WebSocketConnection.CLOSE_REASON_INVALID_DATA,
+                "Invalid UTF-8 Data Received"
+              );
+              return;
+            }
+            this.closeDescription = frame.binaryPayload.toString("utf8");
+          } else {
+            this.closeDescription = WebSocketConnection.CLOSE_DESCRIPTIONS[this.closeReasonCode];
+          }
+          this._debug(
+            "------ Remote peer %s - code: %d - %s - close frame payload length: %d",
+            this.remoteAddress,
+            this.closeReasonCode,
+            this.closeDescription,
+            frame.length
+          );
+          this._debug("------ responding to remote peer's close request.");
+          this.sendCloseFrame(respondCloseReasonCode, null);
+          this.connected = false;
+          break;
+        default:
+          this._debug("-- Unrecognized Opcode %d", frame.opcode);
+          this.drop(
+            WebSocketConnection.CLOSE_REASON_PROTOCOL_ERROR,
+            "Unrecognized Opcode: 0x" + frame.opcode.toString(16)
+          );
+          break;
+      }
+    };
+    WebSocketConnection.prototype.send = function(data, cb) {
+      this._debug("send");
+      if (Buffer.isBuffer(data)) {
+        this.sendBytes(data, cb);
+      } else if (typeof data["toString"] === "function") {
+        this.sendUTF(data, cb);
+      } else {
+        throw new Error("Data provided must either be a Node Buffer or implement toString()");
+      }
+    };
+    WebSocketConnection.prototype.sendUTF = function(data, cb) {
+      data = bufferFromString(data.toString(), "utf8");
+      this._debug("sendUTF: %d bytes", data.length);
+      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
+      frame.opcode = 1;
+      frame.binaryPayload = data;
+      this.fragmentAndSend(frame, cb);
+    };
+    WebSocketConnection.prototype.sendBytes = function(data, cb) {
+      this._debug("sendBytes");
+      if (!Buffer.isBuffer(data)) {
+        throw new Error("You must pass a Node Buffer object to WebSocketConnection.prototype.sendBytes()");
+      }
+      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
+      frame.opcode = 2;
+      frame.binaryPayload = data;
+      this.fragmentAndSend(frame, cb);
+    };
+    WebSocketConnection.prototype.ping = function(data) {
+      this._debug("ping");
+      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
+      frame.opcode = 9;
+      frame.fin = true;
+      if (data) {
+        if (!Buffer.isBuffer(data)) {
+          data = bufferFromString(data.toString(), "utf8");
+        }
+        if (data.length > 125) {
+          this._debug("WebSocket: Data for ping is longer than 125 bytes.  Truncating.");
+          data = data.slice(0, 124);
+        }
+        frame.binaryPayload = data;
+      }
+      this.sendFrame(frame);
+    };
+    WebSocketConnection.prototype.pong = function(binaryPayload) {
+      this._debug("pong");
+      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
+      frame.opcode = 10;
+      if (Buffer.isBuffer(binaryPayload) && binaryPayload.length > 125) {
+        this._debug("WebSocket: Data for pong is longer than 125 bytes.  Truncating.");
+        binaryPayload = binaryPayload.slice(0, 124);
+      }
+      frame.binaryPayload = binaryPayload;
+      frame.fin = true;
+      this.sendFrame(frame);
+    };
+    WebSocketConnection.prototype.fragmentAndSend = function(frame, cb) {
+      this._debug("fragmentAndSend");
+      if (frame.opcode > 7) {
+        throw new Error("You cannot fragment control frames.");
+      }
+      var threshold = this.config.fragmentationThreshold;
+      var length = frame.binaryPayload.length;
+      if (!this.config.fragmentOutgoingMessages || frame.binaryPayload && length <= threshold) {
+        frame.fin = true;
+        this.sendFrame(frame, cb);
+        return;
+      }
+      var numFragments = Math.ceil(length / threshold);
+      var sentFragments = 0;
+      var sentCallback = function fragmentSentCallback(err) {
+        if (err) {
+          if (typeof cb === "function") {
+            cb(err);
+            cb = null;
+          }
+          return;
+        }
+        ++sentFragments;
+        if (sentFragments === numFragments && typeof cb === "function") {
+          cb();
+        }
+      };
+      for (var i = 1; i <= numFragments; i++) {
+        var currentFrame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
+        currentFrame.opcode = i === 1 ? frame.opcode : 0;
+        currentFrame.fin = i === numFragments;
+        var currentLength = i === numFragments ? length - threshold * (i - 1) : threshold;
+        var sliceStart = threshold * (i - 1);
+        currentFrame.binaryPayload = frame.binaryPayload.slice(sliceStart, sliceStart + currentLength);
+        this.sendFrame(currentFrame, sentCallback);
+      }
+    };
+    WebSocketConnection.prototype.sendCloseFrame = function(reasonCode, description, cb) {
+      if (typeof reasonCode !== "number") {
+        reasonCode = WebSocketConnection.CLOSE_REASON_NORMAL;
+      }
+      this._debug("sendCloseFrame state: %s, reasonCode: %d, description: %s", this.state, reasonCode, description);
+      if (this.state !== STATE_OPEN && this.state !== STATE_PEER_REQUESTED_CLOSE) {
+        return;
+      }
+      var frame = new WebSocketFrame(this.maskBytes, this.frameHeader, this.config);
+      frame.fin = true;
+      frame.opcode = 8;
+      frame.closeStatus = reasonCode;
+      if (typeof description === "string") {
+        frame.binaryPayload = bufferFromString(description, "utf8");
+      }
+      this.sendFrame(frame, cb);
+      this.socket.end();
+    };
+    WebSocketConnection.prototype.sendFrame = function(frame, cb) {
+      this._debug("sendFrame");
+      frame.mask = this.maskOutgoingPackets;
+      var flushed = this.socket.write(frame.toBuffer(), cb);
+      this.outputBufferFull = !flushed;
+      return flushed;
+    };
+    module2.exports = WebSocketConnection;
+    function instrumentSocketForDebugging(connection, socket) {
+      if (!connection._debug.enabled) {
+        return;
+      }
+      var originalSocketEmit = socket.emit;
+      socket.emit = function(event) {
+        connection._debug("||| Socket Event  '%s'", event);
+        originalSocketEmit.apply(this, arguments);
+      };
+      for (var key in socket) {
+        if ("function" !== typeof socket[key]) {
+          continue;
+        }
+        if (["emit"].indexOf(key) !== -1) {
+          continue;
+        }
+        (function(key2) {
+          var original = socket[key2];
+          if (key2 === "on") {
+            socket[key2] = function proxyMethod__EventEmitter__On() {
+              connection._debug("||| Socket method called:  %s (%s)", key2, arguments[0]);
+              return original.apply(this, arguments);
+            };
+            return;
+          }
+          socket[key2] = function proxyMethod() {
+            connection._debug("||| Socket method called:  %s", key2);
+            return original.apply(this, arguments);
+          };
+        })(key);
+      }
+    }
+  }
+});
+
+// ../../node_modules/websocket/lib/WebSocketRequest.js
+var require_WebSocketRequest = __commonJS({
+  "../../node_modules/websocket/lib/WebSocketRequest.js"(exports2, module2) {
+    "use strict";
+    var crypto2 = require("crypto");
+    var util = require("util");
+    var url = require("url");
+    var EventEmitter = require("events").EventEmitter;
+    var WebSocketConnection = require_WebSocketConnection();
+    var headerValueSplitRegExp = /,\s*/;
+    var headerParamSplitRegExp = /;\s*/;
+    var headerSanitizeRegExp = /[\r\n]/g;
+    var xForwardedForSeparatorRegExp = /,\s*/;
+    var separators = [
+      "(",
+      ")",
+      "<",
+      ">",
+      "@",
+      ",",
+      ";",
+      ":",
+      "\\",
+      '"',
+      "/",
+      "[",
+      "]",
+      "?",
+      "=",
+      "{",
+      "}",
+      " ",
+      String.fromCharCode(9)
+    ];
+    var controlChars = [
+      String.fromCharCode(127)
+      /* DEL */
+    ];
+    for (i = 0; i < 31; i++) {
+      controlChars.push(String.fromCharCode(i));
+    }
+    var i;
+    var cookieNameValidateRegEx = /([\x00-\x20\x22\x28\x29\x2c\x2f\x3a-\x3f\x40\x5b-\x5e\x7b\x7d\x7f])/;
+    var cookieValueValidateRegEx = /[^\x21\x23-\x2b\x2d-\x3a\x3c-\x5b\x5d-\x7e]/;
+    var cookieValueDQuoteValidateRegEx = /^"[^"]*"$/;
+    var controlCharsAndSemicolonRegEx = /[\x00-\x20\x3b]/g;
+    var cookieSeparatorRegEx = /[;,] */;
+    var httpStatusDescriptions = {
+      100: "Continue",
+      101: "Switching Protocols",
+      200: "OK",
+      201: "Created",
+      203: "Non-Authoritative Information",
+      204: "No Content",
+      205: "Reset Content",
+      206: "Partial Content",
+      300: "Multiple Choices",
+      301: "Moved Permanently",
+      302: "Found",
+      303: "See Other",
+      304: "Not Modified",
+      305: "Use Proxy",
+      307: "Temporary Redirect",
+      400: "Bad Request",
+      401: "Unauthorized",
+      402: "Payment Required",
+      403: "Forbidden",
+      404: "Not Found",
+      406: "Not Acceptable",
+      407: "Proxy Authorization Required",
+      408: "Request Timeout",
+      409: "Conflict",
+      410: "Gone",
+      411: "Length Required",
+      412: "Precondition Failed",
+      413: "Request Entity Too Long",
+      414: "Request-URI Too Long",
+      415: "Unsupported Media Type",
+      416: "Requested Range Not Satisfiable",
+      417: "Expectation Failed",
+      426: "Upgrade Required",
+      500: "Internal Server Error",
+      501: "Not Implemented",
+      502: "Bad Gateway",
+      503: "Service Unavailable",
+      504: "Gateway Timeout",
+      505: "HTTP Version Not Supported"
+    };
+    function WebSocketRequest(socket, httpRequest, serverConfig) {
+      EventEmitter.call(this);
+      this.socket = socket;
+      this.httpRequest = httpRequest;
+      this.resource = httpRequest.url;
+      this.remoteAddress = socket.remoteAddress;
+      this.remoteAddresses = [this.remoteAddress];
+      this.serverConfig = serverConfig;
+      this._socketIsClosing = false;
+      this._socketCloseHandler = this._handleSocketCloseBeforeAccept.bind(this);
+      this.socket.on("end", this._socketCloseHandler);
+      this.socket.on("close", this._socketCloseHandler);
+      this._resolved = false;
+    }
+    util.inherits(WebSocketRequest, EventEmitter);
+    WebSocketRequest.prototype.readHandshake = function() {
+      var self2 = this;
+      var request = this.httpRequest;
+      this.resourceURL = url.parse(this.resource, true);
+      this.host = request.headers["host"];
+      if (!this.host) {
+        throw new Error("Client must provide a Host header.");
+      }
+      this.key = request.headers["sec-websocket-key"];
+      if (!this.key) {
+        throw new Error("Client must provide a value for Sec-WebSocket-Key.");
+      }
+      this.webSocketVersion = parseInt(request.headers["sec-websocket-version"], 10);
+      if (!this.webSocketVersion || isNaN(this.webSocketVersion)) {
+        throw new Error("Client must provide a value for Sec-WebSocket-Version.");
+      }
+      switch (this.webSocketVersion) {
+        case 8:
+        case 13:
+          break;
+        default:
+          var e = new Error("Unsupported websocket client version: " + this.webSocketVersion + "Only versions 8 and 13 are supported.");
+          e.httpCode = 426;
+          e.headers = {
+            "Sec-WebSocket-Version": "13"
+          };
+          throw e;
+      }
+      if (this.webSocketVersion === 13) {
+        this.origin = request.headers["origin"];
+      } else if (this.webSocketVersion === 8) {
+        this.origin = request.headers["sec-websocket-origin"];
+      }
+      var protocolString = request.headers["sec-websocket-protocol"];
+      this.protocolFullCaseMap = {};
+      this.requestedProtocols = [];
+      if (protocolString) {
+        var requestedProtocolsFullCase = protocolString.split(headerValueSplitRegExp);
+        requestedProtocolsFullCase.forEach(function(protocol) {
+          var lcProtocol = protocol.toLocaleLowerCase();
+          self2.requestedProtocols.push(lcProtocol);
+          self2.protocolFullCaseMap[lcProtocol] = protocol;
+        });
+      }
+      if (!this.serverConfig.ignoreXForwardedFor && request.headers["x-forwarded-for"]) {
+        var immediatePeerIP = this.remoteAddress;
+        this.remoteAddresses = request.headers["x-forwarded-for"].split(xForwardedForSeparatorRegExp);
+        this.remoteAddresses.push(immediatePeerIP);
+        this.remoteAddress = this.remoteAddresses[0];
+      }
+      if (this.serverConfig.parseExtensions) {
+        var extensionsString = request.headers["sec-websocket-extensions"];
+        this.requestedExtensions = this.parseExtensions(extensionsString);
+      } else {
+        this.requestedExtensions = [];
+      }
+      if (this.serverConfig.parseCookies) {
+        var cookieString = request.headers["cookie"];
+        this.cookies = this.parseCookies(cookieString);
+      } else {
+        this.cookies = [];
+      }
+    };
+    WebSocketRequest.prototype.parseExtensions = function(extensionsString) {
+      if (!extensionsString || extensionsString.length === 0) {
+        return [];
+      }
+      var extensions = extensionsString.toLocaleLowerCase().split(headerValueSplitRegExp);
+      extensions.forEach(function(extension, index, array) {
+        var params = extension.split(headerParamSplitRegExp);
+        var extensionName = params[0];
+        var extensionParams = params.slice(1);
+        extensionParams.forEach(function(rawParam, index2, array2) {
+          var arr = rawParam.split("=");
+          var obj2 = {
+            name: arr[0],
+            value: arr[1]
+          };
+          array2.splice(index2, 1, obj2);
+        });
+        var obj = {
+          name: extensionName,
+          params: extensionParams
+        };
+        array.splice(index, 1, obj);
+      });
+      return extensions;
+    };
+    WebSocketRequest.prototype.parseCookies = function(str) {
+      if (!str || typeof str !== "string") {
+        return [];
+      }
+      var cookies = [];
+      var pairs = str.split(cookieSeparatorRegEx);
+      pairs.forEach(function(pair) {
+        var eq_idx = pair.indexOf("=");
+        if (eq_idx === -1) {
+          cookies.push({
+            name: pair,
+            value: null
+          });
+          return;
+        }
+        var key = pair.substr(0, eq_idx).trim();
+        var val = pair.substr(++eq_idx, pair.length).trim();
+        if ('"' === val[0]) {
+          val = val.slice(1, -1);
+        }
+        cookies.push({
+          name: key,
+          value: decodeURIComponent(val)
+        });
+      });
+      return cookies;
+    };
+    WebSocketRequest.prototype.accept = function(acceptedProtocol, allowedOrigin, cookies) {
+      this._verifyResolution();
+      var protocolFullCase;
+      if (acceptedProtocol) {
+        protocolFullCase = this.protocolFullCaseMap[acceptedProtocol.toLocaleLowerCase()];
+        if (typeof protocolFullCase === "undefined") {
+          protocolFullCase = acceptedProtocol;
+        }
+      } else {
+        protocolFullCase = acceptedProtocol;
+      }
+      this.protocolFullCaseMap = null;
+      var sha1 = crypto2.createHash("sha1");
+      sha1.update(this.key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+      var acceptKey = sha1.digest("base64");
+      var response = "HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\nSec-WebSocket-Accept: " + acceptKey + "\r\n";
+      if (protocolFullCase) {
+        for (var i2 = 0; i2 < protocolFullCase.length; i2++) {
+          var charCode = protocolFullCase.charCodeAt(i2);
+          var character = protocolFullCase.charAt(i2);
+          if (charCode < 33 || charCode > 126 || separators.indexOf(character) !== -1) {
+            this.reject(500);
+            throw new Error('Illegal character "' + String.fromCharCode(character) + '" in subprotocol.');
+          }
+        }
+        if (this.requestedProtocols.indexOf(acceptedProtocol) === -1) {
+          this.reject(500);
+          throw new Error("Specified protocol was not requested by the client.");
+        }
+        protocolFullCase = protocolFullCase.replace(headerSanitizeRegExp, "");
+        response += "Sec-WebSocket-Protocol: " + protocolFullCase + "\r\n";
+      }
+      this.requestedProtocols = null;
+      if (allowedOrigin) {
+        allowedOrigin = allowedOrigin.replace(headerSanitizeRegExp, "");
+        if (this.webSocketVersion === 13) {
+          response += "Origin: " + allowedOrigin + "\r\n";
+        } else if (this.webSocketVersion === 8) {
+          response += "Sec-WebSocket-Origin: " + allowedOrigin + "\r\n";
+        }
+      }
+      if (cookies) {
+        if (!Array.isArray(cookies)) {
+          this.reject(500);
+          throw new Error('Value supplied for "cookies" argument must be an array.');
+        }
+        var seenCookies = {};
+        cookies.forEach(function(cookie) {
+          if (!cookie.name || !cookie.value) {
+            this.reject(500);
+            throw new Error('Each cookie to set must at least provide a "name" and "value"');
+          }
+          cookie.name = cookie.name.replace(controlCharsAndSemicolonRegEx, "");
+          cookie.value = cookie.value.replace(controlCharsAndSemicolonRegEx, "");
+          if (seenCookies[cookie.name]) {
+            this.reject(500);
+            throw new Error("You may not specify the same cookie name twice.");
+          }
+          seenCookies[cookie.name] = true;
+          var invalidChar = cookie.name.match(cookieNameValidateRegEx);
+          if (invalidChar) {
+            this.reject(500);
+            throw new Error("Illegal character " + invalidChar[0] + " in cookie name");
+          }
+          if (cookie.value.match(cookieValueDQuoteValidateRegEx)) {
+            invalidChar = cookie.value.slice(1, -1).match(cookieValueValidateRegEx);
+          } else {
+            invalidChar = cookie.value.match(cookieValueValidateRegEx);
+          }
+          if (invalidChar) {
+            this.reject(500);
+            throw new Error("Illegal character " + invalidChar[0] + " in cookie value");
+          }
+          var cookieParts = [cookie.name + "=" + cookie.value];
+          if (cookie.path) {
+            invalidChar = cookie.path.match(controlCharsAndSemicolonRegEx);
+            if (invalidChar) {
+              this.reject(500);
+              throw new Error("Illegal character " + invalidChar[0] + " in cookie path");
+            }
+            cookieParts.push("Path=" + cookie.path);
+          }
+          if (cookie.domain) {
+            if (typeof cookie.domain !== "string") {
+              this.reject(500);
+              throw new Error("Domain must be specified and must be a string.");
+            }
+            invalidChar = cookie.domain.match(controlCharsAndSemicolonRegEx);
+            if (invalidChar) {
+              this.reject(500);
+              throw new Error("Illegal character " + invalidChar[0] + " in cookie domain");
+            }
+            cookieParts.push("Domain=" + cookie.domain.toLowerCase());
+          }
+          if (cookie.expires) {
+            if (!(cookie.expires instanceof Date)) {
+              this.reject(500);
+              throw new Error('Value supplied for cookie "expires" must be a vaild date object');
+            }
+            cookieParts.push("Expires=" + cookie.expires.toGMTString());
+          }
+          if (cookie.maxage) {
+            var maxage = cookie.maxage;
+            if (typeof maxage === "string") {
+              maxage = parseInt(maxage, 10);
+            }
+            if (isNaN(maxage) || maxage <= 0) {
+              this.reject(500);
+              throw new Error('Value supplied for cookie "maxage" must be a non-zero number');
+            }
+            maxage = Math.round(maxage);
+            cookieParts.push("Max-Age=" + maxage.toString(10));
+          }
+          if (cookie.secure) {
+            if (typeof cookie.secure !== "boolean") {
+              this.reject(500);
+              throw new Error('Value supplied for cookie "secure" must be of type boolean');
+            }
+            cookieParts.push("Secure");
+          }
+          if (cookie.httponly) {
+            if (typeof cookie.httponly !== "boolean") {
+              this.reject(500);
+              throw new Error('Value supplied for cookie "httponly" must be of type boolean');
+            }
+            cookieParts.push("HttpOnly");
+          }
+          response += "Set-Cookie: " + cookieParts.join(";") + "\r\n";
+        }.bind(this));
+      }
+      this._resolved = true;
+      this.emit("requestResolved", this);
+      response += "\r\n";
+      var connection = new WebSocketConnection(this.socket, [], acceptedProtocol, false, this.serverConfig);
+      connection.webSocketVersion = this.webSocketVersion;
+      connection.remoteAddress = this.remoteAddress;
+      connection.remoteAddresses = this.remoteAddresses;
+      var self2 = this;
+      if (this._socketIsClosing) {
+        cleanupFailedConnection(connection);
+      } else {
+        this.socket.write(response, "ascii", function(error) {
+          if (error) {
+            cleanupFailedConnection(connection);
+            return;
+          }
+          self2._removeSocketCloseListeners();
+          connection._addSocketEventListeners();
+        });
+      }
+      this.emit("requestAccepted", connection);
+      return connection;
+    };
+    WebSocketRequest.prototype.reject = function(status, reason, extraHeaders) {
+      this._verifyResolution();
+      this._resolved = true;
+      this.emit("requestResolved", this);
+      if (typeof status !== "number") {
+        status = 403;
+      }
+      var response = "HTTP/1.1 " + status + " " + httpStatusDescriptions[status] + "\r\nConnection: close\r\n";
+      if (reason) {
+        reason = reason.replace(headerSanitizeRegExp, "");
+        response += "X-WebSocket-Reject-Reason: " + reason + "\r\n";
+      }
+      if (extraHeaders) {
+        for (var key in extraHeaders) {
+          var sanitizedValue = extraHeaders[key].toString().replace(headerSanitizeRegExp, "");
+          var sanitizedKey = key.replace(headerSanitizeRegExp, "");
+          response += sanitizedKey + ": " + sanitizedValue + "\r\n";
+        }
+      }
+      response += "\r\n";
+      this.socket.end(response, "ascii");
+      this.emit("requestRejected", this);
+    };
+    WebSocketRequest.prototype._handleSocketCloseBeforeAccept = function() {
+      this._socketIsClosing = true;
+      this._removeSocketCloseListeners();
+    };
+    WebSocketRequest.prototype._removeSocketCloseListeners = function() {
+      this.socket.removeListener("end", this._socketCloseHandler);
+      this.socket.removeListener("close", this._socketCloseHandler);
+    };
+    WebSocketRequest.prototype._verifyResolution = function() {
+      if (this._resolved) {
+        throw new Error("WebSocketRequest may only be accepted or rejected one time.");
+      }
+    };
+    function cleanupFailedConnection(connection) {
+      process.nextTick(function() {
+        connection.drop(1006, "TCP connection lost before handshake completed.", true);
+      });
+    }
+    module2.exports = WebSocketRequest;
+  }
+});
+
+// ../../node_modules/websocket/lib/WebSocketServer.js
+var require_WebSocketServer = __commonJS({
+  "../../node_modules/websocket/lib/WebSocketServer.js"(exports2, module2) {
+    "use strict";
+    var extend = require_utils2().extend;
+    var utils = require_utils2();
+    var util = require("util");
+    var debug = require_src2()("websocket:server");
+    var EventEmitter = require("events").EventEmitter;
+    var WebSocketRequest = require_WebSocketRequest();
+    var WebSocketServer = function WebSocketServer2(config) {
+      EventEmitter.call(this);
+      this._handlers = {
+        upgrade: this.handleUpgrade.bind(this),
+        requestAccepted: this.handleRequestAccepted.bind(this),
+        requestResolved: this.handleRequestResolved.bind(this)
+      };
+      this.connections = [];
+      this.pendingRequests = [];
+      if (config) {
+        this.mount(config);
+      }
+    };
+    util.inherits(WebSocketServer, EventEmitter);
+    WebSocketServer.prototype.mount = function(config) {
+      this.config = {
+        // The http server instance to attach to.  Required.
+        httpServer: null,
+        // 64KiB max frame size.
+        maxReceivedFrameSize: 65536,
+        // 1MiB max message size, only applicable if
+        // assembleFragments is true
+        maxReceivedMessageSize: 1048576,
+        // Outgoing messages larger than fragmentationThreshold will be
+        // split into multiple fragments.
+        fragmentOutgoingMessages: true,
+        // Outgoing frames are fragmented if they exceed this threshold.
+        // Default is 16KiB
+        fragmentationThreshold: 16384,
+        // If true, the server will automatically send a ping to all
+        // clients every 'keepaliveInterval' milliseconds.  The timer is
+        // reset on any received data from the client.
+        keepalive: true,
+        // The interval to send keepalive pings to connected clients if the
+        // connection is idle.  Any received data will reset the counter.
+        keepaliveInterval: 2e4,
+        // If true, the server will consider any connection that has not
+        // received any data within the amount of time specified by
+        // 'keepaliveGracePeriod' after a keepalive ping has been sent to
+        // be dead, and will drop the connection.
+        // Ignored if keepalive is false.
+        dropConnectionOnKeepaliveTimeout: true,
+        // The amount of time to wait after sending a keepalive ping before
+        // closing the connection if the connected peer does not respond.
+        // Ignored if keepalive is false.
+        keepaliveGracePeriod: 1e4,
+        // Whether to use native TCP keep-alive instead of WebSockets ping
+        // and pong packets.  Native TCP keep-alive sends smaller packets
+        // on the wire and so uses bandwidth more efficiently.  This may
+        // be more important when talking to mobile devices.
+        // If this value is set to true, then these values will be ignored:
+        //   keepaliveGracePeriod
+        //   dropConnectionOnKeepaliveTimeout
+        useNativeKeepalive: false,
+        // If true, fragmented messages will be automatically assembled
+        // and the full message will be emitted via a 'message' event.
+        // If false, each frame will be emitted via a 'frame' event and
+        // the application will be responsible for aggregating multiple
+        // fragmented frames.  Single-frame messages will emit a 'message'
+        // event in addition to the 'frame' event.
+        // Most users will want to leave this set to 'true'
+        assembleFragments: true,
+        // If this is true, websocket connections will be accepted
+        // regardless of the path and protocol specified by the client.
+        // The protocol accepted will be the first that was requested
+        // by the client.  Clients from any origin will be accepted.
+        // This should only be used in the simplest of cases.  You should
+        // probably leave this set to 'false' and inspect the request
+        // object to make sure it's acceptable before accepting it.
+        autoAcceptConnections: false,
+        // Whether or not the X-Forwarded-For header should be respected.
+        // It's important to set this to 'true' when accepting connections
+        // from untrusted clients, as a malicious client could spoof its
+        // IP address by simply setting this header.  It's meant to be added
+        // by a trusted proxy or other intermediary within your own
+        // infrastructure.
+        // See:  http://en.wikipedia.org/wiki/X-Forwarded-For
+        ignoreXForwardedFor: false,
+        // If this is true, 'cookie' headers are parsed and exposed as WebSocketRequest.cookies
+        parseCookies: true,
+        // If this is true, 'sec-websocket-extensions' headers are parsed and exposed as WebSocketRequest.requestedExtensions
+        parseExtensions: true,
+        // The Nagle Algorithm makes more efficient use of network resources
+        // by introducing a small delay before sending small packets so that
+        // multiple messages can be batched together before going onto the
+        // wire.  This however comes at the cost of latency, so the default
+        // is to disable it.  If you don't need low latency and are streaming
+        // lots of small messages, you can change this to 'false'
+        disableNagleAlgorithm: true,
+        // The number of milliseconds to wait after sending a close frame
+        // for an acknowledgement to come back before giving up and just
+        // closing the socket.
+        closeTimeout: 5e3
+      };
+      extend(this.config, config);
+      if (this.config.httpServer) {
+        if (!Array.isArray(this.config.httpServer)) {
+          this.config.httpServer = [this.config.httpServer];
+        }
+        var upgradeHandler = this._handlers.upgrade;
+        this.config.httpServer.forEach(function(httpServer) {
+          httpServer.on("upgrade", upgradeHandler);
+        });
+      } else {
+        throw new Error("You must specify an httpServer on which to mount the WebSocket server.");
+      }
+    };
+    WebSocketServer.prototype.unmount = function() {
+      var upgradeHandler = this._handlers.upgrade;
+      this.config.httpServer.forEach(function(httpServer) {
+        httpServer.removeListener("upgrade", upgradeHandler);
+      });
+    };
+    WebSocketServer.prototype.closeAllConnections = function() {
+      this.connections.forEach(function(connection) {
+        connection.close();
+      });
+      this.pendingRequests.forEach(function(request) {
+        process.nextTick(function() {
+          request.reject(503);
+        });
+      });
+    };
+    WebSocketServer.prototype.broadcast = function(data) {
+      if (Buffer.isBuffer(data)) {
+        this.broadcastBytes(data);
+      } else if (typeof data.toString === "function") {
+        this.broadcastUTF(data);
+      }
+    };
+    WebSocketServer.prototype.broadcastUTF = function(utfData) {
+      this.connections.forEach(function(connection) {
+        connection.sendUTF(utfData);
+      });
+    };
+    WebSocketServer.prototype.broadcastBytes = function(binaryData) {
+      this.connections.forEach(function(connection) {
+        connection.sendBytes(binaryData);
+      });
+    };
+    WebSocketServer.prototype.shutDown = function() {
+      this.unmount();
+      this.closeAllConnections();
+    };
+    WebSocketServer.prototype.handleUpgrade = function(request, socket) {
+      var self2 = this;
+      var wsRequest = new WebSocketRequest(socket, request, this.config);
+      try {
+        wsRequest.readHandshake();
+      } catch (e) {
+        wsRequest.reject(
+          e.httpCode ? e.httpCode : 400,
+          e.message,
+          e.headers
+        );
+        debug("Invalid handshake: %s", e.message);
+        this.emit("upgradeError", e);
+        return;
+      }
+      this.pendingRequests.push(wsRequest);
+      wsRequest.once("requestAccepted", this._handlers.requestAccepted);
+      wsRequest.once("requestResolved", this._handlers.requestResolved);
+      socket.once("close", function() {
+        self2._handlers.requestResolved(wsRequest);
+      });
+      if (!this.config.autoAcceptConnections && utils.eventEmitterListenerCount(this, "request") > 0) {
+        this.emit("request", wsRequest);
+      } else if (this.config.autoAcceptConnections) {
+        wsRequest.accept(wsRequest.requestedProtocols[0], wsRequest.origin);
+      } else {
+        wsRequest.reject(404, "No handler is configured to accept the connection.");
+      }
+    };
+    WebSocketServer.prototype.handleRequestAccepted = function(connection) {
+      var self2 = this;
+      connection.once("close", function(closeReason, description) {
+        self2.handleConnectionClose(connection, closeReason, description);
+      });
+      this.connections.push(connection);
+      this.emit("connect", connection);
+    };
+    WebSocketServer.prototype.handleConnectionClose = function(connection, closeReason, description) {
+      var index = this.connections.indexOf(connection);
+      if (index !== -1) {
+        this.connections.splice(index, 1);
+      }
+      this.emit("close", connection, closeReason, description);
+    };
+    WebSocketServer.prototype.handleRequestResolved = function(request) {
+      var index = this.pendingRequests.indexOf(request);
+      if (index !== -1) {
+        this.pendingRequests.splice(index, 1);
+      }
+    };
+    module2.exports = WebSocketServer;
+  }
+});
+
+// ../../node_modules/websocket/lib/WebSocketClient.js
+var require_WebSocketClient = __commonJS({
+  "../../node_modules/websocket/lib/WebSocketClient.js"(exports2, module2) {
+    "use strict";
+    var utils = require_utils2();
+    var extend = utils.extend;
+    var util = require("util");
+    var EventEmitter = require("events").EventEmitter;
+    var http = require("http");
+    var https = require("https");
+    var url = require("url");
+    var crypto2 = require("crypto");
+    var WebSocketConnection = require_WebSocketConnection();
+    var bufferAllocUnsafe = utils.bufferAllocUnsafe;
+    var protocolSeparators = [
+      "(",
+      ")",
+      "<",
+      ">",
+      "@",
+      ",",
+      ";",
+      ":",
+      "\\",
+      '"',
+      "/",
+      "[",
+      "]",
+      "?",
+      "=",
+      "{",
+      "}",
+      " ",
+      String.fromCharCode(9)
+    ];
+    var excludedTlsOptions = ["hostname", "port", "method", "path", "headers"];
+    function WebSocketClient(config) {
+      EventEmitter.call(this);
+      this.config = {
+        // 1MiB max frame size.
+        maxReceivedFrameSize: 1048576,
+        // 8MiB max message size, only applicable if
+        // assembleFragments is true
+        maxReceivedMessageSize: 8388608,
+        // Outgoing messages larger than fragmentationThreshold will be
+        // split into multiple fragments.
+        fragmentOutgoingMessages: true,
+        // Outgoing frames are fragmented if they exceed this threshold.
+        // Default is 16KiB
+        fragmentationThreshold: 16384,
+        // Which version of the protocol to use for this session.  This
+        // option will be removed once the protocol is finalized by the IETF
+        // It is only available to ease the transition through the
+        // intermediate draft protocol versions.
+        // At present, it only affects the name of the Origin header.
+        webSocketVersion: 13,
+        // If true, fragmented messages will be automatically assembled
+        // and the full message will be emitted via a 'message' event.
+        // If false, each frame will be emitted via a 'frame' event and
+        // the application will be responsible for aggregating multiple
+        // fragmented frames.  Single-frame messages will emit a 'message'
+        // event in addition to the 'frame' event.
+        // Most users will want to leave this set to 'true'
+        assembleFragments: true,
+        // The Nagle Algorithm makes more efficient use of network resources
+        // by introducing a small delay before sending small packets so that
+        // multiple messages can be batched together before going onto the
+        // wire.  This however comes at the cost of latency, so the default
+        // is to disable it.  If you don't need low latency and are streaming
+        // lots of small messages, you can change this to 'false'
+        disableNagleAlgorithm: true,
+        // The number of milliseconds to wait after sending a close frame
+        // for an acknowledgement to come back before giving up and just
+        // closing the socket.
+        closeTimeout: 5e3,
+        // Options to pass to https.connect if connecting via TLS
+        tlsOptions: {}
+      };
+      if (config) {
+        var tlsOptions;
+        if (config.tlsOptions) {
+          tlsOptions = config.tlsOptions;
+          delete config.tlsOptions;
+        } else {
+          tlsOptions = {};
+        }
+        extend(this.config, config);
+        extend(this.config.tlsOptions, tlsOptions);
+      }
+      this._req = null;
+      switch (this.config.webSocketVersion) {
+        case 8:
+        case 13:
+          break;
+        default:
+          throw new Error("Requested webSocketVersion is not supported. Allowed values are 8 and 13.");
+      }
+    }
+    util.inherits(WebSocketClient, EventEmitter);
+    WebSocketClient.prototype.connect = function(requestUrl, protocols, origin, headers, extraRequestOptions) {
+      var self2 = this;
+      if (typeof protocols === "string") {
+        if (protocols.length > 0) {
+          protocols = [protocols];
+        } else {
+          protocols = [];
+        }
+      }
+      if (!(protocols instanceof Array)) {
+        protocols = [];
+      }
+      this.protocols = protocols;
+      this.origin = origin;
+      if (typeof requestUrl === "string") {
+        this.url = url.parse(requestUrl);
+      } else {
+        this.url = requestUrl;
+      }
+      if (!this.url.protocol) {
+        throw new Error("You must specify a full WebSocket URL, including protocol.");
+      }
+      if (!this.url.host) {
+        throw new Error("You must specify a full WebSocket URL, including hostname. Relative URLs are not supported.");
+      }
+      this.secure = this.url.protocol === "wss:";
+      this.protocols.forEach(function(protocol) {
+        for (var i2 = 0; i2 < protocol.length; i2++) {
+          var charCode = protocol.charCodeAt(i2);
+          var character = protocol.charAt(i2);
+          if (charCode < 33 || charCode > 126 || protocolSeparators.indexOf(character) !== -1) {
+            throw new Error('Protocol list contains invalid character "' + String.fromCharCode(charCode) + '"');
+          }
+        }
+      });
+      var defaultPorts = {
+        "ws:": "80",
+        "wss:": "443"
+      };
+      if (!this.url.port) {
+        this.url.port = defaultPorts[this.url.protocol];
+      }
+      var nonce = bufferAllocUnsafe(16);
+      for (var i = 0; i < 16; i++) {
+        nonce[i] = Math.round(Math.random() * 255);
+      }
+      this.base64nonce = nonce.toString("base64");
+      var hostHeaderValue = this.url.hostname;
+      if (this.url.protocol === "ws:" && this.url.port !== "80" || this.url.protocol === "wss:" && this.url.port !== "443") {
+        hostHeaderValue += ":" + this.url.port;
+      }
+      var reqHeaders = {};
+      if (this.secure && this.config.tlsOptions.hasOwnProperty("headers")) {
+        extend(reqHeaders, this.config.tlsOptions.headers);
+      }
+      if (headers) {
+        extend(reqHeaders, headers);
+      }
+      extend(reqHeaders, {
+        "Upgrade": "websocket",
+        "Connection": "Upgrade",
+        "Sec-WebSocket-Version": this.config.webSocketVersion.toString(10),
+        "Sec-WebSocket-Key": this.base64nonce,
+        "Host": reqHeaders.Host || hostHeaderValue
+      });
+      if (this.protocols.length > 0) {
+        reqHeaders["Sec-WebSocket-Protocol"] = this.protocols.join(", ");
+      }
+      if (this.origin) {
+        if (this.config.webSocketVersion === 13) {
+          reqHeaders["Origin"] = this.origin;
+        } else if (this.config.webSocketVersion === 8) {
+          reqHeaders["Sec-WebSocket-Origin"] = this.origin;
+        }
+      }
+      var pathAndQuery;
+      if (this.url.pathname) {
+        pathAndQuery = this.url.path;
+      } else if (this.url.path) {
+        pathAndQuery = "/" + this.url.path;
+      } else {
+        pathAndQuery = "/";
+      }
+      function handleRequestError(error) {
+        self2._req = null;
+        self2.emit("connectFailed", error);
+      }
+      var requestOptions = {
+        agent: false
+      };
+      if (extraRequestOptions) {
+        extend(requestOptions, extraRequestOptions);
+      }
+      extend(requestOptions, {
+        hostname: this.url.hostname,
+        port: this.url.port,
+        method: "GET",
+        path: pathAndQuery,
+        headers: reqHeaders
+      });
+      if (this.secure) {
+        var tlsOptions = this.config.tlsOptions;
+        for (var key in tlsOptions) {
+          if (tlsOptions.hasOwnProperty(key) && excludedTlsOptions.indexOf(key) === -1) {
+            requestOptions[key] = tlsOptions[key];
+          }
+        }
+      }
+      var req = this._req = (this.secure ? https : http).request(requestOptions);
+      req.on("upgrade", function handleRequestUpgrade(response, socket, head) {
+        self2._req = null;
+        req.removeListener("error", handleRequestError);
+        self2.socket = socket;
+        self2.response = response;
+        self2.firstDataChunk = head;
+        self2.validateHandshake();
+      });
+      req.on("error", handleRequestError);
+      req.on("response", function(response) {
+        self2._req = null;
+        if (utils.eventEmitterListenerCount(self2, "httpResponse") > 0) {
+          self2.emit("httpResponse", response, self2);
+          if (response.socket) {
+            response.socket.end();
+          }
+        } else {
+          var headerDumpParts = [];
+          for (var headerName in response.headers) {
+            headerDumpParts.push(headerName + ": " + response.headers[headerName]);
+          }
+          self2.failHandshake(
+            "Server responded with a non-101 status: " + response.statusCode + " " + response.statusMessage + "\nResponse Headers Follow:\n" + headerDumpParts.join("\n") + "\n"
+          );
+        }
+      });
+      req.end();
+    };
+    WebSocketClient.prototype.validateHandshake = function() {
+      var headers = this.response.headers;
+      if (this.protocols.length > 0) {
+        this.protocol = headers["sec-websocket-protocol"];
+        if (this.protocol) {
+          if (this.protocols.indexOf(this.protocol) === -1) {
+            this.failHandshake("Server did not respond with a requested protocol.");
+            return;
+          }
+        } else {
+          this.failHandshake("Expected a Sec-WebSocket-Protocol header.");
+          return;
+        }
+      }
+      if (!(headers["connection"] && headers["connection"].toLocaleLowerCase() === "upgrade")) {
+        this.failHandshake("Expected a Connection: Upgrade header from the server");
+        return;
+      }
+      if (!(headers["upgrade"] && headers["upgrade"].toLocaleLowerCase() === "websocket")) {
+        this.failHandshake("Expected an Upgrade: websocket header from the server");
+        return;
+      }
+      var sha1 = crypto2.createHash("sha1");
+      sha1.update(this.base64nonce + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11");
+      var expectedKey = sha1.digest("base64");
+      if (!headers["sec-websocket-accept"]) {
+        this.failHandshake("Expected Sec-WebSocket-Accept header from server");
+        return;
+      }
+      if (headers["sec-websocket-accept"] !== expectedKey) {
+        this.failHandshake("Sec-WebSocket-Accept header from server didn't match expected value of " + expectedKey);
+        return;
+      }
+      this.succeedHandshake();
+    };
+    WebSocketClient.prototype.failHandshake = function(errorDescription) {
+      if (this.socket && this.socket.writable) {
+        this.socket.end();
+      }
+      this.emit("connectFailed", new Error(errorDescription));
+    };
+    WebSocketClient.prototype.succeedHandshake = function() {
+      var connection = new WebSocketConnection(this.socket, [], this.protocol, true, this.config);
+      connection.webSocketVersion = this.config.webSocketVersion;
+      connection._addSocketEventListeners();
+      this.emit("connect", connection);
+      if (this.firstDataChunk.length > 0) {
+        connection.handleSocketData(this.firstDataChunk);
+      }
+      this.firstDataChunk = null;
+    };
+    WebSocketClient.prototype.abort = function() {
+      if (this._req) {
+        this._req.abort();
+      }
+    };
+    module2.exports = WebSocketClient;
+  }
+});
+
+// ../../node_modules/websocket/lib/WebSocketRouterRequest.js
+var require_WebSocketRouterRequest = __commonJS({
+  "../../node_modules/websocket/lib/WebSocketRouterRequest.js"(exports2, module2) {
+    "use strict";
+    var util = require("util");
+    var EventEmitter = require("events").EventEmitter;
+    function WebSocketRouterRequest(webSocketRequest, resolvedProtocol) {
+      EventEmitter.call(this);
+      this.webSocketRequest = webSocketRequest;
+      if (resolvedProtocol === "____no_protocol____") {
+        this.protocol = null;
+      } else {
+        this.protocol = resolvedProtocol;
+      }
+      this.origin = webSocketRequest.origin;
+      this.resource = webSocketRequest.resource;
+      this.resourceURL = webSocketRequest.resourceURL;
+      this.httpRequest = webSocketRequest.httpRequest;
+      this.remoteAddress = webSocketRequest.remoteAddress;
+      this.webSocketVersion = webSocketRequest.webSocketVersion;
+      this.requestedExtensions = webSocketRequest.requestedExtensions;
+      this.cookies = webSocketRequest.cookies;
+    }
+    util.inherits(WebSocketRouterRequest, EventEmitter);
+    WebSocketRouterRequest.prototype.accept = function(origin, cookies) {
+      var connection = this.webSocketRequest.accept(this.protocol, origin, cookies);
+      this.emit("requestAccepted", connection);
+      return connection;
+    };
+    WebSocketRouterRequest.prototype.reject = function(status, reason, extraHeaders) {
+      this.webSocketRequest.reject(status, reason, extraHeaders);
+      this.emit("requestRejected", this);
+    };
+    module2.exports = WebSocketRouterRequest;
+  }
+});
+
+// ../../node_modules/websocket/lib/WebSocketRouter.js
+var require_WebSocketRouter = __commonJS({
+  "../../node_modules/websocket/lib/WebSocketRouter.js"(exports2, module2) {
+    "use strict";
+    var extend = require_utils2().extend;
+    var util = require("util");
+    var EventEmitter = require("events").EventEmitter;
+    var WebSocketRouterRequest = require_WebSocketRouterRequest();
+    function WebSocketRouter(config) {
+      EventEmitter.call(this);
+      this.config = {
+        // The WebSocketServer instance to attach to.
+        server: null
+      };
+      if (config) {
+        extend(this.config, config);
+      }
+      this.handlers = [];
+      this._requestHandler = this.handleRequest.bind(this);
+      if (this.config.server) {
+        this.attachServer(this.config.server);
+      }
+    }
+    util.inherits(WebSocketRouter, EventEmitter);
+    WebSocketRouter.prototype.attachServer = function(server) {
+      if (server) {
+        this.server = server;
+        this.server.on("request", this._requestHandler);
+      } else {
+        throw new Error("You must specify a WebSocketServer instance to attach to.");
+      }
+    };
+    WebSocketRouter.prototype.detachServer = function() {
+      if (this.server) {
+        this.server.removeListener("request", this._requestHandler);
+        this.server = null;
+      } else {
+        throw new Error("Cannot detach from server: not attached.");
+      }
+    };
+    WebSocketRouter.prototype.mount = function(path2, protocol, callback) {
+      if (!path2) {
+        throw new Error("You must specify a path for this handler.");
+      }
+      if (!protocol) {
+        protocol = "____no_protocol____";
+      }
+      if (!callback) {
+        throw new Error("You must specify a callback for this handler.");
+      }
+      path2 = this.pathToRegExp(path2);
+      if (!(path2 instanceof RegExp)) {
+        throw new Error("Path must be specified as either a string or a RegExp.");
+      }
+      var pathString = path2.toString();
+      protocol = protocol.toLocaleLowerCase();
+      if (this.findHandlerIndex(pathString, protocol) !== -1) {
+        throw new Error("You may only mount one handler per path/protocol combination.");
+      }
+      this.handlers.push({
+        "path": path2,
+        "pathString": pathString,
+        "protocol": protocol,
+        "callback": callback
+      });
+    };
+    WebSocketRouter.prototype.unmount = function(path2, protocol) {
+      var index = this.findHandlerIndex(this.pathToRegExp(path2).toString(), protocol);
+      if (index !== -1) {
+        this.handlers.splice(index, 1);
+      } else {
+        throw new Error("Unable to find a route matching the specified path and protocol.");
+      }
+    };
+    WebSocketRouter.prototype.findHandlerIndex = function(pathString, protocol) {
+      protocol = protocol.toLocaleLowerCase();
+      for (var i = 0, len = this.handlers.length; i < len; i++) {
+        var handler = this.handlers[i];
+        if (handler.pathString === pathString && handler.protocol === protocol) {
+          return i;
+        }
+      }
+      return -1;
+    };
+    WebSocketRouter.prototype.pathToRegExp = function(path2) {
+      if (typeof path2 === "string") {
+        if (path2 === "*") {
+          path2 = /^.*$/;
+        } else {
+          path2 = path2.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+          path2 = new RegExp("^" + path2 + "$");
+        }
+      }
+      return path2;
+    };
+    WebSocketRouter.prototype.handleRequest = function(request) {
+      var requestedProtocols = request.requestedProtocols;
+      if (requestedProtocols.length === 0) {
+        requestedProtocols = ["____no_protocol____"];
+      }
+      for (var i = 0; i < requestedProtocols.length; i++) {
+        var requestedProtocol = requestedProtocols[i].toLocaleLowerCase();
+        for (var j = 0, len = this.handlers.length; j < len; j++) {
+          var handler = this.handlers[j];
+          if (handler.path.test(request.resourceURL.pathname)) {
+            if (requestedProtocol === handler.protocol || handler.protocol === "*") {
+              var routerRequest = new WebSocketRouterRequest(request, requestedProtocol);
+              handler.callback(routerRequest);
+              return;
+            }
+          }
+        }
+      }
+      request.reject(404, "No handler is available for the given request.");
+    };
+    module2.exports = WebSocketRouter;
+  }
+});
+
+// ../../node_modules/is-typedarray/index.js
+var require_is_typedarray = __commonJS({
+  "../../node_modules/is-typedarray/index.js"(exports2, module2) {
+    "use strict";
+    module2.exports = isTypedArray;
+    isTypedArray.strict = isStrictTypedArray;
+    isTypedArray.loose = isLooseTypedArray;
+    var toString = Object.prototype.toString;
+    var names = {
+      "[object Int8Array]": true,
+      "[object Int16Array]": true,
+      "[object Int32Array]": true,
+      "[object Uint8Array]": true,
+      "[object Uint8ClampedArray]": true,
+      "[object Uint16Array]": true,
+      "[object Uint32Array]": true,
+      "[object Float32Array]": true,
+      "[object Float64Array]": true
+    };
+    function isTypedArray(arr) {
+      return isStrictTypedArray(arr) || isLooseTypedArray(arr);
+    }
+    function isStrictTypedArray(arr) {
+      return arr instanceof Int8Array || arr instanceof Int16Array || arr instanceof Int32Array || arr instanceof Uint8Array || arr instanceof Uint8ClampedArray || arr instanceof Uint16Array || arr instanceof Uint32Array || arr instanceof Float32Array || arr instanceof Float64Array;
+    }
+    function isLooseTypedArray(arr) {
+      return names[toString.call(arr)];
+    }
+  }
+});
+
+// ../../node_modules/typedarray-to-buffer/index.js
+var require_typedarray_to_buffer = __commonJS({
+  "../../node_modules/typedarray-to-buffer/index.js"(exports2, module2) {
+    "use strict";
+    var isTypedArray = require_is_typedarray().strict;
+    module2.exports = function typedarrayToBuffer(arr) {
+      if (isTypedArray(arr)) {
+        var buf = Buffer.from(arr.buffer);
+        if (arr.byteLength !== arr.buffer.byteLength) {
+          buf = buf.slice(arr.byteOffset, arr.byteOffset + arr.byteLength);
+        }
+        return buf;
+      } else {
+        return Buffer.from(arr);
+      }
+    };
+  }
+});
+
+// ../../node_modules/yaeti/lib/EventTarget.js
+var require_EventTarget = __commonJS({
+  "../../node_modules/yaeti/lib/EventTarget.js"(exports2, module2) {
+    "use strict";
+    module2.exports = _EventTarget;
+    function _EventTarget() {
+      if (typeof this.addEventListener === "function") {
+        return;
+      }
+      this._listeners = {};
+      this.addEventListener = _addEventListener;
+      this.removeEventListener = _removeEventListener;
+      this.dispatchEvent = _dispatchEvent;
+    }
+    Object.defineProperties(_EventTarget.prototype, {
+      listeners: {
+        get: function() {
+          return this._listeners;
+        }
+      }
+    });
+    function _addEventListener(type, newListener) {
+      var listenersType, i, listener;
+      if (!type || !newListener) {
+        return;
+      }
+      listenersType = this._listeners[type];
+      if (listenersType === void 0) {
+        this._listeners[type] = listenersType = [];
+      }
+      for (i = 0; !!(listener = listenersType[i]); i++) {
+        if (listener === newListener) {
+          return;
+        }
+      }
+      listenersType.push(newListener);
+    }
+    function _removeEventListener(type, oldListener) {
+      var listenersType, i, listener;
+      if (!type || !oldListener) {
+        return;
+      }
+      listenersType = this._listeners[type];
+      if (listenersType === void 0) {
+        return;
+      }
+      for (i = 0; !!(listener = listenersType[i]); i++) {
+        if (listener === oldListener) {
+          listenersType.splice(i, 1);
+          break;
+        }
+      }
+      if (listenersType.length === 0) {
+        delete this._listeners[type];
+      }
+    }
+    function _dispatchEvent(event) {
+      var type, listenersType, dummyListener, stopImmediatePropagation = false, i, listener;
+      if (!event || typeof event.type !== "string") {
+        throw new Error("`event` must have a valid `type` property");
+      }
+      if (event._yaeti) {
+        event.target = this;
+        event.cancelable = true;
+      }
+      try {
+        event.stopImmediatePropagation = function() {
+          stopImmediatePropagation = true;
+        };
+      } catch (error) {
+      }
+      type = event.type;
+      listenersType = this._listeners[type] || [];
+      dummyListener = this["on" + type];
+      if (typeof dummyListener === "function") {
+        dummyListener.call(this, event);
+      }
+      for (i = 0; !!(listener = listenersType[i]); i++) {
+        if (stopImmediatePropagation) {
+          break;
+        }
+        listener.call(this, event);
+      }
+      return !event.defaultPrevented;
+    }
+  }
+});
+
+// ../../node_modules/yaeti/lib/Event.js
+var require_Event = __commonJS({
+  "../../node_modules/yaeti/lib/Event.js"(exports2, module2) {
+    "use strict";
+    module2.exports = _Event;
+    function _Event(type) {
+      this.type = type;
+      this.isTrusted = false;
+      this._yaeti = true;
+    }
+  }
+});
+
+// ../../node_modules/yaeti/index.js
+var require_yaeti = __commonJS({
+  "../../node_modules/yaeti/index.js"(exports2, module2) {
+    "use strict";
+    module2.exports = {
+      EventTarget: require_EventTarget(),
+      Event: require_Event()
+    };
+  }
+});
+
+// ../../node_modules/websocket/lib/W3CWebSocket.js
+var require_W3CWebSocket = __commonJS({
+  "../../node_modules/websocket/lib/W3CWebSocket.js"(exports2, module2) {
+    "use strict";
+    var WebSocketClient = require_WebSocketClient();
+    var toBuffer = require_typedarray_to_buffer();
+    var yaeti = require_yaeti();
+    var CONNECTING = 0;
+    var OPEN = 1;
+    var CLOSING = 2;
+    var CLOSED = 3;
+    module2.exports = W3CWebSocket;
+    function W3CWebSocket(url, protocols, origin, headers, requestOptions, clientConfig) {
+      yaeti.EventTarget.call(this);
+      clientConfig = clientConfig || {};
+      clientConfig.assembleFragments = true;
+      var self2 = this;
+      this._url = url;
+      this._readyState = CONNECTING;
+      this._protocol = void 0;
+      this._extensions = "";
+      this._bufferedAmount = 0;
+      this._binaryType = "arraybuffer";
+      this._connection = void 0;
+      this._client = new WebSocketClient(clientConfig);
+      this._client.on("connect", function(connection) {
+        onConnect.call(self2, connection);
+      });
+      this._client.on("connectFailed", function() {
+        onConnectFailed.call(self2);
+      });
+      this._client.connect(url, protocols, origin, headers, requestOptions);
+    }
+    Object.defineProperties(W3CWebSocket.prototype, {
+      url: { get: function() {
+        return this._url;
+      } },
+      readyState: { get: function() {
+        return this._readyState;
+      } },
+      protocol: { get: function() {
+        return this._protocol;
+      } },
+      extensions: { get: function() {
+        return this._extensions;
+      } },
+      bufferedAmount: { get: function() {
+        return this._bufferedAmount;
+      } }
+    });
+    Object.defineProperties(W3CWebSocket.prototype, {
+      binaryType: {
+        get: function() {
+          return this._binaryType;
+        },
+        set: function(type) {
+          if (type !== "arraybuffer") {
+            throw new SyntaxError('just "arraybuffer" type allowed for "binaryType" attribute');
+          }
+          this._binaryType = type;
+        }
+      }
+    });
+    [["CONNECTING", CONNECTING], ["OPEN", OPEN], ["CLOSING", CLOSING], ["CLOSED", CLOSED]].forEach(function(property) {
+      Object.defineProperty(W3CWebSocket.prototype, property[0], {
+        get: function() {
+          return property[1];
+        }
+      });
+    });
+    [["CONNECTING", CONNECTING], ["OPEN", OPEN], ["CLOSING", CLOSING], ["CLOSED", CLOSED]].forEach(function(property) {
+      Object.defineProperty(W3CWebSocket, property[0], {
+        get: function() {
+          return property[1];
+        }
+      });
+    });
+    W3CWebSocket.prototype.send = function(data) {
+      if (this._readyState !== OPEN) {
+        throw new Error("cannot call send() while not connected");
+      }
+      if (typeof data === "string" || data instanceof String) {
+        this._connection.sendUTF(data);
+      } else {
+        if (data instanceof Buffer) {
+          this._connection.sendBytes(data);
+        } else if (data.byteLength || data.byteLength === 0) {
+          data = toBuffer(data);
+          this._connection.sendBytes(data);
+        } else {
+          throw new Error("unknown binary data:", data);
+        }
+      }
+    };
+    W3CWebSocket.prototype.close = function(code, reason) {
+      switch (this._readyState) {
+        case CONNECTING:
+          onConnectFailed.call(this);
+          this._client.on("connect", function(connection) {
+            if (code) {
+              connection.close(code, reason);
+            } else {
+              connection.close();
+            }
+          });
+          break;
+        case OPEN:
+          this._readyState = CLOSING;
+          if (code) {
+            this._connection.close(code, reason);
+          } else {
+            this._connection.close();
+          }
+          break;
+        case CLOSING:
+        case CLOSED:
+          break;
+      }
+    };
+    function createCloseEvent(code, reason) {
+      var event = new yaeti.Event("close");
+      event.code = code;
+      event.reason = reason;
+      event.wasClean = typeof code === "undefined" || code === 1e3;
+      return event;
+    }
+    function createMessageEvent(data) {
+      var event = new yaeti.Event("message");
+      event.data = data;
+      return event;
+    }
+    function onConnect(connection) {
+      var self2 = this;
+      this._readyState = OPEN;
+      this._connection = connection;
+      this._protocol = connection.protocol;
+      this._extensions = connection.extensions;
+      this._connection.on("close", function(code, reason) {
+        onClose.call(self2, code, reason);
+      });
+      this._connection.on("message", function(msg) {
+        onMessage.call(self2, msg);
+      });
+      this.dispatchEvent(new yaeti.Event("open"));
+    }
+    function onConnectFailed() {
+      destroy.call(this);
+      this._readyState = CLOSED;
+      try {
+        this.dispatchEvent(new yaeti.Event("error"));
+      } finally {
+        this.dispatchEvent(createCloseEvent(1006, "connection failed"));
+      }
+    }
+    function onClose(code, reason) {
+      destroy.call(this);
+      this._readyState = CLOSED;
+      this.dispatchEvent(createCloseEvent(code, reason || ""));
+    }
+    function onMessage(message) {
+      if (message.utf8Data) {
+        this.dispatchEvent(createMessageEvent(message.utf8Data));
+      } else if (message.binaryData) {
+        if (this.binaryType === "arraybuffer") {
+          var buffer = message.binaryData;
+          var arraybuffer = new ArrayBuffer(buffer.length);
+          var view = new Uint8Array(arraybuffer);
+          for (var i = 0, len = buffer.length; i < len; ++i) {
+            view[i] = buffer[i];
+          }
+          this.dispatchEvent(createMessageEvent(arraybuffer));
+        }
+      }
+    }
+    function destroy() {
+      this._client.removeAllListeners();
+      if (this._connection) {
+        this._connection.removeAllListeners();
+      }
+    }
+  }
+});
+
+// ../../node_modules/websocket/lib/Deprecation.js
+var require_Deprecation = __commonJS({
+  "../../node_modules/websocket/lib/Deprecation.js"(exports2, module2) {
+    "use strict";
+    var Deprecation = {
+      disableWarnings: false,
+      deprecationWarningMap: {},
+      warn: function(deprecationName) {
+        if (!this.disableWarnings && this.deprecationWarningMap[deprecationName]) {
+          console.warn("DEPRECATION WARNING: " + this.deprecationWarningMap[deprecationName]);
+          this.deprecationWarningMap[deprecationName] = false;
+        }
+      }
+    };
+    module2.exports = Deprecation;
+  }
+});
+
+// ../../node_modules/websocket/package.json
+var require_package3 = __commonJS({
+  "../../node_modules/websocket/package.json"(exports2, module2) {
+    module2.exports = {
+      name: "websocket",
+      description: "Websocket Client & Server Library implementing the WebSocket protocol as specified in RFC 6455.",
+      keywords: [
+        "websocket",
+        "websockets",
+        "socket",
+        "networking",
+        "comet",
+        "push",
+        "RFC-6455",
+        "realtime",
+        "server",
+        "client"
+      ],
+      author: "Brian McKelvey <theturtle32@gmail.com> (https://github.com/theturtle32)",
+      contributors: [
+        "I\xF1aki Baz Castillo <ibc@aliax.net> (http://dev.sipdoc.net)"
+      ],
+      version: "1.0.35",
+      repository: {
+        type: "git",
+        url: "https://github.com/theturtle32/WebSocket-Node.git"
+      },
+      homepage: "https://github.com/theturtle32/WebSocket-Node",
+      engines: {
+        node: ">=4.0.0"
+      },
+      dependencies: {
+        bufferutil: "^4.0.1",
+        debug: "^2.2.0",
+        "es5-ext": "^0.10.63",
+        "typedarray-to-buffer": "^3.1.5",
+        "utf-8-validate": "^5.0.2",
+        yaeti: "^0.0.6"
+      },
+      devDependencies: {
+        "buffer-equal": "^1.0.0",
+        gulp: "^4.0.2",
+        "gulp-jshint": "^2.0.4",
+        "jshint-stylish": "^2.2.1",
+        jshint: "^2.0.0",
+        tape: "^4.9.1"
+      },
+      config: {
+        verbose: false
+      },
+      scripts: {
+        test: "tape test/unit/*.js",
+        gulp: "gulp"
+      },
+      main: "index",
+      directories: {
+        lib: "./lib"
+      },
+      browser: "lib/browser.js",
+      license: "Apache-2.0"
+    };
+  }
+});
+
+// ../../node_modules/websocket/lib/version.js
+var require_version2 = __commonJS({
+  "../../node_modules/websocket/lib/version.js"(exports2, module2) {
+    "use strict";
+    module2.exports = require_package3().version;
+  }
+});
+
+// ../../node_modules/websocket/lib/websocket.js
+var require_websocket = __commonJS({
+  "../../node_modules/websocket/lib/websocket.js"(exports2, module2) {
+    "use strict";
+    module2.exports = {
+      "server": require_WebSocketServer(),
+      "client": require_WebSocketClient(),
+      "router": require_WebSocketRouter(),
+      "frame": require_WebSocketFrame(),
+      "request": require_WebSocketRequest(),
+      "connection": require_WebSocketConnection(),
+      "w3cwebsocket": require_W3CWebSocket(),
+      "deprecation": require_Deprecation(),
+      "version": require_version2()
+    };
+  }
+});
+
+// ../../node_modules/websocket/index.js
+var require_websocket2 = __commonJS({
+  "../../node_modules/websocket/index.js"(exports2, module2) {
+    "use strict";
+    module2.exports = require_websocket();
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/sshHelpers.js
+var require_sshHelpers = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/sshHelpers.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RelayConnectionError = exports2.RelayErrorType = exports2.isNode = exports2.SshHelpers = exports2.BrowserWebSocketRelayError = void 0;
+    var ssh = require_dev_tunnels_ssh();
+    var websocket_1 = require_websocket2();
+    var BrowserWebSocketRelayError = class extends Error {
+      constructor(message) {
+        super(message);
+      }
+    };
+    exports2.BrowserWebSocketRelayError = BrowserWebSocketRelayError;
+    var SshHelpers = class _SshHelpers {
+      /**
+       * Open a connection to the relay uri depending on the running environment.
+       * @param relayUri
+       * @param protocols
+       * @param headers
+       * @param clientConfig
+       * @returns
+       */
+      static openConnection(relayUri, protocols, headers, clientConfig) {
+        if ((0, exports2.isNode)()) {
+          return _SshHelpers.nodeSshStreamFactory(relayUri, protocols, headers, clientConfig);
+        }
+        return _SshHelpers.webSshStreamFactory(new WebSocket(relayUri, protocols));
+      }
+      /**
+       * Creates a client SSH session with standard configuration for tunnels.
+       * @param configure Optional callback for additional session configuration.
+       * @returns The created SSH session.
+       */
+      static createSshClientSession(configure) {
+        return _SshHelpers.createSshSession((config) => {
+          if (configure)
+            configure(config);
+          return new ssh.SshClientSession(config);
+        });
+      }
+      /**
+       * Creates a SSH server session with standard configuration for tunnels.
+       * @param reconnectableSessions Optional list that tracks reconnectable sessions.
+       * @param configure Optional callback for additional session configuration.
+       * @returns The created SSH session.
+       */
+      static createSshServerSession(reconnectableSessions, configure) {
+        return _SshHelpers.createSshSession((config) => {
+          if (configure)
+            configure(config);
+          return new ssh.SshServerSession(config, reconnectableSessions);
+        });
+      }
+      /**
+       * Create a websocketStream from a connection.
+       * @param connection
+       * @returns
+       */
+      static createWebSocketStreamAdapter(connection) {
+        return new ssh.WebSocketStream(new WebsocketStreamAdapter(connection));
+      }
+      /**
+       * Set up a web Ssh stream factory.
+       * @param socket
+       * @returns
+       */
+      static webSshStreamFactory(socket) {
+        socket.binaryType = "arraybuffer";
+        return new Promise((resolve2, reject) => {
+          const relayError = "Failed to connect to relay url";
+          socket.onopen = () => {
+            resolve2(new ssh.WebSocketStream(socket));
+          };
+          socket.onerror = (e) => {
+            setTimeout(() => reject(new BrowserWebSocketRelayError(relayError)), 100);
+          };
+          socket.onclose = (e) => {
+            if (e.code !== 1e3) {
+              reject(new BrowserWebSocketRelayError(`${relayError} Code: ${e.code} Reason: ${e.reason}`));
+            }
+          };
+        });
+      }
+      static createSshSession(factoryCallback) {
+        const config = new ssh.SshSessionConfiguration();
+        config.keyExchangeAlgorithms.splice(0);
+        config.keyExchangeAlgorithms.push(ssh.SshAlgorithms.keyExchange.ecdhNistp384Sha384);
+        config.keyExchangeAlgorithms.push(ssh.SshAlgorithms.keyExchange.ecdhNistp256Sha256);
+        config.keyExchangeAlgorithms.push(ssh.SshAlgorithms.keyExchange.dhGroup14Sha256);
+        return factoryCallback(config);
+      }
+      static nodeSshStreamFactory(relayUri, protocols, headers, clientConfig) {
+        const client = new websocket_1.client(clientConfig);
+        return new Promise((resolve2, reject) => {
+          client.on("connect", (connection) => {
+            resolve2(new ssh.WebSocketStream(new WebsocketStreamAdapter(connection)));
+          });
+          client.on("httpResponse", ({ statusCode, statusMessage }) => {
+            var _a;
+            const errorContext = (_a = webSocketClientContexts.find((c) => c.statusCode === statusCode)) !== null && _a !== void 0 ? _a : {
+              statusCode,
+              errorType: RelayErrorType.ServerError,
+              error: `relayConnectionError Server responded with a non-101 status: ${statusCode} ${statusMessage}`
+            };
+            reject(new RelayConnectionError(`error.${errorContext.error}`, errorContext));
+          });
+          client.on("connectFailed", ({ message }) => {
+            var _a;
+            if (message && message.startsWith("Error: ")) {
+              message = message.substr(7);
+            }
+            const errorContext = (_a = webSocketClientContexts.find((c) => c.regex && c.regex.test(message))) !== null && _a !== void 0 ? _a : {
+              // Other errors are most likely connectivity issues.
+              // The original error message may have additional helpful details.
+              errorType: RelayErrorType.ServerError,
+              error: `relayConnectionError ${message}`
+            };
+            reject(new RelayConnectionError(`error.${errorContext.error}`, errorContext));
+          });
+          client.connect(relayUri, protocols, void 0, headers);
+        });
+      }
+    };
+    exports2.SshHelpers = SshHelpers;
+    var WebsocketStreamAdapter = class {
+      constructor(connection) {
+        this.connection = connection;
+      }
+      get protocol() {
+        return this.connection.protocol;
+      }
+      set onmessage(messageHandler) {
+        if (messageHandler) {
+          this.connection.on("message", (message) => {
+            messageHandler({ data: message.binaryData });
+          });
+        } else {
+        }
+      }
+      set onclose(closeHandler) {
+        if (closeHandler) {
+          this.connection.on("close", (code, reason) => {
+            closeHandler({ code, reason, wasClean: !(code || reason) });
+          });
+        } else {
+        }
+      }
+      send(data) {
+        if (Buffer.isBuffer(data)) {
+          this.connection.sendBytes(data);
+        } else {
+          this.connection.sendBytes(Buffer.from(data));
+        }
+      }
+      close(code, reason) {
+        if (code || reason) {
+          this.connection.drop(code, reason);
+        } else {
+          this.connection.close();
+        }
+      }
+    };
+    var isNode = () => typeof process !== "undefined" && typeof process.release !== "undefined" && process.release.name === "node";
+    exports2.isNode = isNode;
+    var RelayErrorType;
+    (function(RelayErrorType2) {
+      RelayErrorType2[RelayErrorType2["ConnectionError"] = 1] = "ConnectionError";
+      RelayErrorType2[RelayErrorType2["Unauthorized"] = 2] = "Unauthorized";
+      RelayErrorType2[RelayErrorType2["EndpointNotFound"] = 3] = "EndpointNotFound";
+      RelayErrorType2[RelayErrorType2["ListenerOffline"] = 4] = "ListenerOffline";
+      RelayErrorType2[RelayErrorType2["ServerError"] = 5] = "ServerError";
+      RelayErrorType2[RelayErrorType2["TunnelPortNotFound"] = 6] = "TunnelPortNotFound";
+      RelayErrorType2[RelayErrorType2["TooManyRequests"] = 7] = "TooManyRequests";
+      RelayErrorType2[RelayErrorType2["ServiceUnavailable"] = 8] = "ServiceUnavailable";
+      RelayErrorType2[RelayErrorType2["BadGateway"] = 9] = "BadGateway";
+    })(RelayErrorType = exports2.RelayErrorType || (exports2.RelayErrorType = {}));
+    var RelayConnectionError = class extends Error {
+      constructor(message, errorContext) {
+        super(message);
+        this.errorContext = errorContext;
+      }
+    };
+    exports2.RelayConnectionError = RelayConnectionError;
+    var webSocketClientContexts = [
+      {
+        regex: /status: 401/,
+        statusCode: 401,
+        error: "relayClientUnauthorized",
+        errorType: RelayErrorType.Unauthorized
+      },
+      {
+        regex: /status: 403/,
+        statusCode: 403,
+        error: "relayClientForbidden",
+        errorType: RelayErrorType.Unauthorized
+      },
+      {
+        regex: /status: 404/,
+        statusCode: 404,
+        error: "tunnelPortNotFound",
+        errorType: RelayErrorType.TunnelPortNotFound
+      },
+      {
+        regex: /status: 429/,
+        statusCode: 429,
+        error: "tooManyRequests",
+        errorType: RelayErrorType.TooManyRequests
+      },
+      {
+        regex: /status: 500/,
+        statusCode: 500,
+        error: "relayServerError",
+        errorType: RelayErrorType.ServerError
+      },
+      {
+        regex: /status: 502/,
+        statusCode: 502,
+        error: "badGateway",
+        errorType: RelayErrorType.BadGateway
+      },
+      {
+        regex: /status: 503/,
+        statusCode: 503,
+        error: "serviceUnavailable",
+        errorType: RelayErrorType.ServiceUnavailable
+      }
+    ];
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayStreamFactory.js
+var require_tunnelRelayStreamFactory = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/tunnelRelayStreamFactory.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/defaultTunnelRelayStreamFactory.js
+var require_defaultTunnelRelayStreamFactory = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/defaultTunnelRelayStreamFactory.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.DefaultTunnelRelayStreamFactory = void 0;
+    var sshHelpers_1 = require_sshHelpers();
+    var DefaultTunnelRelayStreamFactory = class {
+      async createRelayStream(relayUri, protocols, accessToken, clientConfig) {
+        if ((0, sshHelpers_1.isNode)()) {
+          const stream = await sshHelpers_1.SshHelpers.openConnection(relayUri, protocols, Object.assign({}, accessToken && { Authorization: `tunnel ${accessToken}` }), clientConfig);
+          return { stream, protocol: stream.protocol };
+        } else {
+          if (accessToken) {
+            protocols = [...protocols, accessToken];
+          }
+          const stream = await sshHelpers_1.SshHelpers.openConnection(relayUri, protocols);
+          return { stream, protocol: stream.protocol };
+        }
+      }
+    };
+    exports2.DefaultTunnelRelayStreamFactory = DefaultTunnelRelayStreamFactory;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshClient.js
+var require_sshClient = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshClient.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshClient = void 0;
+    var net2 = require("net");
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var SshClient = class _SshClient {
+      constructor(config) {
+        this.config = config;
+        this.sessions = [];
+        this.trace = (level, eventId, msg, err) => {
+        };
+        if (!config)
+          throw new TypeError("SshSessionConfiguration is required.");
+      }
+      async openSession(serverHost, serverPort, cancellation) {
+        if (!serverHost)
+          throw new TypeError("Server host is reqiured.");
+        const stream = await this.openConnection(serverHost, serverPort, cancellation);
+        const session = new dev_tunnels_ssh_1.SshClientSession(this.config);
+        session.trace = this.trace;
+        await session.connect(stream, cancellation);
+        this.sessions.push(session);
+        return session;
+      }
+      async openConnection(serverHost, serverPort, cancellation) {
+        const socket = new net2.Socket();
+        await new Promise((resolve2, reject) => {
+          socket.on("connect", resolve2);
+          socket.on("error", reject);
+          if (cancellation) {
+            if (cancellation.isCancellationRequested) {
+              reject(new dev_tunnels_ssh_1.CancellationError());
+              return;
+            }
+            cancellation.onCancellationRequested(reject);
+          }
+          socket.connect(serverPort || _SshClient.defaultServerPort, serverHost);
+        });
+        return new dev_tunnels_ssh_1.NodeStream(socket);
+      }
+      async reconnectSession(session, serverHost, serverPort, cancellation) {
+        const stream = await this.openConnection(serverHost, serverPort, cancellation);
+        await session.reconnect(stream, cancellation);
+      }
+      dispose() {
+        while (this.sessions.length > 0) {
+          const session = this.sessions.shift();
+          session.dispose();
+        }
+      }
+    };
+    exports2.SshClient = SshClient;
+    SshClient.defaultServerPort = 22;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/tcpListenerFactory.js
+var require_tcpListenerFactory = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/tcpListenerFactory.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.DefaultTcpListenerFactory = void 0;
+    var net2 = require("net");
+    var DefaultTcpListenerFactory = class {
+      async createTcpListener(remotePort, localIPAddress, localPort, canChangeLocalPort, cancellation) {
+        if (!localIPAddress)
+          throw new TypeError("Local IP address is required.");
+        if (!Number.isInteger(localPort) || localPort < 0)
+          throw new TypeError("Local port must be a non-negative integer.");
+        const listener = net2.createServer();
+        await new Promise((resolve2, reject) => {
+          listener.listen({
+            host: localIPAddress,
+            port: localPort,
+            ipv6Only: net2.isIPv6(localIPAddress),
+            exclusive: false
+          });
+          listener.on("listening", resolve2);
+          listener.on("error", reject);
+        });
+        return listener;
+      }
+    };
+    exports2.DefaultTcpListenerFactory = DefaultTcpListenerFactory;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshServer.js
+var require_sshServer = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/sshServer.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SshServer = void 0;
+    var vscode_jsonrpc_1 = require_main();
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var tcpListenerFactory_1 = require_tcpListenerFactory();
+    var SshServer = class {
+      constructor(config) {
+        this.config = config;
+        this.sessions = [];
+        this.trace = (level, eventId, msg, err) => {
+        };
+        this.errorEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onError = this.errorEmitter.event;
+        this.sessionOpenedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onSessionOpened = this.sessionOpenedEmitter.event;
+        this.credentials = { publicKeys: [] };
+        this.tcpListenerFactory = new tcpListenerFactory_1.DefaultTcpListenerFactory();
+        if (!config)
+          throw new TypeError("SshSessionConfiguration is required.");
+        if (config.protocolExtensions.includes(dev_tunnels_ssh_1.SshProtocolExtensionNames.sessionReconnect)) {
+          this.reconnectableSessions = [];
+        }
+      }
+      async acceptSessions(localPort, localAddress) {
+        if (!localAddress) {
+          localAddress = "0.0.0.0";
+        }
+        const portPrefix = localAddress === "0.0.0.0" ? "port " : localAddress + ":";
+        try {
+          this.tcpListener = await this.tcpListenerFactory.createTcpListener(
+            void 0,
+            // remotePort
+            localAddress,
+            localPort,
+            false
+          );
+        } catch (e) {
+          if (!(e instanceof Error))
+            throw e;
+          this.trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.serverListenFailed, `SshServer failed to listen on ${portPrefix}${localPort}: ${e.message}`, e);
+          throw e;
+        }
+        this.tcpListener.addListener("connection", this.acceptSession.bind(this));
+        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.serverListening, `SshServer listening on ${portPrefix}${localPort}.`);
+      }
+      async acceptConnection(socket) {
+        socket.setNoDelay(true);
+        return new dev_tunnels_ssh_1.NodeStream(socket);
+      }
+      async acceptSession(socket) {
+        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.serverClientConnected, "SshServer client connected.");
+        const stream = await this.acceptConnection(socket);
+        const session = new dev_tunnels_ssh_1.SshServerSession(this.config, this.reconnectableSessions);
+        session.trace = this.trace;
+        session.credentials = this.credentials;
+        this.sessions.push(session);
+        session.onClosed((e) => {
+          const sessionIndex = this.sessions.indexOf(session);
+          if (sessionIndex >= 0) {
+            this.sessions.splice(sessionIndex, 1);
+          }
+        });
+        this.sessionOpenedEmitter.fire(session);
+        try {
+          await session.connect(stream);
+        } catch (e) {
+          if (!(e instanceof Error))
+            throw e;
+          if (e instanceof dev_tunnels_ssh_1.SshConnectionError) {
+            await session.close(e.reason || dev_tunnels_ssh_1.SshDisconnectReason.connectionLost, e.message, e);
+          } else {
+            await session.close(dev_tunnels_ssh_1.SshDisconnectReason.protocolError, e.message, e);
+          }
+          this.errorEmitter.fire(e);
+        }
+      }
+      dispose() {
+        var _a;
+        (_a = this.tcpListener) === null || _a === void 0 ? void 0 : _a.close();
+      }
+    };
+    exports2.SshServer = SshServer;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPort.js
+var require_forwardedPort = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPort.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ForwardedPort = void 0;
+    var ForwardedPort = class {
+      /** @internal */
+      constructor(localPort, remotePort, isRemote) {
+        if (localPort === null && remotePort === null) {
+          throw new TypeError("Local and remote ports cannot both be null.");
+        } else if (!isRemote && remotePort === null) {
+          throw new TypeError("The report port number must not be null for locally forwarded ports.");
+        }
+        if (localPort !== null && (typeof localPort !== "number" || localPort <= 0)) {
+          throw new TypeError("Local port must be a positive integer.");
+        } else if (remotePort !== null && (typeof remotePort !== "number" || remotePort <= 0)) {
+          throw new TypeError("Remote port must be a positive integer: " + remotePort);
+        }
+        this.localPort = localPort;
+        this.remotePort = remotePort;
+        const arrow = isRemote ? "->" : "<-";
+        if (this.localPort === null) {
+          this.str = `${arrow}${this.remotePort}`;
+        } else if (this.remotePort == null) {
+          this.str = `${this.localPort}${arrow}`;
+        } else {
+          this.str = `${this.localPort}${arrow}${this.remotePort}`;
+        }
+      }
+      /**
+       * Gets a string representation of the forwarded port, which includes both
+       * local and remote port numbers if present.
+       *
+       * An arrow shows the direction of connections (channel open requests).
+       * Once connections are opened, data may flow in both directions.
+       */
+      toString() {
+        return this.str;
+      }
+    };
+    exports2.ForwardedPort = ForwardedPort;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortEventArgs.js
+var require_forwardedPortEventArgs = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortEventArgs.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ForwardedPortConnectingEventArgs = exports2.ForwardedPortChannelEventArgs = exports2.ForwardedPortEventArgs = void 0;
+    var ForwardedPortEventArgs = class {
+      constructor(port) {
+        this.port = port;
+      }
+      toString() {
+        return this.port.toString();
+      }
+    };
+    exports2.ForwardedPortEventArgs = ForwardedPortEventArgs;
+    var ForwardedPortChannelEventArgs = class extends ForwardedPortEventArgs {
+      constructor(port, channel) {
+        super(port);
+        this.port = port;
+        this.channel = channel;
+      }
+      toString() {
+        return `${this.port} ${this.channel}`;
+      }
+    };
+    exports2.ForwardedPortChannelEventArgs = ForwardedPortChannelEventArgs;
+    var ForwardedPortConnectingEventArgs = class {
+      constructor(port, isIncoming, stream, cancellation) {
+        this.port = port;
+        this.isIncoming = isIncoming;
+        this.stream = stream;
+        this.cancellation = cancellation;
+      }
+      toString() {
+        return `${this.port} isIncoming=${this.isIncoming}`;
+      }
+    };
+    exports2.ForwardedPortConnectingEventArgs = ForwardedPortConnectingEventArgs;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortsCollection.js
+var require_forwardedPortsCollection = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/events/forwardedPortsCollection.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ForwardedPortsCollection = void 0;
+    var vscode_jsonrpc_1 = require_main();
+    var forwardedPortEventArgs_1 = require_forwardedPortEventArgs();
+    var ForwardedPortsCollection = class {
+      constructor() {
+        this.portChannelMap = /* @__PURE__ */ new Map();
+        this.portAddedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onPortAdded = this.portAddedEmitter.event;
+        this.portUpdatedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onPortUpdated = this.portUpdatedEmitter.event;
+        this.portRemovedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onPortRemoved = this.portRemovedEmitter.event;
+        this.portChannelAddedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onPortChannelAdded = this.portChannelAddedEmitter.event;
+        this.portChannelRemovedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onPortChannelRemoved = this.portChannelRemovedEmitter.event;
+      }
+      /** Gets the number of ports in the collection. */
+      get size() {
+        return this.portChannelMap.size;
+      }
+      /** Checks whether a port is in the collection. */
+      has(port) {
+        return this.portChannelMap.has(port.toString());
+      }
+      /** Lists all the ports in the collection. */
+      *values() {
+        for (const [port, channels] of this.portChannelMap.values()) {
+          yield port;
+        }
+      }
+      /** Iterates over all the ports in the collection. */
+      [Symbol.iterator]() {
+        return this.values();
+      }
+      /** Lists all the ports in the collection. */
+      *entries() {
+        for (const [port, channels] of this.portChannelMap.values()) {
+          yield [port, port];
+        }
+      }
+      /**
+       * Lists all the ports in the collection.
+       * (In a set, the keys are the same as the values.)
+       */
+      keys() {
+        return this.values();
+      }
+      /** Iterates over all the ports in the collection, invoking a callback function on each. */
+      forEach(callbackfn, thisArg) {
+        for (const [port, channels] of this.portChannelMap.values()) {
+          callbackfn.apply(thisArg, [port, port, this]);
+        }
+      }
+      getChannels(port) {
+        const portAndChannels = this.portChannelMap.get(port.toString());
+        if (!portAndChannels) {
+          throw new Error(`Port ${port} is not in the collection.`);
+        }
+        return portAndChannels[1];
+      }
+      /** Finds the first port in the collection that matches a predicate. */
+      find(predicate) {
+        for (const port of this.values()) {
+          if (predicate(port)) {
+            return port;
+          }
+        }
+        return void 0;
+      }
+      /* @internal */
+      addOrUpdatePort(port) {
+        if (this.has(port)) {
+          this.portUpdatedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortEventArgs(port));
+        }
+        this.portChannelMap.set(port.toString(), [port, []]);
+        this.portAddedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortEventArgs(port));
+      }
+      /* @internal */
+      removePort(port) {
+        if (!this.has(port)) {
+          return false;
+        }
+        this.portChannelMap.delete(port.toString());
+        this.portRemovedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortEventArgs(port));
+        return true;
+      }
+      /* @internal */
+      addChannel(port, channel) {
+        const portAndChannels = this.portChannelMap.get(port.toString());
+        if (!portAndChannels) {
+          throw new Error(`Port ${port} is not in the collection.`);
+        }
+        const portChannels = portAndChannels[1];
+        if (portChannels.find((c) => c.channelId === channel.channelId)) {
+          throw new Error(`Channel ${channel.channelId} is already in the collection for port ${port}`);
+        }
+        portChannels.push(channel);
+        channel.onClosed(() => this.tryRemoveChannel(port, channel));
+        this.portChannelAddedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortChannelEventArgs(port, channel));
+      }
+      tryRemoveChannel(port, channel) {
+        const portAndChannels = this.portChannelMap.get(port.toString());
+        if (portAndChannels) {
+          const portChannels = portAndChannels[1];
+          const index = portChannels.findIndex((c) => c.channelId === channel.channelId);
+          if (index >= 0) {
+            portChannels.splice(index, 1);
+            this.portChannelRemovedEmitter.fire(new forwardedPortEventArgs_1.ForwardedPortChannelEventArgs(port, channel));
+          }
+        }
+      }
+      toString() {
+        return [...this].join(", ");
+      }
+    };
+    exports2.ForwardedPortsCollection = ForwardedPortsCollection;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/ipAddressConversions.js
+var require_ipAddressConversions = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/ipAddressConversions.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.IPAddressConversions = void 0;
+    var IPAddressConversions = class {
+      /**
+       * Converts from an SSH-protocol address string to an IP address string.
+       */
+      static fromSshAddress(address) {
+        if (!address) {
+          return "0.0.0.0";
+        } else if (address === "localhost") {
+          return "127.0.0.1";
+        } else {
+          return address;
+        }
+      }
+      /**
+       * Converts from an IP Address to an SSH-protocol address string.
+       */
+      static toSshAddress(ipAddress) {
+        if (!ipAddress) {
+          return null;
+        } else if (ipAddress === "0.0.0.0") {
+          return "";
+        } else if (ipAddress === "127.0.0.1") {
+          return "localhost";
+        } else {
+          return ipAddress;
+        }
+      }
+    };
+    exports2.IPAddressConversions = IPAddressConversions;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardChannelOpenMessage.js
+var require_portForwardChannelOpenMessage = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardChannelOpenMessage.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardChannelOpenMessage = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var PortForwardChannelOpenMessage = class extends dev_tunnels_ssh_1.ChannelOpenMessage {
+      constructor() {
+        super(...arguments);
+        this.host = "";
+        this.port = 0;
+        this.originatorIPAddress = "";
+        this.originatorPort = 0;
+      }
+      onRead(reader) {
+        super.onRead(reader);
+        this.host = reader.readString("ascii");
+        this.port = reader.readUInt32();
+        this.originatorIPAddress = reader.readString("ascii");
+        this.originatorPort = reader.readUInt32();
+      }
+      onWrite(writer) {
+        super.onWrite(writer);
+        writer.writeString(this.validateField(this.host, "host"), "ascii");
+        writer.writeUInt32(this.validateField(this.port, "port"));
+        writer.writeString(this.originatorIPAddress || "", "ascii");
+        writer.writeUInt32(this.originatorPort || 0);
+      }
+      toString() {
+        return `${super.toString()} (host=${this.host} port=${this.port})`;
+      }
+    };
+    exports2.PortForwardChannelOpenMessage = PortForwardChannelOpenMessage;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardRequestMessage.js
+var require_portForwardRequestMessage = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardRequestMessage.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardRequestMessage = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var portForwardingService_1 = require_portForwardingService();
+    var PortForwardRequestMessage = class extends dev_tunnels_ssh_1.SessionRequestMessage {
+      constructor() {
+        super();
+        this.addressToBind = "";
+        this.port = 0;
+        this.requestType = portForwardingService_1.PortForwardingService.portForwardRequestType;
+        this.wantReply = true;
+      }
+      onRead(reader) {
+        super.onRead(reader);
+        this.addressToBind = reader.readString("ascii");
+        this.port = reader.readUInt32();
+      }
+      onWrite(writer) {
+        super.onWrite(writer);
+        writer.writeString(this.validateField(this.addressToBind, "address"), "ascii");
+        writer.writeUInt32(this.validateField(this.port, "port"));
+      }
+      toString() {
+        return `${super.toString()} (addressToBind=${this.addressToBind} port=${this.port})`;
+      }
+    };
+    exports2.PortForwardRequestMessage = PortForwardRequestMessage;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardSuccessMessage.js
+var require_portForwardSuccessMessage = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/messages/portForwardSuccessMessage.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardSuccessMessage = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var PortForwardSuccessMessage = class extends dev_tunnels_ssh_1.SessionRequestSuccessMessage {
+      constructor() {
+        super(...arguments);
+        this.port = 0;
+      }
+      onRead(reader) {
+        super.onRead(reader);
+        if (reader.available >= 4) {
+          this.port = reader.readUInt32();
+        }
+      }
+      onWrite(writer) {
+        super.onWrite(writer);
+        writer.writeUInt32(this.validateField(this.port, "port"));
+      }
+      toString() {
+        return `${super.toString()} (port=${this.port})`;
+      }
+    };
+    exports2.PortForwardSuccessMessage = PortForwardSuccessMessage;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/portForwardMessageFactory.js
+var require_portForwardMessageFactory = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/portForwardMessageFactory.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.DefaultPortForwardMessageFactory = void 0;
+    var portForwardChannelOpenMessage_1 = require_portForwardChannelOpenMessage();
+    var portForwardRequestMessage_1 = require_portForwardRequestMessage();
+    var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
+    var DefaultPortForwardMessageFactory = class {
+      createRequestMessageAsync(port) {
+        return Promise.resolve(new portForwardRequestMessage_1.PortForwardRequestMessage());
+      }
+      createSuccessMessageAsync(port) {
+        return Promise.resolve(new portForwardSuccessMessage_1.PortForwardSuccessMessage());
+      }
+      createChannelOpenMessageAsync(port) {
+        return Promise.resolve(new portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage());
+      }
+    };
+    exports2.DefaultPortForwardMessageFactory = DefaultPortForwardMessageFactory;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/streamForwarder.js
+var require_streamForwarder = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/streamForwarder.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.StreamForwarder = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var net_1 = require("net");
+    var StreamForwarder = class {
+      /* @internal */
+      constructor(localStream, remoteStream, trace) {
+        this.localStream = localStream;
+        this.remoteStream = remoteStream;
+        this.trace = trace;
+        this.disposed = false;
+        if (!localStream)
+          throw new TypeError("Local stream is required.");
+        if (!remoteStream)
+          throw new TypeError("Remote stream is required.");
+        localStream.pipe(remoteStream);
+        remoteStream.pipe(localStream);
+      }
+      close(abort, errorMessage) {
+        try {
+          if (abort && this.localStream instanceof net_1.Socket) {
+            this.localStream.destroy();
+          } else {
+            this.localStream.end();
+          }
+          if (this.remoteStream instanceof dev_tunnels_ssh_1.SshStream) {
+            this.remoteStream.channel.close("SIGABRT", errorMessage).catch((e) => {
+            });
+          } else {
+            this.remoteStream.end();
+          }
+          this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, dev_tunnels_ssh_1.SshTraceEventIds.portForwardChannelClosed, `Stream forwarder ${abort ? "aborted" : "closed"} connection.`);
+        } catch (e) {
+          if (!(e instanceof Error))
+            throw e;
+          this.trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.unknownError, `Stream forwarder unexpected error closing connection:  ${e.message}`);
+        }
+      }
+      dispose() {
+        if (!this.disposed) {
+          this.disposed = true;
+          this.close(true);
+        }
+      }
+    };
+    exports2.StreamForwarder = StreamForwarder;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/localPortForwarder.js
+var require_localPortForwarder = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/localPortForwarder.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.LocalPortForwarder = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var streamForwarder_1 = require_streamForwarder();
+    var LocalPortForwarder = class extends dev_tunnels_ssh_1.SshService {
+      /* @internal */
+      constructor(pfs, session, channelType, localIPAddress, localPort, remoteHost, remotePort) {
+        super(session);
+        this.pfs = pfs;
+        this.channelType = channelType;
+        this.localIPAddress = localIPAddress;
+        this.port = localPort;
+        this.remoteHost = remoteHost;
+        this.remotePort = remotePort !== null && remotePort !== void 0 ? remotePort : localPort !== 0 ? localPort : void 0;
+      }
+      /**
+       * Local port that the forwarder is listening on.
+       */
+      get localPort() {
+        return this.port;
+      }
+      /* @internal */
+      async startForwarding(cancellation) {
+        var _a;
+        let listenAddress = this.localIPAddress;
+        try {
+          this.tcpListener = await this.pfs.tcpListenerFactory.createTcpListener(this.remotePort, listenAddress, this.port, true);
+          const serverAddress = this.tcpListener.address();
+          if (!(serverAddress.port > 0)) {
+            this.tcpListener.close();
+            throw new Error("Could not get server port.");
+          }
+          this.port = serverAddress.port;
+          if (this.localIPAddress === "127.0.0.1" || this.localIPAddress === "0.0.0.0") {
+            listenAddress = this.localIPAddress === "0.0.0.0" ? "::" : "::1";
+            try {
+              this.tcpListener2 = await this.pfs.tcpListenerFactory.createTcpListener(this.remotePort, listenAddress, this.port, false);
+            } catch (e) {
+              if (!(e instanceof Error) || e.code !== "EADDRNOTAVAIL") {
+                throw e;
+              }
+              this.trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListenFailed, `PortForwardingService failed to listen on ${listenAddress}:{this.port}: ${e.message}`, e);
+            }
+          }
+        } catch (e) {
+          if (!(e instanceof Error))
+            throw e;
+          this.trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListenFailed, `PortForwardingService failed to listen on ${listenAddress}:${this.port}: ${e.message}`, e);
+          throw e;
+        }
+        this.tcpListener.on("connection", this.acceptConnection.bind(this));
+        (_a = this.tcpListener2) === null || _a === void 0 ? void 0 : _a.on("connection", this.acceptConnection.bind(this));
+        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService listening on ${this.localIPAddress}:${this.port}.`);
+        if (this.tcpListener2) {
+          this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService also listening on ${listenAddress}:${this.port}.`);
+        }
+      }
+      async acceptConnection(socket) {
+        var _a, _b, _c, _d, _e;
+        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionAccepted, `PortForwardingService accepted connection from: ${socket.remoteAddress} on port ${this.port}`);
+        let channel;
+        try {
+          channel = await this.pfs.openChannel(this.session, this.channelType, (_a = socket.remoteAddress) !== null && _a !== void 0 ? _a : null, (_b = socket.remotePort) !== null && _b !== void 0 ? _b : null, (_c = this.remoteHost) !== null && _c !== void 0 ? _c : this.localIPAddress, (_d = this.remotePort) !== null && _d !== void 0 ? _d : this.localPort);
+        } catch (e) {
+          if (!(e instanceof Error))
+            throw e;
+          socket.destroy();
+          return;
+        }
+        const forwardedStream = await this.pfs.forwardedPortConnecting((_e = this.remotePort) !== null && _e !== void 0 ? _e : this.localPort, false, new dev_tunnels_ssh_1.SshStream(channel));
+        if (!forwardedStream) {
+          return;
+        }
+        const forwarder = new streamForwarder_1.StreamForwarder(socket, forwardedStream, channel.session.trace);
+        this.pfs.streamForwarders.push(forwarder);
+      }
+      dispose() {
+        var _a, _b;
+        (_a = this.tcpListener) === null || _a === void 0 ? void 0 : _a.close();
+        (_b = this.tcpListener2) === null || _b === void 0 ? void 0 : _b.close();
+        this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService stopped listening on ${this.localIPAddress}:${this.port}.`);
+        super.dispose();
+      }
+    };
+    exports2.LocalPortForwarder = LocalPortForwarder;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortConnector.js
+var require_remotePortConnector = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortConnector.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RemotePortConnector = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var portForwardRequestMessage_1 = require_portForwardRequestMessage();
+    var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
+    var portForwardingService_1 = require_portForwardingService();
+    var RemotePortConnector = class extends dev_tunnels_ssh_1.SshService {
+      /* @internal */
+      constructor(session, remoteIPAddress, remotePort) {
+        super(session);
+        this.forwarding = false;
+        this.remoteIPAddress = remoteIPAddress;
+        this.port = remotePort;
+      }
+      /**
+       * Port that the remote server is listening on. If the request specified port 0, this
+       * property returns the actual available port that was chosen by the server.
+       */
+      get remotePort() {
+        return this.port;
+      }
+      /* @internal */
+      async request(request, cancellation) {
+        if (this.forwarding) {
+          throw new Error("Already forwarding.");
+        }
+        request.addressToBind = this.remoteIPAddress;
+        request.port = this.remotePort;
+        request.wantReply = true;
+        const response = await this.session.requestResponse(request, portForwardSuccessMessage_1.PortForwardSuccessMessage, dev_tunnels_ssh_1.SessionRequestFailureMessage, cancellation);
+        let result = false;
+        if (response instanceof portForwardSuccessMessage_1.PortForwardSuccessMessage) {
+          if (response.port !== 0) {
+            this.port = response.port;
+          }
+          result = true;
+        }
+        this.forwarding = result;
+        return result;
+      }
+      dispose() {
+        if (this.forwarding) {
+          this.forwarding = false;
+          const request = new portForwardRequestMessage_1.PortForwardRequestMessage();
+          request.requestType = portForwardingService_1.PortForwardingService.cancelPortForwardRequestType;
+          request.addressToBind = this.remoteIPAddress;
+          request.port = this.remotePort;
+          request.wantReply = false;
+          try {
+            this.session.request(request).catch((e) => {
+            });
+          } catch (e) {
+          }
+        }
+        super.dispose();
+      }
+    };
+    exports2.RemotePortConnector = RemotePortConnector;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortForwarder.js
+var require_remotePortForwarder = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortForwarder.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RemotePortForwarder = void 0;
+    var net2 = require("net");
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var streamForwarder_1 = require_streamForwarder();
+    var remotePortConnector_1 = require_remotePortConnector();
+    var RemotePortForwarder = class _RemotePortForwarder extends remotePortConnector_1.RemotePortConnector {
+      /* @internal */
+      constructor(pfs, session, remoteIPAddress, remotePort, localHost, localPort) {
+        super(session, remoteIPAddress, remotePort);
+        this.pfs = pfs;
+        this.localHost = localHost;
+        this.localPort = localPort;
+      }
+      /* @internal */
+      async onPortChannelOpening(request, cancellation) {
+        await _RemotePortForwarder.forwardChannel(this.pfs, request, this.localHost, this.localPort, this.remotePort, this.trace, cancellation);
+      }
+      /* @internal */
+      static async forwardChannel(pfs, request, localHost, localPort, remotePort, trace, cancellation) {
+        const channel = request.channel;
+        const forwardedStream = await pfs.forwardedPortConnecting(remotePort !== null && remotePort !== void 0 ? remotePort : localPort, true, new dev_tunnels_ssh_1.SshStream(channel), cancellation);
+        if (!forwardedStream) {
+          request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.connectFailed;
+          return;
+        }
+        const socket = net2.createConnection({
+          host: localHost,
+          port: localPort,
+          // This option enables connection attempts for multiple resolved IP addresses,
+          // aka "Happy Eyeballs" as described in https://datatracker.ietf.org/doc/html/rfc8305.
+          // Effectively this enables fast connections to either 127.0.0.1 or ::1 when 'localhost'
+          // is specified as the hostname. Note this option is available starting with Node.js
+          // v18.13 and is enabled by default starting with Node.js v20.0.
+          autoSelectFamily: true,
+          // Use the minimum supported connection attempt delay when connecting to 'localhost'.
+          // See https://nodejs.org/api/net.html#socketconnectoptions-connectlistener
+          autoSelectFamilyAttemptTimeout: localHost === "localhost" ? 10 : 250
+        });
+        const connectCompletion = new dev_tunnels_ssh_1.PromiseCompletionSource();
+        const cancellationRegistration = cancellation ? cancellation.onCancellationRequested(() => socket.destroy(new Error("Cancelled."))) : null;
+        try {
+          socket.once("connect", () => {
+            connectCompletion.resolve();
+          });
+          socket.once("error", (e) => {
+            connectCompletion.reject(e);
+          });
+          await connectCompletion.promise;
+        } catch (e) {
+          if (!(e instanceof Error) || (cancellation === null || cancellation === void 0 ? void 0 : cancellation.isCancellationRequested)) {
+            throw e;
+          }
+          trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionFailed, `PortForwardingService connection to ${localHost}:${localPort} failed: ${e.message}`, e);
+          request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.connectFailed;
+          request.failureDescription = e.message;
+        } finally {
+          cancellationRegistration === null || cancellationRegistration === void 0 ? void 0 : cancellationRegistration.dispose();
+        }
+        const streamForwarder = new streamForwarder_1.StreamForwarder(socket, forwardedStream, channel.session.trace);
+        trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionOpened, `${channel.session} PortForwardingService forwarded channel #${channel.channelId} connection to ${localHost}:${localPort}.`);
+        pfs.streamForwarders.push(streamForwarder);
+      }
+    };
+    exports2.RemotePortForwarder = RemotePortForwarder;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortStreamer.js
+var require_remotePortStreamer = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/remotePortStreamer.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.RemotePortStreamer = void 0;
+    var vscode_jsonrpc_1 = require_main();
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var remotePortConnector_1 = require_remotePortConnector();
+    var RemotePortStreamer = class extends remotePortConnector_1.RemotePortConnector {
+      /* @internal */
+      constructor(session, remoteIPAddress, remotePort) {
+        super(session, remoteIPAddress, remotePort);
+        this.streamOpenedEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onStreamOpened = this.streamOpenedEmitter.event;
+      }
+      /* @internal */
+      async onPortChannelOpening(request, cancellation) {
+        const stream = new dev_tunnels_ssh_1.SshStream(request.channel);
+        this.streamOpenedEmitter.fire(stream);
+      }
+    };
+    exports2.RemotePortStreamer = RemotePortStreamer;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/portForwardingService.js
+var require_portForwardingService = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/services/portForwardingService.js"(exports2) {
+    "use strict";
+    var __decorate = exports2 && exports2.__decorate || function(decorators, target, key, desc) {
+      var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+      if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+      else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+      return c > 3 && r && Object.defineProperty(target, key, r), r;
+    };
+    var PortForwardingService_1;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortForwardingService = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var vscode_jsonrpc_1 = require_main();
+    var forwardedPort_1 = require_forwardedPort();
+    var forwardedPortsCollection_1 = require_forwardedPortsCollection();
+    var ipAddressConversions_1 = require_ipAddressConversions();
+    var portForwardChannelOpenMessage_1 = require_portForwardChannelOpenMessage();
+    var portForwardRequestMessage_1 = require_portForwardRequestMessage();
+    var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
+    var tcpListenerFactory_1 = require_tcpListenerFactory();
+    var portForwardMessageFactory_1 = require_portForwardMessageFactory();
+    var localPortForwarder_1 = require_localPortForwarder();
+    var remotePortForwarder_1 = require_remotePortForwarder();
+    var remotePortStreamer_1 = require_remotePortStreamer();
+    var forwardedPortEventArgs_1 = require_forwardedPortEventArgs();
+    var PortForwardingService = PortForwardingService_1 = class PortForwardingService extends dev_tunnels_ssh_1.SshService {
+      /* @internal */
+      constructor(session) {
+        super(session);
+        this.localForwarders = /* @__PURE__ */ new Map();
+        this.remoteConnectors = /* @__PURE__ */ new Map();
+        this.streamForwarders = [];
+        this.acceptLocalConnectionsForForwardedPorts = true;
+        this.forwardConnectionsToLocalPorts = true;
+        this.acceptRemoteConnectionsForNonForwardedPorts = true;
+        this.localForwardedPorts = new forwardedPortsCollection_1.ForwardedPortsCollection();
+        this.remoteForwardedPorts = new forwardedPortsCollection_1.ForwardedPortsCollection();
+        this.tcpListenerFactory = new tcpListenerFactory_1.DefaultTcpListenerFactory();
+        this.messageFactory = new portForwardMessageFactory_1.DefaultPortForwardMessageFactory();
+        this.forwardedPortConnectingEmitter = new vscode_jsonrpc_1.Emitter();
+        this.onForwardedPortConnecting = this.forwardedPortConnectingEmitter.event;
+      }
+      /* @internal */
+      async forwardedPortConnecting(port, isIncoming, stream, cancellation) {
+        try {
+          const args = new forwardedPortEventArgs_1.ForwardedPortConnectingEventArgs(port, isIncoming, stream, cancellation);
+          this.forwardedPortConnectingEmitter.fire(args);
+          if (args.transformPromise) {
+            return await args.transformPromise;
+          }
+        } catch (e) {
+          if (!(e instanceof Error))
+            throw e;
+          this.trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionFailed, `Forwarded port connecting event-handler failed: ${e.message}`);
+          return null;
+        }
+        return stream;
+      }
+      async forwardFromRemotePort(remoteIPAddress, remotePort, localHostOrCancellation, localPort, cancellation) {
+        const localHost = typeof localHostOrCancellation === "string" ? localHostOrCancellation : "127.0.0.1";
+        if (typeof localPort === "undefined")
+          localPort = remotePort;
+        if (!remoteIPAddress)
+          throw new TypeError("Remote IP address is required.");
+        if (!Number.isInteger(remotePort) || remotePort < 0) {
+          throw new TypeError("Remote port must be a non-negative integer.");
+        }
+        if (!localHost)
+          throw new TypeError("Local host is required.");
+        if (!Number.isInteger(localPort) || localPort <= 0) {
+          throw new TypeError("Local port must be a positive integer.");
+        }
+        if (this.localForwardedPorts.find((p) => p.localPort === localPort)) {
+          throw new Error(`Local port ${localPort} is already forwarded.`);
+        } else if (remotePort > 0 && this.localForwardedPorts.find((p) => p.remotePort === remotePort)) {
+          throw new Error(`Remote port ${remotePort} is already forwarded.`);
+        }
+        const forwarder = new remotePortForwarder_1.RemotePortForwarder(this, this.session, remoteIPAddress, remotePort, localHost, localPort);
+        const request = await this.messageFactory.createRequestMessageAsync(remotePort);
+        if (!await forwarder.request(request, cancellation)) {
+          return null;
+        }
+        remotePort = forwarder.remotePort;
+        if (this.remoteConnectors.has(remotePort)) {
+          return null;
+        }
+        this.remoteConnectors.set(remotePort, forwarder);
+        const forwardedPort = new forwardedPort_1.ForwardedPort(localPort, remotePort, false);
+        this.localForwardedPorts.addOrUpdatePort(forwardedPort);
+        forwarder.onDisposed(() => {
+          this.localForwardedPorts.removePort(forwardedPort);
+          this.remoteConnectors.delete(remotePort);
+        });
+        return forwarder;
+      }
+      async forwardToRemotePort(localIPAddress, localPort, remoteHostOrCancellation, remotePort, cancellation) {
+        const remoteHost = typeof remoteHostOrCancellation === "string" ? remoteHostOrCancellation : "127.0.0.1";
+        if (typeof remotePort === "undefined")
+          remotePort = localPort;
+        if (!localIPAddress)
+          throw new TypeError("Local IP address is required.");
+        if (!Number.isInteger(localPort) || localPort < 0) {
+          throw new TypeError("Local port must be a non-negative integer.");
+        }
+        if (!remoteHost)
+          throw new TypeError("Remote host is required.");
+        if (!Number.isInteger(remotePort) || remotePort <= 0) {
+          throw new TypeError("Remote port must be a positive integer.");
+        }
+        if (this.localForwarders.has(remotePort)) {
+          throw new Error(`Port ${remotePort} is already forwarded.`);
+        }
+        const forwarder = new localPortForwarder_1.LocalPortForwarder(this, this.session, PortForwardingService_1.reversePortForwardChannelType, localIPAddress, localPort, remoteHost, remotePort);
+        await forwarder.startForwarding(cancellation);
+        this.localForwarders.set(remotePort, forwarder);
+        forwarder.onDisposed(() => {
+          this.localForwarders.delete(remotePort);
+        });
+        return forwarder;
+      }
+      /**
+       * Sends a request to the remote side to listen on a port and forward incoming connections as
+       * SSH channels of type 'forwarded-tcpip', which will then be relayed as local streams.
+       *
+       * @param remoteIPAddress IP address of the interface to bind to on the remote side.
+       * @param remotePort The remote port to listen on, or 0 to choose an available port.
+       * (The chosen port can then be obtained via the `remotePort` property on the returned object.)
+       * @param cancellation Cancellation token for the request; note this cannot cancel forwarding
+       * once it has started; use the returned disposable do do that.
+       * @returns A disposable object that when disposed will cancel forwarding the port, or `null`
+       * if the request was rejected by the remote side, possibly because the remote port was already
+       * in use. Handle the `onStreamOpened` event on this object to receive streams.
+       */
+      async streamFromRemotePort(remoteIPAddress, remotePort, cancellation) {
+        if (!remoteIPAddress)
+          throw new TypeError("Remote IP address is required.");
+        if (!Number.isInteger(remotePort) || remotePort < 0) {
+          throw new TypeError("Remote port must be a non-negative integer.");
+        }
+        const streamer = new remotePortStreamer_1.RemotePortStreamer(this.session, remoteIPAddress, remotePort);
+        const request = await this.messageFactory.createRequestMessageAsync(remotePort);
+        if (!await streamer.request(request, cancellation)) {
+          streamer.dispose();
+          return null;
+        }
+        remotePort = streamer.remotePort;
+        this.remoteConnectors.set(remotePort, streamer);
+        const forwardedPort = new forwardedPort_1.ForwardedPort(null, remotePort, false);
+        this.localForwardedPorts.addOrUpdatePort(forwardedPort);
+        streamer.onDisposed(() => {
+          this.localForwardedPorts.removePort(forwardedPort);
+          this.remoteConnectors.delete(remotePort);
+        });
+        return streamer;
+      }
+      /**
+       * Opens a stream for an SSH channel of type 'direct-tcpip' that is relayed to remote port,
+       * regardless of whether the remote side has explicitly forwarded that port.
+       *
+       * @param remoteHost The destination hostname or IP address for forwarded connections, to be
+       * resolved on the remote side. WARNING: Avoid using the hostname `localhost` as the destination
+       * host; use `127.0.0.1` or `::1` instead. (OpenSSH does not recognize `localhost` as a valid
+       * destination host.)
+       * @param remotePort The destination port for the forwarded stream. (Must not be 0.)
+       * @param cancellation Cancellation token for the request; note this cannot cancel streaming
+       * once it has started; dipose the returned stream for that.
+       * @returns A stream that is relayed to the remote port.
+       * @throws `SshChannelError` if the streaming channel could not be opened, either because it
+       * was rejected by the remote side, or the remote connection failed.
+       */
+      async streamToRemotePort(remoteHost, remotePort, cancellation) {
+        if (!remoteHost)
+          throw new TypeError("Remote host is required.");
+        if (!Number.isInteger(remotePort) || remotePort <= 0) {
+          throw new TypeError("Remote port must be a positive integer.");
+        }
+        const channel = await this.openChannel(this.session, PortForwardingService_1.reversePortForwardChannelType, null, null, remoteHost, remotePort, cancellation);
+        return new dev_tunnels_ssh_1.SshStream(channel);
+      }
+      /**
+       * Opens a stream for an SSH channel of type 'forwarded-tcpip' that is relayed to a remote
+       * port. The port must have been explicitly forwarded by the remote side.
+       *
+       * It may be necessary to call `waitForForwardedPort` before this method
+       * to ensure the port is ready for connections.
+       *
+       * An error is thrown if the requested port could not be forwarded, possibly because it was
+       * rejected by the remote side, or the remote connection failed.
+       *
+       * @param forwardedPort Remote port number that was forwarded.
+       * @param cancellation Cancellation token for the request; note this cannot
+       * cancel streaming once it has started; dipose the returned stream for that.
+       * @returns A stream that is relayed to the remote forwarded port.
+       */
+      async connectToForwardedPort(forwardedPort, cancellation) {
+        if (!Number.isInteger(forwardedPort) || forwardedPort <= 0) {
+          throw new TypeError("Forwarded port must be a positive integer.");
+        }
+        const channel = await this.openChannel(this.session, PortForwardingService_1.portForwardChannelType, null, null, "127.0.0.1", forwardedPort, cancellation);
+        const forwardedStream = await this.forwardedPortConnecting(forwardedPort, false, new dev_tunnels_ssh_1.SshStream(channel), cancellation);
+        if (!forwardedStream) {
+          channel.close().catch((e) => {
+          });
+          throw new dev_tunnels_ssh_1.SshChannelError("The connection to the forwarded port was rejected by the connecting event-handler.");
+        }
+        return forwardedStream;
+      }
+      /**
+       * Waits asynchronously for the remote side to forward an expected port number.
+       *
+       * A common pattern for some applications may be to call this method just before
+       * `ConnectToForwardedPortAsync`.
+       *
+       * @param forwardedPort Port number that is expected to be forwarded.
+       * @param cancellation Token that can be used to cancel waiting.
+       * @returns A promise that completes when the expected port number has been forwarded.
+       */
+      async waitForForwardedPort(forwardedPort, cancellation) {
+        if (this.remoteForwardedPorts.find((p) => p.remotePort === forwardedPort)) {
+          return;
+        }
+        const waitCompletion = new dev_tunnels_ssh_1.PromiseCompletionSource();
+        let cancellationRegistration;
+        if (cancellation) {
+          cancellationRegistration = cancellation.onCancellationRequested(() => waitCompletion.reject(new dev_tunnels_ssh_1.CancellationError()));
+        }
+        let portAddedRegistration;
+        let sessionClosedRegistration;
+        try {
+          portAddedRegistration = this.remoteForwardedPorts.onPortAdded((e) => {
+            if (e.port.remotePort === forwardedPort) {
+              waitCompletion.resolve();
+            }
+          });
+          sessionClosedRegistration = this.session.onClosed(() => {
+            waitCompletion.reject(new dev_tunnels_ssh_1.ObjectDisposedError("The session was closed."));
+          });
+          await waitCompletion.promise;
+        } finally {
+          portAddedRegistration === null || portAddedRegistration === void 0 ? void 0 : portAddedRegistration.dispose();
+          sessionClosedRegistration === null || sessionClosedRegistration === void 0 ? void 0 : sessionClosedRegistration.dispose();
+          cancellationRegistration === null || cancellationRegistration === void 0 ? void 0 : cancellationRegistration.dispose();
+        }
+      }
+      async onSessionRequest(request, cancellation) {
+        if (!request)
+          throw new TypeError("Request is required.");
+        else if (request.requestType !== PortForwardingService_1.portForwardRequestType && request.requestType !== PortForwardingService_1.cancelPortForwardRequestType) {
+          throw new Error(`Unexpected request type: ${request.requestType}`);
+        }
+        const portForwardRequest = request.request.convertTo(new portForwardRequestMessage_1.PortForwardRequestMessage());
+        const localIPAddress = ipAddressConversions_1.IPAddressConversions.fromSshAddress(portForwardRequest.addressToBind);
+        if (request.requestType === PortForwardingService_1.portForwardRequestType && portForwardRequest.port !== 0 && this.localForwarders.has(portForwardRequest.port)) {
+          const message = `PortForwardingService port ${portForwardRequest.port} is already forwarded.`;
+          this.session.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, dev_tunnels_ssh_1.SshTraceEventIds.portForwardRequestInvalid, message);
+          request.isAuthorized = false;
+          return;
+        }
+        const args = new dev_tunnels_ssh_1.SshRequestEventArgs(request.requestType, portForwardRequest, this.session.principal);
+        await super.onSessionRequest(args, cancellation);
+        let response;
+        let localPort = null;
+        if (args.isAuthorized) {
+          if (request.requestType === PortForwardingService_1.portForwardRequestType) {
+            try {
+              localPort = await this.startForwarding(localIPAddress, portForwardRequest.port, cancellation);
+            } catch (e) {
+            }
+            if (localPort !== null) {
+              const forwardedPort = portForwardRequest.port === 0 ? localPort : portForwardRequest.port;
+              const portResponse = await this.messageFactory.createSuccessMessageAsync(forwardedPort);
+              portResponse.port = forwardedPort;
+              response = portResponse;
+            }
+          } else if (request.requestType === PortForwardingService_1.cancelPortForwardRequestType) {
+            if (await this.cancelForwarding(portForwardRequest.port, cancellation)) {
+              response = new dev_tunnels_ssh_1.SessionRequestSuccessMessage();
+            }
+          }
+        }
+        request.responsePromise = Promise.resolve(response !== null && response !== void 0 ? response : new dev_tunnels_ssh_1.SessionRequestFailureMessage());
+        if (response instanceof portForwardSuccessMessage_1.PortForwardSuccessMessage) {
+          const forwardedPort = new forwardedPort_1.ForwardedPort(localPort !== null && localPort !== void 0 ? localPort : response.port, response.port, true);
+          this.remoteForwardedPorts.addOrUpdatePort(forwardedPort);
+        }
+      }
+      async startForwarding(localIPAddress, remotePort, cancellation) {
+        if (typeof remotePort !== "number")
+          throw new TypeError("Remote port must be an integer.");
+        if (this.acceptLocalConnectionsForForwardedPorts) {
+          let localPort = remotePort;
+          const forwarder = new localPortForwarder_1.LocalPortForwarder(this, this.session, PortForwardingService_1.portForwardChannelType, localIPAddress, localPort, void 0, remotePort === 0 ? void 0 : remotePort);
+          await forwarder.startForwarding(cancellation);
+          localPort = forwarder.localPort;
+          if (remotePort === 0) {
+            remotePort = localPort;
+          }
+          if (this.localForwarders.has(remotePort)) {
+            forwarder.dispose();
+            return null;
+          }
+          this.localForwarders.set(remotePort, forwarder);
+          localPort = forwarder.localPort;
+          forwarder.onDisposed(() => {
+            const forwardedPort = new forwardedPort_1.ForwardedPort(localPort, remotePort, true);
+            this.remoteForwardedPorts.removePort(forwardedPort);
+            this.localForwarders.delete(remotePort);
+          });
+          return localPort;
+        } else if (remotePort !== 0) {
+          return remotePort;
+        } else {
+          return null;
+        }
+      }
+      async cancelForwarding(forwardedPort, cancellation) {
+        const forwarder = this.localForwarders.get(forwardedPort);
+        if (forwarder) {
+          this.localForwarders.delete(forwardedPort);
+          forwarder.dispose();
+          return true;
+        }
+        const port = new forwardedPort_1.ForwardedPort(forwardedPort, forwardedPort, true);
+        if (this.remoteForwardedPorts.removePort(port)) {
+          return true;
+        }
+        return false;
+      }
+      async onChannelOpening(request, cancellation) {
+        var _a;
+        if (!request)
+          throw new TypeError("Request is required.");
+        const channelType = request.request.channelType;
+        if (channelType !== PortForwardingService_1.portForwardChannelType && channelType !== PortForwardingService_1.reversePortForwardChannelType) {
+          request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.unknownChannelType;
+          return;
+        }
+        let remoteConnector = null;
+        const portForwardMessage = request.request instanceof portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage ? request.request : request.request.convertTo(new portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage());
+        if (request.isRemoteRequest) {
+          if (channelType === PortForwardingService_1.portForwardChannelType) {
+            const remoteIPAddress = ipAddressConversions_1.IPAddressConversions.fromSshAddress(portForwardMessage.host);
+            const remoteEndPoint = `${remoteIPAddress}:${portForwardMessage.port}`;
+            remoteConnector = (_a = this.remoteConnectors.get(portForwardMessage.port)) !== null && _a !== void 0 ? _a : null;
+            if (!remoteConnector) {
+              this.trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.portForwardRequestInvalid, `PortForwardingService received forwarding channel for ${remoteEndPoint} that was not requested.`);
+              request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.connectFailed;
+              request.failureDescription = "Forwarding channel was not requested.";
+              return;
+            }
+          } else if (!this.acceptRemoteConnectionsForNonForwardedPorts) {
+            const errorMessage = "The session has disabled connections to non-forwarded ports.";
+            this.session.trace(dev_tunnels_ssh_1.TraceLevel.Warning, dev_tunnels_ssh_1.SshTraceEventIds.portForwardChannelOpenFailed, errorMessage);
+            request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.administrativelyProhibited;
+            request.failureDescription = errorMessage;
+            return;
+          }
+        }
+        const portForwardRequest = new dev_tunnels_ssh_1.SshChannelOpeningEventArgs(portForwardMessage, request.channel, request.isRemoteRequest);
+        await super.onChannelOpening(portForwardRequest, cancellation);
+        request.failureReason = portForwardRequest.failureReason;
+        request.failureDescription = portForwardRequest.failureDescription;
+        request.openingPromise = portForwardRequest.openingPromise;
+        if (request.failureReason === dev_tunnels_ssh_1.SshChannelOpenFailureReason.none && request.isRemoteRequest && this.forwardConnectionsToLocalPorts) {
+          if (remoteConnector) {
+            await remoteConnector.onPortChannelOpening(request, cancellation);
+            const localPort = remoteConnector instanceof remotePortForwarder_1.RemotePortForwarder ? remoteConnector.localPort : null;
+            const remotePort = remoteConnector instanceof remotePortForwarder_1.RemotePortForwarder ? remoteConnector.remotePort : portForwardMessage.port;
+            const forwardedPort = new forwardedPort_1.ForwardedPort(localPort, remotePort, false);
+            this.localForwardedPorts.addChannel(forwardedPort, request.channel);
+          } else {
+            await remotePortForwarder_1.RemotePortForwarder.forwardChannel(this, request, portForwardMessage.host, portForwardMessage.port, portForwardMessage.port, this.trace, cancellation);
+            if (request.failureReason !== dev_tunnels_ssh_1.SshChannelOpenFailureReason.none) {
+              await request.channel.close(cancellation);
+            }
+          }
+        }
+      }
+      /* @internal */
+      async openChannel(session, channelType, originatorIPAddress, originatorPort, host, port, cancellation) {
+        let forwardedPort = void 0;
+        if (channelType === PortForwardingService_1.portForwardChannelType) {
+          forwardedPort = this.remoteForwardedPorts.find((p) => p.remotePort === port || p.remotePort === null && p.localPort === port);
+          if (!forwardedPort) {
+            throw new Error(`Port ${port} is not being forwarded.`);
+          }
+        }
+        const openMessage = await this.messageFactory.createChannelOpenMessageAsync(port);
+        openMessage.channelType = channelType;
+        openMessage.originatorIPAddress = originatorIPAddress !== null && originatorIPAddress !== void 0 ? originatorIPAddress : "";
+        openMessage.originatorPort = originatorPort !== null && originatorPort !== void 0 ? originatorPort : 0;
+        openMessage.host = host;
+        openMessage.port = port;
+        const trace = this.session.trace;
+        let channel;
+        try {
+          channel = await session.openChannel(openMessage, null, cancellation);
+          trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardChannelOpened, `PortForwardingService opened ${channelType} channel #${channel.channelId} for ${host}:${port}.`);
+        } catch (e) {
+          if (!(e instanceof Error))
+            throw e;
+          trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.portForwardChannelOpenFailed, `PortForwardingService failed to open ${channelType} channel for ${host}:${port}: ${e.message}`, e);
+          throw e;
+        }
+        if (channelType === PortForwardingService_1.portForwardChannelType) {
+          this.remoteForwardedPorts.addChannel(forwardedPort, channel);
+        }
+        return channel;
+      }
+      dispose() {
+        const disposables = [
+          ...this.localForwarders.values(),
+          ...this.remoteConnectors.values()
+        ];
+        this.streamForwarders.splice(0, this.streamForwarders.length);
+        this.localForwarders.clear();
+        this.remoteConnectors.clear();
+        for (const disposable of disposables) {
+          disposable.dispose();
+        }
+        super.dispose();
+      }
+    };
+    PortForwardingService.portForwardRequestType = "tcpip-forward";
+    PortForwardingService.cancelPortForwardRequestType = "cancel-tcpip-forward";
+    PortForwardingService.portForwardChannelType = "forwarded-tcpip";
+    PortForwardingService.reversePortForwardChannelType = "direct-tcpip";
+    PortForwardingService = PortForwardingService_1 = __decorate([
+      (0, dev_tunnels_ssh_1.serviceActivation)({ sessionRequest: PortForwardingService_1.portForwardRequestType }),
+      (0, dev_tunnels_ssh_1.serviceActivation)({ sessionRequest: PortForwardingService_1.cancelPortForwardRequestType }),
+      (0, dev_tunnels_ssh_1.serviceActivation)({ channelType: PortForwardingService_1.portForwardChannelType }),
+      (0, dev_tunnels_ssh_1.serviceActivation)({ channelType: PortForwardingService_1.reversePortForwardChannelType })
+    ], PortForwardingService);
+    exports2.PortForwardingService = PortForwardingService;
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-ssh-tcp/index.js
+var require_dev_tunnels_ssh_tcp = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-ssh-tcp/index.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ForwardedPortConnectingEventArgs = exports2.ForwardedPortChannelEventArgs = exports2.ForwardedPortEventArgs = exports2.ForwardedPortsCollection = exports2.ForwardedPort = exports2.PortForwardChannelOpenMessage = exports2.PortForwardSuccessMessage = exports2.PortForwardRequestMessage = exports2.RemotePortStreamer = exports2.RemotePortForwarder = exports2.LocalPortForwarder = exports2.PortForwardingService = exports2.SshServer = exports2.SshClient = void 0;
+    var sshClient_1 = require_sshClient();
+    Object.defineProperty(exports2, "SshClient", { enumerable: true, get: function() {
+      return sshClient_1.SshClient;
+    } });
+    var sshServer_1 = require_sshServer();
+    Object.defineProperty(exports2, "SshServer", { enumerable: true, get: function() {
+      return sshServer_1.SshServer;
+    } });
+    var portForwardingService_1 = require_portForwardingService();
+    Object.defineProperty(exports2, "PortForwardingService", { enumerable: true, get: function() {
+      return portForwardingService_1.PortForwardingService;
+    } });
+    var localPortForwarder_1 = require_localPortForwarder();
+    Object.defineProperty(exports2, "LocalPortForwarder", { enumerable: true, get: function() {
+      return localPortForwarder_1.LocalPortForwarder;
+    } });
+    var remotePortForwarder_1 = require_remotePortForwarder();
+    Object.defineProperty(exports2, "RemotePortForwarder", { enumerable: true, get: function() {
+      return remotePortForwarder_1.RemotePortForwarder;
+    } });
+    var remotePortStreamer_1 = require_remotePortStreamer();
+    Object.defineProperty(exports2, "RemotePortStreamer", { enumerable: true, get: function() {
+      return remotePortStreamer_1.RemotePortStreamer;
+    } });
+    var portForwardRequestMessage_1 = require_portForwardRequestMessage();
+    Object.defineProperty(exports2, "PortForwardRequestMessage", { enumerable: true, get: function() {
+      return portForwardRequestMessage_1.PortForwardRequestMessage;
+    } });
+    var portForwardSuccessMessage_1 = require_portForwardSuccessMessage();
+    Object.defineProperty(exports2, "PortForwardSuccessMessage", { enumerable: true, get: function() {
+      return portForwardSuccessMessage_1.PortForwardSuccessMessage;
+    } });
+    var portForwardChannelOpenMessage_1 = require_portForwardChannelOpenMessage();
+    Object.defineProperty(exports2, "PortForwardChannelOpenMessage", { enumerable: true, get: function() {
+      return portForwardChannelOpenMessage_1.PortForwardChannelOpenMessage;
+    } });
+    var forwardedPort_1 = require_forwardedPort();
+    Object.defineProperty(exports2, "ForwardedPort", { enumerable: true, get: function() {
+      return forwardedPort_1.ForwardedPort;
+    } });
+    var forwardedPortsCollection_1 = require_forwardedPortsCollection();
+    Object.defineProperty(exports2, "ForwardedPortsCollection", { enumerable: true, get: function() {
+      return forwardedPortsCollection_1.ForwardedPortsCollection;
+    } });
+    var forwardedPortEventArgs_1 = require_forwardedPortEventArgs();
+    Object.defineProperty(exports2, "ForwardedPortEventArgs", { enumerable: true, get: function() {
+      return forwardedPortEventArgs_1.ForwardedPortEventArgs;
+    } });
+    Object.defineProperty(exports2, "ForwardedPortChannelEventArgs", { enumerable: true, get: function() {
+      return forwardedPortEventArgs_1.ForwardedPortChannelEventArgs;
+    } });
+    Object.defineProperty(exports2, "ForwardedPortConnectingEventArgs", { enumerable: true, get: function() {
+      return forwardedPortEventArgs_1.ForwardedPortConnectingEventArgs;
+    } });
+  }
+});
+
+// ../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectResponseMessage.js
+var require_portRelayConnectResponseMessage = __commonJS({
+  "../../node_modules/@microsoft/dev-tunnels-connections/messages/portRelayConnectResponseMessage.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.PortRelayConnectResponseMessage = void 0;
+    var dev_tunnels_ssh_1 = require_dev_tunnels_ssh();
+    var PortRelayConnectResponseMessage = class extends dev_tunnels_ssh_1.ChannelOpenConfirmationMessage {
+      constructor() {
+        super(...arguments);
+        this.isE2EEncryptionEnabled = false;
+      }
+      onWrite(writer) {
+        super.onWrite(writer);
+        writer.writeBoolean(this.isE2EEncryptionEnabled);
+      }
+      onRead(reader) {
+        super.onRead(reader);
+        this.isE2EEncryptionEnabled = reader.readBoolean();
+      }
+    };
+    exports2.PortRelayConnectResponseMessage = PortRelayConnectResponseMessage;
   }
 });
 
@@ -42859,6 +42859,9 @@ var {
   Help
 } = import_index.default;
 
+// src/sdk-proxy.ts
+var import_dev_tunnels_management2 = __toESM(require_dev_tunnels_management(), 1);
+
 // src/tunnel-adapter.ts
 var dns = __toESM(require("dns"), 1);
 var net = __toESM(require("net"), 1);
@@ -42936,6 +42939,7 @@ var DEFAULT_CONNECTION_TIMEOUT_MS = 3e4;
 var NETWORK_CHECK_INTERVAL_MS = 5e3;
 var MIN_RETRY_DELAY_MS = 1e3;
 var DNS_TIMEOUT_MS = 5e3;
+var TUNNEL_LABEL = "copilot-tunnel-session";
 var GITHUB_CLIENT_ID = "Iv1.e7b89e013f801f03";
 var GITHUB_SCOPES = "read:user,read:org";
 var GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code";
@@ -43182,8 +43186,69 @@ var DevTunnelHostAdapter = class {
         }
       }
     }
+    this.log("info", "Searching for existing tunnel by label...");
+    const labeledTunnels = await this.managementClient.listTunnels(
+      void 0,
+      // global search (no cluster filter)
+      void 0,
+      // default domain
+      { labels: [TUNNEL_LABEL] }
+    );
+    if (labeledTunnels.length > 0) {
+      labeledTunnels.sort(
+        (a, b) => new Date(b.created ?? 0).getTime() - new Date(a.created ?? 0).getTime()
+      );
+      const foundTunnel = labeledTunnels[0];
+      this.log("info", `Found existing tunnel via label: ${foundTunnel.tunnelId}`);
+      this.tunnel = await this.managementClient.getTunnel(
+        { tunnelId: foundTunnel.tunnelId, clusterId: foundTunnel.clusterId },
+        { tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect], includePorts: true }
+      );
+      if (!this.tunnel) {
+        throw new Error("Failed to fetch tunnel details");
+      }
+      if (this.tunnel.ports && this.tunnel.ports.length > 0) {
+        for (const port of this.tunnel.ports) {
+          if (port.portNumber) {
+            this.log("debug", `Removing old port ${port.portNumber} from tunnel`);
+            try {
+              await this.managementClient.deleteTunnelPort(this.tunnel, port.portNumber);
+            } catch {
+            }
+          }
+        }
+      }
+      this.log("debug", `Adding port ${rpcPort} to tunnel`);
+      await this.managementClient.createTunnelPort(this.tunnel, {
+        portNumber: rpcPort,
+        protocol: "auto"
+      });
+      this.tunnel = await this.managementClient.getTunnel(this.tunnel, {
+        tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
+        includePorts: true
+      });
+      if (!this.tunnel) {
+        throw new Error("Failed to refresh tunnel details");
+      }
+      await saveTunnelConfig({
+        tunnelId: this.tunnel.tunnelId,
+        clusterId: this.tunnel.clusterId,
+        createdAt: (/* @__PURE__ */ new Date()).toISOString()
+      });
+      this.log("debug", "Tunnel config saved");
+      this.log("debug", "Connecting to existing tunnel...");
+      await this.connectToTunnel(rpcPort);
+      this.log("info", "Connected to existing tunnel");
+      return {
+        tunnelId: this.tunnel.tunnelId,
+        clusterId: this.tunnel.clusterId,
+        port: rpcPort,
+        username: this.username
+      };
+    }
     this.log("info", "Creating new tunnel...");
     const tunnelConfig = {
+      labels: [TUNNEL_LABEL],
       ports: [
         { portNumber: rpcPort, protocol: "auto" }
       ]
@@ -45511,7 +45576,7 @@ function createLogCallback(logger) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.1.2";
+var CURRENT_VERSION = "0.1.3";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";
@@ -45594,6 +45659,8 @@ function printBanner() {
 }
 
 // src/sdk-proxy.ts
+var GITHUB_CLIENT_ID2 = "Iv1.e7b89e013f801f03";
+var GITHUB_TOKEN_URL2 = "https://github.com/login/oauth/access_token";
 var program2 = new Command();
 program2.name("remote-sdk-host").description("Host a Remote SDK session via Dev Tunnels").version(CURRENT_VERSION).option("-d, --debug", "Enable verbose debug logging").option("-p, --port <number>", "Port for local SDK connection", "0").action(runHost);
 program2.command("logout").description("Clear stored GitHub credentials").action(runLogout);
@@ -45696,10 +45763,93 @@ async function runTunnelInfo() {
     process.exit(1);
   }
 }
+async function refreshAccessToken(refreshToken) {
+  const response = await fetch(GITHUB_TOKEN_URL2, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      client_id: GITHUB_CLIENT_ID2,
+      refresh_token: refreshToken,
+      grant_type: "refresh_token"
+    })
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to refresh token: ${response.statusText}`);
+  }
+  const token = await response.json();
+  if (token.error) {
+    throw new Error(`Token refresh error: ${token.error_description || token.error}`);
+  }
+  if (!token.access_token) {
+    throw new Error("Token refresh failed: no access token in response");
+  }
+  const now = Date.now();
+  return {
+    accessToken: token.access_token,
+    refreshToken: token.refresh_token || refreshToken,
+    expiresAt: now + (token.expires_in || 28800) * 1e3,
+    refreshExpiresAt: now + (token.refresh_token_expires_in || 15638400) * 1e3
+  };
+}
+async function getValidToken() {
+  let tokenData = await loadTokenData();
+  if (!tokenData) {
+    return null;
+  }
+  const now = Date.now();
+  const accessTokenExpired = tokenData.expiresAt < now + 5 * 60 * 1e3;
+  const refreshTokenExpired = tokenData.refreshExpiresAt < now + 5 * 60 * 1e3;
+  if (!accessTokenExpired) {
+    return tokenData.accessToken;
+  }
+  if (accessTokenExpired && !refreshTokenExpired && tokenData.refreshToken) {
+    try {
+      const oldUsername = tokenData.username;
+      tokenData = await refreshAccessToken(tokenData.refreshToken);
+      tokenData.username = oldUsername;
+      await saveTokenData(tokenData);
+      return tokenData.accessToken;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
 async function runTunnelClear() {
   try {
+    const githubToken = await getValidToken();
+    if (githubToken) {
+      console.log("Deleting tunnels from server...");
+      const managementClient = new import_dev_tunnels_management2.TunnelManagementHttpClient(
+        "RemoteSdkBridge/1.0",
+        import_dev_tunnels_management2.ManagementApiVersions.Version20230927preview,
+        () => Promise.resolve(`github ${githubToken}`)
+      );
+      const tunnels = await managementClient.listTunnels(
+        void 0,
+        // global search
+        void 0,
+        // default domain
+        { labels: [TUNNEL_LABEL] }
+      );
+      if (tunnels.length > 0) {
+        for (const tunnel of tunnels) {
+          console.log(`  Deleting tunnel ${tunnel.tunnelId}...`);
+          await managementClient.deleteTunnel(tunnel);
+        }
+        console.log(`Deleted ${tunnels.length} tunnel(s) from server.`);
+      } else {
+        console.log("No tunnels found with label.");
+      }
+    } else {
+      console.log("No valid credentials found - only clearing local config.");
+      console.log("(Run the host first to authenticate if you want to delete remote tunnels.)");
+    }
     await clearTunnelConfig();
-    console.log("Tunnel configuration cleared.");
+    console.log("Local tunnel configuration cleared.");
   } catch (error) {
     console.error(`Failed to clear tunnel config: ${error}`);
     process.exit(1);
