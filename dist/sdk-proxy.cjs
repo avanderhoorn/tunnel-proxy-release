@@ -44694,7 +44694,16 @@ var DevTunnelHostAdapter = class {
       const failureCount = sshSession.keepAliveFailureCount ?? 0;
       this.log("warn", `KeepAlive failed (count: ${failureCount})`);
       if (failureCount >= 3) {
-        this.log("error", "Multiple keepAlive failures - connection may be stale");
+        this.log("error", "Multiple keepAlive failures - connection stale, closing client connections");
+        if (this.clients.size > 0) {
+          this.log("info", `Closing ${this.clients.size} client connection(s) due to stale tunnel`);
+          for (const [clientId, socket] of this.clients) {
+            if (!this.disconnectedClients.has(clientId)) {
+              this.disconnectedClients.add(clientId);
+              socket.destroy();
+            }
+          }
+        }
       }
     });
     sshSession.startKeepAliveTimer();
@@ -46301,6 +46310,20 @@ function encodeJsonRpcMessageToBuffer(message) {
   const header = `${CONTENT_LENGTH_HEADER}${Buffer.byteLength(json, "utf-8")}${HEADER_DELIMITER}`;
   return Buffer.from(header + json, "utf-8");
 }
+var SUPPORTED_MODELS = [
+  { id: "claude-sonnet-4.5", label: "Claude Sonnet 4.5", multiplier: 1, isAvailable: true },
+  { id: "claude-haiku-4.5", label: "Claude Haiku 4.5", multiplier: 0.33, isAvailable: true },
+  { id: "claude-opus-4.5", label: "Claude Opus 4.5", multiplier: 1, isAvailable: true },
+  { id: "claude-sonnet-4", label: "Claude Sonnet 4", multiplier: 1, isAvailable: true },
+  { id: "gpt-5", label: "GPT-5", multiplier: 1, isAvailable: true },
+  { id: "gpt-5.1", label: "GPT-5.1", multiplier: 1, isAvailable: true },
+  { id: "gpt-5.1-codex", label: "GPT-5.1 Codex", multiplier: 1, isAvailable: true },
+  { id: "gpt-5.1-codex-mini", label: "GPT-5.1 Codex Mini", multiplier: 0.33, isAvailable: true },
+  { id: "gpt-5-mini", label: "GPT-5 Mini", multiplier: 0, isAvailable: true },
+  { id: "gpt-4.1", label: "GPT-4.1", multiplier: 0, isAvailable: true },
+  { id: "gemini-3-pro-preview", label: "Gemini 3 Pro Preview", multiplier: 1, isAvailable: true }
+];
+var DEFAULT_MODEL = "claude-sonnet-4.5";
 
 // src/file-search-service.ts
 var import_promises = require("fs/promises");
@@ -47285,6 +47308,10 @@ var ClientConnection = class {
           case "searchFiles":
             await this.handleSearchFiles(request);
             break;
+          // Model selection
+          case "getModels":
+            await this.handleGetModels(request);
+            break;
           // Session methods
           case "session.send":
             await this.handleSessionSend(request);
@@ -47401,7 +47428,11 @@ var ClientConnection = class {
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
-      result: { sessionId }
+      result: {
+        sessionId,
+        model: params?.model
+        // Echo back the requested model
+      }
     });
   }
   async handleResumeSession(request) {
@@ -47605,6 +47636,22 @@ var ClientConnection = class {
       this.log("error", `[${this.clientId}] File search failed: ${err}`);
       this.sendErrorResponse(request.id, -32603, `File search failed: ${err}`);
     }
+  }
+  // ==========================================================================
+  // Model Selection
+  // ==========================================================================
+  async handleGetModels(request) {
+    this.log("debug", `[${this.clientId}] RPC -> getModels`);
+    const response = {
+      models: SUPPORTED_MODELS,
+      defaultModel: DEFAULT_MODEL
+      // currentModel could be tracked per-session if needed
+    };
+    this.sendToClient({
+      jsonrpc: "2.0",
+      id: request.id,
+      result: response
+    });
   }
   // ==========================================================================
   // Session Methods
@@ -47918,7 +47965,7 @@ function createLogCallback(logger) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.1.8";
+var CURRENT_VERSION = "0.1.9";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";
