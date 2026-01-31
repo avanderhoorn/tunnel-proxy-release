@@ -44482,6 +44482,9 @@ var DevTunnelHostAdapter = class {
   username;
   hasEverConnected = false;
   // Track initial connection for logging
+  // Disconnect tracking for reconnection context
+  lastDisconnectReason;
+  disconnectedAt;
   // Network monitoring state
   lastNetworkInterfaces = "";
   networkCheckTimer = null;
@@ -44581,6 +44584,8 @@ var DevTunnelHostAdapter = class {
   handleConnectionStatusChange(status, reason) {
     if (status === "disconnected") {
       this.log("info", "Tunnel disconnected" + (reason ? ` (${reason})` : ""));
+      this.lastDisconnectReason = reason;
+      this.disconnectedAt = Date.now();
       this.startNetworkMonitoring();
       if (this.clients.size > 0) {
         this.log("info", `Closing ${this.clients.size} orphaned client connection(s)`);
@@ -44591,7 +44596,24 @@ var DevTunnelHostAdapter = class {
       }
     } else if (status === "connected") {
       if (this.hasEverConnected) {
-        this.log("info", "Tunnel reconnected");
+        const parts = ["Tunnel reconnected"];
+        if (this.disconnectedAt) {
+          const downtime = Math.round((Date.now() - this.disconnectedAt) / 1e3);
+          parts.push(`after ${downtime}s`);
+        }
+        const contextParts = [];
+        if (this.lastDisconnectReason) {
+          contextParts.push(this.lastDisconnectReason);
+        }
+        if (this.retryCount > 0) {
+          contextParts.push(`${this.retryCount} ${this.retryCount === 1 ? "retry" : "retries"}`);
+        }
+        if (contextParts.length > 0) {
+          parts.push(`(${contextParts.join(", ")})`);
+        }
+        this.log("info", parts.join(" "));
+        this.lastDisconnectReason = void 0;
+        this.disconnectedAt = void 0;
       } else {
         this.hasEverConnected = true;
       }
@@ -47896,7 +47918,7 @@ function createLogCallback(logger) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.1.7";
+var CURRENT_VERSION = "0.1.8";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";

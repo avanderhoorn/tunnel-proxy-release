@@ -64,6 +64,8 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
     private isDisposed;
     private username;
     private hasEverConnected;
+    private lastDisconnectReason;
+    private disconnectedAt;
     private lastNetworkInterfaces;
     private networkCheckTimer;
     private isNetworkAvailable;
