@@ -44460,6 +44460,7 @@ var DEFAULT_CONNECTION_TIMEOUT_MS = 3e4;
 var NETWORK_CHECK_INTERVAL_MS = 5e3;
 var MIN_RETRY_DELAY_MS = 1e3;
 var DNS_TIMEOUT_MS = 5e3;
+var SLEEP_WAKE_THRESHOLD_MS = 3e4;
 var TUNNEL_LABEL = "copilot-tunnel-session";
 var GITHUB_CLIENT_ID = "Iv1.e7b89e013f801f03";
 var GITHUB_SCOPES = "read:user,read:org";
@@ -44485,11 +44486,16 @@ var DevTunnelHostAdapter = class {
   // Disconnect tracking for reconnection context
   lastDisconnectReason;
   disconnectedAt;
-  // Network monitoring state
+  // Network monitoring state (runs when disconnected)
   lastNetworkInterfaces = "";
   networkCheckTimer = null;
+  lastNetworkCheckTime = 0;
+  // For sleep/wake detection
   isNetworkAvailable = true;
   retryCount = 0;
+  // Sleep detection state (runs always to detect system wake)
+  sleepDetectionTimer = null;
+  lastSleepCheckTime = 0;
   // Log level filtering
   logLevel;
   constructor(config) {
@@ -44535,17 +44541,26 @@ var DevTunnelHostAdapter = class {
     });
   }
   /**
-   * Start monitoring network for changes.
-   * When network is restored, sets isNetworkAvailable=true and resets retryCount
+   * Start monitoring network for changes and system sleep/wake events.
+   * When network is restored or system wakes from sleep, resets retryCount
    * so the next SDK retry will happen faster.
    */
   startNetworkMonitoring() {
     if (this.networkCheckTimer) return;
     this.lastNetworkInterfaces = this.getNetworkFingerprint();
+    this.lastNetworkCheckTime = Date.now();
     this.log("debug", "Started network monitoring");
     this.networkCheckTimer = setInterval(async () => {
       if (this.isDisposed) {
         this.stopNetworkMonitoring();
+        return;
+      }
+      const now = Date.now();
+      const elapsed = now - this.lastNetworkCheckTime;
+      this.lastNetworkCheckTime = now;
+      if (elapsed > SLEEP_WAKE_THRESHOLD_MS) {
+        this.log("debug", `System wake detected (${Math.round(elapsed / 1e3)}s since last check)`);
+        await this.handleSystemWake();
         return;
       }
       const currentFingerprint = this.getNetworkFingerprint();
@@ -44569,6 +44584,23 @@ var DevTunnelHostAdapter = class {
     this.isNetworkAvailable = available;
   }
   /**
+   * Handle system wake from sleep.
+   * Forces a reconnection attempt by resetting retry state, regardless of
+   * whether network interfaces changed (they often don't when waking to same WiFi).
+   */
+  async handleSystemWake() {
+    this.lastNetworkInterfaces = this.getNetworkFingerprint();
+    const available = await this.checkNetworkAvailable();
+    if (available) {
+      this.log("debug", "Network available after wake - triggering reconnection");
+      this.isNetworkAvailable = true;
+      this.retryCount = 0;
+    } else {
+      this.log("debug", "Network not yet available after wake");
+      this.isNetworkAvailable = false;
+    }
+  }
+  /**
    * Stop network monitoring.
    */
   stopNetworkMonitoring() {
@@ -44579,16 +44611,67 @@ var DevTunnelHostAdapter = class {
     }
   }
   /**
+   * Start always-on sleep detection.
+   * This runs even when connected to detect system wake events that may have
+   * left the connection in a stale state.
+   */
+  startSleepDetection() {
+    if (this.sleepDetectionTimer) return;
+    this.lastSleepCheckTime = Date.now();
+    this.log("debug", "Started sleep detection");
+    this.sleepDetectionTimer = setInterval(() => {
+      if (this.isDisposed) {
+        this.stopSleepDetection();
+        return;
+      }
+      const now = Date.now();
+      const elapsed = now - this.lastSleepCheckTime;
+      this.lastSleepCheckTime = now;
+      if (elapsed > SLEEP_WAKE_THRESHOLD_MS) {
+        this.log("debug", `System wake detected (${Math.round(elapsed / 1e3)}s since last check)`);
+        this.handleConnectedWake();
+      }
+    }, NETWORK_CHECK_INTERVAL_MS);
+  }
+  /**
+   * Stop sleep detection.
+   */
+  stopSleepDetection() {
+    if (this.sleepDetectionTimer) {
+      clearInterval(this.sleepDetectionTimer);
+      this.sleepDetectionTimer = null;
+      this.log("debug", "Stopped sleep detection");
+    }
+  }
+  /**
+   * Handle system wake while tunnel is connected.
+   * The underlying connection may be stale after sleep, so we trigger
+   * a keepAlive to verify and potentially force reconnection.
+   */
+  handleConnectedWake() {
+    const host = this.host;
+    if (host?.sshSession?.sendKeepAlive) {
+      this.log("debug", "Triggering keepAlive check after wake");
+      try {
+        host.sshSession.sendKeepAlive();
+      } catch (err) {
+        this.log("warn", `KeepAlive after wake failed: ${err}`);
+      }
+    }
+  }
+  /**
    * Handle connection status change from SDK.
    */
   handleConnectionStatusChange(status, reason) {
     if (status === "disconnected") {
       this.log("info", "Tunnel disconnected" + (reason ? ` (${reason})` : ""));
+      this.log("info", "Reconnecting...");
       this.lastDisconnectReason = reason;
       this.disconnectedAt = Date.now();
+      this.stopSleepDetection();
       this.startNetworkMonitoring();
       if (this.clients.size > 0) {
-        this.log("info", `Closing ${this.clients.size} orphaned client connection(s)`);
+        this.log("debug", `Closing ${this.clients.size} orphaned client connection(s)`);
         for (const [clientId, socket] of this.clients) {
           this.disconnectedClients.add(clientId);
           socket.destroy();
@@ -44618,6 +44701,7 @@ var DevTunnelHostAdapter = class {
         this.hasEverConnected = true;
       }
       this.stopNetworkMonitoring();
+      this.startSleepDetection();
       this.retryCount = 0;
       this.isNetworkAvailable = true;
     } else {
@@ -44692,11 +44776,11 @@ var DevTunnelHostAdapter = class {
     });
     sshSession.onKeepAliveFailed?.(() => {
       const failureCount = sshSession.keepAliveFailureCount ?? 0;
-      this.log("warn", `KeepAlive failed (count: ${failureCount})`);
-      if (failureCount >= 3) {
-        this.log("error", "Multiple keepAlive failures - connection stale, closing client connections");
+      this.log("debug", `KeepAlive failed (count: ${failureCount})`);
+      if (failureCount === 3) {
+        this.log("debug", "Multiple keepAlive failures - connection stale");
         if (this.clients.size > 0) {
-          this.log("info", `Closing ${this.clients.size} client connection(s) due to stale tunnel`);
+          this.log("debug", `Closing ${this.clients.size} client connection(s) due to stale tunnel`);
           for (const [clientId, socket] of this.clients) {
             if (!this.disconnectedClients.has(clientId)) {
               this.disconnectedClients.add(clientId);
@@ -44866,6 +44950,7 @@ var DevTunnelHostAdapter = class {
   async stop() {
     this.isDisposed = true;
     this.stopNetworkMonitoring();
+    this.stopSleepDetection();
     for (const [clientId, socket] of this.clients) {
       if (!this.disconnectedClients.has(clientId)) {
         this.disconnectedClients.add(clientId);
@@ -47965,7 +48050,7 @@ function createLogCallback(logger) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.1.9";
+var CURRENT_VERSION = "0.1.10";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";

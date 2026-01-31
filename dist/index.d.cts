@@ -68,8 +68,11 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
     private disconnectedAt;
     private lastNetworkInterfaces;
     private networkCheckTimer;
+    private lastNetworkCheckTime;
     private isNetworkAvailable;
     private retryCount;
+    private sleepDetectionTimer;
+    private lastSleepCheckTime;
     private readonly logLevel;
     constructor(config: TunnelHostAdapterConfig);
     private log;
@@ -83,8 +86,8 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
      */
     private checkNetworkAvailable;
     /**
-     * Start monitoring network for changes.
-     * When network is restored, sets isNetworkAvailable=true and resets retryCount
+     * Start monitoring network for changes and system sleep/wake events.
+     * When network is restored or system wakes from sleep, resets retryCount
      * so the next SDK retry will happen faster.
      */
     private startNetworkMonitoring;
@@ -93,9 +96,31 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
      */
     private handleNetworkChange;
     /**
+     * Handle system wake from sleep.
+     * Forces a reconnection attempt by resetting retry state, regardless of
+     * whether network interfaces changed (they often don't when waking to same WiFi).
+     */
+    private handleSystemWake;
+    /**
      * Stop network monitoring.
      */
     private stopNetworkMonitoring;
+    /**
+     * Start always-on sleep detection.
+     * This runs even when connected to detect system wake events that may have
+     * left the connection in a stale state.
+     */
+    private startSleepDetection;
+    /**
+     * Stop sleep detection.
+     */
+    private stopSleepDetection;
+    /**
+     * Handle system wake while tunnel is connected.
+     * The underlying connection may be stale after sleep, so we trigger
+     * a keepAlive to verify and potentially force reconnection.
+     */
+    private handleConnectedWake;
     /**
      * Handle connection status change from SDK.
      */

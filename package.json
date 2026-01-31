@@ -1,6 +1,6 @@
 {
   "name": "remote-sdk-host",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Remote SDK Host - exposes Copilot SDK over Dev Tunnels",
   "bin": {
     "remote-sdk-host": "./dist/sdk-proxy.cjs"
