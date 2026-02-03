@@ -966,7 +966,7 @@ var require_suggestSimilar = __commonJS({
 var require_command = __commonJS({
   "node_modules/commander/lib/command.js"(exports2) {
     "use strict";
-    var EventEmitter = require("events").EventEmitter;
+    var EventEmitter2 = require("events").EventEmitter;
     var childProcess = require("child_process");
     var path2 = require("path");
     var fs2 = require("fs");
@@ -976,7 +976,7 @@ var require_command = __commonJS({
     var { Help: Help2 } = require_help();
     var { Option: Option2, DualOptions } = require_option();
     var { suggestSimilar } = require_suggestSimilar();
-    var Command2 = class _Command extends EventEmitter {
+    var Command2 = class _Command extends EventEmitter2 {
       /**
        * Initialize a new `Command`.
        *
@@ -3543,7 +3543,7 @@ var require_messageReader = __commonJS({
       }
     };
     exports2.AbstractMessageReader = AbstractMessageReader;
-    var StreamMessageReader2 = class extends AbstractMessageReader {
+    var StreamMessageReader = class extends AbstractMessageReader {
       constructor(readable, encoding = "utf8") {
         super();
         this.readable = readable;
@@ -3617,7 +3617,7 @@ var require_messageReader = __commonJS({
         }, this._partialMessageTimeout, this.messageToken, this._partialMessageTimeout);
       }
     };
-    exports2.StreamMessageReader = StreamMessageReader2;
+    exports2.StreamMessageReader = StreamMessageReader;
     var IPCMessageReader = class extends AbstractMessageReader {
       constructor(process2) {
         super();
@@ -3631,7 +3631,7 @@ var require_messageReader = __commonJS({
       }
     };
     exports2.IPCMessageReader = IPCMessageReader;
-    var SocketMessageReader = class extends StreamMessageReader2 {
+    var SocketMessageReader = class extends StreamMessageReader {
       constructor(socket, encoding = "utf-8") {
         super(socket, encoding);
       }
@@ -3687,7 +3687,7 @@ var require_messageWriter = __commonJS({
       }
     };
     exports2.AbstractMessageWriter = AbstractMessageWriter;
-    var StreamMessageWriter2 = class extends AbstractMessageWriter {
+    var StreamMessageWriter = class extends AbstractMessageWriter {
       constructor(writable, encoding = "utf8") {
         super();
         this.writable = writable;
@@ -3715,7 +3715,7 @@ var require_messageWriter = __commonJS({
         }
       }
     };
-    exports2.StreamMessageWriter = StreamMessageWriter2;
+    exports2.StreamMessageWriter = StreamMessageWriter;
     var IPCMessageWriter = class extends AbstractMessageWriter {
       constructor(process2) {
         super();
@@ -5102,7 +5102,7 @@ ${JSON.stringify(message, null, 4)}`);
     function isMessageWriter(value) {
       return value.write !== void 0 && value.end === void 0;
     }
-    function createMessageConnection2(input, output, logger, strategy) {
+    function createMessageConnection(input, output, logger, strategy) {
       if (!logger) {
         logger = exports2.NullLogger;
       }
@@ -5110,7 +5110,7 @@ ${JSON.stringify(message, null, 4)}`);
       let writer = isMessageWriter(output) ? output : new messageWriter_1.StreamMessageWriter(output);
       return _createMessageConnection(reader, writer, logger, strategy);
     }
-    exports2.createMessageConnection = createMessageConnection2;
+    exports2.createMessageConnection = createMessageConnection;
   }
 });
 
@@ -27745,7 +27745,7 @@ var require_axios = __commonJS({
       kind === "object" && isFunction$1(thing.toString) && thing.toString() === "[object FormData]"));
     };
     var isURLSearchParams = kindOfTest("URLSearchParams");
-    var [isReadableStream, isRequest, isResponse, isHeaders] = ["ReadableStream", "Request", "Response", "Headers"].map(kindOfTest);
+    var [isReadableStream, isRequest2, isResponse2, isHeaders] = ["ReadableStream", "Request", "Response", "Headers"].map(kindOfTest);
     var trim = (str) => str.trim ? str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
     function forEach(obj, fn, { allOwnKeys = false } = {}) {
       if (obj === null || typeof obj === "undefined") {
@@ -28021,8 +28021,8 @@ var require_axios = __commonJS({
       isPlainObject,
       isEmptyObject,
       isReadableStream,
-      isRequest,
-      isResponse,
+      isRequest: isRequest2,
+      isResponse: isResponse2,
       isHeaders,
       isUndefined,
       isDate,
@@ -33697,13 +33697,13 @@ var require_FastBufferList = __commonJS({
   "../../node_modules/websocket/vendor/FastBufferList.js"(exports2, module2) {
     "use strict";
     var Buffer2 = require("buffer").Buffer;
-    var EventEmitter = require("events").EventEmitter;
+    var EventEmitter2 = require("events").EventEmitter;
     var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
     module2.exports = BufferList;
     module2.exports.BufferList = BufferList;
     function BufferList(opts) {
       if (!(this instanceof BufferList)) return new BufferList(opts);
-      EventEmitter.call(this);
+      EventEmitter2.call(this);
       var self2 = this;
       if (typeof opts == "undefined") opts = {};
       self2.encoding = opts.encoding;
@@ -33828,7 +33828,7 @@ var require_FastBufferList = __commonJS({
         return self2.take("binary");
       };
     }
-    require("util").inherits(BufferList, EventEmitter);
+    require("util").inherits(BufferList, EventEmitter2);
   }
 });
 
@@ -33887,7 +33887,7 @@ var require_WebSocketConnection = __commonJS({
     "use strict";
     var util = require("util");
     var utils = require_utils2();
-    var EventEmitter = require("events").EventEmitter;
+    var EventEmitter2 = require("events").EventEmitter;
     var WebSocketFrame = require_WebSocketFrame();
     var BufferList = require_FastBufferList();
     var isValidUTF8 = require_utf_8_validate();
@@ -33905,7 +33905,7 @@ var require_WebSocketConnection = __commonJS({
       if (this._debug.enabled) {
         instrumentSocketForDebugging(this, socket);
       }
-      EventEmitter.call(this);
+      EventEmitter2.call(this);
       this._pingListenerCount = 0;
       this.on("newListener", function(ev) {
         if (ev === "ping") {
@@ -34009,7 +34009,7 @@ var require_WebSocketConnection = __commonJS({
         return false;
       }
     }
-    util.inherits(WebSocketConnection, EventEmitter);
+    util.inherits(WebSocketConnection, EventEmitter2);
     WebSocketConnection.prototype._addSocketEventListeners = function() {
       this.socket.on("error", this.handleSocketError.bind(this));
       this.socket.on("end", this.handleSocketEnd.bind(this));
@@ -34609,7 +34609,7 @@ var require_WebSocketRequest = __commonJS({
     var crypto2 = require("crypto");
     var util = require("util");
     var url = require("url");
-    var EventEmitter = require("events").EventEmitter;
+    var EventEmitter2 = require("events").EventEmitter;
     var WebSocketConnection = require_WebSocketConnection();
     var headerValueSplitRegExp = /,\s*/;
     var headerParamSplitRegExp = /;\s*/;
@@ -34691,7 +34691,7 @@ var require_WebSocketRequest = __commonJS({
       505: "HTTP Version Not Supported"
     };
     function WebSocketRequest(socket, httpRequest, serverConfig) {
-      EventEmitter.call(this);
+      EventEmitter2.call(this);
       this.socket = socket;
       this.httpRequest = httpRequest;
       this.resource = httpRequest.url;
@@ -34704,7 +34704,7 @@ var require_WebSocketRequest = __commonJS({
       this.socket.on("close", this._socketCloseHandler);
       this._resolved = false;
     }
-    util.inherits(WebSocketRequest, EventEmitter);
+    util.inherits(WebSocketRequest, EventEmitter2);
     WebSocketRequest.prototype.readHandshake = function() {
       var self2 = this;
       var request = this.httpRequest;
@@ -35026,10 +35026,10 @@ var require_WebSocketServer = __commonJS({
     var utils = require_utils2();
     var util = require("util");
     var debug = require_src2()("websocket:server");
-    var EventEmitter = require("events").EventEmitter;
+    var EventEmitter2 = require("events").EventEmitter;
     var WebSocketRequest = require_WebSocketRequest();
     var WebSocketServer = function WebSocketServer2(config) {
-      EventEmitter.call(this);
+      EventEmitter2.call(this);
       this._handlers = {
         upgrade: this.handleUpgrade.bind(this),
         requestAccepted: this.handleRequestAccepted.bind(this),
@@ -35041,7 +35041,7 @@ var require_WebSocketServer = __commonJS({
         this.mount(config);
       }
     };
-    util.inherits(WebSocketServer, EventEmitter);
+    util.inherits(WebSocketServer, EventEmitter2);
     WebSocketServer.prototype.mount = function(config) {
       this.config = {
         // The http server instance to attach to.  Required.
@@ -35233,7 +35233,7 @@ var require_WebSocketClient = __commonJS({
     var utils = require_utils2();
     var extend = utils.extend;
     var util = require("util");
-    var EventEmitter = require("events").EventEmitter;
+    var EventEmitter2 = require("events").EventEmitter;
     var http = require("http");
     var https = require("https");
     var url = require("url");
@@ -35263,7 +35263,7 @@ var require_WebSocketClient = __commonJS({
     ];
     var excludedTlsOptions = ["hostname", "port", "method", "path", "headers"];
     function WebSocketClient(config) {
-      EventEmitter.call(this);
+      EventEmitter2.call(this);
       this.config = {
         // 1MiB max frame size.
         maxReceivedFrameSize: 1048576,
@@ -35324,7 +35324,7 @@ var require_WebSocketClient = __commonJS({
           throw new Error("Requested webSocketVersion is not supported. Allowed values are 8 and 13.");
       }
     }
-    util.inherits(WebSocketClient, EventEmitter);
+    util.inherits(WebSocketClient, EventEmitter2);
     WebSocketClient.prototype.connect = function(requestUrl, protocols, origin, headers, extraRequestOptions) {
       var self2 = this;
       if (typeof protocols === "string") {
@@ -35527,9 +35527,9 @@ var require_WebSocketRouterRequest = __commonJS({
   "../../node_modules/websocket/lib/WebSocketRouterRequest.js"(exports2, module2) {
     "use strict";
     var util = require("util");
-    var EventEmitter = require("events").EventEmitter;
+    var EventEmitter2 = require("events").EventEmitter;
     function WebSocketRouterRequest(webSocketRequest, resolvedProtocol) {
-      EventEmitter.call(this);
+      EventEmitter2.call(this);
       this.webSocketRequest = webSocketRequest;
       if (resolvedProtocol === "____no_protocol____") {
         this.protocol = null;
@@ -35545,7 +35545,7 @@ var require_WebSocketRouterRequest = __commonJS({
       this.requestedExtensions = webSocketRequest.requestedExtensions;
       this.cookies = webSocketRequest.cookies;
     }
-    util.inherits(WebSocketRouterRequest, EventEmitter);
+    util.inherits(WebSocketRouterRequest, EventEmitter2);
     WebSocketRouterRequest.prototype.accept = function(origin, cookies) {
       var connection = this.webSocketRequest.accept(this.protocol, origin, cookies);
       this.emit("requestAccepted", connection);
@@ -35565,10 +35565,10 @@ var require_WebSocketRouter = __commonJS({
     "use strict";
     var extend = require_utils2().extend;
     var util = require("util");
-    var EventEmitter = require("events").EventEmitter;
+    var EventEmitter2 = require("events").EventEmitter;
     var WebSocketRouterRequest = require_WebSocketRouterRequest();
     function WebSocketRouter(config) {
-      EventEmitter.call(this);
+      EventEmitter2.call(this);
       this.config = {
         // The WebSocketServer instance to attach to.
         server: null
@@ -35582,7 +35582,7 @@ var require_WebSocketRouter = __commonJS({
         this.attachServer(this.config.server);
       }
     }
-    util.inherits(WebSocketRouter, EventEmitter);
+    util.inherits(WebSocketRouter, EventEmitter2);
     WebSocketRouter.prototype.attachServer = function(server) {
       if (server) {
         this.server = server;
@@ -39589,3262 +39589,6 @@ var require_dev_tunnels_connections = __commonJS({
   }
 });
 
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/is.js
-var require_is2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/is.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.stringArray = exports2.array = exports2.func = exports2.error = exports2.number = exports2.string = exports2.boolean = void 0;
-    function boolean(value) {
-      return value === true || value === false;
-    }
-    exports2.boolean = boolean;
-    function string(value) {
-      return typeof value === "string" || value instanceof String;
-    }
-    exports2.string = string;
-    function number(value) {
-      return typeof value === "number" || value instanceof Number;
-    }
-    exports2.number = number;
-    function error(value) {
-      return value instanceof Error;
-    }
-    exports2.error = error;
-    function func(value) {
-      return typeof value === "function";
-    }
-    exports2.func = func;
-    function array(value) {
-      return Array.isArray(value);
-    }
-    exports2.array = array;
-    function stringArray(value) {
-      return array(value) && value.every((elem) => string(elem));
-    }
-    exports2.stringArray = stringArray;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messages.js
-var require_messages2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messages.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.Message = exports2.NotificationType9 = exports2.NotificationType8 = exports2.NotificationType7 = exports2.NotificationType6 = exports2.NotificationType5 = exports2.NotificationType4 = exports2.NotificationType3 = exports2.NotificationType2 = exports2.NotificationType1 = exports2.NotificationType0 = exports2.NotificationType = exports2.RequestType9 = exports2.RequestType8 = exports2.RequestType7 = exports2.RequestType6 = exports2.RequestType5 = exports2.RequestType4 = exports2.RequestType3 = exports2.RequestType2 = exports2.RequestType1 = exports2.RequestType = exports2.RequestType0 = exports2.AbstractMessageSignature = exports2.ParameterStructures = exports2.ResponseError = exports2.ErrorCodes = void 0;
-    var is = require_is2();
-    var ErrorCodes;
-    (function(ErrorCodes2) {
-      ErrorCodes2.ParseError = -32700;
-      ErrorCodes2.InvalidRequest = -32600;
-      ErrorCodes2.MethodNotFound = -32601;
-      ErrorCodes2.InvalidParams = -32602;
-      ErrorCodes2.InternalError = -32603;
-      ErrorCodes2.jsonrpcReservedErrorRangeStart = -32099;
-      ErrorCodes2.serverErrorStart = -32099;
-      ErrorCodes2.MessageWriteError = -32099;
-      ErrorCodes2.MessageReadError = -32098;
-      ErrorCodes2.PendingResponseRejected = -32097;
-      ErrorCodes2.ConnectionInactive = -32096;
-      ErrorCodes2.ServerNotInitialized = -32002;
-      ErrorCodes2.UnknownErrorCode = -32001;
-      ErrorCodes2.jsonrpcReservedErrorRangeEnd = -32e3;
-      ErrorCodes2.serverErrorEnd = -32e3;
-    })(ErrorCodes || (exports2.ErrorCodes = ErrorCodes = {}));
-    var ResponseError = class _ResponseError extends Error {
-      constructor(code, message, data) {
-        super(message);
-        this.code = is.number(code) ? code : ErrorCodes.UnknownErrorCode;
-        this.data = data;
-        Object.setPrototypeOf(this, _ResponseError.prototype);
-      }
-      toJson() {
-        const result = {
-          code: this.code,
-          message: this.message
-        };
-        if (this.data !== void 0) {
-          result.data = this.data;
-        }
-        return result;
-      }
-    };
-    exports2.ResponseError = ResponseError;
-    var ParameterStructures = class _ParameterStructures {
-      constructor(kind) {
-        this.kind = kind;
-      }
-      static is(value) {
-        return value === _ParameterStructures.auto || value === _ParameterStructures.byName || value === _ParameterStructures.byPosition;
-      }
-      toString() {
-        return this.kind;
-      }
-    };
-    exports2.ParameterStructures = ParameterStructures;
-    ParameterStructures.auto = new ParameterStructures("auto");
-    ParameterStructures.byPosition = new ParameterStructures("byPosition");
-    ParameterStructures.byName = new ParameterStructures("byName");
-    var AbstractMessageSignature = class {
-      constructor(method, numberOfParams) {
-        this.method = method;
-        this.numberOfParams = numberOfParams;
-      }
-      get parameterStructures() {
-        return ParameterStructures.auto;
-      }
-    };
-    exports2.AbstractMessageSignature = AbstractMessageSignature;
-    var RequestType0 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 0);
-      }
-    };
-    exports2.RequestType0 = RequestType0;
-    var RequestType = class extends AbstractMessageSignature {
-      constructor(method, _parameterStructures = ParameterStructures.auto) {
-        super(method, 1);
-        this._parameterStructures = _parameterStructures;
-      }
-      get parameterStructures() {
-        return this._parameterStructures;
-      }
-    };
-    exports2.RequestType = RequestType;
-    var RequestType1 = class extends AbstractMessageSignature {
-      constructor(method, _parameterStructures = ParameterStructures.auto) {
-        super(method, 1);
-        this._parameterStructures = _parameterStructures;
-      }
-      get parameterStructures() {
-        return this._parameterStructures;
-      }
-    };
-    exports2.RequestType1 = RequestType1;
-    var RequestType2 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 2);
-      }
-    };
-    exports2.RequestType2 = RequestType2;
-    var RequestType3 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 3);
-      }
-    };
-    exports2.RequestType3 = RequestType3;
-    var RequestType4 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 4);
-      }
-    };
-    exports2.RequestType4 = RequestType4;
-    var RequestType5 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 5);
-      }
-    };
-    exports2.RequestType5 = RequestType5;
-    var RequestType6 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 6);
-      }
-    };
-    exports2.RequestType6 = RequestType6;
-    var RequestType7 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 7);
-      }
-    };
-    exports2.RequestType7 = RequestType7;
-    var RequestType8 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 8);
-      }
-    };
-    exports2.RequestType8 = RequestType8;
-    var RequestType9 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 9);
-      }
-    };
-    exports2.RequestType9 = RequestType9;
-    var NotificationType = class extends AbstractMessageSignature {
-      constructor(method, _parameterStructures = ParameterStructures.auto) {
-        super(method, 1);
-        this._parameterStructures = _parameterStructures;
-      }
-      get parameterStructures() {
-        return this._parameterStructures;
-      }
-    };
-    exports2.NotificationType = NotificationType;
-    var NotificationType0 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 0);
-      }
-    };
-    exports2.NotificationType0 = NotificationType0;
-    var NotificationType1 = class extends AbstractMessageSignature {
-      constructor(method, _parameterStructures = ParameterStructures.auto) {
-        super(method, 1);
-        this._parameterStructures = _parameterStructures;
-      }
-      get parameterStructures() {
-        return this._parameterStructures;
-      }
-    };
-    exports2.NotificationType1 = NotificationType1;
-    var NotificationType2 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 2);
-      }
-    };
-    exports2.NotificationType2 = NotificationType2;
-    var NotificationType3 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 3);
-      }
-    };
-    exports2.NotificationType3 = NotificationType3;
-    var NotificationType4 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 4);
-      }
-    };
-    exports2.NotificationType4 = NotificationType4;
-    var NotificationType5 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 5);
-      }
-    };
-    exports2.NotificationType5 = NotificationType5;
-    var NotificationType6 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 6);
-      }
-    };
-    exports2.NotificationType6 = NotificationType6;
-    var NotificationType7 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 7);
-      }
-    };
-    exports2.NotificationType7 = NotificationType7;
-    var NotificationType8 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 8);
-      }
-    };
-    exports2.NotificationType8 = NotificationType8;
-    var NotificationType9 = class extends AbstractMessageSignature {
-      constructor(method) {
-        super(method, 9);
-      }
-    };
-    exports2.NotificationType9 = NotificationType9;
-    var Message;
-    (function(Message2) {
-      function isRequest(message) {
-        const candidate = message;
-        return candidate && is.string(candidate.method) && (is.string(candidate.id) || is.number(candidate.id));
-      }
-      Message2.isRequest = isRequest;
-      function isNotification(message) {
-        const candidate = message;
-        return candidate && is.string(candidate.method) && message.id === void 0;
-      }
-      Message2.isNotification = isNotification;
-      function isResponse(message) {
-        const candidate = message;
-        return candidate && (candidate.result !== void 0 || !!candidate.error) && (is.string(candidate.id) || is.number(candidate.id) || candidate.id === null);
-      }
-      Message2.isResponse = isResponse;
-    })(Message || (exports2.Message = Message = {}));
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/linkedMap.js
-var require_linkedMap2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/linkedMap.js"(exports2) {
-    "use strict";
-    var _a;
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.LRUCache = exports2.LinkedMap = exports2.Touch = void 0;
-    var Touch;
-    (function(Touch2) {
-      Touch2.None = 0;
-      Touch2.First = 1;
-      Touch2.AsOld = Touch2.First;
-      Touch2.Last = 2;
-      Touch2.AsNew = Touch2.Last;
-    })(Touch || (exports2.Touch = Touch = {}));
-    var LinkedMap = class {
-      constructor() {
-        this[_a] = "LinkedMap";
-        this._map = /* @__PURE__ */ new Map();
-        this._head = void 0;
-        this._tail = void 0;
-        this._size = 0;
-        this._state = 0;
-      }
-      clear() {
-        this._map.clear();
-        this._head = void 0;
-        this._tail = void 0;
-        this._size = 0;
-        this._state++;
-      }
-      isEmpty() {
-        return !this._head && !this._tail;
-      }
-      get size() {
-        return this._size;
-      }
-      get first() {
-        return this._head?.value;
-      }
-      get last() {
-        return this._tail?.value;
-      }
-      has(key) {
-        return this._map.has(key);
-      }
-      get(key, touch = Touch.None) {
-        const item = this._map.get(key);
-        if (!item) {
-          return void 0;
-        }
-        if (touch !== Touch.None) {
-          this.touch(item, touch);
-        }
-        return item.value;
-      }
-      set(key, value, touch = Touch.None) {
-        let item = this._map.get(key);
-        if (item) {
-          item.value = value;
-          if (touch !== Touch.None) {
-            this.touch(item, touch);
-          }
-        } else {
-          item = { key, value, next: void 0, previous: void 0 };
-          switch (touch) {
-            case Touch.None:
-              this.addItemLast(item);
-              break;
-            case Touch.First:
-              this.addItemFirst(item);
-              break;
-            case Touch.Last:
-              this.addItemLast(item);
-              break;
-            default:
-              this.addItemLast(item);
-              break;
-          }
-          this._map.set(key, item);
-          this._size++;
-        }
-        return this;
-      }
-      delete(key) {
-        return !!this.remove(key);
-      }
-      remove(key) {
-        const item = this._map.get(key);
-        if (!item) {
-          return void 0;
-        }
-        this._map.delete(key);
-        this.removeItem(item);
-        this._size--;
-        return item.value;
-      }
-      shift() {
-        if (!this._head && !this._tail) {
-          return void 0;
-        }
-        if (!this._head || !this._tail) {
-          throw new Error("Invalid list");
-        }
-        const item = this._head;
-        this._map.delete(item.key);
-        this.removeItem(item);
-        this._size--;
-        return item.value;
-      }
-      forEach(callbackfn, thisArg) {
-        const state = this._state;
-        let current = this._head;
-        while (current) {
-          if (thisArg) {
-            callbackfn.bind(thisArg)(current.value, current.key, this);
-          } else {
-            callbackfn(current.value, current.key, this);
-          }
-          if (this._state !== state) {
-            throw new Error(`LinkedMap got modified during iteration.`);
-          }
-          current = current.next;
-        }
-      }
-      keys() {
-        const state = this._state;
-        let current = this._head;
-        const iterator = {
-          [Symbol.iterator]: () => {
-            return iterator;
-          },
-          next: () => {
-            if (this._state !== state) {
-              throw new Error(`LinkedMap got modified during iteration.`);
-            }
-            if (current) {
-              const result = { value: current.key, done: false };
-              current = current.next;
-              return result;
-            } else {
-              return { value: void 0, done: true };
-            }
-          }
-        };
-        return iterator;
-      }
-      values() {
-        const state = this._state;
-        let current = this._head;
-        const iterator = {
-          [Symbol.iterator]: () => {
-            return iterator;
-          },
-          next: () => {
-            if (this._state !== state) {
-              throw new Error(`LinkedMap got modified during iteration.`);
-            }
-            if (current) {
-              const result = { value: current.value, done: false };
-              current = current.next;
-              return result;
-            } else {
-              return { value: void 0, done: true };
-            }
-          }
-        };
-        return iterator;
-      }
-      entries() {
-        const state = this._state;
-        let current = this._head;
-        const iterator = {
-          [Symbol.iterator]: () => {
-            return iterator;
-          },
-          next: () => {
-            if (this._state !== state) {
-              throw new Error(`LinkedMap got modified during iteration.`);
-            }
-            if (current) {
-              const result = { value: [current.key, current.value], done: false };
-              current = current.next;
-              return result;
-            } else {
-              return { value: void 0, done: true };
-            }
-          }
-        };
-        return iterator;
-      }
-      [(_a = Symbol.toStringTag, Symbol.iterator)]() {
-        return this.entries();
-      }
-      trimOld(newSize) {
-        if (newSize >= this.size) {
-          return;
-        }
-        if (newSize === 0) {
-          this.clear();
-          return;
-        }
-        let current = this._head;
-        let currentSize = this.size;
-        while (current && currentSize > newSize) {
-          this._map.delete(current.key);
-          current = current.next;
-          currentSize--;
-        }
-        this._head = current;
-        this._size = currentSize;
-        if (current) {
-          current.previous = void 0;
-        }
-        this._state++;
-      }
-      addItemFirst(item) {
-        if (!this._head && !this._tail) {
-          this._tail = item;
-        } else if (!this._head) {
-          throw new Error("Invalid list");
-        } else {
-          item.next = this._head;
-          this._head.previous = item;
-        }
-        this._head = item;
-        this._state++;
-      }
-      addItemLast(item) {
-        if (!this._head && !this._tail) {
-          this._head = item;
-        } else if (!this._tail) {
-          throw new Error("Invalid list");
-        } else {
-          item.previous = this._tail;
-          this._tail.next = item;
-        }
-        this._tail = item;
-        this._state++;
-      }
-      removeItem(item) {
-        if (item === this._head && item === this._tail) {
-          this._head = void 0;
-          this._tail = void 0;
-        } else if (item === this._head) {
-          if (!item.next) {
-            throw new Error("Invalid list");
-          }
-          item.next.previous = void 0;
-          this._head = item.next;
-        } else if (item === this._tail) {
-          if (!item.previous) {
-            throw new Error("Invalid list");
-          }
-          item.previous.next = void 0;
-          this._tail = item.previous;
-        } else {
-          const next = item.next;
-          const previous = item.previous;
-          if (!next || !previous) {
-            throw new Error("Invalid list");
-          }
-          next.previous = previous;
-          previous.next = next;
-        }
-        item.next = void 0;
-        item.previous = void 0;
-        this._state++;
-      }
-      touch(item, touch) {
-        if (!this._head || !this._tail) {
-          throw new Error("Invalid list");
-        }
-        if (touch !== Touch.First && touch !== Touch.Last) {
-          return;
-        }
-        if (touch === Touch.First) {
-          if (item === this._head) {
-            return;
-          }
-          const next = item.next;
-          const previous = item.previous;
-          if (item === this._tail) {
-            previous.next = void 0;
-            this._tail = previous;
-          } else {
-            next.previous = previous;
-            previous.next = next;
-          }
-          item.previous = void 0;
-          item.next = this._head;
-          this._head.previous = item;
-          this._head = item;
-          this._state++;
-        } else if (touch === Touch.Last) {
-          if (item === this._tail) {
-            return;
-          }
-          const next = item.next;
-          const previous = item.previous;
-          if (item === this._head) {
-            next.previous = void 0;
-            this._head = next;
-          } else {
-            next.previous = previous;
-            previous.next = next;
-          }
-          item.next = void 0;
-          item.previous = this._tail;
-          this._tail.next = item;
-          this._tail = item;
-          this._state++;
-        }
-      }
-      toJSON() {
-        const data = [];
-        this.forEach((value, key) => {
-          data.push([key, value]);
-        });
-        return data;
-      }
-      fromJSON(data) {
-        this.clear();
-        for (const [key, value] of data) {
-          this.set(key, value);
-        }
-      }
-    };
-    exports2.LinkedMap = LinkedMap;
-    var LRUCache = class extends LinkedMap {
-      constructor(limit, ratio = 1) {
-        super();
-        this._limit = limit;
-        this._ratio = Math.min(Math.max(0, ratio), 1);
-      }
-      get limit() {
-        return this._limit;
-      }
-      set limit(limit) {
-        this._limit = limit;
-        this.checkTrim();
-      }
-      get ratio() {
-        return this._ratio;
-      }
-      set ratio(ratio) {
-        this._ratio = Math.min(Math.max(0, ratio), 1);
-        this.checkTrim();
-      }
-      get(key, touch = Touch.AsNew) {
-        return super.get(key, touch);
-      }
-      peek(key) {
-        return super.get(key, Touch.None);
-      }
-      set(key, value) {
-        super.set(key, value, Touch.Last);
-        this.checkTrim();
-        return this;
-      }
-      checkTrim() {
-        if (this.size > this._limit) {
-          this.trimOld(Math.round(this._limit * this._ratio));
-        }
-      }
-    };
-    exports2.LRUCache = LRUCache;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/disposable.js
-var require_disposable = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/disposable.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.Disposable = void 0;
-    var Disposable;
-    (function(Disposable2) {
-      function create(func) {
-        return {
-          dispose: func
-        };
-      }
-      Disposable2.create = create;
-    })(Disposable || (exports2.Disposable = Disposable = {}));
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/ral.js
-var require_ral = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/ral.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    var _ral;
-    function RAL() {
-      if (_ral === void 0) {
-        throw new Error(`No runtime abstraction layer installed`);
-      }
-      return _ral;
-    }
-    (function(RAL2) {
-      function install(ral) {
-        if (ral === void 0) {
-          throw new Error(`No runtime abstraction layer provided`);
-        }
-        _ral = ral;
-      }
-      RAL2.install = install;
-    })(RAL || (RAL = {}));
-    exports2.default = RAL;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/events.js
-var require_events2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/events.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.Emitter = exports2.Event = void 0;
-    var ral_1 = require_ral();
-    var Event;
-    (function(Event2) {
-      const _disposable = { dispose() {
-      } };
-      Event2.None = function() {
-        return _disposable;
-      };
-    })(Event || (exports2.Event = Event = {}));
-    var CallbackList = class {
-      add(callback2, context = null, bucket) {
-        if (!this._callbacks) {
-          this._callbacks = [];
-          this._contexts = [];
-        }
-        this._callbacks.push(callback2);
-        this._contexts.push(context);
-        if (Array.isArray(bucket)) {
-          bucket.push({ dispose: () => this.remove(callback2, context) });
-        }
-      }
-      remove(callback2, context = null) {
-        if (!this._callbacks) {
-          return;
-        }
-        let foundCallbackWithDifferentContext = false;
-        for (let i = 0, len = this._callbacks.length; i < len; i++) {
-          if (this._callbacks[i] === callback2) {
-            if (this._contexts[i] === context) {
-              this._callbacks.splice(i, 1);
-              this._contexts.splice(i, 1);
-              return;
-            } else {
-              foundCallbackWithDifferentContext = true;
-            }
-          }
-        }
-        if (foundCallbackWithDifferentContext) {
-          throw new Error("When adding a listener with a context, you should remove it with the same context");
-        }
-      }
-      invoke(...args) {
-        if (!this._callbacks) {
-          return [];
-        }
-        const ret = [], callbacks = this._callbacks.slice(0), contexts = this._contexts.slice(0);
-        for (let i = 0, len = callbacks.length; i < len; i++) {
-          try {
-            ret.push(callbacks[i].apply(contexts[i], args));
-          } catch (e) {
-            (0, ral_1.default)().console.error(e);
-          }
-        }
-        return ret;
-      }
-      isEmpty() {
-        return !this._callbacks || this._callbacks.length === 0;
-      }
-      dispose() {
-        this._callbacks = void 0;
-        this._contexts = void 0;
-      }
-    };
-    var Emitter = class _Emitter {
-      constructor(_options) {
-        this._options = _options;
-      }
-      /**
-       * For the public to allow to subscribe
-       * to events from this Emitter
-       */
-      get event() {
-        if (!this._event) {
-          this._event = (listener, thisArgs, disposables) => {
-            if (!this._callbacks) {
-              this._callbacks = new CallbackList();
-            }
-            if (this._options && this._options.onFirstListenerAdd && this._callbacks.isEmpty()) {
-              this._options.onFirstListenerAdd(this);
-            }
-            this._callbacks.add(listener, thisArgs);
-            const result = {
-              dispose: () => {
-                if (!this._callbacks) {
-                  return;
-                }
-                this._callbacks.remove(listener, thisArgs);
-                result.dispose = _Emitter._noop;
-                if (this._options && this._options.onLastListenerRemove && this._callbacks.isEmpty()) {
-                  this._options.onLastListenerRemove(this);
-                }
-              }
-            };
-            if (Array.isArray(disposables)) {
-              disposables.push(result);
-            }
-            return result;
-          };
-        }
-        return this._event;
-      }
-      /**
-       * To be kept private to fire an event to
-       * subscribers
-       */
-      fire(event) {
-        if (this._callbacks) {
-          this._callbacks.invoke.call(this._callbacks, event);
-        }
-      }
-      dispose() {
-        if (this._callbacks) {
-          this._callbacks.dispose();
-          this._callbacks = void 0;
-        }
-      }
-    };
-    exports2.Emitter = Emitter;
-    Emitter._noop = function() {
-    };
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/cancellation.js
-var require_cancellation3 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/cancellation.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.CancellationTokenSource = exports2.CancellationToken = void 0;
-    var ral_1 = require_ral();
-    var Is = require_is2();
-    var events_1 = require_events2();
-    var CancellationToken;
-    (function(CancellationToken2) {
-      CancellationToken2.None = Object.freeze({
-        isCancellationRequested: false,
-        onCancellationRequested: events_1.Event.None
-      });
-      CancellationToken2.Cancelled = Object.freeze({
-        isCancellationRequested: true,
-        onCancellationRequested: events_1.Event.None
-      });
-      function is(value) {
-        const candidate = value;
-        return candidate && (candidate === CancellationToken2.None || candidate === CancellationToken2.Cancelled || Is.boolean(candidate.isCancellationRequested) && !!candidate.onCancellationRequested);
-      }
-      CancellationToken2.is = is;
-    })(CancellationToken || (exports2.CancellationToken = CancellationToken = {}));
-    var shortcutEvent = Object.freeze(function(callback2, context) {
-      const handle = (0, ral_1.default)().timer.setTimeout(callback2.bind(context), 0);
-      return { dispose() {
-        handle.dispose();
-      } };
-    });
-    var MutableToken = class {
-      constructor() {
-        this._isCancelled = false;
-      }
-      cancel() {
-        if (!this._isCancelled) {
-          this._isCancelled = true;
-          if (this._emitter) {
-            this._emitter.fire(void 0);
-            this.dispose();
-          }
-        }
-      }
-      get isCancellationRequested() {
-        return this._isCancelled;
-      }
-      get onCancellationRequested() {
-        if (this._isCancelled) {
-          return shortcutEvent;
-        }
-        if (!this._emitter) {
-          this._emitter = new events_1.Emitter();
-        }
-        return this._emitter.event;
-      }
-      dispose() {
-        if (this._emitter) {
-          this._emitter.dispose();
-          this._emitter = void 0;
-        }
-      }
-    };
-    var CancellationTokenSource = class {
-      get token() {
-        if (!this._token) {
-          this._token = new MutableToken();
-        }
-        return this._token;
-      }
-      cancel() {
-        if (!this._token) {
-          this._token = CancellationToken.Cancelled;
-        } else {
-          this._token.cancel();
-        }
-      }
-      dispose() {
-        if (!this._token) {
-          this._token = CancellationToken.None;
-        } else if (this._token instanceof MutableToken) {
-          this._token.dispose();
-        }
-      }
-    };
-    exports2.CancellationTokenSource = CancellationTokenSource;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/sharedArrayCancellation.js
-var require_sharedArrayCancellation = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/sharedArrayCancellation.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.SharedArrayReceiverStrategy = exports2.SharedArraySenderStrategy = void 0;
-    var cancellation_1 = require_cancellation3();
-    var CancellationState;
-    (function(CancellationState2) {
-      CancellationState2.Continue = 0;
-      CancellationState2.Cancelled = 1;
-    })(CancellationState || (CancellationState = {}));
-    var SharedArraySenderStrategy = class {
-      constructor() {
-        this.buffers = /* @__PURE__ */ new Map();
-      }
-      enableCancellation(request) {
-        if (request.id === null) {
-          return;
-        }
-        const buffer = new SharedArrayBuffer(4);
-        const data = new Int32Array(buffer, 0, 1);
-        data[0] = CancellationState.Continue;
-        this.buffers.set(request.id, buffer);
-        request.$cancellationData = buffer;
-      }
-      async sendCancellation(_conn, id) {
-        const buffer = this.buffers.get(id);
-        if (buffer === void 0) {
-          return;
-        }
-        const data = new Int32Array(buffer, 0, 1);
-        Atomics.store(data, 0, CancellationState.Cancelled);
-      }
-      cleanup(id) {
-        this.buffers.delete(id);
-      }
-      dispose() {
-        this.buffers.clear();
-      }
-    };
-    exports2.SharedArraySenderStrategy = SharedArraySenderStrategy;
-    var SharedArrayBufferCancellationToken = class {
-      constructor(buffer) {
-        this.data = new Int32Array(buffer, 0, 1);
-      }
-      get isCancellationRequested() {
-        return Atomics.load(this.data, 0) === CancellationState.Cancelled;
-      }
-      get onCancellationRequested() {
-        throw new Error(`Cancellation over SharedArrayBuffer doesn't support cancellation events`);
-      }
-    };
-    var SharedArrayBufferCancellationTokenSource = class {
-      constructor(buffer) {
-        this.token = new SharedArrayBufferCancellationToken(buffer);
-      }
-      cancel() {
-      }
-      dispose() {
-      }
-    };
-    var SharedArrayReceiverStrategy = class {
-      constructor() {
-        this.kind = "request";
-      }
-      createCancellationTokenSource(request) {
-        const buffer = request.$cancellationData;
-        if (buffer === void 0) {
-          return new cancellation_1.CancellationTokenSource();
-        }
-        return new SharedArrayBufferCancellationTokenSource(buffer);
-      }
-    };
-    exports2.SharedArrayReceiverStrategy = SharedArrayReceiverStrategy;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/semaphore.js
-var require_semaphore2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/semaphore.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.Semaphore = void 0;
-    var ral_1 = require_ral();
-    var Semaphore = class {
-      constructor(capacity = 1) {
-        if (capacity <= 0) {
-          throw new Error("Capacity must be greater than 0");
-        }
-        this._capacity = capacity;
-        this._active = 0;
-        this._waiting = [];
-      }
-      lock(thunk) {
-        return new Promise((resolve3, reject) => {
-          this._waiting.push({ thunk, resolve: resolve3, reject });
-          this.runNext();
-        });
-      }
-      get active() {
-        return this._active;
-      }
-      runNext() {
-        if (this._waiting.length === 0 || this._active === this._capacity) {
-          return;
-        }
-        (0, ral_1.default)().timer.setImmediate(() => this.doRunNext());
-      }
-      doRunNext() {
-        if (this._waiting.length === 0 || this._active === this._capacity) {
-          return;
-        }
-        const next = this._waiting.shift();
-        this._active++;
-        if (this._active > this._capacity) {
-          throw new Error(`To many thunks active`);
-        }
-        try {
-          const result = next.thunk();
-          if (result instanceof Promise) {
-            result.then((value) => {
-              this._active--;
-              next.resolve(value);
-              this.runNext();
-            }, (err) => {
-              this._active--;
-              next.reject(err);
-              this.runNext();
-            });
-          } else {
-            this._active--;
-            next.resolve(result);
-            this.runNext();
-          }
-        } catch (err) {
-          this._active--;
-          next.reject(err);
-          this.runNext();
-        }
-      }
-    };
-    exports2.Semaphore = Semaphore;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageReader.js
-var require_messageReader2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageReader.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.ReadableStreamMessageReader = exports2.AbstractMessageReader = exports2.MessageReader = void 0;
-    var ral_1 = require_ral();
-    var Is = require_is2();
-    var events_1 = require_events2();
-    var semaphore_1 = require_semaphore2();
-    var MessageReader;
-    (function(MessageReader2) {
-      function is(value) {
-        let candidate = value;
-        return candidate && Is.func(candidate.listen) && Is.func(candidate.dispose) && Is.func(candidate.onError) && Is.func(candidate.onClose) && Is.func(candidate.onPartialMessage);
-      }
-      MessageReader2.is = is;
-    })(MessageReader || (exports2.MessageReader = MessageReader = {}));
-    var AbstractMessageReader = class {
-      constructor() {
-        this.errorEmitter = new events_1.Emitter();
-        this.closeEmitter = new events_1.Emitter();
-        this.partialMessageEmitter = new events_1.Emitter();
-      }
-      dispose() {
-        this.errorEmitter.dispose();
-        this.closeEmitter.dispose();
-      }
-      get onError() {
-        return this.errorEmitter.event;
-      }
-      fireError(error) {
-        this.errorEmitter.fire(this.asError(error));
-      }
-      get onClose() {
-        return this.closeEmitter.event;
-      }
-      fireClose() {
-        this.closeEmitter.fire(void 0);
-      }
-      get onPartialMessage() {
-        return this.partialMessageEmitter.event;
-      }
-      firePartialMessage(info) {
-        this.partialMessageEmitter.fire(info);
-      }
-      asError(error) {
-        if (error instanceof Error) {
-          return error;
-        } else {
-          return new Error(`Reader received error. Reason: ${Is.string(error.message) ? error.message : "unknown"}`);
-        }
-      }
-    };
-    exports2.AbstractMessageReader = AbstractMessageReader;
-    var ResolvedMessageReaderOptions;
-    (function(ResolvedMessageReaderOptions2) {
-      function fromOptions(options) {
-        let charset;
-        let result;
-        let contentDecoder;
-        const contentDecoders = /* @__PURE__ */ new Map();
-        let contentTypeDecoder;
-        const contentTypeDecoders = /* @__PURE__ */ new Map();
-        if (options === void 0 || typeof options === "string") {
-          charset = options ?? "utf-8";
-        } else {
-          charset = options.charset ?? "utf-8";
-          if (options.contentDecoder !== void 0) {
-            contentDecoder = options.contentDecoder;
-            contentDecoders.set(contentDecoder.name, contentDecoder);
-          }
-          if (options.contentDecoders !== void 0) {
-            for (const decoder of options.contentDecoders) {
-              contentDecoders.set(decoder.name, decoder);
-            }
-          }
-          if (options.contentTypeDecoder !== void 0) {
-            contentTypeDecoder = options.contentTypeDecoder;
-            contentTypeDecoders.set(contentTypeDecoder.name, contentTypeDecoder);
-          }
-          if (options.contentTypeDecoders !== void 0) {
-            for (const decoder of options.contentTypeDecoders) {
-              contentTypeDecoders.set(decoder.name, decoder);
-            }
-          }
-        }
-        if (contentTypeDecoder === void 0) {
-          contentTypeDecoder = (0, ral_1.default)().applicationJson.decoder;
-          contentTypeDecoders.set(contentTypeDecoder.name, contentTypeDecoder);
-        }
-        return { charset, contentDecoder, contentDecoders, contentTypeDecoder, contentTypeDecoders };
-      }
-      ResolvedMessageReaderOptions2.fromOptions = fromOptions;
-    })(ResolvedMessageReaderOptions || (ResolvedMessageReaderOptions = {}));
-    var ReadableStreamMessageReader = class extends AbstractMessageReader {
-      constructor(readable, options) {
-        super();
-        this.readable = readable;
-        this.options = ResolvedMessageReaderOptions.fromOptions(options);
-        this.buffer = (0, ral_1.default)().messageBuffer.create(this.options.charset);
-        this._partialMessageTimeout = 1e4;
-        this.nextMessageLength = -1;
-        this.messageToken = 0;
-        this.readSemaphore = new semaphore_1.Semaphore(1);
-      }
-      set partialMessageTimeout(timeout) {
-        this._partialMessageTimeout = timeout;
-      }
-      get partialMessageTimeout() {
-        return this._partialMessageTimeout;
-      }
-      listen(callback2) {
-        this.nextMessageLength = -1;
-        this.messageToken = 0;
-        this.partialMessageTimer = void 0;
-        this.callback = callback2;
-        const result = this.readable.onData((data) => {
-          this.onData(data);
-        });
-        this.readable.onError((error) => this.fireError(error));
-        this.readable.onClose(() => this.fireClose());
-        return result;
-      }
-      onData(data) {
-        try {
-          this.buffer.append(data);
-          while (true) {
-            if (this.nextMessageLength === -1) {
-              const headers = this.buffer.tryReadHeaders(true);
-              if (!headers) {
-                return;
-              }
-              const contentLength = headers.get("content-length");
-              if (!contentLength) {
-                this.fireError(new Error(`Header must provide a Content-Length property.
-${JSON.stringify(Object.fromEntries(headers))}`));
-                return;
-              }
-              const length = parseInt(contentLength);
-              if (isNaN(length)) {
-                this.fireError(new Error(`Content-Length value must be a number. Got ${contentLength}`));
-                return;
-              }
-              this.nextMessageLength = length;
-            }
-            const body = this.buffer.tryReadBody(this.nextMessageLength);
-            if (body === void 0) {
-              this.setPartialMessageTimer();
-              return;
-            }
-            this.clearPartialMessageTimer();
-            this.nextMessageLength = -1;
-            this.readSemaphore.lock(async () => {
-              const bytes = this.options.contentDecoder !== void 0 ? await this.options.contentDecoder.decode(body) : body;
-              const message = await this.options.contentTypeDecoder.decode(bytes, this.options);
-              this.callback(message);
-            }).catch((error) => {
-              this.fireError(error);
-            });
-          }
-        } catch (error) {
-          this.fireError(error);
-        }
-      }
-      clearPartialMessageTimer() {
-        if (this.partialMessageTimer) {
-          this.partialMessageTimer.dispose();
-          this.partialMessageTimer = void 0;
-        }
-      }
-      setPartialMessageTimer() {
-        this.clearPartialMessageTimer();
-        if (this._partialMessageTimeout <= 0) {
-          return;
-        }
-        this.partialMessageTimer = (0, ral_1.default)().timer.setTimeout((token, timeout) => {
-          this.partialMessageTimer = void 0;
-          if (token === this.messageToken) {
-            this.firePartialMessage({ messageToken: token, waitingTime: timeout });
-            this.setPartialMessageTimer();
-          }
-        }, this._partialMessageTimeout, this.messageToken, this._partialMessageTimeout);
-      }
-    };
-    exports2.ReadableStreamMessageReader = ReadableStreamMessageReader;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageWriter.js
-var require_messageWriter2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageWriter.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.WriteableStreamMessageWriter = exports2.AbstractMessageWriter = exports2.MessageWriter = void 0;
-    var ral_1 = require_ral();
-    var Is = require_is2();
-    var semaphore_1 = require_semaphore2();
-    var events_1 = require_events2();
-    var ContentLength = "Content-Length: ";
-    var CRLF = "\r\n";
-    var MessageWriter;
-    (function(MessageWriter2) {
-      function is(value) {
-        let candidate = value;
-        return candidate && Is.func(candidate.dispose) && Is.func(candidate.onClose) && Is.func(candidate.onError) && Is.func(candidate.write);
-      }
-      MessageWriter2.is = is;
-    })(MessageWriter || (exports2.MessageWriter = MessageWriter = {}));
-    var AbstractMessageWriter = class {
-      constructor() {
-        this.errorEmitter = new events_1.Emitter();
-        this.closeEmitter = new events_1.Emitter();
-      }
-      dispose() {
-        this.errorEmitter.dispose();
-        this.closeEmitter.dispose();
-      }
-      get onError() {
-        return this.errorEmitter.event;
-      }
-      fireError(error, message, count) {
-        this.errorEmitter.fire([this.asError(error), message, count]);
-      }
-      get onClose() {
-        return this.closeEmitter.event;
-      }
-      fireClose() {
-        this.closeEmitter.fire(void 0);
-      }
-      asError(error) {
-        if (error instanceof Error) {
-          return error;
-        } else {
-          return new Error(`Writer received error. Reason: ${Is.string(error.message) ? error.message : "unknown"}`);
-        }
-      }
-    };
-    exports2.AbstractMessageWriter = AbstractMessageWriter;
-    var ResolvedMessageWriterOptions;
-    (function(ResolvedMessageWriterOptions2) {
-      function fromOptions(options) {
-        if (options === void 0 || typeof options === "string") {
-          return { charset: options ?? "utf-8", contentTypeEncoder: (0, ral_1.default)().applicationJson.encoder };
-        } else {
-          return { charset: options.charset ?? "utf-8", contentEncoder: options.contentEncoder, contentTypeEncoder: options.contentTypeEncoder ?? (0, ral_1.default)().applicationJson.encoder };
-        }
-      }
-      ResolvedMessageWriterOptions2.fromOptions = fromOptions;
-    })(ResolvedMessageWriterOptions || (ResolvedMessageWriterOptions = {}));
-    var WriteableStreamMessageWriter = class extends AbstractMessageWriter {
-      constructor(writable, options) {
-        super();
-        this.writable = writable;
-        this.options = ResolvedMessageWriterOptions.fromOptions(options);
-        this.errorCount = 0;
-        this.writeSemaphore = new semaphore_1.Semaphore(1);
-        this.writable.onError((error) => this.fireError(error));
-        this.writable.onClose(() => this.fireClose());
-      }
-      async write(msg) {
-        return this.writeSemaphore.lock(async () => {
-          const payload = this.options.contentTypeEncoder.encode(msg, this.options).then((buffer) => {
-            if (this.options.contentEncoder !== void 0) {
-              return this.options.contentEncoder.encode(buffer);
-            } else {
-              return buffer;
-            }
-          });
-          return payload.then((buffer) => {
-            const headers = [];
-            headers.push(ContentLength, buffer.byteLength.toString(), CRLF);
-            headers.push(CRLF);
-            return this.doWrite(msg, headers, buffer);
-          }, (error) => {
-            this.fireError(error);
-            throw error;
-          });
-        });
-      }
-      async doWrite(msg, headers, data) {
-        try {
-          await this.writable.write(headers.join(""), "ascii");
-          return this.writable.write(data);
-        } catch (error) {
-          this.handleError(error, msg);
-          return Promise.reject(error);
-        }
-      }
-      handleError(error, msg) {
-        this.errorCount++;
-        this.fireError(error, msg, this.errorCount);
-      }
-      end() {
-        this.writable.end();
-      }
-    };
-    exports2.WriteableStreamMessageWriter = WriteableStreamMessageWriter;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageBuffer.js
-var require_messageBuffer = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageBuffer.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.AbstractMessageBuffer = void 0;
-    var CR = 13;
-    var LF = 10;
-    var CRLF = "\r\n";
-    var AbstractMessageBuffer = class {
-      constructor(encoding = "utf-8") {
-        this._encoding = encoding;
-        this._chunks = [];
-        this._totalLength = 0;
-      }
-      get encoding() {
-        return this._encoding;
-      }
-      append(chunk) {
-        const toAppend = typeof chunk === "string" ? this.fromString(chunk, this._encoding) : chunk;
-        this._chunks.push(toAppend);
-        this._totalLength += toAppend.byteLength;
-      }
-      tryReadHeaders(lowerCaseKeys = false) {
-        if (this._chunks.length === 0) {
-          return void 0;
-        }
-        let state = 0;
-        let chunkIndex = 0;
-        let offset = 0;
-        let chunkBytesRead = 0;
-        row: while (chunkIndex < this._chunks.length) {
-          const chunk = this._chunks[chunkIndex];
-          offset = 0;
-          column: while (offset < chunk.length) {
-            const value = chunk[offset];
-            switch (value) {
-              case CR:
-                switch (state) {
-                  case 0:
-                    state = 1;
-                    break;
-                  case 2:
-                    state = 3;
-                    break;
-                  default:
-                    state = 0;
-                }
-                break;
-              case LF:
-                switch (state) {
-                  case 1:
-                    state = 2;
-                    break;
-                  case 3:
-                    state = 4;
-                    offset++;
-                    break row;
-                  default:
-                    state = 0;
-                }
-                break;
-              default:
-                state = 0;
-            }
-            offset++;
-          }
-          chunkBytesRead += chunk.byteLength;
-          chunkIndex++;
-        }
-        if (state !== 4) {
-          return void 0;
-        }
-        const buffer = this._read(chunkBytesRead + offset);
-        const result = /* @__PURE__ */ new Map();
-        const headers = this.toString(buffer, "ascii").split(CRLF);
-        if (headers.length < 2) {
-          return result;
-        }
-        for (let i = 0; i < headers.length - 2; i++) {
-          const header = headers[i];
-          const index = header.indexOf(":");
-          if (index === -1) {
-            throw new Error(`Message header must separate key and value using ':'
-${header}`);
-          }
-          const key = header.substr(0, index);
-          const value = header.substr(index + 1).trim();
-          result.set(lowerCaseKeys ? key.toLowerCase() : key, value);
-        }
-        return result;
-      }
-      tryReadBody(length) {
-        if (this._totalLength < length) {
-          return void 0;
-        }
-        return this._read(length);
-      }
-      get numberOfBytes() {
-        return this._totalLength;
-      }
-      _read(byteCount) {
-        if (byteCount === 0) {
-          return this.emptyBuffer();
-        }
-        if (byteCount > this._totalLength) {
-          throw new Error(`Cannot read so many bytes!`);
-        }
-        if (this._chunks[0].byteLength === byteCount) {
-          const chunk = this._chunks[0];
-          this._chunks.shift();
-          this._totalLength -= byteCount;
-          return this.asNative(chunk);
-        }
-        if (this._chunks[0].byteLength > byteCount) {
-          const chunk = this._chunks[0];
-          const result2 = this.asNative(chunk, byteCount);
-          this._chunks[0] = chunk.slice(byteCount);
-          this._totalLength -= byteCount;
-          return result2;
-        }
-        const result = this.allocNative(byteCount);
-        let resultOffset = 0;
-        let chunkIndex = 0;
-        while (byteCount > 0) {
-          const chunk = this._chunks[chunkIndex];
-          if (chunk.byteLength > byteCount) {
-            const chunkPart = chunk.slice(0, byteCount);
-            result.set(chunkPart, resultOffset);
-            resultOffset += byteCount;
-            this._chunks[chunkIndex] = chunk.slice(byteCount);
-            this._totalLength -= byteCount;
-            byteCount -= byteCount;
-          } else {
-            result.set(chunk, resultOffset);
-            resultOffset += chunk.byteLength;
-            this._chunks.shift();
-            this._totalLength -= chunk.byteLength;
-            byteCount -= chunk.byteLength;
-          }
-        }
-        return result;
-      }
-    };
-    exports2.AbstractMessageBuffer = AbstractMessageBuffer;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/connection.js
-var require_connection = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/connection.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.createMessageConnection = exports2.ConnectionOptions = exports2.MessageStrategy = exports2.CancellationStrategy = exports2.CancellationSenderStrategy = exports2.CancellationReceiverStrategy = exports2.RequestCancellationReceiverStrategy = exports2.IdCancellationReceiverStrategy = exports2.ConnectionStrategy = exports2.ConnectionError = exports2.ConnectionErrors = exports2.LogTraceNotification = exports2.SetTraceNotification = exports2.TraceFormat = exports2.TraceValues = exports2.Trace = exports2.NullLogger = exports2.ProgressType = exports2.ProgressToken = void 0;
-    var ral_1 = require_ral();
-    var Is = require_is2();
-    var messages_1 = require_messages2();
-    var linkedMap_1 = require_linkedMap2();
-    var events_1 = require_events2();
-    var cancellation_1 = require_cancellation3();
-    var CancelNotification;
-    (function(CancelNotification2) {
-      CancelNotification2.type = new messages_1.NotificationType("$/cancelRequest");
-    })(CancelNotification || (CancelNotification = {}));
-    var ProgressToken;
-    (function(ProgressToken2) {
-      function is(value) {
-        return typeof value === "string" || typeof value === "number";
-      }
-      ProgressToken2.is = is;
-    })(ProgressToken || (exports2.ProgressToken = ProgressToken = {}));
-    var ProgressNotification;
-    (function(ProgressNotification2) {
-      ProgressNotification2.type = new messages_1.NotificationType("$/progress");
-    })(ProgressNotification || (ProgressNotification = {}));
-    var ProgressType = class {
-      constructor() {
-      }
-    };
-    exports2.ProgressType = ProgressType;
-    var StarRequestHandler;
-    (function(StarRequestHandler2) {
-      function is(value) {
-        return Is.func(value);
-      }
-      StarRequestHandler2.is = is;
-    })(StarRequestHandler || (StarRequestHandler = {}));
-    exports2.NullLogger = Object.freeze({
-      error: () => {
-      },
-      warn: () => {
-      },
-      info: () => {
-      },
-      log: () => {
-      }
-    });
-    var Trace;
-    (function(Trace2) {
-      Trace2[Trace2["Off"] = 0] = "Off";
-      Trace2[Trace2["Messages"] = 1] = "Messages";
-      Trace2[Trace2["Compact"] = 2] = "Compact";
-      Trace2[Trace2["Verbose"] = 3] = "Verbose";
-    })(Trace || (exports2.Trace = Trace = {}));
-    var TraceValues;
-    (function(TraceValues2) {
-      TraceValues2.Off = "off";
-      TraceValues2.Messages = "messages";
-      TraceValues2.Compact = "compact";
-      TraceValues2.Verbose = "verbose";
-    })(TraceValues || (exports2.TraceValues = TraceValues = {}));
-    (function(Trace2) {
-      function fromString(value) {
-        if (!Is.string(value)) {
-          return Trace2.Off;
-        }
-        value = value.toLowerCase();
-        switch (value) {
-          case "off":
-            return Trace2.Off;
-          case "messages":
-            return Trace2.Messages;
-          case "compact":
-            return Trace2.Compact;
-          case "verbose":
-            return Trace2.Verbose;
-          default:
-            return Trace2.Off;
-        }
-      }
-      Trace2.fromString = fromString;
-      function toString(value) {
-        switch (value) {
-          case Trace2.Off:
-            return "off";
-          case Trace2.Messages:
-            return "messages";
-          case Trace2.Compact:
-            return "compact";
-          case Trace2.Verbose:
-            return "verbose";
-          default:
-            return "off";
-        }
-      }
-      Trace2.toString = toString;
-    })(Trace || (exports2.Trace = Trace = {}));
-    var TraceFormat;
-    (function(TraceFormat2) {
-      TraceFormat2["Text"] = "text";
-      TraceFormat2["JSON"] = "json";
-    })(TraceFormat || (exports2.TraceFormat = TraceFormat = {}));
-    (function(TraceFormat2) {
-      function fromString(value) {
-        if (!Is.string(value)) {
-          return TraceFormat2.Text;
-        }
-        value = value.toLowerCase();
-        if (value === "json") {
-          return TraceFormat2.JSON;
-        } else {
-          return TraceFormat2.Text;
-        }
-      }
-      TraceFormat2.fromString = fromString;
-    })(TraceFormat || (exports2.TraceFormat = TraceFormat = {}));
-    var SetTraceNotification;
-    (function(SetTraceNotification2) {
-      SetTraceNotification2.type = new messages_1.NotificationType("$/setTrace");
-    })(SetTraceNotification || (exports2.SetTraceNotification = SetTraceNotification = {}));
-    var LogTraceNotification;
-    (function(LogTraceNotification2) {
-      LogTraceNotification2.type = new messages_1.NotificationType("$/logTrace");
-    })(LogTraceNotification || (exports2.LogTraceNotification = LogTraceNotification = {}));
-    var ConnectionErrors;
-    (function(ConnectionErrors2) {
-      ConnectionErrors2[ConnectionErrors2["Closed"] = 1] = "Closed";
-      ConnectionErrors2[ConnectionErrors2["Disposed"] = 2] = "Disposed";
-      ConnectionErrors2[ConnectionErrors2["AlreadyListening"] = 3] = "AlreadyListening";
-    })(ConnectionErrors || (exports2.ConnectionErrors = ConnectionErrors = {}));
-    var ConnectionError = class _ConnectionError extends Error {
-      constructor(code, message) {
-        super(message);
-        this.code = code;
-        Object.setPrototypeOf(this, _ConnectionError.prototype);
-      }
-    };
-    exports2.ConnectionError = ConnectionError;
-    var ConnectionStrategy;
-    (function(ConnectionStrategy2) {
-      function is(value) {
-        const candidate = value;
-        return candidate && Is.func(candidate.cancelUndispatched);
-      }
-      ConnectionStrategy2.is = is;
-    })(ConnectionStrategy || (exports2.ConnectionStrategy = ConnectionStrategy = {}));
-    var IdCancellationReceiverStrategy;
-    (function(IdCancellationReceiverStrategy2) {
-      function is(value) {
-        const candidate = value;
-        return candidate && (candidate.kind === void 0 || candidate.kind === "id") && Is.func(candidate.createCancellationTokenSource) && (candidate.dispose === void 0 || Is.func(candidate.dispose));
-      }
-      IdCancellationReceiverStrategy2.is = is;
-    })(IdCancellationReceiverStrategy || (exports2.IdCancellationReceiverStrategy = IdCancellationReceiverStrategy = {}));
-    var RequestCancellationReceiverStrategy;
-    (function(RequestCancellationReceiverStrategy2) {
-      function is(value) {
-        const candidate = value;
-        return candidate && candidate.kind === "request" && Is.func(candidate.createCancellationTokenSource) && (candidate.dispose === void 0 || Is.func(candidate.dispose));
-      }
-      RequestCancellationReceiverStrategy2.is = is;
-    })(RequestCancellationReceiverStrategy || (exports2.RequestCancellationReceiverStrategy = RequestCancellationReceiverStrategy = {}));
-    var CancellationReceiverStrategy;
-    (function(CancellationReceiverStrategy2) {
-      CancellationReceiverStrategy2.Message = Object.freeze({
-        createCancellationTokenSource(_) {
-          return new cancellation_1.CancellationTokenSource();
-        }
-      });
-      function is(value) {
-        return IdCancellationReceiverStrategy.is(value) || RequestCancellationReceiverStrategy.is(value);
-      }
-      CancellationReceiverStrategy2.is = is;
-    })(CancellationReceiverStrategy || (exports2.CancellationReceiverStrategy = CancellationReceiverStrategy = {}));
-    var CancellationSenderStrategy;
-    (function(CancellationSenderStrategy2) {
-      CancellationSenderStrategy2.Message = Object.freeze({
-        sendCancellation(conn, id) {
-          return conn.sendNotification(CancelNotification.type, { id });
-        },
-        cleanup(_) {
-        }
-      });
-      function is(value) {
-        const candidate = value;
-        return candidate && Is.func(candidate.sendCancellation) && Is.func(candidate.cleanup);
-      }
-      CancellationSenderStrategy2.is = is;
-    })(CancellationSenderStrategy || (exports2.CancellationSenderStrategy = CancellationSenderStrategy = {}));
-    var CancellationStrategy;
-    (function(CancellationStrategy2) {
-      CancellationStrategy2.Message = Object.freeze({
-        receiver: CancellationReceiverStrategy.Message,
-        sender: CancellationSenderStrategy.Message
-      });
-      function is(value) {
-        const candidate = value;
-        return candidate && CancellationReceiverStrategy.is(candidate.receiver) && CancellationSenderStrategy.is(candidate.sender);
-      }
-      CancellationStrategy2.is = is;
-    })(CancellationStrategy || (exports2.CancellationStrategy = CancellationStrategy = {}));
-    var MessageStrategy;
-    (function(MessageStrategy2) {
-      function is(value) {
-        const candidate = value;
-        return candidate && Is.func(candidate.handleMessage);
-      }
-      MessageStrategy2.is = is;
-    })(MessageStrategy || (exports2.MessageStrategy = MessageStrategy = {}));
-    var ConnectionOptions;
-    (function(ConnectionOptions2) {
-      function is(value) {
-        const candidate = value;
-        return candidate && (CancellationStrategy.is(candidate.cancellationStrategy) || ConnectionStrategy.is(candidate.connectionStrategy) || MessageStrategy.is(candidate.messageStrategy));
-      }
-      ConnectionOptions2.is = is;
-    })(ConnectionOptions || (exports2.ConnectionOptions = ConnectionOptions = {}));
-    var ConnectionState;
-    (function(ConnectionState2) {
-      ConnectionState2[ConnectionState2["New"] = 1] = "New";
-      ConnectionState2[ConnectionState2["Listening"] = 2] = "Listening";
-      ConnectionState2[ConnectionState2["Closed"] = 3] = "Closed";
-      ConnectionState2[ConnectionState2["Disposed"] = 4] = "Disposed";
-    })(ConnectionState || (ConnectionState = {}));
-    function createMessageConnection2(messageReader, messageWriter, _logger, options) {
-      const logger = _logger !== void 0 ? _logger : exports2.NullLogger;
-      let sequenceNumber = 0;
-      let notificationSequenceNumber = 0;
-      let unknownResponseSequenceNumber = 0;
-      const version = "2.0";
-      let starRequestHandler = void 0;
-      const requestHandlers = /* @__PURE__ */ new Map();
-      let starNotificationHandler = void 0;
-      const notificationHandlers = /* @__PURE__ */ new Map();
-      const progressHandlers = /* @__PURE__ */ new Map();
-      let timer;
-      let messageQueue = new linkedMap_1.LinkedMap();
-      let responsePromises = /* @__PURE__ */ new Map();
-      let knownCanceledRequests = /* @__PURE__ */ new Set();
-      let requestTokens = /* @__PURE__ */ new Map();
-      let trace = Trace.Off;
-      let traceFormat = TraceFormat.Text;
-      let tracer;
-      let state = ConnectionState.New;
-      const errorEmitter = new events_1.Emitter();
-      const closeEmitter = new events_1.Emitter();
-      const unhandledNotificationEmitter = new events_1.Emitter();
-      const unhandledProgressEmitter = new events_1.Emitter();
-      const disposeEmitter = new events_1.Emitter();
-      const cancellationStrategy = options && options.cancellationStrategy ? options.cancellationStrategy : CancellationStrategy.Message;
-      function createRequestQueueKey(id) {
-        if (id === null) {
-          throw new Error(`Can't send requests with id null since the response can't be correlated.`);
-        }
-        return "req-" + id.toString();
-      }
-      function createResponseQueueKey(id) {
-        if (id === null) {
-          return "res-unknown-" + (++unknownResponseSequenceNumber).toString();
-        } else {
-          return "res-" + id.toString();
-        }
-      }
-      function createNotificationQueueKey() {
-        return "not-" + (++notificationSequenceNumber).toString();
-      }
-      function addMessageToQueue(queue, message) {
-        if (messages_1.Message.isRequest(message)) {
-          queue.set(createRequestQueueKey(message.id), message);
-        } else if (messages_1.Message.isResponse(message)) {
-          queue.set(createResponseQueueKey(message.id), message);
-        } else {
-          queue.set(createNotificationQueueKey(), message);
-        }
-      }
-      function cancelUndispatched(_message) {
-        return void 0;
-      }
-      function isListening() {
-        return state === ConnectionState.Listening;
-      }
-      function isClosed() {
-        return state === ConnectionState.Closed;
-      }
-      function isDisposed() {
-        return state === ConnectionState.Disposed;
-      }
-      function closeHandler() {
-        if (state === ConnectionState.New || state === ConnectionState.Listening) {
-          state = ConnectionState.Closed;
-          closeEmitter.fire(void 0);
-        }
-      }
-      function readErrorHandler(error) {
-        errorEmitter.fire([error, void 0, void 0]);
-      }
-      function writeErrorHandler(data) {
-        errorEmitter.fire(data);
-      }
-      messageReader.onClose(closeHandler);
-      messageReader.onError(readErrorHandler);
-      messageWriter.onClose(closeHandler);
-      messageWriter.onError(writeErrorHandler);
-      function triggerMessageQueue() {
-        if (timer || messageQueue.size === 0) {
-          return;
-        }
-        timer = (0, ral_1.default)().timer.setImmediate(() => {
-          timer = void 0;
-          processMessageQueue();
-        });
-      }
-      function handleMessage(message) {
-        if (messages_1.Message.isRequest(message)) {
-          handleRequest(message);
-        } else if (messages_1.Message.isNotification(message)) {
-          handleNotification(message);
-        } else if (messages_1.Message.isResponse(message)) {
-          handleResponse(message);
-        } else {
-          handleInvalidMessage(message);
-        }
-      }
-      function processMessageQueue() {
-        if (messageQueue.size === 0) {
-          return;
-        }
-        const message = messageQueue.shift();
-        try {
-          const messageStrategy = options?.messageStrategy;
-          if (MessageStrategy.is(messageStrategy)) {
-            messageStrategy.handleMessage(message, handleMessage);
-          } else {
-            handleMessage(message);
-          }
-        } finally {
-          triggerMessageQueue();
-        }
-      }
-      const callback2 = (message) => {
-        try {
-          if (messages_1.Message.isNotification(message) && message.method === CancelNotification.type.method) {
-            const cancelId = message.params.id;
-            const key = createRequestQueueKey(cancelId);
-            const toCancel = messageQueue.get(key);
-            if (messages_1.Message.isRequest(toCancel)) {
-              const strategy = options?.connectionStrategy;
-              const response = strategy && strategy.cancelUndispatched ? strategy.cancelUndispatched(toCancel, cancelUndispatched) : cancelUndispatched(toCancel);
-              if (response && (response.error !== void 0 || response.result !== void 0)) {
-                messageQueue.delete(key);
-                requestTokens.delete(cancelId);
-                response.id = toCancel.id;
-                traceSendingResponse(response, message.method, Date.now());
-                messageWriter.write(response).catch(() => logger.error(`Sending response for canceled message failed.`));
-                return;
-              }
-            }
-            const cancellationToken = requestTokens.get(cancelId);
-            if (cancellationToken !== void 0) {
-              cancellationToken.cancel();
-              traceReceivedNotification(message);
-              return;
-            } else {
-              knownCanceledRequests.add(cancelId);
-            }
-          }
-          addMessageToQueue(messageQueue, message);
-        } finally {
-          triggerMessageQueue();
-        }
-      };
-      function handleRequest(requestMessage) {
-        if (isDisposed()) {
-          return;
-        }
-        function reply(resultOrError, method, startTime2) {
-          const message = {
-            jsonrpc: version,
-            id: requestMessage.id
-          };
-          if (resultOrError instanceof messages_1.ResponseError) {
-            message.error = resultOrError.toJson();
-          } else {
-            message.result = resultOrError === void 0 ? null : resultOrError;
-          }
-          traceSendingResponse(message, method, startTime2);
-          messageWriter.write(message).catch(() => logger.error(`Sending response failed.`));
-        }
-        function replyError(error, method, startTime2) {
-          const message = {
-            jsonrpc: version,
-            id: requestMessage.id,
-            error: error.toJson()
-          };
-          traceSendingResponse(message, method, startTime2);
-          messageWriter.write(message).catch(() => logger.error(`Sending response failed.`));
-        }
-        function replySuccess(result, method, startTime2) {
-          if (result === void 0) {
-            result = null;
-          }
-          const message = {
-            jsonrpc: version,
-            id: requestMessage.id,
-            result
-          };
-          traceSendingResponse(message, method, startTime2);
-          messageWriter.write(message).catch(() => logger.error(`Sending response failed.`));
-        }
-        traceReceivedRequest(requestMessage);
-        const element = requestHandlers.get(requestMessage.method);
-        let type;
-        let requestHandler;
-        if (element) {
-          type = element.type;
-          requestHandler = element.handler;
-        }
-        const startTime = Date.now();
-        if (requestHandler || starRequestHandler) {
-          const tokenKey = requestMessage.id ?? String(Date.now());
-          const cancellationSource = IdCancellationReceiverStrategy.is(cancellationStrategy.receiver) ? cancellationStrategy.receiver.createCancellationTokenSource(tokenKey) : cancellationStrategy.receiver.createCancellationTokenSource(requestMessage);
-          if (requestMessage.id !== null && knownCanceledRequests.has(requestMessage.id)) {
-            cancellationSource.cancel();
-          }
-          if (requestMessage.id !== null) {
-            requestTokens.set(tokenKey, cancellationSource);
-          }
-          try {
-            let handlerResult;
-            if (requestHandler) {
-              if (requestMessage.params === void 0) {
-                if (type !== void 0 && type.numberOfParams !== 0) {
-                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InvalidParams, `Request ${requestMessage.method} defines ${type.numberOfParams} params but received none.`), requestMessage.method, startTime);
-                  return;
-                }
-                handlerResult = requestHandler(cancellationSource.token);
-              } else if (Array.isArray(requestMessage.params)) {
-                if (type !== void 0 && type.parameterStructures === messages_1.ParameterStructures.byName) {
-                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InvalidParams, `Request ${requestMessage.method} defines parameters by name but received parameters by position`), requestMessage.method, startTime);
-                  return;
-                }
-                handlerResult = requestHandler(...requestMessage.params, cancellationSource.token);
-              } else {
-                if (type !== void 0 && type.parameterStructures === messages_1.ParameterStructures.byPosition) {
-                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InvalidParams, `Request ${requestMessage.method} defines parameters by position but received parameters by name`), requestMessage.method, startTime);
-                  return;
-                }
-                handlerResult = requestHandler(requestMessage.params, cancellationSource.token);
-              }
-            } else if (starRequestHandler) {
-              handlerResult = starRequestHandler(requestMessage.method, requestMessage.params, cancellationSource.token);
-            }
-            const promise2 = handlerResult;
-            if (!handlerResult) {
-              requestTokens.delete(tokenKey);
-              replySuccess(handlerResult, requestMessage.method, startTime);
-            } else if (promise2.then) {
-              promise2.then((resultOrError) => {
-                requestTokens.delete(tokenKey);
-                reply(resultOrError, requestMessage.method, startTime);
-              }, (error) => {
-                requestTokens.delete(tokenKey);
-                if (error instanceof messages_1.ResponseError) {
-                  replyError(error, requestMessage.method, startTime);
-                } else if (error && Is.string(error.message)) {
-                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InternalError, `Request ${requestMessage.method} failed with message: ${error.message}`), requestMessage.method, startTime);
-                } else {
-                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InternalError, `Request ${requestMessage.method} failed unexpectedly without providing any details.`), requestMessage.method, startTime);
-                }
-              });
-            } else {
-              requestTokens.delete(tokenKey);
-              reply(handlerResult, requestMessage.method, startTime);
-            }
-          } catch (error) {
-            requestTokens.delete(tokenKey);
-            if (error instanceof messages_1.ResponseError) {
-              reply(error, requestMessage.method, startTime);
-            } else if (error && Is.string(error.message)) {
-              replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InternalError, `Request ${requestMessage.method} failed with message: ${error.message}`), requestMessage.method, startTime);
-            } else {
-              replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InternalError, `Request ${requestMessage.method} failed unexpectedly without providing any details.`), requestMessage.method, startTime);
-            }
-          }
-        } else {
-          replyError(new messages_1.ResponseError(messages_1.ErrorCodes.MethodNotFound, `Unhandled method ${requestMessage.method}`), requestMessage.method, startTime);
-        }
-      }
-      function handleResponse(responseMessage) {
-        if (isDisposed()) {
-          return;
-        }
-        if (responseMessage.id === null) {
-          if (responseMessage.error) {
-            logger.error(`Received response message without id: Error is: 
-${JSON.stringify(responseMessage.error, void 0, 4)}`);
-          } else {
-            logger.error(`Received response message without id. No further error information provided.`);
-          }
-        } else {
-          const key = responseMessage.id;
-          const responsePromise = responsePromises.get(key);
-          traceReceivedResponse(responseMessage, responsePromise);
-          if (responsePromise !== void 0) {
-            responsePromises.delete(key);
-            try {
-              if (responseMessage.error) {
-                const error = responseMessage.error;
-                responsePromise.reject(new messages_1.ResponseError(error.code, error.message, error.data));
-              } else if (responseMessage.result !== void 0) {
-                responsePromise.resolve(responseMessage.result);
-              } else {
-                throw new Error("Should never happen.");
-              }
-            } catch (error) {
-              if (error.message) {
-                logger.error(`Response handler '${responsePromise.method}' failed with message: ${error.message}`);
-              } else {
-                logger.error(`Response handler '${responsePromise.method}' failed unexpectedly.`);
-              }
-            }
-          }
-        }
-      }
-      function handleNotification(message) {
-        if (isDisposed()) {
-          return;
-        }
-        let type = void 0;
-        let notificationHandler;
-        if (message.method === CancelNotification.type.method) {
-          const cancelId = message.params.id;
-          knownCanceledRequests.delete(cancelId);
-          traceReceivedNotification(message);
-          return;
-        } else {
-          const element = notificationHandlers.get(message.method);
-          if (element) {
-            notificationHandler = element.handler;
-            type = element.type;
-          }
-        }
-        if (notificationHandler || starNotificationHandler) {
-          try {
-            traceReceivedNotification(message);
-            if (notificationHandler) {
-              if (message.params === void 0) {
-                if (type !== void 0) {
-                  if (type.numberOfParams !== 0 && type.parameterStructures !== messages_1.ParameterStructures.byName) {
-                    logger.error(`Notification ${message.method} defines ${type.numberOfParams} params but received none.`);
-                  }
-                }
-                notificationHandler();
-              } else if (Array.isArray(message.params)) {
-                const params = message.params;
-                if (message.method === ProgressNotification.type.method && params.length === 2 && ProgressToken.is(params[0])) {
-                  notificationHandler({ token: params[0], value: params[1] });
-                } else {
-                  if (type !== void 0) {
-                    if (type.parameterStructures === messages_1.ParameterStructures.byName) {
-                      logger.error(`Notification ${message.method} defines parameters by name but received parameters by position`);
-                    }
-                    if (type.numberOfParams !== message.params.length) {
-                      logger.error(`Notification ${message.method} defines ${type.numberOfParams} params but received ${params.length} arguments`);
-                    }
-                  }
-                  notificationHandler(...params);
-                }
-              } else {
-                if (type !== void 0 && type.parameterStructures === messages_1.ParameterStructures.byPosition) {
-                  logger.error(`Notification ${message.method} defines parameters by position but received parameters by name`);
-                }
-                notificationHandler(message.params);
-              }
-            } else if (starNotificationHandler) {
-              starNotificationHandler(message.method, message.params);
-            }
-          } catch (error) {
-            if (error.message) {
-              logger.error(`Notification handler '${message.method}' failed with message: ${error.message}`);
-            } else {
-              logger.error(`Notification handler '${message.method}' failed unexpectedly.`);
-            }
-          }
-        } else {
-          unhandledNotificationEmitter.fire(message);
-        }
-      }
-      function handleInvalidMessage(message) {
-        if (!message) {
-          logger.error("Received empty message.");
-          return;
-        }
-        logger.error(`Received message which is neither a response nor a notification message:
-${JSON.stringify(message, null, 4)}`);
-        const responseMessage = message;
-        if (Is.string(responseMessage.id) || Is.number(responseMessage.id)) {
-          const key = responseMessage.id;
-          const responseHandler = responsePromises.get(key);
-          if (responseHandler) {
-            responseHandler.reject(new Error("The received response has neither a result nor an error property."));
-          }
-        }
-      }
-      function stringifyTrace(params) {
-        if (params === void 0 || params === null) {
-          return void 0;
-        }
-        switch (trace) {
-          case Trace.Verbose:
-            return JSON.stringify(params, null, 4);
-          case Trace.Compact:
-            return JSON.stringify(params);
-          default:
-            return void 0;
-        }
-      }
-      function traceSendingRequest(message) {
-        if (trace === Trace.Off || !tracer) {
-          return;
-        }
-        if (traceFormat === TraceFormat.Text) {
-          let data = void 0;
-          if ((trace === Trace.Verbose || trace === Trace.Compact) && message.params) {
-            data = `Params: ${stringifyTrace(message.params)}
-
-`;
-          }
-          tracer.log(`Sending request '${message.method} - (${message.id})'.`, data);
-        } else {
-          logLSPMessage("send-request", message);
-        }
-      }
-      function traceSendingNotification(message) {
-        if (trace === Trace.Off || !tracer) {
-          return;
-        }
-        if (traceFormat === TraceFormat.Text) {
-          let data = void 0;
-          if (trace === Trace.Verbose || trace === Trace.Compact) {
-            if (message.params) {
-              data = `Params: ${stringifyTrace(message.params)}
-
-`;
-            } else {
-              data = "No parameters provided.\n\n";
-            }
-          }
-          tracer.log(`Sending notification '${message.method}'.`, data);
-        } else {
-          logLSPMessage("send-notification", message);
-        }
-      }
-      function traceSendingResponse(message, method, startTime) {
-        if (trace === Trace.Off || !tracer) {
-          return;
-        }
-        if (traceFormat === TraceFormat.Text) {
-          let data = void 0;
-          if (trace === Trace.Verbose || trace === Trace.Compact) {
-            if (message.error && message.error.data) {
-              data = `Error data: ${stringifyTrace(message.error.data)}
-
-`;
-            } else {
-              if (message.result) {
-                data = `Result: ${stringifyTrace(message.result)}
-
-`;
-              } else if (message.error === void 0) {
-                data = "No result returned.\n\n";
-              }
-            }
-          }
-          tracer.log(`Sending response '${method} - (${message.id})'. Processing request took ${Date.now() - startTime}ms`, data);
-        } else {
-          logLSPMessage("send-response", message);
-        }
-      }
-      function traceReceivedRequest(message) {
-        if (trace === Trace.Off || !tracer) {
-          return;
-        }
-        if (traceFormat === TraceFormat.Text) {
-          let data = void 0;
-          if ((trace === Trace.Verbose || trace === Trace.Compact) && message.params) {
-            data = `Params: ${stringifyTrace(message.params)}
-
-`;
-          }
-          tracer.log(`Received request '${message.method} - (${message.id})'.`, data);
-        } else {
-          logLSPMessage("receive-request", message);
-        }
-      }
-      function traceReceivedNotification(message) {
-        if (trace === Trace.Off || !tracer || message.method === LogTraceNotification.type.method) {
-          return;
-        }
-        if (traceFormat === TraceFormat.Text) {
-          let data = void 0;
-          if (trace === Trace.Verbose || trace === Trace.Compact) {
-            if (message.params) {
-              data = `Params: ${stringifyTrace(message.params)}
-
-`;
-            } else {
-              data = "No parameters provided.\n\n";
-            }
-          }
-          tracer.log(`Received notification '${message.method}'.`, data);
-        } else {
-          logLSPMessage("receive-notification", message);
-        }
-      }
-      function traceReceivedResponse(message, responsePromise) {
-        if (trace === Trace.Off || !tracer) {
-          return;
-        }
-        if (traceFormat === TraceFormat.Text) {
-          let data = void 0;
-          if (trace === Trace.Verbose || trace === Trace.Compact) {
-            if (message.error && message.error.data) {
-              data = `Error data: ${stringifyTrace(message.error.data)}
-
-`;
-            } else {
-              if (message.result) {
-                data = `Result: ${stringifyTrace(message.result)}
-
-`;
-              } else if (message.error === void 0) {
-                data = "No result returned.\n\n";
-              }
-            }
-          }
-          if (responsePromise) {
-            const error = message.error ? ` Request failed: ${message.error.message} (${message.error.code}).` : "";
-            tracer.log(`Received response '${responsePromise.method} - (${message.id})' in ${Date.now() - responsePromise.timerStart}ms.${error}`, data);
-          } else {
-            tracer.log(`Received response ${message.id} without active response promise.`, data);
-          }
-        } else {
-          logLSPMessage("receive-response", message);
-        }
-      }
-      function logLSPMessage(type, message) {
-        if (!tracer || trace === Trace.Off) {
-          return;
-        }
-        const lspMessage = {
-          isLSPMessage: true,
-          type,
-          message,
-          timestamp: Date.now()
-        };
-        tracer.log(lspMessage);
-      }
-      function throwIfClosedOrDisposed() {
-        if (isClosed()) {
-          throw new ConnectionError(ConnectionErrors.Closed, "Connection is closed.");
-        }
-        if (isDisposed()) {
-          throw new ConnectionError(ConnectionErrors.Disposed, "Connection is disposed.");
-        }
-      }
-      function throwIfListening() {
-        if (isListening()) {
-          throw new ConnectionError(ConnectionErrors.AlreadyListening, "Connection is already listening");
-        }
-      }
-      function throwIfNotListening() {
-        if (!isListening()) {
-          throw new Error("Call listen() first.");
-        }
-      }
-      function undefinedToNull(param) {
-        if (param === void 0) {
-          return null;
-        } else {
-          return param;
-        }
-      }
-      function nullToUndefined(param) {
-        if (param === null) {
-          return void 0;
-        } else {
-          return param;
-        }
-      }
-      function isNamedParam(param) {
-        return param !== void 0 && param !== null && !Array.isArray(param) && typeof param === "object";
-      }
-      function computeSingleParam(parameterStructures, param) {
-        switch (parameterStructures) {
-          case messages_1.ParameterStructures.auto:
-            if (isNamedParam(param)) {
-              return nullToUndefined(param);
-            } else {
-              return [undefinedToNull(param)];
-            }
-          case messages_1.ParameterStructures.byName:
-            if (!isNamedParam(param)) {
-              throw new Error(`Received parameters by name but param is not an object literal.`);
-            }
-            return nullToUndefined(param);
-          case messages_1.ParameterStructures.byPosition:
-            return [undefinedToNull(param)];
-          default:
-            throw new Error(`Unknown parameter structure ${parameterStructures.toString()}`);
-        }
-      }
-      function computeMessageParams(type, params) {
-        let result;
-        const numberOfParams = type.numberOfParams;
-        switch (numberOfParams) {
-          case 0:
-            result = void 0;
-            break;
-          case 1:
-            result = computeSingleParam(type.parameterStructures, params[0]);
-            break;
-          default:
-            result = [];
-            for (let i = 0; i < params.length && i < numberOfParams; i++) {
-              result.push(undefinedToNull(params[i]));
-            }
-            if (params.length < numberOfParams) {
-              for (let i = params.length; i < numberOfParams; i++) {
-                result.push(null);
-              }
-            }
-            break;
-        }
-        return result;
-      }
-      const connection = {
-        sendNotification: (type, ...args) => {
-          throwIfClosedOrDisposed();
-          let method;
-          let messageParams;
-          if (Is.string(type)) {
-            method = type;
-            const first = args[0];
-            let paramStart = 0;
-            let parameterStructures = messages_1.ParameterStructures.auto;
-            if (messages_1.ParameterStructures.is(first)) {
-              paramStart = 1;
-              parameterStructures = first;
-            }
-            let paramEnd = args.length;
-            const numberOfParams = paramEnd - paramStart;
-            switch (numberOfParams) {
-              case 0:
-                messageParams = void 0;
-                break;
-              case 1:
-                messageParams = computeSingleParam(parameterStructures, args[paramStart]);
-                break;
-              default:
-                if (parameterStructures === messages_1.ParameterStructures.byName) {
-                  throw new Error(`Received ${numberOfParams} parameters for 'by Name' notification parameter structure.`);
-                }
-                messageParams = args.slice(paramStart, paramEnd).map((value) => undefinedToNull(value));
-                break;
-            }
-          } else {
-            const params = args;
-            method = type.method;
-            messageParams = computeMessageParams(type, params);
-          }
-          const notificationMessage = {
-            jsonrpc: version,
-            method,
-            params: messageParams
-          };
-          traceSendingNotification(notificationMessage);
-          return messageWriter.write(notificationMessage).catch((error) => {
-            logger.error(`Sending notification failed.`);
-            throw error;
-          });
-        },
-        onNotification: (type, handler) => {
-          throwIfClosedOrDisposed();
-          let method;
-          if (Is.func(type)) {
-            starNotificationHandler = type;
-          } else if (handler) {
-            if (Is.string(type)) {
-              method = type;
-              notificationHandlers.set(type, { type: void 0, handler });
-            } else {
-              method = type.method;
-              notificationHandlers.set(type.method, { type, handler });
-            }
-          }
-          return {
-            dispose: () => {
-              if (method !== void 0) {
-                notificationHandlers.delete(method);
-              } else {
-                starNotificationHandler = void 0;
-              }
-            }
-          };
-        },
-        onProgress: (_type, token, handler) => {
-          if (progressHandlers.has(token)) {
-            throw new Error(`Progress handler for token ${token} already registered`);
-          }
-          progressHandlers.set(token, handler);
-          return {
-            dispose: () => {
-              progressHandlers.delete(token);
-            }
-          };
-        },
-        sendProgress: (_type, token, value) => {
-          return connection.sendNotification(ProgressNotification.type, { token, value });
-        },
-        onUnhandledProgress: unhandledProgressEmitter.event,
-        sendRequest: (type, ...args) => {
-          throwIfClosedOrDisposed();
-          throwIfNotListening();
-          let method;
-          let messageParams;
-          let token = void 0;
-          if (Is.string(type)) {
-            method = type;
-            const first = args[0];
-            const last = args[args.length - 1];
-            let paramStart = 0;
-            let parameterStructures = messages_1.ParameterStructures.auto;
-            if (messages_1.ParameterStructures.is(first)) {
-              paramStart = 1;
-              parameterStructures = first;
-            }
-            let paramEnd = args.length;
-            if (cancellation_1.CancellationToken.is(last)) {
-              paramEnd = paramEnd - 1;
-              token = last;
-            }
-            const numberOfParams = paramEnd - paramStart;
-            switch (numberOfParams) {
-              case 0:
-                messageParams = void 0;
-                break;
-              case 1:
-                messageParams = computeSingleParam(parameterStructures, args[paramStart]);
-                break;
-              default:
-                if (parameterStructures === messages_1.ParameterStructures.byName) {
-                  throw new Error(`Received ${numberOfParams} parameters for 'by Name' request parameter structure.`);
-                }
-                messageParams = args.slice(paramStart, paramEnd).map((value) => undefinedToNull(value));
-                break;
-            }
-          } else {
-            const params = args;
-            method = type.method;
-            messageParams = computeMessageParams(type, params);
-            const numberOfParams = type.numberOfParams;
-            token = cancellation_1.CancellationToken.is(params[numberOfParams]) ? params[numberOfParams] : void 0;
-          }
-          const id = sequenceNumber++;
-          let disposable;
-          if (token) {
-            disposable = token.onCancellationRequested(() => {
-              const p = cancellationStrategy.sender.sendCancellation(connection, id);
-              if (p === void 0) {
-                logger.log(`Received no promise from cancellation strategy when cancelling id ${id}`);
-                return Promise.resolve();
-              } else {
-                return p.catch(() => {
-                  logger.log(`Sending cancellation messages for id ${id} failed`);
-                });
-              }
-            });
-          }
-          const requestMessage = {
-            jsonrpc: version,
-            id,
-            method,
-            params: messageParams
-          };
-          traceSendingRequest(requestMessage);
-          if (typeof cancellationStrategy.sender.enableCancellation === "function") {
-            cancellationStrategy.sender.enableCancellation(requestMessage);
-          }
-          return new Promise(async (resolve3, reject) => {
-            const resolveWithCleanup = (r) => {
-              resolve3(r);
-              cancellationStrategy.sender.cleanup(id);
-              disposable?.dispose();
-            };
-            const rejectWithCleanup = (r) => {
-              reject(r);
-              cancellationStrategy.sender.cleanup(id);
-              disposable?.dispose();
-            };
-            const responsePromise = { method, timerStart: Date.now(), resolve: resolveWithCleanup, reject: rejectWithCleanup };
-            try {
-              responsePromises.set(id, responsePromise);
-              await messageWriter.write(requestMessage);
-            } catch (error) {
-              responsePromises.delete(id);
-              responsePromise.reject(new messages_1.ResponseError(messages_1.ErrorCodes.MessageWriteError, error.message ? error.message : "Unknown reason"));
-              logger.error(`Sending request failed.`);
-              throw error;
-            }
-          });
-        },
-        onRequest: (type, handler) => {
-          throwIfClosedOrDisposed();
-          let method = null;
-          if (StarRequestHandler.is(type)) {
-            method = void 0;
-            starRequestHandler = type;
-          } else if (Is.string(type)) {
-            method = null;
-            if (handler !== void 0) {
-              method = type;
-              requestHandlers.set(type, { handler, type: void 0 });
-            }
-          } else {
-            if (handler !== void 0) {
-              method = type.method;
-              requestHandlers.set(type.method, { type, handler });
-            }
-          }
-          return {
-            dispose: () => {
-              if (method === null) {
-                return;
-              }
-              if (method !== void 0) {
-                requestHandlers.delete(method);
-              } else {
-                starRequestHandler = void 0;
-              }
-            }
-          };
-        },
-        hasPendingResponse: () => {
-          return responsePromises.size > 0;
-        },
-        trace: async (_value, _tracer, sendNotificationOrTraceOptions) => {
-          let _sendNotification = false;
-          let _traceFormat = TraceFormat.Text;
-          if (sendNotificationOrTraceOptions !== void 0) {
-            if (Is.boolean(sendNotificationOrTraceOptions)) {
-              _sendNotification = sendNotificationOrTraceOptions;
-            } else {
-              _sendNotification = sendNotificationOrTraceOptions.sendNotification || false;
-              _traceFormat = sendNotificationOrTraceOptions.traceFormat || TraceFormat.Text;
-            }
-          }
-          trace = _value;
-          traceFormat = _traceFormat;
-          if (trace === Trace.Off) {
-            tracer = void 0;
-          } else {
-            tracer = _tracer;
-          }
-          if (_sendNotification && !isClosed() && !isDisposed()) {
-            await connection.sendNotification(SetTraceNotification.type, { value: Trace.toString(_value) });
-          }
-        },
-        onError: errorEmitter.event,
-        onClose: closeEmitter.event,
-        onUnhandledNotification: unhandledNotificationEmitter.event,
-        onDispose: disposeEmitter.event,
-        end: () => {
-          messageWriter.end();
-        },
-        dispose: () => {
-          if (isDisposed()) {
-            return;
-          }
-          state = ConnectionState.Disposed;
-          disposeEmitter.fire(void 0);
-          const error = new messages_1.ResponseError(messages_1.ErrorCodes.PendingResponseRejected, "Pending response rejected since connection got disposed");
-          for (const promise2 of responsePromises.values()) {
-            promise2.reject(error);
-          }
-          responsePromises = /* @__PURE__ */ new Map();
-          requestTokens = /* @__PURE__ */ new Map();
-          knownCanceledRequests = /* @__PURE__ */ new Set();
-          messageQueue = new linkedMap_1.LinkedMap();
-          if (Is.func(messageWriter.dispose)) {
-            messageWriter.dispose();
-          }
-          if (Is.func(messageReader.dispose)) {
-            messageReader.dispose();
-          }
-        },
-        listen: () => {
-          throwIfClosedOrDisposed();
-          throwIfListening();
-          state = ConnectionState.Listening;
-          messageReader.listen(callback2);
-        },
-        inspect: () => {
-          (0, ral_1.default)().console.log("inspect");
-        }
-      };
-      connection.onNotification(LogTraceNotification.type, (params) => {
-        if (trace === Trace.Off || !tracer) {
-          return;
-        }
-        const verbose = trace === Trace.Verbose || trace === Trace.Compact;
-        tracer.log(params.message, verbose ? params.verbose : void 0);
-      });
-      connection.onNotification(ProgressNotification.type, (params) => {
-        const handler = progressHandlers.get(params.token);
-        if (handler) {
-          handler(params.value);
-        } else {
-          unhandledProgressEmitter.fire(params);
-        }
-      });
-      return connection;
-    }
-    exports2.createMessageConnection = createMessageConnection2;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/api.js
-var require_api = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/api.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.ProgressType = exports2.ProgressToken = exports2.createMessageConnection = exports2.NullLogger = exports2.ConnectionOptions = exports2.ConnectionStrategy = exports2.AbstractMessageBuffer = exports2.WriteableStreamMessageWriter = exports2.AbstractMessageWriter = exports2.MessageWriter = exports2.ReadableStreamMessageReader = exports2.AbstractMessageReader = exports2.MessageReader = exports2.SharedArrayReceiverStrategy = exports2.SharedArraySenderStrategy = exports2.CancellationToken = exports2.CancellationTokenSource = exports2.Emitter = exports2.Event = exports2.Disposable = exports2.LRUCache = exports2.Touch = exports2.LinkedMap = exports2.ParameterStructures = exports2.NotificationType9 = exports2.NotificationType8 = exports2.NotificationType7 = exports2.NotificationType6 = exports2.NotificationType5 = exports2.NotificationType4 = exports2.NotificationType3 = exports2.NotificationType2 = exports2.NotificationType1 = exports2.NotificationType0 = exports2.NotificationType = exports2.ErrorCodes = exports2.ResponseError = exports2.RequestType9 = exports2.RequestType8 = exports2.RequestType7 = exports2.RequestType6 = exports2.RequestType5 = exports2.RequestType4 = exports2.RequestType3 = exports2.RequestType2 = exports2.RequestType1 = exports2.RequestType0 = exports2.RequestType = exports2.Message = exports2.RAL = void 0;
-    exports2.MessageStrategy = exports2.CancellationStrategy = exports2.CancellationSenderStrategy = exports2.CancellationReceiverStrategy = exports2.ConnectionError = exports2.ConnectionErrors = exports2.LogTraceNotification = exports2.SetTraceNotification = exports2.TraceFormat = exports2.TraceValues = exports2.Trace = void 0;
-    var messages_1 = require_messages2();
-    Object.defineProperty(exports2, "Message", { enumerable: true, get: function() {
-      return messages_1.Message;
-    } });
-    Object.defineProperty(exports2, "RequestType", { enumerable: true, get: function() {
-      return messages_1.RequestType;
-    } });
-    Object.defineProperty(exports2, "RequestType0", { enumerable: true, get: function() {
-      return messages_1.RequestType0;
-    } });
-    Object.defineProperty(exports2, "RequestType1", { enumerable: true, get: function() {
-      return messages_1.RequestType1;
-    } });
-    Object.defineProperty(exports2, "RequestType2", { enumerable: true, get: function() {
-      return messages_1.RequestType2;
-    } });
-    Object.defineProperty(exports2, "RequestType3", { enumerable: true, get: function() {
-      return messages_1.RequestType3;
-    } });
-    Object.defineProperty(exports2, "RequestType4", { enumerable: true, get: function() {
-      return messages_1.RequestType4;
-    } });
-    Object.defineProperty(exports2, "RequestType5", { enumerable: true, get: function() {
-      return messages_1.RequestType5;
-    } });
-    Object.defineProperty(exports2, "RequestType6", { enumerable: true, get: function() {
-      return messages_1.RequestType6;
-    } });
-    Object.defineProperty(exports2, "RequestType7", { enumerable: true, get: function() {
-      return messages_1.RequestType7;
-    } });
-    Object.defineProperty(exports2, "RequestType8", { enumerable: true, get: function() {
-      return messages_1.RequestType8;
-    } });
-    Object.defineProperty(exports2, "RequestType9", { enumerable: true, get: function() {
-      return messages_1.RequestType9;
-    } });
-    Object.defineProperty(exports2, "ResponseError", { enumerable: true, get: function() {
-      return messages_1.ResponseError;
-    } });
-    Object.defineProperty(exports2, "ErrorCodes", { enumerable: true, get: function() {
-      return messages_1.ErrorCodes;
-    } });
-    Object.defineProperty(exports2, "NotificationType", { enumerable: true, get: function() {
-      return messages_1.NotificationType;
-    } });
-    Object.defineProperty(exports2, "NotificationType0", { enumerable: true, get: function() {
-      return messages_1.NotificationType0;
-    } });
-    Object.defineProperty(exports2, "NotificationType1", { enumerable: true, get: function() {
-      return messages_1.NotificationType1;
-    } });
-    Object.defineProperty(exports2, "NotificationType2", { enumerable: true, get: function() {
-      return messages_1.NotificationType2;
-    } });
-    Object.defineProperty(exports2, "NotificationType3", { enumerable: true, get: function() {
-      return messages_1.NotificationType3;
-    } });
-    Object.defineProperty(exports2, "NotificationType4", { enumerable: true, get: function() {
-      return messages_1.NotificationType4;
-    } });
-    Object.defineProperty(exports2, "NotificationType5", { enumerable: true, get: function() {
-      return messages_1.NotificationType5;
-    } });
-    Object.defineProperty(exports2, "NotificationType6", { enumerable: true, get: function() {
-      return messages_1.NotificationType6;
-    } });
-    Object.defineProperty(exports2, "NotificationType7", { enumerable: true, get: function() {
-      return messages_1.NotificationType7;
-    } });
-    Object.defineProperty(exports2, "NotificationType8", { enumerable: true, get: function() {
-      return messages_1.NotificationType8;
-    } });
-    Object.defineProperty(exports2, "NotificationType9", { enumerable: true, get: function() {
-      return messages_1.NotificationType9;
-    } });
-    Object.defineProperty(exports2, "ParameterStructures", { enumerable: true, get: function() {
-      return messages_1.ParameterStructures;
-    } });
-    var linkedMap_1 = require_linkedMap2();
-    Object.defineProperty(exports2, "LinkedMap", { enumerable: true, get: function() {
-      return linkedMap_1.LinkedMap;
-    } });
-    Object.defineProperty(exports2, "LRUCache", { enumerable: true, get: function() {
-      return linkedMap_1.LRUCache;
-    } });
-    Object.defineProperty(exports2, "Touch", { enumerable: true, get: function() {
-      return linkedMap_1.Touch;
-    } });
-    var disposable_1 = require_disposable();
-    Object.defineProperty(exports2, "Disposable", { enumerable: true, get: function() {
-      return disposable_1.Disposable;
-    } });
-    var events_1 = require_events2();
-    Object.defineProperty(exports2, "Event", { enumerable: true, get: function() {
-      return events_1.Event;
-    } });
-    Object.defineProperty(exports2, "Emitter", { enumerable: true, get: function() {
-      return events_1.Emitter;
-    } });
-    var cancellation_1 = require_cancellation3();
-    Object.defineProperty(exports2, "CancellationTokenSource", { enumerable: true, get: function() {
-      return cancellation_1.CancellationTokenSource;
-    } });
-    Object.defineProperty(exports2, "CancellationToken", { enumerable: true, get: function() {
-      return cancellation_1.CancellationToken;
-    } });
-    var sharedArrayCancellation_1 = require_sharedArrayCancellation();
-    Object.defineProperty(exports2, "SharedArraySenderStrategy", { enumerable: true, get: function() {
-      return sharedArrayCancellation_1.SharedArraySenderStrategy;
-    } });
-    Object.defineProperty(exports2, "SharedArrayReceiverStrategy", { enumerable: true, get: function() {
-      return sharedArrayCancellation_1.SharedArrayReceiverStrategy;
-    } });
-    var messageReader_1 = require_messageReader2();
-    Object.defineProperty(exports2, "MessageReader", { enumerable: true, get: function() {
-      return messageReader_1.MessageReader;
-    } });
-    Object.defineProperty(exports2, "AbstractMessageReader", { enumerable: true, get: function() {
-      return messageReader_1.AbstractMessageReader;
-    } });
-    Object.defineProperty(exports2, "ReadableStreamMessageReader", { enumerable: true, get: function() {
-      return messageReader_1.ReadableStreamMessageReader;
-    } });
-    var messageWriter_1 = require_messageWriter2();
-    Object.defineProperty(exports2, "MessageWriter", { enumerable: true, get: function() {
-      return messageWriter_1.MessageWriter;
-    } });
-    Object.defineProperty(exports2, "AbstractMessageWriter", { enumerable: true, get: function() {
-      return messageWriter_1.AbstractMessageWriter;
-    } });
-    Object.defineProperty(exports2, "WriteableStreamMessageWriter", { enumerable: true, get: function() {
-      return messageWriter_1.WriteableStreamMessageWriter;
-    } });
-    var messageBuffer_1 = require_messageBuffer();
-    Object.defineProperty(exports2, "AbstractMessageBuffer", { enumerable: true, get: function() {
-      return messageBuffer_1.AbstractMessageBuffer;
-    } });
-    var connection_1 = require_connection();
-    Object.defineProperty(exports2, "ConnectionStrategy", { enumerable: true, get: function() {
-      return connection_1.ConnectionStrategy;
-    } });
-    Object.defineProperty(exports2, "ConnectionOptions", { enumerable: true, get: function() {
-      return connection_1.ConnectionOptions;
-    } });
-    Object.defineProperty(exports2, "NullLogger", { enumerable: true, get: function() {
-      return connection_1.NullLogger;
-    } });
-    Object.defineProperty(exports2, "createMessageConnection", { enumerable: true, get: function() {
-      return connection_1.createMessageConnection;
-    } });
-    Object.defineProperty(exports2, "ProgressToken", { enumerable: true, get: function() {
-      return connection_1.ProgressToken;
-    } });
-    Object.defineProperty(exports2, "ProgressType", { enumerable: true, get: function() {
-      return connection_1.ProgressType;
-    } });
-    Object.defineProperty(exports2, "Trace", { enumerable: true, get: function() {
-      return connection_1.Trace;
-    } });
-    Object.defineProperty(exports2, "TraceValues", { enumerable: true, get: function() {
-      return connection_1.TraceValues;
-    } });
-    Object.defineProperty(exports2, "TraceFormat", { enumerable: true, get: function() {
-      return connection_1.TraceFormat;
-    } });
-    Object.defineProperty(exports2, "SetTraceNotification", { enumerable: true, get: function() {
-      return connection_1.SetTraceNotification;
-    } });
-    Object.defineProperty(exports2, "LogTraceNotification", { enumerable: true, get: function() {
-      return connection_1.LogTraceNotification;
-    } });
-    Object.defineProperty(exports2, "ConnectionErrors", { enumerable: true, get: function() {
-      return connection_1.ConnectionErrors;
-    } });
-    Object.defineProperty(exports2, "ConnectionError", { enumerable: true, get: function() {
-      return connection_1.ConnectionError;
-    } });
-    Object.defineProperty(exports2, "CancellationReceiverStrategy", { enumerable: true, get: function() {
-      return connection_1.CancellationReceiverStrategy;
-    } });
-    Object.defineProperty(exports2, "CancellationSenderStrategy", { enumerable: true, get: function() {
-      return connection_1.CancellationSenderStrategy;
-    } });
-    Object.defineProperty(exports2, "CancellationStrategy", { enumerable: true, get: function() {
-      return connection_1.CancellationStrategy;
-    } });
-    Object.defineProperty(exports2, "MessageStrategy", { enumerable: true, get: function() {
-      return connection_1.MessageStrategy;
-    } });
-    var ral_1 = require_ral();
-    exports2.RAL = ral_1.default;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/ril.js
-var require_ril = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/ril.js"(exports2) {
-    "use strict";
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    var util_1 = require("util");
-    var api_1 = require_api();
-    var MessageBuffer = class _MessageBuffer extends api_1.AbstractMessageBuffer {
-      constructor(encoding = "utf-8") {
-        super(encoding);
-      }
-      emptyBuffer() {
-        return _MessageBuffer.emptyBuffer;
-      }
-      fromString(value, encoding) {
-        return Buffer.from(value, encoding);
-      }
-      toString(value, encoding) {
-        if (value instanceof Buffer) {
-          return value.toString(encoding);
-        } else {
-          return new util_1.TextDecoder(encoding).decode(value);
-        }
-      }
-      asNative(buffer, length) {
-        if (length === void 0) {
-          return buffer instanceof Buffer ? buffer : Buffer.from(buffer);
-        } else {
-          return buffer instanceof Buffer ? buffer.slice(0, length) : Buffer.from(buffer, 0, length);
-        }
-      }
-      allocNative(length) {
-        return Buffer.allocUnsafe(length);
-      }
-    };
-    MessageBuffer.emptyBuffer = Buffer.allocUnsafe(0);
-    var ReadableStreamWrapper = class {
-      constructor(stream) {
-        this.stream = stream;
-      }
-      onClose(listener) {
-        this.stream.on("close", listener);
-        return api_1.Disposable.create(() => this.stream.off("close", listener));
-      }
-      onError(listener) {
-        this.stream.on("error", listener);
-        return api_1.Disposable.create(() => this.stream.off("error", listener));
-      }
-      onEnd(listener) {
-        this.stream.on("end", listener);
-        return api_1.Disposable.create(() => this.stream.off("end", listener));
-      }
-      onData(listener) {
-        this.stream.on("data", listener);
-        return api_1.Disposable.create(() => this.stream.off("data", listener));
-      }
-    };
-    var WritableStreamWrapper = class {
-      constructor(stream) {
-        this.stream = stream;
-      }
-      onClose(listener) {
-        this.stream.on("close", listener);
-        return api_1.Disposable.create(() => this.stream.off("close", listener));
-      }
-      onError(listener) {
-        this.stream.on("error", listener);
-        return api_1.Disposable.create(() => this.stream.off("error", listener));
-      }
-      onEnd(listener) {
-        this.stream.on("end", listener);
-        return api_1.Disposable.create(() => this.stream.off("end", listener));
-      }
-      write(data, encoding) {
-        return new Promise((resolve3, reject) => {
-          const callback2 = (error) => {
-            if (error === void 0 || error === null) {
-              resolve3();
-            } else {
-              reject(error);
-            }
-          };
-          if (typeof data === "string") {
-            this.stream.write(data, encoding, callback2);
-          } else {
-            this.stream.write(data, callback2);
-          }
-        });
-      }
-      end() {
-        this.stream.end();
-      }
-    };
-    var _ril = Object.freeze({
-      messageBuffer: Object.freeze({
-        create: (encoding) => new MessageBuffer(encoding)
-      }),
-      applicationJson: Object.freeze({
-        encoder: Object.freeze({
-          name: "application/json",
-          encode: (msg, options) => {
-            try {
-              return Promise.resolve(Buffer.from(JSON.stringify(msg, void 0, 0), options.charset));
-            } catch (err) {
-              return Promise.reject(err);
-            }
-          }
-        }),
-        decoder: Object.freeze({
-          name: "application/json",
-          decode: (buffer, options) => {
-            try {
-              if (buffer instanceof Buffer) {
-                return Promise.resolve(JSON.parse(buffer.toString(options.charset)));
-              } else {
-                return Promise.resolve(JSON.parse(new util_1.TextDecoder(options.charset).decode(buffer)));
-              }
-            } catch (err) {
-              return Promise.reject(err);
-            }
-          }
-        })
-      }),
-      stream: Object.freeze({
-        asReadableStream: (stream) => new ReadableStreamWrapper(stream),
-        asWritableStream: (stream) => new WritableStreamWrapper(stream)
-      }),
-      console,
-      timer: Object.freeze({
-        setTimeout(callback2, ms, ...args) {
-          const handle = setTimeout(callback2, ms, ...args);
-          return { dispose: () => clearTimeout(handle) };
-        },
-        setImmediate(callback2, ...args) {
-          const handle = setImmediate(callback2, ...args);
-          return { dispose: () => clearImmediate(handle) };
-        },
-        setInterval(callback2, ms, ...args) {
-          const handle = setInterval(callback2, ms, ...args);
-          return { dispose: () => clearInterval(handle) };
-        }
-      })
-    });
-    function RIL() {
-      return _ril;
-    }
-    (function(RIL2) {
-      function install() {
-        api_1.RAL.install(_ril);
-      }
-      RIL2.install = install;
-    })(RIL || (RIL = {}));
-    exports2.default = RIL;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/main.js
-var require_main2 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/main.js"(exports2) {
-    "use strict";
-    var __createBinding = exports2 && exports2.__createBinding || (Object.create ? (function(o, m, k, k2) {
-      if (k2 === void 0) k2 = k;
-      var desc = Object.getOwnPropertyDescriptor(m, k);
-      if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-        desc = { enumerable: true, get: function() {
-          return m[k];
-        } };
-      }
-      Object.defineProperty(o, k2, desc);
-    }) : (function(o, m, k, k2) {
-      if (k2 === void 0) k2 = k;
-      o[k2] = m[k];
-    }));
-    var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
-      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
-    };
-    Object.defineProperty(exports2, "__esModule", { value: true });
-    exports2.createMessageConnection = exports2.createServerSocketTransport = exports2.createClientSocketTransport = exports2.createServerPipeTransport = exports2.createClientPipeTransport = exports2.generateRandomPipeName = exports2.StreamMessageWriter = exports2.StreamMessageReader = exports2.SocketMessageWriter = exports2.SocketMessageReader = exports2.PortMessageWriter = exports2.PortMessageReader = exports2.IPCMessageWriter = exports2.IPCMessageReader = void 0;
-    var ril_1 = require_ril();
-    ril_1.default.install();
-    var path2 = require("path");
-    var os3 = require("os");
-    var crypto_1 = require("crypto");
-    var net_1 = require("net");
-    var api_1 = require_api();
-    __exportStar(require_api(), exports2);
-    var IPCMessageReader = class extends api_1.AbstractMessageReader {
-      constructor(process2) {
-        super();
-        this.process = process2;
-        let eventEmitter = this.process;
-        eventEmitter.on("error", (error) => this.fireError(error));
-        eventEmitter.on("close", () => this.fireClose());
-      }
-      listen(callback2) {
-        this.process.on("message", callback2);
-        return api_1.Disposable.create(() => this.process.off("message", callback2));
-      }
-    };
-    exports2.IPCMessageReader = IPCMessageReader;
-    var IPCMessageWriter = class extends api_1.AbstractMessageWriter {
-      constructor(process2) {
-        super();
-        this.process = process2;
-        this.errorCount = 0;
-        const eventEmitter = this.process;
-        eventEmitter.on("error", (error) => this.fireError(error));
-        eventEmitter.on("close", () => this.fireClose);
-      }
-      write(msg) {
-        try {
-          if (typeof this.process.send === "function") {
-            this.process.send(msg, void 0, void 0, (error) => {
-              if (error) {
-                this.errorCount++;
-                this.handleError(error, msg);
-              } else {
-                this.errorCount = 0;
-              }
-            });
-          }
-          return Promise.resolve();
-        } catch (error) {
-          this.handleError(error, msg);
-          return Promise.reject(error);
-        }
-      }
-      handleError(error, msg) {
-        this.errorCount++;
-        this.fireError(error, msg, this.errorCount);
-      }
-      end() {
-      }
-    };
-    exports2.IPCMessageWriter = IPCMessageWriter;
-    var PortMessageReader = class extends api_1.AbstractMessageReader {
-      constructor(port) {
-        super();
-        this.onData = new api_1.Emitter();
-        port.on("close", () => this.fireClose);
-        port.on("error", (error) => this.fireError(error));
-        port.on("message", (message) => {
-          this.onData.fire(message);
-        });
-      }
-      listen(callback2) {
-        return this.onData.event(callback2);
-      }
-    };
-    exports2.PortMessageReader = PortMessageReader;
-    var PortMessageWriter = class extends api_1.AbstractMessageWriter {
-      constructor(port) {
-        super();
-        this.port = port;
-        this.errorCount = 0;
-        port.on("close", () => this.fireClose());
-        port.on("error", (error) => this.fireError(error));
-      }
-      write(msg) {
-        try {
-          this.port.postMessage(msg);
-          return Promise.resolve();
-        } catch (error) {
-          this.handleError(error, msg);
-          return Promise.reject(error);
-        }
-      }
-      handleError(error, msg) {
-        this.errorCount++;
-        this.fireError(error, msg, this.errorCount);
-      }
-      end() {
-      }
-    };
-    exports2.PortMessageWriter = PortMessageWriter;
-    var SocketMessageReader = class extends api_1.ReadableStreamMessageReader {
-      constructor(socket, encoding = "utf-8") {
-        super((0, ril_1.default)().stream.asReadableStream(socket), encoding);
-      }
-    };
-    exports2.SocketMessageReader = SocketMessageReader;
-    var SocketMessageWriter = class extends api_1.WriteableStreamMessageWriter {
-      constructor(socket, options) {
-        super((0, ril_1.default)().stream.asWritableStream(socket), options);
-        this.socket = socket;
-      }
-      dispose() {
-        super.dispose();
-        this.socket.destroy();
-      }
-    };
-    exports2.SocketMessageWriter = SocketMessageWriter;
-    var StreamMessageReader2 = class extends api_1.ReadableStreamMessageReader {
-      constructor(readable, encoding) {
-        super((0, ril_1.default)().stream.asReadableStream(readable), encoding);
-      }
-    };
-    exports2.StreamMessageReader = StreamMessageReader2;
-    var StreamMessageWriter2 = class extends api_1.WriteableStreamMessageWriter {
-      constructor(writable, options) {
-        super((0, ril_1.default)().stream.asWritableStream(writable), options);
-      }
-    };
-    exports2.StreamMessageWriter = StreamMessageWriter2;
-    var XDG_RUNTIME_DIR = process.env["XDG_RUNTIME_DIR"];
-    var safeIpcPathLengths = /* @__PURE__ */ new Map([
-      ["linux", 107],
-      ["darwin", 103]
-    ]);
-    function generateRandomPipeName() {
-      const randomSuffix = (0, crypto_1.randomBytes)(21).toString("hex");
-      if (process.platform === "win32") {
-        return `\\\\.\\pipe\\vscode-jsonrpc-${randomSuffix}-sock`;
-      }
-      let result;
-      if (XDG_RUNTIME_DIR) {
-        result = path2.join(XDG_RUNTIME_DIR, `vscode-ipc-${randomSuffix}.sock`);
-      } else {
-        result = path2.join(os3.tmpdir(), `vscode-${randomSuffix}.sock`);
-      }
-      const limit = safeIpcPathLengths.get(process.platform);
-      if (limit !== void 0 && result.length > limit) {
-        (0, ril_1.default)().console.warn(`WARNING: IPC handle "${result}" is longer than ${limit} characters.`);
-      }
-      return result;
-    }
-    exports2.generateRandomPipeName = generateRandomPipeName;
-    function createClientPipeTransport(pipeName, encoding = "utf-8") {
-      let connectResolve;
-      const connected = new Promise((resolve3, _reject) => {
-        connectResolve = resolve3;
-      });
-      return new Promise((resolve3, reject) => {
-        let server = (0, net_1.createServer)((socket) => {
-          server.close();
-          connectResolve([
-            new SocketMessageReader(socket, encoding),
-            new SocketMessageWriter(socket, encoding)
-          ]);
-        });
-        server.on("error", reject);
-        server.listen(pipeName, () => {
-          server.removeListener("error", reject);
-          resolve3({
-            onConnected: () => {
-              return connected;
-            }
-          });
-        });
-      });
-    }
-    exports2.createClientPipeTransport = createClientPipeTransport;
-    function createServerPipeTransport(pipeName, encoding = "utf-8") {
-      const socket = (0, net_1.createConnection)(pipeName);
-      return [
-        new SocketMessageReader(socket, encoding),
-        new SocketMessageWriter(socket, encoding)
-      ];
-    }
-    exports2.createServerPipeTransport = createServerPipeTransport;
-    function createClientSocketTransport(port, encoding = "utf-8") {
-      let connectResolve;
-      const connected = new Promise((resolve3, _reject) => {
-        connectResolve = resolve3;
-      });
-      return new Promise((resolve3, reject) => {
-        const server = (0, net_1.createServer)((socket) => {
-          server.close();
-          connectResolve([
-            new SocketMessageReader(socket, encoding),
-            new SocketMessageWriter(socket, encoding)
-          ]);
-        });
-        server.on("error", reject);
-        server.listen(port, "127.0.0.1", () => {
-          server.removeListener("error", reject);
-          resolve3({
-            onConnected: () => {
-              return connected;
-            }
-          });
-        });
-      });
-    }
-    exports2.createClientSocketTransport = createClientSocketTransport;
-    function createServerSocketTransport(port, encoding = "utf-8") {
-      const socket = (0, net_1.createConnection)(port, "127.0.0.1");
-      return [
-        new SocketMessageReader(socket, encoding),
-        new SocketMessageWriter(socket, encoding)
-      ];
-    }
-    exports2.createServerSocketTransport = createServerSocketTransport;
-    function isReadableStream(value) {
-      const candidate = value;
-      return candidate.read !== void 0 && candidate.addListener !== void 0;
-    }
-    function isWritableStream(value) {
-      const candidate = value;
-      return candidate.write !== void 0 && candidate.addListener !== void 0;
-    }
-    function createMessageConnection2(input, output, logger, options) {
-      if (!logger) {
-        logger = api_1.NullLogger;
-      }
-      const reader = isReadableStream(input) ? new StreamMessageReader2(input) : input;
-      const writer = isWritableStream(output) ? new StreamMessageWriter2(output) : output;
-      if (api_1.ConnectionStrategy.is(options)) {
-        options = { connectionStrategy: options };
-      }
-      return (0, api_1.createMessageConnection)(reader, writer, logger, options);
-    }
-    exports2.createMessageConnection = createMessageConnection2;
-  }
-});
-
-// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/node.js
-var require_node3 = __commonJS({
-  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/node.js"(exports2, module2) {
-    "use strict";
-    module2.exports = require_main2();
-  }
-});
-
 // ../../node_modules/picomatch/lib/constants.js
 var require_constants = __commonJS({
   "../../node_modules/picomatch/lib/constants.js"(exports2, module2) {
@@ -45001,6 +41745,12 @@ var DevTunnelHostAdapter = class {
         const clientId = `client-${++this.clientCounter}`;
         this.clients.set(clientId, socket);
         this.log("debug", `Client ${clientId} connected (total clients: ${this.clients.size})`);
+        const SOCKET_TIMEOUT_MS = 6e4;
+        socket.setTimeout(SOCKET_TIMEOUT_MS);
+        socket.on("timeout", () => {
+          this.log("info", `Client ${clientId} socket timeout (no data in ${SOCKET_TIMEOUT_MS / 1e3}s)`);
+          socket.destroy();
+        });
         this.clientHandlers.forEach((h) => h(socket, clientId));
         socket.on("close", (hadError) => {
           if (this.disconnectedClients.has(clientId)) {
@@ -45274,1120 +42024,16 @@ function createTunnelHostAdapter(config) {
   return new DevTunnelHostAdapter(config);
 }
 
-// ../../node_modules/@github/copilot-sdk/dist/client.js
-var import_node_child_process = require("child_process");
-var import_node_net = require("net");
-var import_node = __toESM(require_node3(), 1);
-
-// ../../node_modules/@github/copilot-sdk/dist/sdkProtocolVersion.js
-var SDK_PROTOCOL_VERSION = 2;
-function getSdkProtocolVersion() {
-  return SDK_PROTOCOL_VERSION;
-}
-
-// ../../node_modules/@github/copilot-sdk/dist/session.js
-var CopilotSession = class {
-  /**
-   * Creates a new CopilotSession instance.
-   *
-   * @param sessionId - The unique identifier for this session
-   * @param connection - The JSON-RPC message connection to the Copilot CLI
-   * @internal This constructor is internal. Use {@link CopilotClient.createSession} to create sessions.
-   */
-  constructor(sessionId, connection) {
-    this.sessionId = sessionId;
-    this.connection = connection;
-  }
-  eventHandlers = /* @__PURE__ */ new Set();
-  toolHandlers = /* @__PURE__ */ new Map();
-  permissionHandler;
-  /**
-   * Sends a message to this session and waits for the response.
-   *
-   * The message is processed asynchronously. Subscribe to events via {@link on}
-   * to receive streaming responses and other session events.
-   *
-   * @param options - The message options including the prompt and optional attachments
-   * @returns A promise that resolves with the message ID of the response
-   * @throws Error if the session has been destroyed or the connection fails
-   *
-   * @example
-   * ```typescript
-   * const messageId = await session.send({
-   *   prompt: "Explain this code",
-   *   attachments: [{ type: "file", path: "./src/index.ts" }]
-   * });
-   * ```
-   */
-  async send(options) {
-    const response = await this.connection.sendRequest("session.send", {
-      sessionId: this.sessionId,
-      prompt: options.prompt,
-      attachments: options.attachments,
-      mode: options.mode
-    });
-    return response.messageId;
-  }
-  /**
-   * Sends a message to this session and waits until the session becomes idle.
-   *
-   * This is a convenience method that combines {@link send} with waiting for
-   * the `session.idle` event. Use this when you want to block until the
-   * assistant has finished processing the message.
-   *
-   * Events are still delivered to handlers registered via {@link on} while waiting.
-   *
-   * @param options - The message options including the prompt and optional attachments
-   * @param timeout - Timeout in milliseconds (default: 60000). Controls how long to wait; does not abort in-flight agent work.
-   * @returns A promise that resolves with the final assistant message when the session becomes idle,
-   *          or undefined if no assistant message was received
-   * @throws Error if the timeout is reached before the session becomes idle
-   * @throws Error if the session has been destroyed or the connection fails
-   *
-   * @example
-   * ```typescript
-   * // Send and wait for completion with default 60s timeout
-   * const response = await session.sendAndWait({ prompt: "What is 2+2?" });
-   * console.log(response?.data.content); // "4"
-   * ```
-   */
-  async sendAndWait(options, timeout) {
-    const effectiveTimeout = timeout ?? 6e4;
-    let resolveIdle;
-    let rejectWithError;
-    const idlePromise = new Promise((resolve3, reject) => {
-      resolveIdle = resolve3;
-      rejectWithError = reject;
-    });
-    let lastAssistantMessage;
-    const unsubscribe = this.on((event) => {
-      if (event.type === "assistant.message") {
-        lastAssistantMessage = event;
-      } else if (event.type === "session.idle") {
-        resolveIdle();
-      } else if (event.type === "session.error") {
-        const error = new Error(event.data.message);
-        error.stack = event.data.stack;
-        rejectWithError(error);
-      }
-    });
-    try {
-      await this.send(options);
-      const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(
-          () => reject(
-            new Error(
-              `Timeout after ${effectiveTimeout}ms waiting for session.idle`
-            )
-          ),
-          effectiveTimeout
-        );
-      });
-      await Promise.race([idlePromise, timeoutPromise]);
-      return lastAssistantMessage;
-    } finally {
-      unsubscribe();
-    }
-  }
-  /**
-   * Subscribes to events from this session.
-   *
-   * Events include assistant messages, tool executions, errors, and session state changes.
-   * Multiple handlers can be registered and will all receive events.
-   *
-   * @param handler - A callback function that receives session events
-   * @returns A function that, when called, unsubscribes the handler
-   *
-   * @example
-   * ```typescript
-   * const unsubscribe = session.on((event) => {
-   *   switch (event.type) {
-   *     case "assistant.message":
-   *       console.log("Assistant:", event.data.content);
-   *       break;
-   *     case "session.error":
-   *       console.error("Error:", event.data.message);
-   *       break;
-   *   }
-   * });
-   *
-   * // Later, to stop receiving events:
-   * unsubscribe();
-   * ```
-   */
-  on(handler) {
-    this.eventHandlers.add(handler);
-    return () => {
-      this.eventHandlers.delete(handler);
-    };
-  }
-  /**
-   * Dispatches an event to all registered handlers.
-   *
-   * @param event - The session event to dispatch
-   * @internal This method is for internal use by the SDK.
-   */
-  _dispatchEvent(event) {
-    for (const handler of this.eventHandlers) {
-      try {
-        handler(event);
-      } catch (_error) {
-      }
-    }
-  }
-  /**
-   * Registers custom tool handlers for this session.
-   *
-   * Tools allow the assistant to execute custom functions. When the assistant
-   * invokes a tool, the corresponding handler is called with the tool arguments.
-   *
-   * @param tools - An array of tool definitions with their handlers, or undefined to clear all tools
-   * @internal This method is typically called internally when creating a session with tools.
-   */
-  registerTools(tools) {
-    this.toolHandlers.clear();
-    if (!tools) {
-      return;
-    }
-    for (const tool of tools) {
-      this.toolHandlers.set(tool.name, tool.handler);
-    }
-  }
-  /**
-   * Retrieves a registered tool handler by name.
-   *
-   * @param name - The name of the tool to retrieve
-   * @returns The tool handler if found, or undefined
-   * @internal This method is for internal use by the SDK.
-   */
-  getToolHandler(name) {
-    return this.toolHandlers.get(name);
-  }
-  /**
-   * Registers a handler for permission requests.
-   *
-   * When the assistant needs permission to perform certain actions (e.g., file operations),
-   * this handler is called to approve or deny the request.
-   *
-   * @param handler - The permission handler function, or undefined to remove the handler
-   * @internal This method is typically called internally when creating a session.
-   */
-  registerPermissionHandler(handler) {
-    this.permissionHandler = handler;
-  }
-  /**
-   * Handles a permission request from the Copilot CLI.
-   *
-   * @param request - The permission request data from the CLI
-   * @returns A promise that resolves with the permission decision
-   * @internal This method is for internal use by the SDK.
-   */
-  async _handlePermissionRequest(request) {
-    if (!this.permissionHandler) {
-      return { kind: "denied-no-approval-rule-and-could-not-request-from-user" };
-    }
-    try {
-      const result = await this.permissionHandler(request, {
-        sessionId: this.sessionId
-      });
-      return result;
-    } catch (_error) {
-      return { kind: "denied-no-approval-rule-and-could-not-request-from-user" };
-    }
-  }
-  /**
-   * Retrieves all events and messages from this session's history.
-   *
-   * This returns the complete conversation history including user messages,
-   * assistant responses, tool executions, and other session events.
-   *
-   * @returns A promise that resolves with an array of all session events
-   * @throws Error if the session has been destroyed or the connection fails
-   *
-   * @example
-   * ```typescript
-   * const events = await session.getMessages();
-   * for (const event of events) {
-   *   if (event.type === "assistant.message") {
-   *     console.log("Assistant:", event.data.content);
-   *   }
-   * }
-   * ```
-   */
-  async getMessages() {
-    const response = await this.connection.sendRequest("session.getMessages", {
-      sessionId: this.sessionId
-    });
-    return response.events;
-  }
-  /**
-   * Destroys this session and releases all associated resources.
-   *
-   * After calling this method, the session can no longer be used. All event
-   * handlers and tool handlers are cleared. To continue the conversation,
-   * use {@link CopilotClient.resumeSession} with the session ID.
-   *
-   * @returns A promise that resolves when the session is destroyed
-   * @throws Error if the connection fails
-   *
-   * @example
-   * ```typescript
-   * // Clean up when done
-   * await session.destroy();
-   * ```
-   */
-  async destroy() {
-    await this.connection.sendRequest("session.destroy", {
-      sessionId: this.sessionId
-    });
-    this.eventHandlers.clear();
-    this.toolHandlers.clear();
-    this.permissionHandler = void 0;
-  }
-  /**
-   * Aborts the currently processing message in this session.
-   *
-   * Use this to cancel a long-running request. The session remains valid
-   * and can continue to be used for new messages.
-   *
-   * @returns A promise that resolves when the abort request is acknowledged
-   * @throws Error if the session has been destroyed or the connection fails
-   *
-   * @example
-   * ```typescript
-   * // Start a long-running request
-   * const messagePromise = session.send({ prompt: "Write a very long story..." });
-   *
-   * // Abort after 5 seconds
-   * setTimeout(async () => {
-   *   await session.abort();
-   * }, 5000);
-   * ```
-   */
-  async abort() {
-    await this.connection.sendRequest("session.abort", {
-      sessionId: this.sessionId
-    });
-  }
-};
-
-// ../../node_modules/@github/copilot-sdk/dist/client.js
-function isZodSchema(value) {
-  return value != null && typeof value === "object" && "toJSONSchema" in value && typeof value.toJSONSchema === "function";
-}
-function toJsonSchema(parameters) {
-  if (!parameters) return void 0;
-  if (isZodSchema(parameters)) {
-    return parameters.toJSONSchema();
-  }
-  return parameters;
-}
-var CopilotClient = class {
-  cliProcess = null;
-  connection = null;
-  socket = null;
-  actualPort = null;
-  actualHost = "localhost";
-  state = "disconnected";
-  sessions = /* @__PURE__ */ new Map();
-  options;
-  isExternalServer = false;
-  forceStopping = false;
-  /**
-   * Creates a new CopilotClient instance.
-   *
-   * @param options - Configuration options for the client
-   * @throws Error if mutually exclusive options are provided (e.g., cliUrl with useStdio or cliPath)
-   *
-   * @example
-   * ```typescript
-   * // Default options - spawns CLI server using stdio
-   * const client = new CopilotClient();
-   *
-   * // Connect to an existing server
-   * const client = new CopilotClient({ cliUrl: "localhost:3000" });
-   *
-   * // Custom CLI path with specific log level
-   * const client = new CopilotClient({
-   *   cliPath: "/usr/local/bin/copilot",
-   *   logLevel: "debug"
-   * });
-   * ```
-   */
-  constructor(options = {}) {
-    if (options.cliUrl && (options.useStdio === true || options.cliPath)) {
-      throw new Error("cliUrl is mutually exclusive with useStdio and cliPath");
-    }
-    if (options.cliUrl) {
-      const { host, port } = this.parseCliUrl(options.cliUrl);
-      this.actualHost = host;
-      this.actualPort = port;
-      this.isExternalServer = true;
-    }
-    this.options = {
-      cliPath: options.cliPath || "copilot",
-      cliArgs: options.cliArgs ?? [],
-      cwd: options.cwd ?? process.cwd(),
-      port: options.port || 0,
-      useStdio: options.cliUrl ? false : options.useStdio ?? true,
-      // Default to stdio unless cliUrl is provided
-      cliUrl: options.cliUrl,
-      logLevel: options.logLevel || "debug",
-      autoStart: options.autoStart ?? true,
-      autoRestart: options.autoRestart ?? true,
-      env: options.env ?? process.env
-    };
-  }
-  /**
-   * Parse CLI URL into host and port
-   * Supports formats: "host:port", "http://host:port", "https://host:port", or just "port"
-   */
-  parseCliUrl(url) {
-    let cleanUrl = url.replace(/^https?:\/\//, "");
-    if (/^\d+$/.test(cleanUrl)) {
-      return { host: "localhost", port: parseInt(cleanUrl, 10) };
-    }
-    const parts = cleanUrl.split(":");
-    if (parts.length !== 2) {
-      throw new Error(
-        `Invalid cliUrl format: ${url}. Expected "host:port", "http://host:port", or "port"`
-      );
-    }
-    const host = parts[0] || "localhost";
-    const port = parseInt(parts[1], 10);
-    if (isNaN(port) || port <= 0 || port > 65535) {
-      throw new Error(`Invalid port in cliUrl: ${url}`);
-    }
-    return { host, port };
-  }
-  /**
-   * Starts the CLI server and establishes a connection.
-   *
-   * If connecting to an external server (via cliUrl), only establishes the connection.
-   * Otherwise, spawns the CLI server process and then connects.
-   *
-   * This method is called automatically when creating a session if `autoStart` is true (default).
-   *
-   * @returns A promise that resolves when the connection is established
-   * @throws Error if the server fails to start or the connection fails
-   *
-   * @example
-   * ```typescript
-   * const client = new CopilotClient({ autoStart: false });
-   * await client.start();
-   * // Now ready to create sessions
-   * ```
-   */
-  async start() {
-    if (this.state === "connected") {
-      return;
-    }
-    this.state = "connecting";
-    try {
-      if (!this.isExternalServer) {
-        await this.startCLIServer();
-      }
-      await this.connectToServer();
-      await this.verifyProtocolVersion();
-      this.state = "connected";
-    } catch (error) {
-      this.state = "error";
-      throw error;
-    }
-  }
-  /**
-   * Stops the CLI server and closes all active sessions.
-   *
-   * This method performs graceful cleanup:
-   * 1. Destroys all active sessions with retry logic
-   * 2. Closes the JSON-RPC connection
-   * 3. Terminates the CLI server process (if spawned by this client)
-   *
-   * @returns A promise that resolves with an array of errors encountered during cleanup.
-   *          An empty array indicates all cleanup succeeded.
-   *
-   * @example
-   * ```typescript
-   * const errors = await client.stop();
-   * if (errors.length > 0) {
-   *   console.error("Cleanup errors:", errors);
-   * }
-   * ```
-   */
-  async stop() {
-    const errors = [];
-    for (const session of this.sessions.values()) {
-      const sessionId = session.sessionId;
-      let lastError = null;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        try {
-          await session.destroy();
-          lastError = null;
-          break;
-        } catch (error) {
-          lastError = error instanceof Error ? error : new Error(String(error));
-          if (attempt < 3) {
-            const delay = 100 * Math.pow(2, attempt - 1);
-            await new Promise((resolve3) => setTimeout(resolve3, delay));
-          }
-        }
-      }
-      if (lastError) {
-        errors.push(
-          new Error(
-            `Failed to destroy session ${sessionId} after 3 attempts: ${lastError.message}`
-          )
-        );
-      }
-    }
-    this.sessions.clear();
-    if (this.connection) {
-      try {
-        this.connection.dispose();
-      } catch (error) {
-        errors.push(
-          new Error(
-            `Failed to dispose connection: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
-      }
-      this.connection = null;
-    }
-    if (this.socket) {
-      try {
-        this.socket.end();
-      } catch (error) {
-        errors.push(
-          new Error(
-            `Failed to close socket: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
-      }
-      this.socket = null;
-    }
-    if (this.cliProcess && !this.isExternalServer) {
-      try {
-        this.cliProcess.kill();
-      } catch (error) {
-        errors.push(
-          new Error(
-            `Failed to kill CLI process: ${error instanceof Error ? error.message : String(error)}`
-          )
-        );
-      }
-      this.cliProcess = null;
-    }
-    this.state = "disconnected";
-    this.actualPort = null;
-    return errors;
-  }
-  /**
-   * Forcefully stops the CLI server without graceful cleanup.
-   *
-   * Use this when {@link stop} fails or takes too long. This method:
-   * - Clears all sessions immediately without destroying them
-   * - Force closes the connection
-   * - Sends SIGKILL to the CLI process (if spawned by this client)
-   *
-   * @returns A promise that resolves when the force stop is complete
-   *
-   * @example
-   * ```typescript
-   * // If normal stop hangs, force stop
-   * const stopPromise = client.stop();
-   * const timeout = new Promise((_, reject) =>
-   *   setTimeout(() => reject(new Error("Timeout")), 5000)
-   * );
-   *
-   * try {
-   *   await Promise.race([stopPromise, timeout]);
-   * } catch {
-   *   await client.forceStop();
-   * }
-   * ```
-   */
-  async forceStop() {
-    this.forceStopping = true;
-    this.sessions.clear();
-    if (this.connection) {
-      try {
-        this.connection.dispose();
-      } catch {
-      }
-      this.connection = null;
-    }
-    if (this.socket) {
-      try {
-        this.socket.destroy();
-      } catch {
-      }
-      this.socket = null;
-    }
-    if (this.cliProcess && !this.isExternalServer) {
-      try {
-        this.cliProcess.kill("SIGKILL");
-      } catch {
-      }
-      this.cliProcess = null;
-    }
-    this.state = "disconnected";
-    this.actualPort = null;
-  }
-  /**
-   * Creates a new conversation session with the Copilot CLI.
-   *
-   * Sessions maintain conversation state, handle events, and manage tool execution.
-   * If the client is not connected and `autoStart` is enabled, this will automatically
-   * start the connection.
-   *
-   * @param config - Optional configuration for the session
-   * @returns A promise that resolves with the created session
-   * @throws Error if the client is not connected and autoStart is disabled
-   *
-   * @example
-   * ```typescript
-   * // Basic session
-   * const session = await client.createSession();
-   *
-   * // Session with model and tools
-   * const session = await client.createSession({
-   *   model: "gpt-4",
-   *   tools: [{
-   *     name: "get_weather",
-   *     description: "Get weather for a location",
-   *     parameters: { type: "object", properties: { location: { type: "string" } } },
-   *     handler: async (args) => ({ temperature: 72 })
-   *   }]
-   * });
-   * ```
-   */
-  async createSession(config = {}) {
-    if (!this.connection) {
-      if (this.options.autoStart) {
-        await this.start();
-      } else {
-        throw new Error("Client not connected. Call start() first.");
-      }
-    }
-    const response = await this.connection.sendRequest("session.create", {
-      model: config.model,
-      sessionId: config.sessionId,
-      tools: config.tools?.map((tool) => ({
-        name: tool.name,
-        description: tool.description,
-        parameters: toJsonSchema(tool.parameters)
-      })),
-      systemMessage: config.systemMessage,
-      availableTools: config.availableTools,
-      excludedTools: config.excludedTools,
-      provider: config.provider,
-      requestPermission: !!config.onPermissionRequest,
-      streaming: config.streaming,
-      mcpServers: config.mcpServers,
-      customAgents: config.customAgents,
-      configDir: config.configDir,
-      skillDirectories: config.skillDirectories,
-      disabledSkills: config.disabledSkills
-    });
-    const sessionId = response.sessionId;
-    const session = new CopilotSession(sessionId, this.connection);
-    session.registerTools(config.tools);
-    if (config.onPermissionRequest) {
-      session.registerPermissionHandler(config.onPermissionRequest);
-    }
-    this.sessions.set(sessionId, session);
-    return session;
-  }
-  /**
-   * Resumes an existing conversation session by its ID.
-   *
-   * This allows you to continue a previous conversation, maintaining all
-   * conversation history. The session must have been previously created
-   * and not deleted.
-   *
-   * @param sessionId - The ID of the session to resume
-   * @param config - Optional configuration for the resumed session
-   * @returns A promise that resolves with the resumed session
-   * @throws Error if the session does not exist or the client is not connected
-   *
-   * @example
-   * ```typescript
-   * // Resume a previous session
-   * const session = await client.resumeSession("session-123");
-   *
-   * // Resume with new tools
-   * const session = await client.resumeSession("session-123", {
-   *   tools: [myNewTool]
-   * });
-   * ```
-   */
-  async resumeSession(sessionId, config = {}) {
-    if (!this.connection) {
-      if (this.options.autoStart) {
-        await this.start();
-      } else {
-        throw new Error("Client not connected. Call start() first.");
-      }
-    }
-    const response = await this.connection.sendRequest("session.resume", {
-      sessionId,
-      tools: config.tools?.map((tool) => ({
-        name: tool.name,
-        description: tool.description,
-        parameters: toJsonSchema(tool.parameters)
-      })),
-      provider: config.provider,
-      requestPermission: !!config.onPermissionRequest,
-      streaming: config.streaming,
-      mcpServers: config.mcpServers,
-      customAgents: config.customAgents,
-      skillDirectories: config.skillDirectories,
-      disabledSkills: config.disabledSkills
-    });
-    const resumedSessionId = response.sessionId;
-    const session = new CopilotSession(resumedSessionId, this.connection);
-    session.registerTools(config.tools);
-    if (config.onPermissionRequest) {
-      session.registerPermissionHandler(config.onPermissionRequest);
-    }
-    this.sessions.set(resumedSessionId, session);
-    return session;
-  }
-  /**
-   * Gets the current connection state of the client.
-   *
-   * @returns The current connection state: "disconnected", "connecting", "connected", or "error"
-   *
-   * @example
-   * ```typescript
-   * if (client.getState() === "connected") {
-   *   const session = await client.createSession();
-   * }
-   * ```
-   */
-  getState() {
-    return this.state;
-  }
-  /**
-   * Sends a ping request to the server to verify connectivity.
-   *
-   * @param message - Optional message to include in the ping
-   * @returns A promise that resolves with the ping response containing the message and timestamp
-   * @throws Error if the client is not connected
-   *
-   * @example
-   * ```typescript
-   * const response = await client.ping("health check");
-   * console.log(`Server responded at ${new Date(response.timestamp)}`);
-   * ```
-   */
-  async ping(message) {
-    if (!this.connection) {
-      throw new Error("Client not connected");
-    }
-    const result = await this.connection.sendRequest("ping", { message });
-    return result;
-  }
-  /**
-   * Get CLI status including version and protocol information
-   */
-  async getStatus() {
-    if (!this.connection) {
-      throw new Error("Client not connected");
-    }
-    const result = await this.connection.sendRequest("status.get", {});
-    return result;
-  }
-  /**
-   * Get current authentication status
-   */
-  async getAuthStatus() {
-    if (!this.connection) {
-      throw new Error("Client not connected");
-    }
-    const result = await this.connection.sendRequest("auth.getStatus", {});
-    return result;
-  }
-  /**
-   * List available models with their metadata
-   * @throws Error if not authenticated
-   */
-  async listModels() {
-    if (!this.connection) {
-      throw new Error("Client not connected");
-    }
-    const result = await this.connection.sendRequest("models.list", {});
-    const response = result;
-    return response.models;
-  }
-  /**
-   * Verify that the server's protocol version matches the SDK's expected version
-   */
-  async verifyProtocolVersion() {
-    const expectedVersion = getSdkProtocolVersion();
-    const pingResult = await this.ping();
-    const serverVersion = pingResult.protocolVersion;
-    if (serverVersion === void 0) {
-      throw new Error(
-        `SDK protocol version mismatch: SDK expects version ${expectedVersion}, but server does not report a protocol version. Please update your server to ensure compatibility.`
-      );
-    }
-    if (serverVersion !== expectedVersion) {
-      throw new Error(
-        `SDK protocol version mismatch: SDK expects version ${expectedVersion}, but server reports version ${serverVersion}. Please update your SDK or server to ensure compatibility.`
-      );
-    }
-  }
-  /**
-   * Gets the ID of the most recently updated session.
-   *
-   * This is useful for resuming the last conversation when the session ID
-   * was not stored.
-   *
-   * @returns A promise that resolves with the session ID, or undefined if no sessions exist
-   * @throws Error if the client is not connected
-   *
-   * @example
-   * ```typescript
-   * const lastId = await client.getLastSessionId();
-   * if (lastId) {
-   *   const session = await client.resumeSession(lastId);
-   * }
-   * ```
-   */
-  async getLastSessionId() {
-    if (!this.connection) {
-      throw new Error("Client not connected");
-    }
-    const response = await this.connection.sendRequest("session.getLastId", {});
-    return response.sessionId;
-  }
-  /**
-   * Deletes a session and its data from disk.
-   *
-   * This permanently removes the session and all its conversation history.
-   * The session cannot be resumed after deletion.
-   *
-   * @param sessionId - The ID of the session to delete
-   * @returns A promise that resolves when the session is deleted
-   * @throws Error if the session does not exist or deletion fails
-   *
-   * @example
-   * ```typescript
-   * await client.deleteSession("session-123");
-   * ```
-   */
-  async deleteSession(sessionId) {
-    if (!this.connection) {
-      throw new Error("Client not connected");
-    }
-    const response = await this.connection.sendRequest("session.delete", {
-      sessionId
-    });
-    const { success, error } = response;
-    if (!success) {
-      throw new Error(`Failed to delete session ${sessionId}: ${error || "Unknown error"}`);
-    }
-    this.sessions.delete(sessionId);
-  }
-  /**
-   * Lists all available sessions known to the server.
-   *
-   * Returns metadata about each session including ID, timestamps, and summary.
-   *
-   * @returns A promise that resolves with an array of session metadata
-   * @throws Error if the client is not connected
-   *
-   * @example
-   * ```typescript
-   * const sessions = await client.listSessions();
-   * for (const session of sessions) {
-   *   console.log(`${session.sessionId}: ${session.summary}`);
-   * }
-   * ```
-   */
-  async listSessions() {
-    if (!this.connection) {
-      throw new Error("Client not connected");
-    }
-    const response = await this.connection.sendRequest("session.list", {});
-    const { sessions } = response;
-    return sessions.map((s) => ({
-      sessionId: s.sessionId,
-      startTime: new Date(s.startTime),
-      modifiedTime: new Date(s.modifiedTime),
-      summary: s.summary,
-      isRemote: s.isRemote
-    }));
-  }
-  /**
-   * Start the CLI server process
-   */
-  async startCLIServer() {
-    return new Promise((resolve3, reject) => {
-      const args = [
-        ...this.options.cliArgs,
-        "--server",
-        "--log-level",
-        this.options.logLevel
-      ];
-      if (this.options.useStdio) {
-        args.push("--stdio");
-      } else if (this.options.port > 0) {
-        args.push("--port", this.options.port.toString());
-      }
-      const envWithoutNodeDebug = { ...this.options.env };
-      delete envWithoutNodeDebug.NODE_DEBUG;
-      const isJsFile = this.options.cliPath.endsWith(".js");
-      const isAbsolutePath = this.options.cliPath.startsWith("/") || /^[a-zA-Z]:/.test(this.options.cliPath);
-      let command;
-      let spawnArgs;
-      if (isJsFile) {
-        command = "node";
-        spawnArgs = [this.options.cliPath, ...args];
-      } else if (process.platform === "win32" && !isAbsolutePath) {
-        command = "cmd";
-        spawnArgs = ["/c", `${this.options.cliPath}`, ...args];
-      } else {
-        command = this.options.cliPath;
-        spawnArgs = args;
-      }
-      this.cliProcess = (0, import_node_child_process.spawn)(command, spawnArgs, {
-        stdio: this.options.useStdio ? ["pipe", "pipe", "pipe"] : ["ignore", "pipe", "pipe"],
-        cwd: this.options.cwd,
-        env: envWithoutNodeDebug
-      });
-      let stdout = "";
-      let resolved = false;
-      if (this.options.useStdio) {
-        resolved = true;
-        resolve3();
-      } else {
-        this.cliProcess.stdout?.on("data", (data) => {
-          stdout += data.toString();
-          const match = stdout.match(/listening on port (\d+)/i);
-          if (match && !resolved) {
-            this.actualPort = parseInt(match[1], 10);
-            resolved = true;
-            resolve3();
-          }
-        });
-      }
-      this.cliProcess.stderr?.on("data", (data) => {
-        const lines = data.toString().split("\n");
-        for (const line of lines) {
-          if (line.trim()) {
-            process.stderr.write(`[CLI subprocess] ${line}
-`);
-          }
-        }
-      });
-      this.cliProcess.on("error", (error) => {
-        if (!resolved) {
-          resolved = true;
-          reject(new Error(`Failed to start CLI server: ${error.message}`));
-        }
-      });
-      this.cliProcess.on("exit", (code) => {
-        if (!resolved) {
-          resolved = true;
-          reject(new Error(`CLI server exited with code ${code}`));
-        } else if (this.options.autoRestart && this.state === "connected") {
-          void this.reconnect();
-        }
-      });
-      setTimeout(() => {
-        if (!resolved) {
-          resolved = true;
-          reject(new Error("Timeout waiting for CLI server to start"));
-        }
-      }, 1e4);
-    });
-  }
-  /**
-   * Connect to the CLI server (via socket or stdio)
-   */
-  async connectToServer() {
-    if (this.options.useStdio) {
-      return this.connectViaStdio();
-    } else {
-      return this.connectViaTcp();
-    }
-  }
-  /**
-   * Connect via stdio pipes
-   */
-  async connectViaStdio() {
-    if (!this.cliProcess) {
-      throw new Error("CLI process not started");
-    }
-    this.cliProcess.stdin?.on("error", (err) => {
-      if (!this.forceStopping) {
-        throw err;
-      }
-    });
-    this.connection = (0, import_node.createMessageConnection)(
-      new import_node.StreamMessageReader(this.cliProcess.stdout),
-      new import_node.StreamMessageWriter(this.cliProcess.stdin)
-    );
-    this.attachConnectionHandlers();
-    this.connection.listen();
-  }
-  /**
-   * Connect to the CLI server via TCP socket
-   */
-  async connectViaTcp() {
-    if (!this.actualPort) {
-      throw new Error("Server port not available");
-    }
-    return new Promise((resolve3, reject) => {
-      this.socket = new import_node_net.Socket();
-      this.socket.connect(this.actualPort, this.actualHost, () => {
-        this.connection = (0, import_node.createMessageConnection)(
-          new import_node.StreamMessageReader(this.socket),
-          new import_node.StreamMessageWriter(this.socket)
-        );
-        this.attachConnectionHandlers();
-        this.connection.listen();
-        resolve3();
-      });
-      this.socket.on("error", (error) => {
-        reject(new Error(`Failed to connect to CLI server: ${error.message}`));
-      });
-    });
-  }
-  attachConnectionHandlers() {
-    if (!this.connection) {
-      return;
-    }
-    this.connection.onNotification("session.event", (notification) => {
-      this.handleSessionEventNotification(notification);
-    });
-    this.connection.onRequest(
-      "tool.call",
-      async (params) => await this.handleToolCallRequest(params)
-    );
-    this.connection.onRequest(
-      "permission.request",
-      async (params) => await this.handlePermissionRequest(params)
-    );
-    this.connection.onClose(() => {
-      if (this.state === "connected" && this.options.autoRestart) {
-        void this.reconnect();
-      }
-    });
-    this.connection.onError((_error) => {
-    });
-  }
-  handleSessionEventNotification(notification) {
-    if (typeof notification !== "object" || !notification || !("sessionId" in notification) || typeof notification.sessionId !== "string" || !("event" in notification)) {
-      return;
-    }
-    const session = this.sessions.get(notification.sessionId);
-    if (session) {
-      session._dispatchEvent(notification.event);
-    }
-  }
-  async handleToolCallRequest(params) {
-    if (!params || typeof params.sessionId !== "string" || typeof params.toolCallId !== "string" || typeof params.toolName !== "string") {
-      throw new Error("Invalid tool call payload");
-    }
-    const session = this.sessions.get(params.sessionId);
-    if (!session) {
-      throw new Error(`Unknown session ${params.sessionId}`);
-    }
-    const handler = session.getToolHandler(params.toolName);
-    if (!handler) {
-      return { result: this.buildUnsupportedToolResult(params.toolName) };
-    }
-    return await this.executeToolCall(handler, params);
-  }
-  async executeToolCall(handler, request) {
-    try {
-      const invocation = {
-        sessionId: request.sessionId,
-        toolCallId: request.toolCallId,
-        toolName: request.toolName,
-        arguments: request.arguments
-      };
-      const result = await handler(request.arguments, invocation);
-      return { result: this.normalizeToolResult(result) };
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      return {
-        result: {
-          // Don't expose detailed error information to the LLM for security reasons
-          textResultForLlm: "Invoking this tool produced an error. Detailed information is not available.",
-          resultType: "failure",
-          error: message,
-          toolTelemetry: {}
-        }
-      };
-    }
-  }
-  async handlePermissionRequest(params) {
-    if (!params || typeof params.sessionId !== "string" || !params.permissionRequest) {
-      throw new Error("Invalid permission request payload");
-    }
-    const session = this.sessions.get(params.sessionId);
-    if (!session) {
-      throw new Error(`Session not found: ${params.sessionId}`);
-    }
-    try {
-      const result = await session._handlePermissionRequest(params.permissionRequest);
-      return { result };
-    } catch (_error) {
-      return {
-        result: {
-          kind: "denied-no-approval-rule-and-could-not-request-from-user"
-        }
-      };
-    }
-  }
-  normalizeToolResult(result) {
-    if (result === void 0 || result === null) {
-      return {
-        textResultForLlm: "Tool returned no result",
-        resultType: "failure",
-        error: "tool returned no result",
-        toolTelemetry: {}
-      };
-    }
-    if (this.isToolResultObject(result)) {
-      return result;
-    }
-    const textResult = typeof result === "string" ? result : JSON.stringify(result);
-    return {
-      textResultForLlm: textResult,
-      resultType: "success",
-      toolTelemetry: {}
-    };
-  }
-  isToolResultObject(value) {
-    return typeof value === "object" && value !== null && "textResultForLlm" in value && typeof value.textResultForLlm === "string" && "resultType" in value;
-  }
-  buildUnsupportedToolResult(toolName) {
-    return {
-      textResultForLlm: `Tool '${toolName}' is not supported by this client instance.`,
-      resultType: "failure",
-      error: `tool '${toolName}' not supported`,
-      toolTelemetry: {}
-    };
-  }
-  /**
-   * Attempt to reconnect to the server
-   */
-  async reconnect() {
-    this.state = "disconnected";
-    try {
-      await this.stop();
-      await this.start();
-    } catch (_error) {
-    }
-  }
-};
-
 // ../remote-sdk-protocol/dist/index.js
+function isRequest(message) {
+  return "method" in message && "id" in message && !("result" in message) && !("error" in message);
+}
+function isResponse(message) {
+  return "id" in message && ("result" in message || "error" in message);
+}
+function isNotification(message) {
+  return !("id" in message) && "method" in message;
+}
 var CONTENT_LENGTH_HEADER = "Content-Length: ";
 var HEADER_DELIMITER = "\r\n\r\n";
 function encodeJsonRpcMessageToBuffer(message) {
@@ -46395,6 +42041,74 @@ function encodeJsonRpcMessageToBuffer(message) {
   const header = `${CONTENT_LENGTH_HEADER}${Buffer.byteLength(json, "utf-8")}${HEADER_DELIMITER}`;
   return Buffer.from(header + json, "utf-8");
 }
+var JsonRpcDecoder = class {
+  buffer = new Uint8Array(0);
+  expectedLength = null;
+  /**
+   * Feed data into the decoder and return any complete messages.
+   */
+  decode(data) {
+    const inputData = data instanceof Uint8Array ? data : new Uint8Array(data);
+    const newBuffer = new Uint8Array(this.buffer.length + inputData.length);
+    newBuffer.set(this.buffer, 0);
+    newBuffer.set(inputData, this.buffer.length);
+    this.buffer = newBuffer;
+    const messages = [];
+    const decoder = new TextDecoder();
+    const headerDelimiterBytes = new TextEncoder().encode(HEADER_DELIMITER);
+    while (true) {
+      if (this.expectedLength === null) {
+        const headerEndIndex = this.findSequence(this.buffer, headerDelimiterBytes);
+        if (headerEndIndex === -1) {
+          break;
+        }
+        const headerSection = decoder.decode(this.buffer.slice(0, headerEndIndex));
+        const contentLengthMatch = headerSection.match(/Content-Length:\s*(\d+)/i);
+        if (!contentLengthMatch) {
+          this.buffer = this.buffer.slice(headerEndIndex + headerDelimiterBytes.length);
+          continue;
+        }
+        this.expectedLength = parseInt(contentLengthMatch[1], 10);
+        this.buffer = this.buffer.slice(headerEndIndex + headerDelimiterBytes.length);
+      }
+      if (this.buffer.length < this.expectedLength) {
+        break;
+      }
+      const bodyBytes = this.buffer.slice(0, this.expectedLength);
+      this.buffer = this.buffer.slice(this.expectedLength);
+      this.expectedLength = null;
+      try {
+        const body = decoder.decode(bodyBytes);
+        const message = JSON.parse(body);
+        messages.push(message);
+      } catch (err) {
+        console.error("Failed to parse JSON-RPC message:", err);
+      }
+    }
+    return messages;
+  }
+  /**
+   * Find the index of a byte sequence in a buffer.
+   */
+  findSequence(buffer, sequence) {
+    outer: for (let i = 0; i <= buffer.length - sequence.length; i++) {
+      for (let j = 0; j < sequence.length; j++) {
+        if (buffer[i + j] !== sequence[j]) {
+          continue outer;
+        }
+      }
+      return i;
+    }
+    return -1;
+  }
+  /**
+   * Reset the decoder state.
+   */
+  reset() {
+    this.buffer = new Uint8Array(0);
+    this.expectedLength = null;
+  }
+};
 var SUPPORTED_MODELS = [
   { id: "claude-sonnet-4.5", label: "Claude Sonnet 4.5", multiplier: 1, isAvailable: true },
   { id: "claude-haiku-4.5", label: "Claude Haiku 4.5", multiplier: 0.33, isAvailable: true },
@@ -46410,9 +42124,302 @@ var SUPPORTED_MODELS = [
 ];
 var DEFAULT_MODEL = "claude-sonnet-4.5";
 
+// src/cli-process.ts
+var import_node_child_process = require("child_process");
+var import_node_events = require("events");
+var import_node_os = require("os");
+var import_node_path = require("path");
+var import_node_fs = require("fs");
+var activeChildProcesses = /* @__PURE__ */ new Set();
+process.on("exit", () => {
+  for (const child of activeChildProcesses) {
+    try {
+      child.kill("SIGTERM");
+    } catch {
+    }
+  }
+});
+function getCopilotExecutableNames() {
+  if (process.platform === "win32") {
+    return ["copilot.exe", "copilot.cmd", "copilot.bat"];
+  }
+  return ["copilot"];
+}
+function findCopilotInDir(dir) {
+  if (!dir) return void 0;
+  for (const name of getCopilotExecutableNames()) {
+    const candidate = (0, import_node_path.join)(dir, name);
+    if ((0, import_node_fs.existsSync)(candidate)) {
+      return candidate;
+    }
+  }
+  return void 0;
+}
+function collectSearchPaths() {
+  const paths = [];
+  const pathEnv = process.env.PATH || "";
+  paths.push(...pathEnv.split(process.platform === "win32" ? ";" : ":"));
+  const home = (0, import_node_os.homedir)();
+  paths.push((0, import_node_path.join)(home, ".local", "bin"));
+  paths.push((0, import_node_path.join)(home, ".npm-global", "bin"));
+  paths.push((0, import_node_path.join)(home, ".yarn", "bin"));
+  paths.push((0, import_node_path.join)(home, ".volta", "bin"));
+  paths.push((0, import_node_path.join)(home, ".asdf", "shims"));
+  paths.push((0, import_node_path.join)(home, "bin"));
+  if (process.platform === "darwin") {
+    paths.push("/opt/homebrew/bin");
+    paths.push("/usr/local/bin");
+    paths.push("/usr/bin");
+    paths.push("/bin");
+    paths.push("/usr/sbin");
+    paths.push("/sbin");
+  } else if (process.platform === "linux") {
+    paths.push("/usr/local/bin");
+    paths.push("/usr/bin");
+    paths.push("/bin");
+    paths.push("/snap/bin");
+  } else if (process.platform === "win32") {
+    const appdata = process.env.APPDATA;
+    const localAppdata = process.env.LOCALAPPDATA;
+    if (appdata) paths.push((0, import_node_path.join)(appdata, "npm"));
+    if (localAppdata) paths.push((0, import_node_path.join)(localAppdata, "Programs"));
+  }
+  const unique = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const p of paths) {
+    if (p && !seen.has(p)) {
+      seen.add(p);
+      unique.push(p);
+    }
+  }
+  return unique;
+}
+function resolveCopilotBinary(explicitPath) {
+  if (explicitPath) {
+    if ((0, import_node_fs.existsSync)(explicitPath)) {
+      return explicitPath;
+    }
+    const found = findCopilotInDir(explicitPath);
+    if (found) return found;
+    console.warn(`COPILOT_CLI_PATH set but not usable: ${explicitPath}`);
+  }
+  const envPath = process.env.COPILOT_CLI_PATH;
+  if (envPath) {
+    if ((0, import_node_fs.existsSync)(envPath)) {
+      return envPath;
+    }
+    const found = findCopilotInDir(envPath);
+    if (found) return found;
+    console.warn(`COPILOT_CLI_PATH set but not usable: ${envPath}`);
+  }
+  for (const dir of collectSearchPaths()) {
+    const found = findCopilotInDir(dir);
+    if (found) return found;
+  }
+  throw new Error(
+    "Copilot CLI not found. Ensure `copilot` is installed and on PATH, or set COPILOT_CLI_PATH."
+  );
+}
+var CliProcess = class extends import_node_events.EventEmitter {
+  constructor(options) {
+    super();
+    this.options = options;
+    this.cwd = options.cwd;
+  }
+  child = null;
+  decoder = new JsonRpcDecoder();
+  requestId = 0;
+  pendingRequests = /* @__PURE__ */ new Map();
+  _isAlive = false;
+  cwd;
+  /**
+   * Spawn the copilot CLI process.
+   */
+  async spawn() {
+    const cliPath = resolveCopilotBinary(this.options.cliPath);
+    console.log(`[CliProcess] Spawning CLI for: ${this.cwd}`);
+    const args = ["--server", "--stdio", "--log-level", this.options.logLevel ?? "info"];
+    this.child = (0, import_node_child_process.spawn)(cliPath, args, {
+      cwd: this.cwd,
+      env: {
+        ...process.env,
+        ...this.options.env,
+        // Enable background agents + unified task tool for sub-agent orchestration
+        COPILOT_SWE_AGENT_UNIFIED_TASK_TOOL: "true",
+        COPILOT_SWE_AGENT_BACKGROUND_AGENTS: "true"
+      },
+      stdio: ["pipe", "pipe", "pipe"]
+    });
+    if (!this.child.stdin || !this.child.stdout) {
+      throw new Error("Failed to capture stdin/stdout");
+    }
+    activeChildProcesses.add(this.child);
+    this.child.stdout.on("data", (data) => {
+      this.handleStdout(data);
+    });
+    this.child.stderr?.on("data", (data) => {
+      const lines = data.toString().split("\n").filter(Boolean);
+      for (const line of lines) {
+        console.debug(`[CLI stderr] ${line}`);
+      }
+    });
+    this.child.on("exit", (code) => {
+      console.log(`[CliProcess] Process exited with code ${code}`);
+      activeChildProcesses.delete(this.child);
+      this._isAlive = false;
+      this.rejectAllPending(new Error(`CLI process exited with code ${code}`));
+      this.emit("exit", code);
+    });
+    this.child.on("error", (err) => {
+      console.error(`[CliProcess] Process error:`, err);
+      activeChildProcesses.delete(this.child);
+      this._isAlive = false;
+      this.rejectAllPending(err);
+      this.emit("error", err);
+    });
+    this._isAlive = true;
+  }
+  /**
+   * Check if the CLI process is alive.
+   */
+  get isAlive() {
+    return this._isAlive;
+  }
+  /**
+   * Send a JSON-RPC request and wait for response.
+   * @param method - The JSON-RPC method name
+   * @param params - Optional parameters for the method
+   * @param timeoutMs - Request timeout in milliseconds (default: 30000, use 0 for no timeout)
+   */
+  async sendRequest(method, params, timeoutMs = 3e4) {
+    if (!this.child?.stdin || !this._isAlive) {
+      throw new Error("CLI process not running");
+    }
+    const id = ++this.requestId;
+    const request = {
+      jsonrpc: "2.0",
+      id,
+      method,
+      params
+    };
+    return new Promise((resolve3, reject) => {
+      let timeoutId;
+      const cleanup = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+        this.pendingRequests.delete(id);
+      };
+      if (timeoutMs > 0) {
+        timeoutId = setTimeout(() => {
+          cleanup();
+          reject(new Error(`Request timeout after ${timeoutMs}ms: ${method} (id: ${id})`));
+        }, timeoutMs);
+      }
+      this.pendingRequests.set(id, {
+        resolve: (response) => {
+          cleanup();
+          if (response.error) {
+            reject(new Error(response.error.message));
+          } else {
+            resolve3(response.result);
+          }
+        },
+        reject: (err) => {
+          cleanup();
+          reject(err);
+        }
+      });
+      this.writeMessage(request);
+    });
+  }
+  /**
+   * Send a JSON-RPC response (for incoming requests like tool.call).
+   */
+  async sendResponse(id, result, error) {
+    if (!this.child?.stdin || !this._isAlive) {
+      throw new Error("CLI process not running");
+    }
+    const response = {
+      jsonrpc: "2.0",
+      id,
+      ...error ? { error } : { result }
+    };
+    this.writeMessage(response);
+  }
+  /**
+   * Ping the CLI to check if it's responsive.
+   */
+  async ping() {
+    try {
+      await this.sendRequest("ping", {});
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  /**
+   * Kill the CLI process.
+   */
+  async kill() {
+    if (this.child) {
+      console.log(`[CliProcess] Killing CLI process for: ${this.cwd}`);
+      activeChildProcesses.delete(this.child);
+      this.child.kill();
+      this.child = null;
+      this._isAlive = false;
+    }
+  }
+  /**
+   * Write a JSON-RPC message to stdin with LSP framing.
+   */
+  writeMessage(message) {
+    if (!this.child?.stdin) return;
+    const buffer = encodeJsonRpcMessageToBuffer(message);
+    this.child.stdin.write(buffer);
+  }
+  /**
+   * Handle data from stdout - decode and route messages.
+   */
+  handleStdout(data) {
+    const messages = this.decoder.decode(data);
+    for (const message of messages) {
+      this.routeMessage(message);
+    }
+  }
+  /**
+   * Route a decoded message to the appropriate handler.
+   */
+  routeMessage(message) {
+    if (isResponse(message)) {
+      const pending = this.pendingRequests.get(message.id);
+      if (pending) {
+        this.pendingRequests.delete(message.id);
+        pending.resolve(message);
+      } else {
+        console.warn(`[CliProcess] Received response for unknown request id: ${message.id}`);
+      }
+    } else if (isNotification(message)) {
+      this.emit("notification", message);
+    } else if (isRequest(message)) {
+      this.emit("request", message);
+    }
+  }
+  /**
+   * Reject all pending requests (on process exit/error).
+   */
+  rejectAllPending(error) {
+    const entries = [...this.pendingRequests.entries()];
+    this.pendingRequests.clear();
+    for (const [, pending] of entries) {
+      pending.reject(error);
+    }
+  }
+};
+
 // src/file-search-service.ts
 var import_promises = require("fs/promises");
-var import_node_path = require("path");
+var import_node_path2 = require("path");
 
 // ../../node_modules/fdir/dist/index.mjs
 var import_module = require("module");
@@ -47045,7 +43052,7 @@ var FileSearchService = class {
     }
     const allPaths = await crawler.crawl(cwd).withPromise();
     const filteredFiles = allPaths.filter((filePath) => {
-      const fileName = (0, import_node_path.basename)(filePath);
+      const fileName = (0, import_node_path2.basename)(filePath);
       return !isIgnoredFile(fileName);
     });
     return filteredFiles;
@@ -47053,7 +43060,7 @@ var FileSearchService = class {
   async loadIgnorePatterns(cwd) {
     const patterns = [];
     try {
-      const gitignorePath = (0, import_node_path.join)(cwd, ".gitignore");
+      const gitignorePath = (0, import_node_path2.join)(cwd, ".gitignore");
       const content = await (0, import_promises.readFile)(gitignorePath, "utf-8");
       const lines = content.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
       patterns.push(...lines);
@@ -47094,7 +43101,7 @@ var FileSearchService = class {
   calculateScore(filePath, query, fuzzyScore) {
     const lowerPath = filePath.toLowerCase();
     const lowerQuery = query.toLowerCase();
-    const filename = (0, import_node_path.basename)(filePath).toLowerCase();
+    const filename = (0, import_node_path2.basename)(filePath).toLowerCase();
     if (lowerPath === lowerQuery) {
       return 1e3 + fuzzyScore;
     }
@@ -47117,11 +43124,65 @@ var FileSearchService = class {
   }
 };
 
+// src/version-check.ts
+var CURRENT_VERSION = "0.2.0";
+var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
+var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
+var RED = "\x1B[31m";
+var GREEN = "\x1B[32m";
+var YELLOW = "\x1B[33m";
+var DIM = "\x1B[2m";
+var RESET = "\x1B[0m";
+var BOLD = "\x1B[1m";
+function parseSemVer(version) {
+  const [major, minor, patch] = version.split(".").map(Number);
+  return { major, minor, patch };
+}
+function compareSemVer(a, b) {
+  if (a.major !== b.major) return a.major - b.major;
+  if (a.minor !== b.minor) return a.minor - b.minor;
+  return a.patch - b.patch;
+}
+async function fetchLatestVersion() {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5e3);
+    const response = await fetch(RELEASE_REPO_URL, {
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return null;
+    const pkg = await response.json();
+    return pkg.version;
+  } catch {
+    return null;
+  }
+}
+async function checkForUpdates() {
+  if (CURRENT_VERSION.startsWith("__")) {
+    return;
+  }
+  const latestVersion = await fetchLatestVersion();
+  if (!latestVersion) {
+    return;
+  }
+  const current = parseSemVer(CURRENT_VERSION);
+  const latest = parseSemVer(latestVersion);
+  const comparison = compareSemVer(current, latest);
+  if (comparison < 0) {
+    console.log(
+      `  ${BOLD}${YELLOW}Update available:${RESET} ${RED}${CURRENT_VERSION}${RESET} \u2192 ${GREEN}${latestVersion}${RESET}`
+    );
+    console.log(`  ${DIM}Run: ${UPDATE_COMMAND}${RESET}`);
+    console.log();
+  }
+}
+
 // src/jsonrpc-proxy.ts
 var import_node_child_process2 = require("child_process");
 var import_promises2 = require("fs/promises");
-var import_node_os = require("os");
-var import_node_path2 = require("path");
+var import_node_os2 = require("os");
+var import_node_path3 = require("path");
 function getGhCliToken() {
   try {
     const token = (0, import_node_child_process2.execSync)("gh auth token", {
@@ -47135,9 +43196,9 @@ function getGhCliToken() {
   }
 }
 async function discoverSessionCwd(sessionId) {
-  const sessionDir = (0, import_node_path2.join)((0, import_node_os.homedir)(), ".copilot", "session-state", sessionId);
+  const sessionDir = (0, import_node_path3.join)((0, import_node_os2.homedir)(), ".copilot", "session-state", sessionId);
   try {
-    const yaml = await (0, import_promises2.readFile)((0, import_node_path2.join)(sessionDir, "workspace.yaml"), "utf-8");
+    const yaml = await (0, import_promises2.readFile)((0, import_node_path3.join)(sessionDir, "workspace.yaml"), "utf-8");
     const match = yaml.match(/^cwd:\s*(.+)$/m);
     if (match) {
       return match[1].trim();
@@ -47145,7 +43206,7 @@ async function discoverSessionCwd(sessionId) {
   } catch {
   }
   try {
-    const content = await (0, import_promises2.readFile)((0, import_node_path2.join)(sessionDir, "events.jsonl"), "utf-8");
+    const content = await (0, import_promises2.readFile)((0, import_node_path3.join)(sessionDir, "events.jsonl"), "utf-8");
     const firstLine = content.slice(0, content.indexOf("\n"));
     if (firstLine.startsWith('{"type":"session.start"')) {
       const cwdMatch = firstLine.match(/"cwd":"([^"]+)"/);
@@ -47179,32 +43240,185 @@ var BUILT_IN_COMMANDS = [
     opensDialog: "session"
   }
 ];
+var DEFAULT_CLI_GRACE_PERIOD_MS = 5 * 60 * 1e3;
+var CliPoolManager = class {
+  pool = /* @__PURE__ */ new Map();
+  cliPath;
+  cliLogLevel;
+  gracePeriodMs;
+  log;
+  cliEnv = {};
+  constructor(options = {}) {
+    this.cliPath = options.cliPath ?? "copilot";
+    this.cliLogLevel = options.cliLogLevel ?? "info";
+    this.gracePeriodMs = options.gracePeriodMs ?? DEFAULT_CLI_GRACE_PERIOD_MS;
+    this.log = options.log ?? (() => {
+    });
+    const resolvedToken = resolveCopilotToken(options.copilotToken);
+    this.cliEnv = resolvedToken ? { ...process.env, COPILOT_GITHUB_TOKEN: resolvedToken } : { ...process.env };
+  }
+  /**
+   * Get or create a CLI process for the given cwd, incrementing its reference count.
+   * If a grace period timer is pending, it will be cancelled.
+   */
+  async retain(cwd) {
+    let entry = this.pool.get(cwd);
+    if (entry) {
+      if (entry.graceTimer) {
+        clearTimeout(entry.graceTimer);
+        entry.graceTimer = null;
+        this.log("debug", `[CliPool] Cancelled grace timer for ${cwd}`);
+      }
+      if (entry.cli.isAlive) {
+        try {
+          await entry.cli.ping();
+          entry.refCount++;
+          this.log("info", `[CliPool] Reusing CLI for ${cwd} (refCount: ${entry.refCount})`);
+          return entry.cli;
+        } catch {
+          this.log("debug", `[CliPool] CLI for ${cwd} is dead, recreating`);
+          this.pool.delete(cwd);
+          entry = void 0;
+        }
+      } else {
+        this.pool.delete(cwd);
+        entry = void 0;
+      }
+    }
+    this.log("info", `[CliPool] Creating CLI process for cwd: ${cwd}`);
+    const cli = new CliProcess({
+      cwd,
+      cliPath: this.cliPath,
+      logLevel: this.cliLogLevel,
+      env: this.cliEnv
+    });
+    await cli.spawn();
+    try {
+      await cli.ping();
+    } catch (err) {
+      await cli.kill();
+      throw new Error(`CLI process failed to start: ${err}`);
+    }
+    this.pool.set(cwd, {
+      cli,
+      refCount: 1,
+      graceTimer: null
+    });
+    this.log("info", `[CliPool] CLI process created for ${cwd} (refCount: 1)`);
+    return cli;
+  }
+  /**
+   * Release a CLI process for the given cwd, decrementing its reference count.
+   * When refCount reaches 0, starts a grace period timer before killing the CLI.
+   */
+  release(cwd) {
+    const entry = this.pool.get(cwd);
+    if (!entry) {
+      this.log("warn", `[CliPool] Attempted to release non-existent CLI for ${cwd}`);
+      return;
+    }
+    entry.refCount = Math.max(0, entry.refCount - 1);
+    this.log("info", `[CliPool] Released CLI for ${cwd} (refCount: ${entry.refCount})`);
+    if (entry.refCount === 0) {
+      this.log("info", `[CliPool] Starting ${this.gracePeriodMs}ms grace period for ${cwd}`);
+      entry.graceTimer = setTimeout(() => {
+        this.killCli(cwd);
+      }, this.gracePeriodMs);
+    }
+  }
+  /**
+   * Kill a CLI process immediately (used after grace period or on dispose).
+   */
+  async killCli(cwd) {
+    const entry = this.pool.get(cwd);
+    if (!entry) return;
+    if (entry.refCount > 0) {
+      this.log("debug", `[CliPool] Skipping kill for ${cwd} (refCount: ${entry.refCount})`);
+      return;
+    }
+    this.log("info", `[CliPool] Killing CLI process for ${cwd}`);
+    this.pool.delete(cwd);
+    if (entry.graceTimer) {
+      clearTimeout(entry.graceTimer);
+    }
+    try {
+      await entry.cli.kill();
+    } catch (err) {
+      this.log("debug", `[CliPool] Error killing CLI for ${cwd}: ${err}`);
+    }
+  }
+  /**
+   * Get a CLI for the cwd without incrementing refCount (for read-only operations).
+   * Returns undefined if no CLI exists for this cwd.
+   */
+  get(cwd) {
+    const entry = this.pool.get(cwd);
+    return entry?.cli;
+  }
+  /**
+   * Set up CLI request handler for tool calls and permission requests.
+   * This should be called after retain() to wire up the handlers.
+   */
+  setupCliHandlers(cwd, onRequest, onNotification) {
+    const entry = this.pool.get(cwd);
+    if (!entry) return;
+    entry.cli.on("request", onRequest);
+    entry.cli.on("notification", onNotification);
+  }
+  /**
+   * Dispose of all CLI processes immediately.
+   */
+  async dispose() {
+    this.log("info", `[CliPool] Disposing all CLI processes (${this.pool.size} total)`);
+    const entries = Array.from(this.pool.entries());
+    this.pool.clear();
+    for (const [cwd, entry] of entries) {
+      if (entry.graceTimer) {
+        clearTimeout(entry.graceTimer);
+      }
+      try {
+        await entry.cli.kill();
+      } catch (err) {
+        this.log("debug", `[CliPool] Error killing CLI for ${cwd}: ${err}`);
+      }
+    }
+  }
+  /**
+   * Get current pool statistics (for debugging/monitoring).
+   */
+  getStats() {
+    return Array.from(this.pool.entries()).map(([cwd, entry]) => ({
+      cwd,
+      refCount: entry.refCount,
+      hasGraceTimer: entry.graceTimer !== null
+    }));
+  }
+};
 var ClientConnection = class {
-  constructor(clientStream, clientId, options = {}) {
+  constructor(clientStream, clientId, cliPoolManager, options = {}) {
     this.clientStream = clientStream;
     this.clientId = clientId;
-    this.cliPath = options.cliPath ?? "copilot";
+    this.cliPoolManager = cliPoolManager;
     this.defaultCwd = options.cwd ?? process.cwd();
-    this.cliLogLevel = options.cliLogLevel ?? "info";
     this.logLevel = options.logLevel ?? "info";
     this.onLogCallback = options.onLog ?? (() => {
     });
-    this.copilotToken = options.copilotToken;
   }
-  sessions = /* @__PURE__ */ new Map();
+  // Track active sessions by ID (we no longer hold CopilotSession objects)
+  sessionIds = /* @__PURE__ */ new Set();
   sessionCwds = /* @__PURE__ */ new Map();
-  sessionUnsubscribers = /* @__PURE__ */ new Map();
+  // Map sessionId -> CliProcess that owns it
+  sessionClis = /* @__PURE__ */ new Map();
+  // Track tools registered for each session (for external tool handling)
   sessionTools = /* @__PURE__ */ new Map();
   receiveBuffer = Buffer.alloc(0);
-  cliPath;
   defaultCwd;
-  cliLogLevel;
   logLevel;
   onLogCallback;
-  copilotToken;
-  // Pool of CopilotClients keyed by cwd — each unique working directory gets its own CLI process
-  clientPool = /* @__PURE__ */ new Map();
-  cliEnv = {};
+  // Shared CLI pool manager (owned by JsonRpcProxyHost)
+  cliPoolManager;
+  // Track which cwds this connection has retained (for cleanup)
+  retainedCwds = /* @__PURE__ */ new Set();
   // File search service for @-mention file picking
   fileSearchService = new FileSearchService();
   // Pending callback requests from SDK -> client
@@ -47220,20 +43434,9 @@ var ClientConnection = class {
     this.onLogCallback(level, message);
   }
   async start() {
-    this.log("debug", `[${this.clientId}] Initializing SDK client...`);
-    const resolvedToken = resolveCopilotToken(this.copilotToken);
-    if (this.copilotToken) {
-      this.log("debug", `[${this.clientId}] Using explicit copilotToken for auth`);
-    } else if (process.env.COPILOT_GITHUB_TOKEN) {
-      this.log("debug", `[${this.clientId}] Using COPILOT_GITHUB_TOKEN env var for auth`);
-    } else if (resolvedToken) {
-      this.log("debug", `[${this.clientId}] Using gh CLI token for auth`);
-    } else {
-      this.log("debug", `[${this.clientId}] No token found, SDK will use keychain`);
-    }
-    this.cliEnv = resolvedToken ? { ...process.env, COPILOT_GITHUB_TOKEN: resolvedToken } : { ...process.env };
-    await this.getOrCreateClient(this.defaultCwd);
-    this.log("debug", `[${this.clientId}] Default SDK client started (cwd: ${this.defaultCwd})`);
+    this.log("debug", `[${this.clientId}] Initializing CLI client...`);
+    await this.getOrCreateCli(this.defaultCwd);
+    this.log("debug", `[${this.clientId}] Default CLI ready (cwd: ${this.defaultCwd})`);
     this.clientStream.on("data", (data) => {
       this.handleClientData(data);
     });
@@ -47247,50 +43450,121 @@ var ClientConnection = class {
     });
   }
   /**
-   * Get or create a CopilotClient for the given working directory.
-   * Clients are pooled — same cwd reuses the same client (and CLI process).
+   * Get or create a CliProcess for the given working directory.
+   * Uses the shared CLI pool manager with reference counting.
    */
-  async getOrCreateClient(cwd) {
-    let client = this.clientPool.get(cwd);
-    if (!client) {
-      this.log("info", `Creating SDK client for cwd: ${cwd}`);
-      client = new CopilotClient({
-        cliPath: this.cliPath,
-        cwd,
-        logLevel: this.cliLogLevel,
-        autoStart: true,
-        autoRestart: true,
-        env: this.cliEnv
-      });
-      await client.start();
-      this.clientPool.set(cwd, client);
+  async getOrCreateCli(cwd) {
+    if (this.retainedCwds.has(cwd)) {
+      const existingCli = this.cliPoolManager.get(cwd);
+      if (existingCli?.isAlive) {
+        return existingCli;
+      }
+      this.retainedCwds.delete(cwd);
     }
-    return client;
+    const cli = await this.cliPoolManager.retain(cwd);
+    this.retainedCwds.add(cwd);
+    cli.on("notification", (notification) => {
+      this.handleCliNotification(notification);
+    });
+    cli.on("request", (request) => {
+      this.handleCliRequest(cli, request);
+    });
+    cli.on("exit", (code) => {
+      if (!this.isCleanedUp) {
+        this.log("warn", `[${this.clientId}] CLI process exited with code ${code} (cwd: ${cwd})`);
+      }
+      this.retainedCwds.delete(cwd);
+    });
+    return cli;
   }
-  /** Get the default client (for cwd-agnostic operations like listSessions). */
-  async getDefaultClient() {
-    return this.getOrCreateClient(this.defaultCwd);
+  /** Get the default CLI (for cwd-agnostic operations like session.list). */
+  async getDefaultCli() {
+    return this.getOrCreateCli(this.defaultCwd);
   }
-  stop() {
-    this.cleanup();
+  /**
+   * Handle notifications from CLI (session.event).
+   */
+  handleCliNotification(notification) {
+    if (notification.method === "session.event") {
+      const params = notification.params;
+      this.forwardSessionEvent(params.sessionId, params.event);
+    }
   }
-  cleanup() {
+  /**
+   * Handle incoming requests from CLI (tool.call, permission.request).
+   */
+  async handleCliRequest(cli, request) {
+    if (request.method === "tool.call") {
+      const params = request.params;
+      try {
+        const result = await this.handleToolCall(
+          params.sessionId,
+          params.toolCallId,
+          params.toolName,
+          params.arguments
+        );
+        const textResult = typeof result === "string" ? result : result.content;
+        const isError = typeof result === "object" && result.isError;
+        const cliResult = {
+          result: {
+            textResultForLlm: textResult,
+            resultType: isError ? "failure" : "success",
+            error: isError ? textResult : null
+          }
+        };
+        await cli.sendResponse(request.id, cliResult);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await cli.sendResponse(request.id, {
+          result: {
+            textResultForLlm: errorMessage,
+            resultType: "failure",
+            error: errorMessage
+          }
+        });
+      }
+    } else if (request.method === "permission.request") {
+      const params = request.params;
+      try {
+        const result = await this.handlePermissionRequest(
+          params.permissionRequest,
+          params.sessionId
+        );
+        await cli.sendResponse(request.id, { kind: result.kind, rules: result.rules });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        await cli.sendResponse(request.id, void 0, {
+          code: -32603,
+          message: errorMessage
+        });
+      }
+    }
+  }
+  /**
+   * Stop this connection.
+   * @param disposing If true, skip CLI release (pool is being disposed anyway)
+   */
+  stop(disposing = false) {
+    this.cleanup(disposing);
+  }
+  cleanup(disposing = false) {
     if (this.isCleanedUp) {
       this.log("debug", `[${this.clientId}] Cleanup already done, skipping`);
       return;
     }
     this.isCleanedUp = true;
-    for (const unsubscribe of this.sessionUnsubscribers.values()) {
-      unsubscribe();
+    if (this.sessionIds.size > 0) {
+      this.log("debug", `[${this.clientId}] Clearing ${this.sessionIds.size} session(s)`);
     }
-    this.sessionUnsubscribers.clear();
-    if (this.sessions.size > 0) {
-      this.log("debug", `[${this.clientId}] Clearing ${this.sessions.size} session(s)`);
-    }
-    this.sessions.clear();
+    this.sessionIds.clear();
     this.sessionCwds.clear();
+    this.sessionClis.clear();
     this.sessionTools.clear();
-    void this.stopClients();
+    if (!disposing) {
+      this.releaseClis();
+    } else {
+      this.retainedCwds.clear();
+    }
     if (!this.clientStream.destroyed) {
       try {
         this.clientStream.destroy();
@@ -47299,18 +43573,15 @@ var ClientConnection = class {
     }
   }
   /**
-   * Stop all CopilotClients in the pool.
-   * Separated to handle async cleanup without blocking the main cleanup flow.
+   * Release all CLI processes this connection retained.
+   * The shared pool manager handles the grace period before actually killing them.
    */
-  async stopClients() {
-    for (const [cwd, client] of this.clientPool) {
-      try {
-        await client.stop();
-      } catch (err) {
-        this.log("debug", `[${this.clientId}] SDK client stop error (cwd: ${cwd}): ${err}`);
-      }
+  releaseClis() {
+    for (const cwd of this.retainedCwds) {
+      this.log("debug", `[${this.clientId}] Releasing CLI for ${cwd}`);
+      this.cliPoolManager.release(cwd);
     }
-    this.clientPool.clear();
+    this.retainedCwds.clear();
   }
   handleClientData(data) {
     this.receiveBuffer = Buffer.concat([this.receiveBuffer, data]);
@@ -47367,20 +43638,25 @@ var ClientConnection = class {
           case "getState":
             await this.handleGetState(request);
             break;
+          // Session creation/management (support both old SDK names and new CLI names)
+          case "session.create":
           case "createSession":
-            await this.handleCreateSession(request);
+            await this.handleSessionCreate(request);
             break;
+          case "session.resume":
           case "resumeSession":
-            await this.handleResumeSession(request);
+            await this.handleSessionResume(request);
             break;
+          case "session.list":
           case "listSessions":
-            await this.handleListSessions(request);
+            await this.handleSessionList(request);
             break;
           case "getLastSessionId":
             await this.handleGetLastSessionId(request);
             break;
+          case "session.delete":
           case "deleteSession":
-            await this.handleDeleteSession(request);
+            await this.handleSessionDelete(request);
             break;
           // Slash commands
           case "listSlashCommands":
@@ -47393,9 +43669,10 @@ var ClientConnection = class {
           case "searchFiles":
             await this.handleSearchFiles(request);
             break;
-          // Model selection
+          // Model selection (support both names)
+          case "models.list":
           case "getModels":
-            await this.handleGetModels(request);
+            await this.handleModelsList(request);
             break;
           // Session methods
           case "session.send":
@@ -47452,63 +43729,57 @@ var ClientConnection = class {
   // Client Methods
   // ==========================================================================
   async handlePing(request) {
-    const client = await this.getDefaultClient();
-    const params = request.params;
-    const result = await client.ping(params?.message);
+    const cli = await this.getDefaultCli();
+    await cli.sendRequest("ping", {});
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
-      result
+      result: {
+        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+        version: CURRENT_VERSION
+      }
     });
   }
   async handleGetState(request) {
-    const client = await this.getDefaultClient();
-    const state = client.getState();
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: state
-    });
+    const cli = await this.getDefaultCli();
+    try {
+      const isAlive = await cli.ping();
+      this.sendToClient({
+        jsonrpc: "2.0",
+        id: request.id,
+        result: isAlive ? "connected" : "disconnected"
+      });
+    } catch {
+      this.sendToClient({
+        jsonrpc: "2.0",
+        id: request.id,
+        result: "disconnected"
+      });
+    }
   }
-  async handleCreateSession(request) {
+  async handleSessionCreate(request) {
     const params = request.params;
     const cwd = params?.cwd ?? this.defaultCwd;
-    this.log("debug", `[${this.clientId}] RPC -> createSession (model: ${params?.model}, cwd: ${cwd})`);
-    const client = await this.getOrCreateClient(cwd);
-    const toolHandlers = /* @__PURE__ */ new Map();
-    const sdkTools = params?.tools?.map((toolDef) => ({
-      name: toolDef.name,
-      description: toolDef.description,
-      parameters: toolDef.parameters,
-      handler: async (args, invocation) => {
-        return this.handleToolCall(invocation.sessionId, invocation.toolCallId, toolDef.name, args);
-      }
-    }));
-    const sessionConfig = {
+    this.log("debug", `[${this.clientId}] RPC -> session.create (model: ${params?.model}, cwd: ${cwd})`);
+    const cli = await this.getOrCreateCli(cwd);
+    const cliParams = {
       sessionId: params?.sessionId,
       model: params?.model,
-      configDir: params?.configDir,
       streaming: params?.streaming ?? true,
       systemMessage: params?.systemMessage,
+      // Pass tool definitions to CLI (no handlers - CLI will send tool.call requests)
+      tools: params?.tools,
       availableTools: params?.availableTools,
-      excludedTools: params?.excludedTools,
-      provider: params?.provider,
-      mcpServers: params?.mcpServers,
-      customAgents: params?.customAgents,
-      skillDirectories: params?.skillDirectories,
-      disabledSkills: params?.disabledSkills,
-      tools: sdkTools,
-      onPermissionRequest: (permReq, invocation) => this.handlePermissionRequest(permReq, invocation.sessionId)
+      excludedTools: params?.excludedTools
     };
-    const session = await client.createSession(sessionConfig);
-    const sessionId = session.sessionId;
-    this.sessions.set(sessionId, session);
+    const result = await cli.sendRequest("session.create", cliParams);
+    const sessionId = result.sessionId;
+    this.sessionIds.add(sessionId);
     this.sessionCwds.set(sessionId, cwd);
-    this.sessionTools.set(sessionId, toolHandlers);
-    const unsubscribe = session.on((event) => {
-      this.forwardSessionEvent(sessionId, event);
-    });
-    this.sessionUnsubscribers.set(sessionId, unsubscribe);
+    this.sessionClis.set(sessionId, cli);
+    if (params?.tools) {
+      this.sessionTools.set(sessionId, params.tools);
+    }
     this.log("info", `Session started: ${sessionId}`);
     this.sendToClient({
       jsonrpc: "2.0",
@@ -47520,15 +43791,15 @@ var ClientConnection = class {
       }
     });
   }
-  async handleResumeSession(request) {
+  async handleSessionResume(request) {
     const params = request.params;
     const sessionId = params?.sessionId;
     if (!sessionId) {
       this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
       return;
     }
-    this.log("debug", `[${this.clientId}] RPC -> resumeSession: ${sessionId}`);
-    if (this.sessions.has(sessionId)) {
+    this.log("debug", `[${this.clientId}] RPC -> session.resume: ${sessionId}`);
+    if (this.sessionIds.has(sessionId)) {
       this.log("debug", `[${this.clientId}] Session ${sessionId} already active`);
       this.sendToClient({
         jsonrpc: "2.0",
@@ -47538,53 +43809,39 @@ var ClientConnection = class {
       return;
     }
     const cwd = await discoverSessionCwd(sessionId);
-    const client = await this.getOrCreateClient(cwd ?? this.defaultCwd);
-    const toolHandlers = /* @__PURE__ */ new Map();
-    const sdkTools = params?.tools?.map((toolDef) => ({
-      name: toolDef.name,
-      description: toolDef.description,
-      parameters: toolDef.parameters,
-      handler: async (args, invocation) => {
-        return this.handleToolCall(invocation.sessionId, invocation.toolCallId, toolDef.name, args);
-      }
-    }));
-    const resumeConfig = {
+    const cli = await this.getOrCreateCli(cwd ?? this.defaultCwd);
+    const cliParams = {
+      sessionId,
       streaming: params?.streaming ?? true,
-      provider: params?.provider,
-      mcpServers: params?.mcpServers,
-      customAgents: params?.customAgents,
-      skillDirectories: params?.skillDirectories,
-      disabledSkills: params?.disabledSkills,
-      tools: sdkTools,
-      onPermissionRequest: (permReq, invocation) => this.handlePermissionRequest(permReq, invocation.sessionId)
+      tools: params?.tools
     };
-    const session = await client.resumeSession(sessionId, resumeConfig);
-    this.sessions.set(sessionId, session);
+    await cli.sendRequest("session.resume", cliParams);
+    this.sessionIds.add(sessionId);
     this.sessionCwds.set(sessionId, cwd ?? this.defaultCwd);
-    this.sessionTools.set(sessionId, toolHandlers);
-    const unsubscribe = session.on((event) => {
-      this.forwardSessionEvent(sessionId, event);
-    });
-    this.sessionUnsubscribers.set(sessionId, unsubscribe);
-    this.log("info", `Session started: ${sessionId}`);
+    this.sessionClis.set(sessionId, cli);
+    if (params?.tools) {
+      this.sessionTools.set(sessionId, params.tools);
+    }
+    this.log("info", `Session resumed: ${sessionId}`);
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
       result: { sessionId }
     });
   }
-  async handleListSessions(request) {
-    const client = await this.getDefaultClient();
-    this.log("debug", `[${this.clientId}] RPC -> listSessions`);
-    const sessions = await client.listSessions();
-    this.log("debug", `[${this.clientId}] RPC <- listSessions (${sessions.length} sessions)`);
+  async handleSessionList(request) {
+    const cli = await this.getDefaultCli();
+    this.log("debug", `[${this.clientId}] RPC -> session.list`);
+    const result = await cli.sendRequest("session.list", {});
+    const sessions = result.sessions || [];
+    this.log("debug", `[${this.clientId}] RPC <- session.list (${sessions.length} sessions)`);
     const sessionsWithCwd = await Promise.all(
       sessions.map(async (s) => {
         const cwd = await discoverSessionCwd(s.sessionId);
         return {
           sessionId: s.sessionId,
-          startTime: s.startTime.toISOString(),
-          modifiedTime: s.modifiedTime.toISOString(),
+          startTime: s.startTime,
+          modifiedTime: s.modifiedTime,
           summary: s.summary,
           isRemote: s.isRemote,
           cwd
@@ -47598,35 +43855,38 @@ var ClientConnection = class {
     });
   }
   async handleGetLastSessionId(request) {
-    const client = await this.getDefaultClient();
-    this.log("debug", `[${this.clientId}] RPC -> getLastSessionId`);
-    const sessionId = await client.getLastSessionId();
+    const cli = await this.getDefaultCli();
+    this.log("debug", `[${this.clientId}] RPC -> getLastSessionId (via session.list)`);
+    const result = await cli.sendRequest("session.list", {});
+    const sessions = result.sessions || [];
+    const sorted = [...sessions].sort((a, b) => {
+      const timeA = new Date(a.modifiedTime).getTime();
+      const timeB = new Date(b.modifiedTime).getTime();
+      return timeB - timeA;
+    });
+    const lastSessionId = sorted.length > 0 ? sorted[0].sessionId : void 0;
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
-      result: sessionId
+      result: lastSessionId
     });
   }
-  async handleDeleteSession(request) {
-    const client = await this.getDefaultClient();
+  async handleSessionDelete(request) {
     const params = request.params;
     const sessionId = params?.sessionId;
     if (!sessionId) {
       this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
       return;
     }
-    this.log("debug", `[${this.clientId}] RPC -> deleteSession: ${sessionId}`);
-    if (this.sessions.has(sessionId)) {
-      const unsubscribe = this.sessionUnsubscribers.get(sessionId);
-      if (unsubscribe) {
-        unsubscribe();
-        this.sessionUnsubscribers.delete(sessionId);
-      }
-      this.sessions.delete(sessionId);
+    this.log("debug", `[${this.clientId}] RPC -> session.delete: ${sessionId}`);
+    if (this.sessionIds.has(sessionId)) {
+      this.sessionIds.delete(sessionId);
       this.sessionCwds.delete(sessionId);
+      this.sessionClis.delete(sessionId);
       this.sessionTools.delete(sessionId);
     }
-    await client.deleteSession(sessionId);
+    const cli = await this.getDefaultCli();
+    await cli.sendRequest("session.delete", { sessionId });
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
@@ -47725,8 +43985,8 @@ var ClientConnection = class {
   // ==========================================================================
   // Model Selection
   // ==========================================================================
-  async handleGetModels(request) {
-    this.log("debug", `[${this.clientId}] RPC -> getModels`);
+  async handleModelsList(request) {
+    this.log("debug", `[${this.clientId}] RPC -> models.list`);
     const response = {
       models: SUPPORTED_MODELS,
       defaultModel: DEFAULT_MODEL
@@ -47753,23 +44013,22 @@ var ClientConnection = class {
       this.sendErrorResponse(request.id, -32602, "Missing prompt parameter");
       return;
     }
-    const session = this.sessions.get(sessionId);
-    if (!session) {
+    const cli = this.sessionClis.get(sessionId);
+    if (!cli) {
       this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
       return;
     }
     const truncatedPrompt = prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt;
     this.log("info", `Prompt received: "${truncatedPrompt}" (cwd: ${this.sessionCwds.get(sessionId) ?? this.defaultCwd})`);
-    const messageOptions = {
+    await cli.sendRequest("session.send", {
+      sessionId,
       prompt,
-      attachments: params?.attachments,
       mode: params?.mode
-    };
-    const messageId = await session.send(messageOptions);
+    });
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
-      result: { messageId }
+      result: {}
     });
   }
   async handleSessionSendAndWait(request) {
@@ -47784,24 +44043,54 @@ var ClientConnection = class {
       this.sendErrorResponse(request.id, -32602, "Missing prompt parameter");
       return;
     }
-    const session = this.sessions.get(sessionId);
-    if (!session) {
+    const cli = this.sessionClis.get(sessionId);
+    if (!cli) {
       this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
       return;
     }
     const truncatedPrompt = prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt;
-    this.log("info", `Prompt received: "${truncatedPrompt}" (cwd: ${this.sessionCwds.get(sessionId) ?? this.defaultCwd})`);
-    const messageOptions = {
-      prompt,
-      attachments: params?.attachments,
-      mode: params?.mode
-    };
-    const result = await session.sendAndWait(messageOptions, params?.timeout);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: result ?? null
+    this.log("info", `Prompt received (sendAndWait): "${truncatedPrompt}" (cwd: ${this.sessionCwds.get(sessionId) ?? this.defaultCwd})`);
+    const timeout = params?.timeout ?? 3e5;
+    const events = [];
+    const waitForIdle = new Promise((resolve3, reject) => {
+      const timeoutId = setTimeout(() => {
+        cleanup();
+        reject(new Error("session.sendAndWait timeout"));
+      }, timeout);
+      const handler = (notification) => {
+        if (notification.method === "session.event") {
+          const eventParams = notification.params;
+          if (eventParams.sessionId === sessionId) {
+            events.push(eventParams.event);
+            if (eventParams.event.type === "session.idle") {
+              cleanup();
+              resolve3(events);
+            }
+          }
+        }
+      };
+      const cleanup = () => {
+        clearTimeout(timeoutId);
+        cli.off("notification", handler);
+      };
+      cli.on("notification", handler);
     });
+    await cli.sendRequest("session.send", {
+      sessionId,
+      prompt,
+      mode: params?.mode
+    });
+    try {
+      const collectedEvents = await waitForIdle;
+      const assistantMessage = [...collectedEvents].reverse().find((e) => e.type === "assistant.message");
+      this.sendToClient({
+        jsonrpc: "2.0",
+        id: request.id,
+        result: assistantMessage ?? null
+      });
+    } catch (err) {
+      this.sendErrorResponse(request.id, -32603, `sendAndWait failed: ${err}`);
+    }
   }
   async handleSessionGetMessages(request) {
     const params = request.params;
@@ -47810,17 +44099,17 @@ var ClientConnection = class {
       this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
       return;
     }
-    const session = this.sessions.get(sessionId);
-    if (!session) {
+    const cli = this.sessionClis.get(sessionId);
+    if (!cli) {
       this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
       return;
     }
     this.log("debug", `[${this.clientId}] RPC -> session.getMessages: ${sessionId}`);
-    const messages = await session.getMessages();
+    const result = await cli.sendRequest("session.getMessages", { sessionId });
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
-      result: messages
+      result: result.events ?? []
     });
   }
   async handleSessionAbort(request) {
@@ -47830,13 +44119,13 @@ var ClientConnection = class {
       this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
       return;
     }
-    const session = this.sessions.get(sessionId);
-    if (!session) {
+    const cli = this.sessionClis.get(sessionId);
+    if (!cli) {
       this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
       return;
     }
     this.log("debug", `[${this.clientId}] RPC -> session.abort: ${sessionId}`);
-    await session.abort();
+    await cli.sendRequest("session.abort", { sessionId });
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
@@ -47850,20 +44139,16 @@ var ClientConnection = class {
       this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
       return;
     }
-    const session = this.sessions.get(sessionId);
-    if (!session) {
+    const cli = this.sessionClis.get(sessionId);
+    if (!cli) {
       this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
       return;
     }
     this.log("info", `Session ended: ${sessionId}`);
-    const unsubscribe = this.sessionUnsubscribers.get(sessionId);
-    if (unsubscribe) {
-      unsubscribe();
-      this.sessionUnsubscribers.delete(sessionId);
-    }
-    await session.destroy();
-    this.sessions.delete(sessionId);
+    await cli.sendRequest("session.destroy", { sessionId });
+    this.sessionIds.delete(sessionId);
     this.sessionCwds.delete(sessionId);
+    this.sessionClis.delete(sessionId);
     this.sessionTools.delete(sessionId);
     this.sendToClient({
       jsonrpc: "2.0",
@@ -47886,7 +44171,7 @@ var ClientConnection = class {
     });
   }
   // ==========================================================================
-  // Callback Handling (SDK -> Client)
+  // Callback Handling (CLI -> Client)
   // ==========================================================================
   async handleToolCall(sessionId, toolCallId, toolName, args) {
     const callbackId = String(this.nextCallbackId++);
@@ -47967,14 +44252,22 @@ var ClientConnection = class {
 var JsonRpcProxyHost = class {
   clients = /* @__PURE__ */ new Map();
   options;
+  cliPoolManager;
   constructor(options = {}) {
     this.options = options;
+    this.cliPoolManager = new CliPoolManager({
+      cliPath: options.cliPath,
+      cliLogLevel: options.cliLogLevel,
+      gracePeriodMs: options.cliGracePeriodMs,
+      copilotToken: options.copilotToken,
+      log: options.onLog
+    });
   }
   /**
    * Handle a new client connection from the tunnel.
    */
   async handleClient(stream, clientId) {
-    const connection = new ClientConnection(stream, clientId, this.options);
+    const connection = new ClientConnection(stream, clientId, this.cliPoolManager, this.options);
     this.clients.set(clientId, connection);
     await connection.start();
   }
@@ -47989,13 +44282,20 @@ var JsonRpcProxyHost = class {
     }
   }
   /**
-   * Stop all client connections and CLI processes.
+   * Stop all client connections and dispose of CLI pool.
    */
   async stop() {
+    await this.cliPoolManager.dispose();
     for (const connection of this.clients.values()) {
-      connection.stop();
+      connection.stop(true);
     }
     this.clients.clear();
+  }
+  /**
+   * Get current CLI pool statistics (for debugging/monitoring).
+   */
+  getCliPoolStats() {
+    return this.cliPoolManager.getStats();
   }
 };
 
@@ -48047,60 +44347,6 @@ function createLogger(options) {
 }
 function createLogCallback(logger) {
   return (level, message) => logger.log(level, message);
-}
-
-// src/version-check.ts
-var CURRENT_VERSION = "0.1.11";
-var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
-var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
-var RED = "\x1B[31m";
-var GREEN = "\x1B[32m";
-var YELLOW = "\x1B[33m";
-var DIM = "\x1B[2m";
-var RESET = "\x1B[0m";
-var BOLD = "\x1B[1m";
-function parseSemVer(version) {
-  const [major, minor, patch] = version.split(".").map(Number);
-  return { major, minor, patch };
-}
-function compareSemVer(a, b) {
-  if (a.major !== b.major) return a.major - b.major;
-  if (a.minor !== b.minor) return a.minor - b.minor;
-  return a.patch - b.patch;
-}
-async function fetchLatestVersion() {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5e3);
-    const response = await fetch(RELEASE_REPO_URL, {
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!response.ok) return null;
-    const pkg = await response.json();
-    return pkg.version;
-  } catch {
-    return null;
-  }
-}
-async function checkForUpdates() {
-  if (CURRENT_VERSION.startsWith("__")) {
-    return;
-  }
-  const latestVersion = await fetchLatestVersion();
-  if (!latestVersion) {
-    return;
-  }
-  const current = parseSemVer(CURRENT_VERSION);
-  const latest = parseSemVer(latestVersion);
-  const comparison = compareSemVer(current, latest);
-  if (comparison < 0) {
-    console.log(
-      `  ${BOLD}${YELLOW}Update available:${RESET} ${RED}${CURRENT_VERSION}${RESET} \u2192 ${GREEN}${latestVersion}${RESET}`
-    );
-    console.log(`  ${DIM}Run: ${UPDATE_COMMAND}${RESET}`);
-    console.log();
-  }
 }
 
 // src/banner.ts
@@ -48178,7 +44424,6 @@ async function runHost(options) {
     });
   });
   tunnelAdapter.onClientDisconnected((clientId) => {
-    logger.info(`Client disconnected: ${clientId}`);
     proxyHost.handleClientDisconnect(clientId);
   });
   logger.debug("Starting tunnel...");

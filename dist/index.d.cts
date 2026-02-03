@@ -219,41 +219,45 @@ declare function saveTunnelConfig(config: StoredTunnelConfig): Promise<void>;
 declare function clearTunnelConfig(): Promise<void>;
 
 /**
- * JSON-RPC Proxy for Copilot SDK
+ * JSON-RPC Proxy for Copilot CLI
  *
- * This module proxies JSON-RPC messages between tunnel clients and the Copilot SDK.
- * The protocol is designed to be a 1:1 mapping of the @github/copilot-sdk API.
+ * This module proxies JSON-RPC messages between tunnel clients and the Copilot CLI
+ * running in --server mode. Communication with the CLI uses JSON-RPC over stdio
+ * with LSP message framing.
  *
  * Architecture:
  * - Each tunnel client connection gets a ClientConnection
- * - A single CopilotClient is shared across all sessions for that connection
- * - Each createSession creates a new CopilotSession via the SDK
+ * - A single CliProcess is shared across all sessions for a given working directory
+ * - Each session.create creates a new session via the CLI
  * - Messages are routed to the correct session based on sessionId
  *
- * Protocol Methods (matching SDK):
+ * Protocol Methods (CLI protocol):
  *
- * Client methods (CopilotClient):
- * - ping(message?: string) -> { message, timestamp, protocolVersion? }
- * - getState() -> ConnectionState
- * - createSession(config?: SessionConfig) -> { sessionId }
- * - resumeSession(sessionId, config?: ResumeSessionConfig) -> { sessionId }
- * - listSessions() -> SessionMetadata[]
- * - getLastSessionId() -> string | undefined
- * - deleteSession(sessionId) -> void
+ * Client methods:
+ * - ping() -> {}
+ * - getState() -> ConnectionState (derived from ping)
+ * - session.create(config) -> { sessionId }
+ * - session.resume(sessionId, config) -> { sessionId }
+ * - session.list() -> { sessions }
+ * - getLastSessionId() -> string | undefined (derived from session.list)
+ * - session.delete(sessionId) -> void
  *
- * Session methods (CopilotSession):
- * - session.send(sessionId, options: MessageOptions) -> { messageId }
- * - session.sendAndWait(sessionId, options: MessageOptions, timeout?) -> AssistantMessageEvent | undefined
- * - session.getMessages(sessionId) -> SessionEvent[]
- * - session.abort(sessionId) -> void
- * - session.destroy(sessionId) -> void
+ * Session methods:
+ * - session.send(sessionId, prompt, mode?) -> {}
+ * - session.sendAndWait(sessionId, prompt, timeout?) -> events (implemented as send + wait for idle)
+ * - session.getMessages(sessionId) -> { events }
+ * - session.abort(sessionId) -> {}
+ * - session.destroy(sessionId) -> {}
  *
- * Notifications (server -> client):
- * - session.event(sessionId, event: SessionEvent)
+ * Notifications (CLI -> host -> client):
+ * - session.event(sessionId, event)
  *
- * Callbacks (server -> client, expecting response):
+ * Incoming requests from CLI (host responds):
  * - tool.call(sessionId, toolCallId, toolName, arguments) -> ToolResult
- * - permission.request(sessionId, permissionRequest) -> PermissionRequestResult
+ *
+ * Callbacks (host -> client, expecting response):
+ * - tool.call (forwarded from CLI)
+ * - permission.request
  */
 
 interface JsonRpcProxyOptions {
@@ -274,16 +278,20 @@ interface JsonRpcProxyOptions {
      * to use a specific token instead of stored credentials.
      */
     copilotToken?: string;
+    /** Grace period in ms before killing unused CLI processes (default: 5 minutes) */
+    cliGracePeriodMs?: number;
 }
 /**
  * JSON-RPC Proxy Host
  *
  * Accepts tunnel connections and manages client connections.
- * Uses the Copilot SDK for session management.
+ * Uses Copilot CLI in --server mode for session management.
+ * CLI processes are pooled and shared across connections with reference counting.
  */
 declare class JsonRpcProxyHost {
     private clients;
     private readonly options;
+    private readonly cliPoolManager;
     constructor(options?: JsonRpcProxyOptions);
     /**
      * Handle a new client connection from the tunnel.
@@ -294,9 +302,17 @@ declare class JsonRpcProxyHost {
      */
     handleClientDisconnect(clientId: string): void;
     /**
-     * Stop all client connections and CLI processes.
+     * Stop all client connections and dispose of CLI pool.
      */
     stop(): Promise<void>;
+    /**
+     * Get current CLI pool statistics (for debugging/monitoring).
+     */
+    getCliPoolStats(): {
+        cwd: string;
+        refCount: number;
+        hasGraceTimer: boolean;
+    }[];
 }
 
 export { type ConnectionStatus, DevTunnelHostAdapter, JsonRpcProxyHost, type JsonRpcProxyOptions, type StoredTunnelConfig, type TunnelHostAdapter, type TunnelHostAdapterConfig, type TunnelInfo, type Unsubscribe, clearTunnelConfig, createTunnelHostAdapter, getConfigPath, loadTunnelConfig, saveTunnelConfig };
