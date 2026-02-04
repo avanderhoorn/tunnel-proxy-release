@@ -966,17 +966,17 @@ var require_suggestSimilar = __commonJS({
 var require_command = __commonJS({
   "node_modules/commander/lib/command.js"(exports2) {
     "use strict";
-    var EventEmitter2 = require("events").EventEmitter;
+    var EventEmitter4 = require("events").EventEmitter;
     var childProcess = require("child_process");
-    var path2 = require("path");
-    var fs2 = require("fs");
+    var path8 = require("path");
+    var fs8 = require("fs");
     var process2 = require("process");
     var { Argument: Argument2, humanReadableArgName } = require_argument();
     var { CommanderError: CommanderError2 } = require_error();
     var { Help: Help2 } = require_help();
     var { Option: Option2, DualOptions } = require_option();
     var { suggestSimilar } = require_suggestSimilar();
-    var Command2 = class _Command extends EventEmitter2 {
+    var Command2 = class _Command extends EventEmitter4 {
       /**
        * Initialize a new `Command`.
        *
@@ -1901,11 +1901,11 @@ Expecting one of '${allowedValues.join("', '")}'`);
         let launchWithNode = false;
         const sourceExt = [".js", ".ts", ".tsx", ".mjs", ".cjs"];
         function findFile(baseDir, baseName) {
-          const localBin = path2.resolve(baseDir, baseName);
-          if (fs2.existsSync(localBin)) return localBin;
-          if (sourceExt.includes(path2.extname(baseName))) return void 0;
+          const localBin = path8.resolve(baseDir, baseName);
+          if (fs8.existsSync(localBin)) return localBin;
+          if (sourceExt.includes(path8.extname(baseName))) return void 0;
           const foundExt = sourceExt.find(
-            (ext) => fs2.existsSync(`${localBin}${ext}`)
+            (ext) => fs8.existsSync(`${localBin}${ext}`)
           );
           if (foundExt) return `${localBin}${foundExt}`;
           return void 0;
@@ -1917,21 +1917,21 @@ Expecting one of '${allowedValues.join("', '")}'`);
         if (this._scriptPath) {
           let resolvedScriptPath;
           try {
-            resolvedScriptPath = fs2.realpathSync(this._scriptPath);
+            resolvedScriptPath = fs8.realpathSync(this._scriptPath);
           } catch (err) {
             resolvedScriptPath = this._scriptPath;
           }
-          executableDir = path2.resolve(
-            path2.dirname(resolvedScriptPath),
+          executableDir = path8.resolve(
+            path8.dirname(resolvedScriptPath),
             executableDir
           );
         }
         if (executableDir) {
           let localFile = findFile(executableDir, executableFile);
           if (!localFile && !subcommand._executableFile && this._scriptPath) {
-            const legacyName = path2.basename(
+            const legacyName = path8.basename(
               this._scriptPath,
-              path2.extname(this._scriptPath)
+              path8.extname(this._scriptPath)
             );
             if (legacyName !== this._name) {
               localFile = findFile(
@@ -1942,7 +1942,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
           }
           executableFile = localFile || executableFile;
         }
-        launchWithNode = sourceExt.includes(path2.extname(executableFile));
+        launchWithNode = sourceExt.includes(path8.extname(executableFile));
         let proc;
         if (process2.platform !== "win32") {
           if (launchWithNode) {
@@ -2577,7 +2577,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
           }
           return positiveOption || option2;
         };
-        const getErrorMessage = (option2) => {
+        const getErrorMessage2 = (option2) => {
           const bestOption = findBestOptionFromValue(option2);
           const optionKey = bestOption.attributeName();
           const source = this.getOptionValueSource(optionKey);
@@ -2586,7 +2586,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
           }
           return `option '${bestOption.flags}'`;
         };
-        const message = `error: ${getErrorMessage(option)} cannot be used with ${getErrorMessage(conflictingOption)}`;
+        const message = `error: ${getErrorMessage2(option)} cannot be used with ${getErrorMessage2(conflictingOption)}`;
         this.error(message, { code: "commander.conflictingOption" });
       }
       /**
@@ -2782,7 +2782,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @return {Command}
        */
       nameFromFilename(filename) {
-        this._name = path2.basename(filename, path2.extname(filename));
+        this._name = path8.basename(filename, path8.extname(filename));
         return this;
       }
       /**
@@ -2796,9 +2796,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @param {string} [path]
        * @return {(string|null|Command)}
        */
-      executableDir(path3) {
-        if (path3 === void 0) return this._executableDir;
-        this._executableDir = path3;
+      executableDir(path9) {
+        if (path9 === void 0) return this._executableDir;
+        this._executableDir = path9;
         return this;
       }
       /**
@@ -4176,10 +4176,10 @@ var require_pipeSupport = __commonJS({
     exports2.generateRandomPipeName = generateRandomPipeName;
     function createClientPipeTransport(pipeName, encoding = "utf-8") {
       let connectResolve;
-      let connected = new Promise((resolve3, _reject) => {
-        connectResolve = resolve3;
+      let connected = new Promise((resolve8, _reject) => {
+        connectResolve = resolve8;
       });
-      return new Promise((resolve3, reject) => {
+      return new Promise((resolve8, reject) => {
         let server = net_1.createServer((socket) => {
           server.close();
           connectResolve([
@@ -4190,7 +4190,7 @@ var require_pipeSupport = __commonJS({
         server.on("error", reject);
         server.listen(pipeName, () => {
           server.removeListener("error", reject);
-          resolve3({
+          resolve8({
             onConnected: () => {
               return connected;
             }
@@ -4220,10 +4220,10 @@ var require_socketSupport = __commonJS({
     var messageWriter_1 = require_messageWriter();
     function createClientSocketTransport(port, encoding = "utf-8") {
       let connectResolve;
-      let connected = new Promise((resolve3, _reject) => {
-        connectResolve = resolve3;
+      let connected = new Promise((resolve8, _reject) => {
+        connectResolve = resolve8;
       });
-      return new Promise((resolve3, reject) => {
+      return new Promise((resolve8, reject) => {
         let server = net_1.createServer((socket) => {
           server.close();
           connectResolve([
@@ -4234,7 +4234,7 @@ var require_socketSupport = __commonJS({
         server.on("error", reject);
         server.listen(port, "127.0.0.1", () => {
           server.removeListener("error", reject);
-          resolve3({
+          resolve8({
             onConnected: () => {
               return connected;
             }
@@ -4258,7 +4258,7 @@ var require_socketSupport = __commonJS({
 var require_main = __commonJS({
   "../../node_modules/vscode-jsonrpc/lib/main.js"(exports2) {
     "use strict";
-    function __export(m) {
+    function __export2(m) {
       for (var p in m) if (!exports2.hasOwnProperty(p)) exports2[p] = m[p];
     }
     Object.defineProperty(exports2, "__esModule", { value: true });
@@ -4306,8 +4306,8 @@ var require_main = __commonJS({
     exports2.CancellationTokenSource = cancellation_1.CancellationTokenSource;
     exports2.CancellationToken = cancellation_1.CancellationToken;
     var linkedMap_1 = require_linkedMap();
-    __export(require_pipeSupport());
-    __export(require_socketSupport());
+    __export2(require_pipeSupport());
+    __export2(require_socketSupport());
     var CancelNotification;
     (function(CancelNotification2) {
       CancelNotification2.type = new messages_1.NotificationType("$/cancelRequest");
@@ -4974,13 +4974,13 @@ ${JSON.stringify(message, null, 4)}`);
                 }
                 break;
               default:
-                const last = params.length - 1;
-                if (cancellation_1.CancellationToken.is(params[last])) {
-                  token = params[last];
+                const last2 = params.length - 1;
+                if (cancellation_1.CancellationToken.is(params[last2])) {
+                  token = params[last2];
                   if (params.length === 2) {
                     messageParams = undefinedToNull(params[0]);
                   } else {
-                    messageParams = params.slice(0, last).map((value) => undefinedToNull(value));
+                    messageParams = params.slice(0, last2).map((value) => undefinedToNull(value));
                   }
                 } else {
                   messageParams = params.map((value) => undefinedToNull(value));
@@ -4994,14 +4994,14 @@ ${JSON.stringify(message, null, 4)}`);
             token = cancellation_1.CancellationToken.is(params[numberOfParams]) ? params[numberOfParams] : void 0;
           }
           let id = sequenceNumber++;
-          let result = new Promise((resolve3, reject) => {
+          let result = new Promise((resolve8, reject) => {
             let requestMessage = {
               jsonrpc: version,
               id,
               method,
               params: messageParams
             };
-            let responsePromise = { method, timerStart: Date.now(), resolve: resolve3, reject };
+            let responsePromise = { method, timerStart: Date.now(), resolve: resolve8, reject };
             traceSendingRequest(requestMessage);
             try {
               messageWriter.write(requestMessage);
@@ -6046,12 +6046,12 @@ var require_webRsa = __commonJS({
         }
       }
       async exportParameters() {
-        var _a;
+        var _a2;
         if (!this.publicKey)
           throw new Error("Public key not set.");
         let jwk;
         try {
-          jwk = await crypto.subtle.exportKey("jwk", (_a = this.privateKey) !== null && _a !== void 0 ? _a : this.publicKey);
+          jwk = await crypto.subtle.exportKey("jwk", (_a2 = this.privateKey) !== null && _a2 !== void 0 ? _a2 : this.publicKey);
         } catch (e) {
           if (!(e instanceof Error))
             throw e;
@@ -6290,8 +6290,8 @@ var require_webECDsa = __commonJS({
         }
       }
       async exportParameters() {
-        var _a;
-        const exportKey = (_a = this.privateKey) !== null && _a !== void 0 ? _a : this.publicKey;
+        var _a2;
+        const exportKey = (_a2 = this.privateKey) !== null && _a2 !== void 0 ? _a2 : this.publicKey;
         if (!exportKey) {
           throw new Error("Key not present.");
         }
@@ -6848,9 +6848,9 @@ var require_derData = __commonJS({
         const length = this.readLength();
         const end = this.position + length;
         const values = [];
-        const first = this.readByte();
-        values.push(Math.trunc(first / 40));
-        values.push(first % 40);
+        const first2 = this.readByte();
+        values.push(Math.trunc(first2 / 40));
+        values.push(first2 % 40);
         let next = 0;
         while (this.position < end) {
           const b = this.readByte();
@@ -7200,7 +7200,7 @@ var require_keyFormatters = __commonJS({
         return writer.toBuffer();
       }
       static parseECPublic(keyBytes) {
-        var _a;
+        var _a2;
         const reader = new derData_1.DerReader(keyBytes);
         const oidsReader = reader.readSequence();
         const keyTypeOid = oidsReader.readObjectIdentifier();
@@ -7208,7 +7208,7 @@ var require_keyFormatters = __commonJS({
           throw new Error(`Unexpected key type OID: ${keyTypeOid}`);
         }
         const curveOid = oidsReader.readObjectIdentifier();
-        const curveName = (_a = ecdsaCurves_1.curves.find((c) => c.oid === curveOid)) === null || _a === void 0 ? void 0 : _a.name;
+        const curveName = (_a2 = ecdsaCurves_1.curves.find((c) => c.oid === curveOid)) === null || _a2 === void 0 ? void 0 : _a2.name;
         const xy = reader.readBitString();
         if (xy.length % 2 !== 1) {
           throw new Error(`Unexpected key data length: ${xy.length}`);
@@ -7223,7 +7223,7 @@ var require_keyFormatters = __commonJS({
         return ec;
       }
       static parseECPrivate(keyBytes) {
-        var _a;
+        var _a2;
         const reader = new derData_1.DerReader(keyBytes);
         const version = reader.readInteger().toInt32();
         if (version !== 1) {
@@ -7235,7 +7235,7 @@ var require_keyFormatters = __commonJS({
           throw new Error("SEC1 curve info not found.");
         }
         const curveOid = curveReader.readObjectIdentifier();
-        const curveName = (_a = ecdsaCurves_1.curves.find((c) => c.oid === curveOid)) === null || _a === void 0 ? void 0 : _a.name;
+        const curveName = (_a2 = ecdsaCurves_1.curves.find((c) => c.oid === curveOid)) === null || _a2 === void 0 ? void 0 : _a2.name;
         const publicKeyReader = reader.tryReadTagged(1);
         if (!publicKeyReader) {
           throw new Error("SEC1 public key data not found.");
@@ -7300,7 +7300,7 @@ var require_nodeRsa = __commonJS({
         }
       }
       async generateNodeKeyPairObjects(keySizeInBits) {
-        [this.publicKey, this.privateKey] = await new Promise((resolve3, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve8, reject) => {
           const keyGenParams = {
             modulusLength: keySizeInBits
           };
@@ -7309,7 +7309,7 @@ var require_nodeRsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve3([publicKey, privateKey]);
+                resolve8([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -7318,7 +7318,7 @@ var require_nodeRsa = __commonJS({
         });
       }
       async generateNodeKeyPairBuffers(keySizeInBits) {
-        [this.publicKey, this.privateKey] = await new Promise((resolve3, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve8, reject) => {
           const keyGenParams = {
             modulusLength: keySizeInBits,
             publicKeyEncoding: { type: "pkcs1", format: "pem" },
@@ -7334,7 +7334,7 @@ var require_nodeRsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve3([publicKey, privateKey]);
+                resolve8([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -7425,12 +7425,12 @@ var require_nodeRsa = __commonJS({
         }
       }
       async exportParameters() {
-        var _a, _b;
+        var _a2, _b;
         if (!this.publicKey)
           throw new Error("Public key not set.");
         let keyBytes;
         if (nodeKeyObjectSupport) {
-          keyBytes = ((_a = this.privateKey) !== null && _a !== void 0 ? _a : this.publicKey).export({
+          keyBytes = ((_a2 = this.privateKey) !== null && _a2 !== void 0 ? _a2 : this.publicKey).export({
             format: "der",
             type: "pkcs1"
           });
@@ -7568,7 +7568,7 @@ var require_nodeECDsa = __commonJS({
         }
       }
       async generateNodeKeyPairObjects() {
-        [this.publicKey, this.privateKey] = await new Promise((resolve3, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve8, reject) => {
           const keyGenParams = {
             namedCurve: this.curve.shortName
           };
@@ -7577,7 +7577,7 @@ var require_nodeECDsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve3([publicKey, privateKey]);
+                resolve8([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -7586,7 +7586,7 @@ var require_nodeECDsa = __commonJS({
         });
       }
       async generateNodeKeyPairBuffers() {
-        [this.publicKey, this.privateKey] = await new Promise((resolve3, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve8, reject) => {
           const keyGenParams = {
             namedCurve: this.curve.shortName,
             publicKeyEncoding: { type: "spki", format: "pem" },
@@ -7602,7 +7602,7 @@ var require_nodeECDsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve3([publicKey, privateKey]);
+                resolve8([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -7712,13 +7712,13 @@ var require_nodeECDsa = __commonJS({
         }
       }
       async exportParameters() {
-        var _a, _b;
+        var _a2, _b;
         if (!this.publicKey) {
           throw new Error("Key is not present.");
         }
         let derKeyBytes;
         if (typeof this.publicKey === "string") {
-          derKeyBytes = (0, keyFormatters_1.parsePem)((_a = this.privateKey) !== null && _a !== void 0 ? _a : this.publicKey);
+          derKeyBytes = (0, keyFormatters_1.parsePem)((_a2 = this.privateKey) !== null && _a2 !== void 0 ? _a2 : this.publicKey);
         } else {
           derKeyBytes = ((_b = this.privateKey) !== null && _b !== void 0 ? _b : this.publicKey).export({
             type: this.privateKey ? "sec1" : "spki",
@@ -8701,9 +8701,9 @@ var require_transportMessages = __commonJS({
         this.language = reader.readString("ascii");
       }
       onWrite(writer) {
-        var _a, _b;
+        var _a2, _b;
         writer.writeBoolean(this.alwaysDisplay);
-        writer.writeString((_a = this.message) !== null && _a !== void 0 ? _a : "", "utf8");
+        writer.writeString((_a2 = this.message) !== null && _a2 !== void 0 ? _a2 : "", "utf8");
         writer.writeString((_b = this.language) !== null && _b !== void 0 ? _b : "", "ascii");
       }
       toString() {
@@ -8952,8 +8952,8 @@ var require_promiseCompletionSource = __commonJS({
     exports2.PromiseCompletionSource = void 0;
     var PromiseCompletionSource = class {
       constructor() {
-        this.promise = new Promise((resolve3, reject) => {
-          this.resolve = resolve3;
+        this.promise = new Promise((resolve8, reject) => {
+          this.resolve = resolve8;
           this.reject = reject;
         });
       }
@@ -8996,14 +8996,14 @@ var require_errors = __commonJS({
     var ObjectDisposedError = class extends Error {
       // eslint-disable-next-line @typescript-eslint/ban-types
       constructor(objectOrMessage) {
-        var _a, _b;
+        var _a2, _b;
         let message;
         if (typeof objectOrMessage === "string") {
           message = objectOrMessage;
         } else if (typeof objectOrMessage === "function") {
           message = objectOrMessage.name + " disposed.";
         } else {
-          message = ((_b = (_a = objectOrMessage === null || objectOrMessage === void 0 ? void 0 : objectOrMessage.constructor) === null || _a === void 0 ? void 0 : _a.name) !== null && _b !== void 0 ? _b : "Object ") + " disposed.";
+          message = ((_b = (_a2 = objectOrMessage === null || objectOrMessage === void 0 ? void 0 : objectOrMessage.constructor) === null || _a2 === void 0 ? void 0 : _a2.name) !== null && _b !== void 0 ? _b : "Object ") + " disposed.";
         }
         super(message);
       }
@@ -9092,7 +9092,7 @@ var require_cancellation2 = __commonJS({
       }
       return Promise.race([
         promise2,
-        new Promise((resolve3, reject) => {
+        new Promise((resolve8, reject) => {
           if (cancellation.isCancellationRequested) {
             reject(new CancellationError());
           } else {
@@ -9180,18 +9180,18 @@ var require_semaphore = __commonJS({
         } else {
           const completion = new promiseCompletionSource_1.PromiseCompletionSource();
           this.completions.push(completion);
-          const promises = [completion.promise];
+          const promises2 = [completion.promise];
           if (millisecondsTimeout) {
-            promises.push(new Promise((resolve3) => setTimeout(() => resolve3(false), millisecondsTimeout)));
+            promises2.push(new Promise((resolve8) => setTimeout(() => resolve8(false), millisecondsTimeout)));
           }
           if (cancellation) {
             const cancellationCompletion = new promiseCompletionSource_1.PromiseCompletionSource();
             cancellation.onCancellationRequested(() => {
               cancellationCompletion.reject(new cancellation_1.CancellationError());
             });
-            promises.push(cancellationCompletion.promise);
+            promises2.push(cancellationCompletion.promise);
           }
-          if (await Promise.race(promises)) {
+          if (await Promise.race(promises2)) {
             return true;
           } else {
             const completionIndex = this.completions.indexOf(completion);
@@ -9317,7 +9317,7 @@ var require_pipeExtensions = __commonJS({
         return toSession.requestResponse(e.request, transportMessages_1.SessionRequestSuccessMessage, transportMessages_1.SessionRequestFailureMessage, cancellation);
       }
       static async forwardChannel(e, toSession, cancellation) {
-        var _a;
+        var _a2;
         try {
           const toChannel = await toSession.openChannel(e.request, null, cancellation);
           void _PipeExtensions.pipeChannel(e.channel, toChannel).catch();
@@ -9327,7 +9327,7 @@ var require_pipeExtensions = __commonJS({
             throw err;
           const failureMessage = new connectionMessages_1.ChannelOpenFailureMessage();
           if (err instanceof errors_1.SshChannelError) {
-            failureMessage.reasonCode = (_a = err.reason) !== null && _a !== void 0 ? _a : connectionMessages_1.SshChannelOpenFailureReason.connectFailed;
+            failureMessage.reasonCode = (_a2 = err.reason) !== null && _a2 !== void 0 ? _a2 : connectionMessages_1.SshChannelOpenFailureReason.connectFailed;
           } else {
             failureMessage.reasonCode = connectionMessages_1.SshChannelOpenFailureReason.connectFailed;
           }
@@ -9341,8 +9341,8 @@ var require_pipeExtensions = __commonJS({
         return result ? new connectionMessages_1.ChannelSuccessMessage() : new connectionMessages_1.ChannelFailureMessage();
       }
       static async forwardSessionClose(session, e) {
-        var _a;
-        return session.close(e.reason, e.message, (_a = e.error) !== null && _a !== void 0 ? _a : void 0);
+        var _a2;
+        return session.close(e.reason, e.message, (_a2 = e.error) !== null && _a2 !== void 0 ? _a2 : void 0);
       }
       static async forwardData(channel, toChannel, data) {
         const buffer = buffer_1.Buffer.alloc(data.length);
@@ -10036,7 +10036,7 @@ var require_kexMessages = __commonJS({
         this.reserved = reader.readUInt32();
       }
       onWrite(writer) {
-        var _a;
+        var _a2;
         if (!this.cookie) {
           this.cookie = buffer_1.Buffer.alloc(keyExchangeInitCookieLength);
           sshAlgorithms_1.SshAlgorithms.random.getBytes(this.cookie);
@@ -10052,7 +10052,7 @@ var require_kexMessages = __commonJS({
         writer.writeList(this.compressionAlgorithmsServerToClient || [], "ascii");
         writer.writeList(this.languagesClientToServer || [], "ascii");
         writer.writeList(this.languagesServerToClient || [], "ascii");
-        writer.writeBoolean((_a = this.firstKexPacketFollows) !== null && _a !== void 0 ? _a : false);
+        writer.writeBoolean((_a2 = this.firstKexPacketFollows) !== null && _a2 !== void 0 ? _a2 : false);
         writer.writeUInt32(this.reserved || 0);
       }
       static CreateNone() {
@@ -10339,7 +10339,7 @@ var require_sshProtocol = __commonJS({
        * @throws SshConnectionException if writing to the stream failed for any other reason.
        */
       async sendMessage(message, cancellation) {
-        var _a;
+        var _a2;
         const algorithms = this.algorithms;
         const compression = algorithms === null || algorithms === void 0 ? void 0 : algorithms.compressor;
         const encryption = algorithms === null || algorithms === void 0 ? void 0 : algorithms.cipher;
@@ -10419,7 +10419,7 @@ var require_sshProtocol = __commonJS({
           } else {
             result = await this.write(payload, cancellation);
           }
-          this.metrics.addMessageSent(_SshProtocol.packetLengthSize + packetLength + ((_a = hmac === null || hmac === void 0 ? void 0 : hmac.digestLength) !== null && _a !== void 0 ? _a : 0));
+          this.metrics.addMessageSent(_SshProtocol.packetLengthSize + packetLength + ((_a2 = hmac === null || hmac === void 0 ? void 0 : hmac.digestLength) !== null && _a2 !== void 0 ? _a2 : 0));
         } finally {
           this.sessionSemaphore.release();
         }
@@ -10432,7 +10432,7 @@ var require_sshProtocol = __commonJS({
        * @throws SshConnectionError if reading from the stream failed for any other reason.
        */
       async receiveMessage(cancellation) {
-        var _a;
+        var _a2;
         const algorithms = this.algorithms;
         const encryption = algorithms === null || algorithms === void 0 ? void 0 : algorithms.decipher;
         const hmac = algorithms === null || algorithms === void 0 ? void 0 : algorithms.messageVerifier;
@@ -10549,7 +10549,7 @@ var require_sshProtocol = __commonJS({
         this.inboundPacketSequence++;
         this.inboundFlow += packetLength;
         this.sessionSemaphore.release();
-        this.metrics.addMessageReceived(_SshProtocol.packetLengthSize + packetLength + ((_a = hmac === null || hmac === void 0 ? void 0 : hmac.digestLength) !== null && _a !== void 0 ? _a : 0));
+        this.metrics.addMessageReceived(_SshProtocol.packetLengthSize + packetLength + ((_a2 = hmac === null || hmac === void 0 ? void 0 : hmac.digestLength) !== null && _a2 !== void 0 ? _a2 : 0));
         await this.considerReExchange(false, cancellation);
         return message;
       }
@@ -10864,7 +10864,7 @@ var require_connectionService = __commonJS({
         }
       }
       async handleOpenMessage(message, cancellation) {
-        var _a;
+        var _a2;
         const senderChannel = message.senderChannel;
         if (!this.session.canAcceptRequests) {
           this.trace(trace_1.TraceLevel.Warning, trace_1.SshTraceEventIds.channelOpenFailed, "Channel open request blocked because the session is not yet authenticated.");
@@ -10895,7 +10895,7 @@ var require_connectionService = __commonJS({
           } else if (args.failureReason !== connectionMessages_1.SshChannelOpenFailureReason.none) {
             const failureMessage = new connectionMessages_1.ChannelOpenFailureMessage();
             failureMessage.reasonCode = args.failureReason;
-            failureMessage.description = (_a = args.failureDescription) !== null && _a !== void 0 ? _a : void 0;
+            failureMessage.description = (_a2 = args.failureDescription) !== null && _a2 !== void 0 ? _a2 : void 0;
             responseMessage = failureMessage;
           } else {
             responseMessage = confirmationMessage;
@@ -10948,7 +10948,7 @@ var require_connectionService = __commonJS({
         }
       }
       async handleOpenConfirmationMessage(message, cancellation) {
-        var _a;
+        var _a2;
         let completionSource = null;
         let openMessage;
         const pendingChannel = this.pendingChannels.get(message.recipientChannel);
@@ -10977,7 +10977,7 @@ var require_connectionService = __commonJS({
           if (args.failureReason === connectionMessages_1.SshChannelOpenFailureReason.none) {
             completionSource.resolve(channel);
           } else {
-            completionSource.reject(new errors_1.SshChannelError((_a = args.failureDescription) !== null && _a !== void 0 ? _a : "Channel open failure.", args.failureReason));
+            completionSource.reject(new errors_1.SshChannelError((_a2 = args.failureDescription) !== null && _a2 !== void 0 ? _a2 : "Channel open failure.", args.failureReason));
             return;
           }
         } else {
@@ -11051,8 +11051,8 @@ var require_connectionService = __commonJS({
         return channel;
       }
       findChannelById(id) {
-        var _a;
-        const channel = (_a = this.channelMap.get(id)) !== null && _a !== void 0 ? _a : null;
+        var _a2;
+        const channel = (_a2 = this.channelMap.get(id)) !== null && _a2 !== void 0 ? _a2 : null;
         return channel;
       }
       /* @internal */
@@ -11119,14 +11119,14 @@ var require_authenticationMessages = __commonJS({
         }
       }
       onWrite(writer) {
-        var _a, _b;
+        var _a2, _b;
         super.onWrite(writer);
         if (!this.keyAlgorithmName)
           throw new Error("Key algorithm name not set.");
         if (this.methodName === "hostbased") {
           writer.writeString(this.keyAlgorithmName, "ascii");
           writer.writeBinary(this.publicKey || Buffer.alloc(0));
-          writer.writeString((_a = this.clientHostname) !== null && _a !== void 0 ? _a : "", "ascii");
+          writer.writeString((_a2 = this.clientHostname) !== null && _a2 !== void 0 ? _a2 : "", "ascii");
           writer.writeString((_b = this.clientUsername) !== null && _b !== void 0 ? _b : "", "ascii");
           if (!this.hasSignature) {
             throw new Error("A signature is required for a host-based authentcation request.");
@@ -11165,11 +11165,11 @@ var require_authenticationMessages = __commonJS({
         }
       }
       onWrite(writer) {
-        var _a, _b;
+        var _a2, _b;
         writer.writeString(this.name || "", "utf8");
         writer.writeString(this.instruction || "", "utf8");
         writer.writeString(this.language || "", "ascii");
-        const promptsCount = (_b = (_a = this.prompts) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0;
+        const promptsCount = (_b = (_a2 = this.prompts) === null || _a2 === void 0 ? void 0 : _a2.length) !== null && _b !== void 0 ? _b : 0;
         writer.writeUInt32(promptsCount);
         for (let i = 0; i < promptsCount; i++) {
           writer.writeString(this.prompts[i].prompt || "", "utf8");
@@ -11192,8 +11192,8 @@ var require_authenticationMessages = __commonJS({
         }
       }
       onWrite(writer) {
-        var _a, _b;
-        const responseCount = (_b = (_a = this.responses) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0;
+        var _a2, _b;
+        const responseCount = (_b = (_a2 = this.responses) === null || _a2 === void 0 ? void 0 : _a2.length) !== null && _b !== void 0 ? _b : 0;
         writer.writeUInt32(responseCount);
         for (let i = 0; i < responseCount; i++) {
           writer.writeString(this.responses[i] || "", "utf8");
@@ -11416,12 +11416,12 @@ var require_authenticationService = __commonJS({
     var errors_1 = require_errors();
     var AuthenticationService = AuthenticationService_1 = class AuthenticationService extends sshService_1.SshService {
       constructor(session) {
-        var _a;
+        var _a2;
         super(session);
         this.currentRequestMessage = null;
         this.authenticationFailureCount = 0;
         this.disposeCancellationSource = new vscode_jsonrpc_1.CancellationTokenSource();
-        const algorithmName = (_a = session.algorithms) === null || _a === void 0 ? void 0 : _a.publicKeyAlgorithmName;
+        const algorithmName = (_a2 = session.algorithms) === null || _a2 === void 0 ? void 0 : _a2.publicKeyAlgorithmName;
         if (!algorithmName) {
           throw new Error("Algorithms not initialized.");
         }
@@ -11476,15 +11476,15 @@ var require_authenticationService = __commonJS({
         }
       }
       setCurrentRequest(message) {
-        var _a;
+        var _a2;
         this.currentRequestMessage = message;
         const protocol = this.session.protocol;
         if (protocol) {
-          protocol.messageContext = (_a = message === null || message === void 0 ? void 0 : message.methodName) !== null && _a !== void 0 ? _a : null;
+          protocol.messageContext = (_a2 = message === null || message === void 0 ? void 0 : message.methodName) !== null && _a2 !== void 0 ? _a2 : null;
         }
       }
       async handlePublicKeyRequestMessage(message, cancellation) {
-        var _a, _b, _c;
+        var _a2, _b, _c;
         const publicKeyAlg = this.session.config.getPublicKeyAlgorithm(message.keyAlgorithmName);
         if (!publicKeyAlg) {
           const failureMessage = new authenticationMessages_1.AuthenticationFailureMessage();
@@ -11500,7 +11500,7 @@ var require_authenticationService = __commonJS({
         let args;
         if (message.methodName === "hostbased") {
           args = new sshAuthenticatingEventArgs_1.SshAuthenticatingEventArgs(sshAuthenticatingEventArgs_1.SshAuthenticationType.clientHostBased, {
-            username: (_a = message.username) !== null && _a !== void 0 ? _a : "",
+            username: (_a2 = message.username) !== null && _a2 !== void 0 ? _a2 : "",
             publicKey,
             clientHostname: message.clientHostname,
             clientUsername: message.clientUsername
@@ -11533,9 +11533,9 @@ var require_authenticationService = __commonJS({
         await this.handleAuthenticating(args, cancellation);
       }
       async handlePasswordRequestMessage(message, cancellation) {
-        var _a, _b;
+        var _a2, _b;
         const args = new sshAuthenticatingEventArgs_1.SshAuthenticatingEventArgs(sshAuthenticatingEventArgs_1.SshAuthenticationType.clientPassword, {
-          username: (_a = message.username) !== null && _a !== void 0 ? _a : "",
+          username: (_a2 = message.username) !== null && _a2 !== void 0 ? _a2 : "",
           password: (_b = message.password) !== null && _b !== void 0 ? _b : ""
         });
         await this.handleAuthenticating(args, cancellation);
@@ -11553,15 +11553,15 @@ var require_authenticationService = __commonJS({
         await this.handleAuthenticating(args, cancellation);
       }
       async handleInfoResponseMessage(message, cancellation) {
-        var _a;
+        var _a2;
         const args = new sshAuthenticatingEventArgs_1.SshAuthenticatingEventArgs(sshAuthenticatingEventArgs_1.SshAuthenticationType.clientInteractive, {
-          username: (_a = this.currentRequestMessage) === null || _a === void 0 ? void 0 : _a.username,
+          username: (_a2 = this.currentRequestMessage) === null || _a2 === void 0 ? void 0 : _a2.username,
           infoResponse: message
         });
         await this.handleAuthenticating(args, cancellation);
       }
       async handleAuthenticating(args, cancellation) {
-        var _a;
+        var _a2;
         if (!this.currentRequestMessage) {
           throw new errors_1.SshConnectionError("No current authentication request.", transportMessages_1.SshDisconnectReason.protocolError);
         }
@@ -11592,7 +11592,7 @@ var require_authenticationService = __commonJS({
             this.trace(trace_1.TraceLevel.Info, trace_1.SshTraceEventIds.sessionAuthenticated, `${sshAuthenticatingEventArgs_1.SshAuthenticationType[args.authenticationType]} authentication succeeded.`);
             this.setCurrentRequest(null);
             await this.session.sendMessage(new authenticationMessages_1.AuthenticationSuccessMessage(), cancellation);
-            (_a = this.session) === null || _a === void 0 ? void 0 : _a.handleClientAuthenticated();
+            (_a2 = this.session) === null || _a2 === void 0 ? void 0 : _a2.handleClientAuthenticated();
           }
         } else if (args.authenticationType === sshAuthenticatingEventArgs_1.SshAuthenticationType.clientInteractive && !this.session.isClientSession && args.infoRequest) {
           await this.sendMessage(args.infoRequest, cancellation);
@@ -11614,14 +11614,14 @@ var require_authenticationService = __commonJS({
         }
       }
       async authenticateClient(credentials, cancellation) {
-        var _a, _b, _c, _d;
+        var _a2, _b, _c, _d;
         this.clientAuthenticationMethods = new queue_1.Queue();
         const configuredMethods = this.session.config.authenticationMethods;
         if (configuredMethods.includes(
           "publickey"
           /* AuthenticationMethod.publicKey */
         )) {
-          for (const publicKey of (_a = credentials.publicKeys) !== null && _a !== void 0 ? _a : []) {
+          for (const publicKey of (_a2 = credentials.publicKeys) !== null && _a2 !== void 0 ? _a2 : []) {
             if (!publicKey)
               continue;
             const username = (_b = credentials.username) !== null && _b !== void 0 ? _b : "";
@@ -11654,11 +11654,11 @@ var require_authenticationService = __commonJS({
             this.clientAuthenticationMethods.enqueue({
               method: "password",
               handler: async (cancellation2) => {
-                var _a2;
+                var _a3;
                 const passwordCredentialPromise = passwordCredentialProvider(cancellation2 !== null && cancellation2 !== void 0 ? cancellation2 : vscode_jsonrpc_1.CancellationToken.None);
                 const passwordCredential = passwordCredentialPromise ? await passwordCredentialPromise : null;
                 if (passwordCredential) {
-                  await this.requestPasswordAuthentication((_a2 = passwordCredential[0]) !== null && _a2 !== void 0 ? _a2 : "", passwordCredential[1], cancellation2);
+                  await this.requestPasswordAuthentication((_a3 = passwordCredential[0]) !== null && _a3 !== void 0 ? _a3 : "", passwordCredential[1], cancellation2);
                 } else {
                   await this.session.close(transportMessages_1.SshDisconnectReason.authCancelledByUser);
                 }
@@ -11746,9 +11746,9 @@ var require_authenticationService = __commonJS({
         await this.session.sendMessage(authMessage, cancellation);
       }
       async handleFailureMessage(message) {
-        var _a, _b;
+        var _a2, _b;
         this.setCurrentRequest(null);
-        while ((_a = this.clientAuthenticationMethods) === null || _a === void 0 ? void 0 : _a.size) {
+        while ((_a2 = this.clientAuthenticationMethods) === null || _a2 === void 0 ? void 0 : _a2.size) {
           const nextAuthMethod = this.clientAuthenticationMethods.dequeue();
           if ((_b = message.methodNames) === null || _b === void 0 ? void 0 : _b.includes(nextAuthMethod.method)) {
             await nextAuthMethod.handler(this.disposeCancellationSource.token);
@@ -11783,7 +11783,7 @@ var require_authenticationService = __commonJS({
         try {
           this.disposeCancellationSource.cancel();
           this.disposeCancellationSource.dispose();
-        } catch (_a) {
+        } catch (_a2) {
         }
         super.dispose();
       }
@@ -12193,12 +12193,12 @@ var require_sshSession = __commonJS({
         return [...this.activatedServices.values()];
       }
       get channels() {
-        var _a, _b;
-        return (_b = (_a = this.connectionService) === null || _a === void 0 ? void 0 : _a.channels) !== null && _b !== void 0 ? _b : [];
+        var _a2, _b;
+        return (_b = (_a2 = this.connectionService) === null || _a2 === void 0 ? void 0 : _a2.channels) !== null && _b !== void 0 ? _b : [];
       }
       get protocolExtensions() {
-        var _a;
-        return ((_a = this.protocol) === null || _a === void 0 ? void 0 : _a.extensions) || null;
+        var _a2;
+        return ((_a2 = this.protocol) === null || _a2 === void 0 ? void 0 : _a2.extensions) || null;
       }
       /**
        * Gets an activated service instance by type.
@@ -12288,7 +12288,7 @@ var require_sshSession = __commonJS({
         await writePromise;
       }
       async encrypt(cancellation) {
-        var _a, _b;
+        var _a2, _b;
         const protocol = this.protocol;
         if (!protocol)
           throw new errors_1.ObjectDisposedError(this);
@@ -12298,7 +12298,7 @@ var require_sshSession = __commonJS({
         this.connected = true;
         this.raiseReportProgress(progress_1.Progress.StartingKeyExchange);
         let message = null;
-        while (!this.isClosed && !((_a = this.protocol) === null || _a === void 0 ? void 0 : _a.algorithms) && !(message instanceof transportMessages_1.DisconnectMessage)) {
+        while (!this.isClosed && !((_a2 = this.protocol) === null || _a2 === void 0 ? void 0 : _a2.algorithms) && !(message instanceof transportMessages_1.DisconnectMessage)) {
           message = await protocol.receiveMessage(cancellation);
           if (!message) {
             break;
@@ -12314,7 +12314,7 @@ var require_sshSession = __commonJS({
       }
       /* @internal */
       async processMessages() {
-        var _a;
+        var _a2;
         this.connected = true;
         while (!this.disposed) {
           const protocol = this.protocol;
@@ -12329,7 +12329,7 @@ var require_sshSession = __commonJS({
               throw e;
             let reason = transportMessages_1.SshDisconnectReason.protocolError;
             if (e instanceof errors_1.SshConnectionError) {
-              reason = (_a = e.reason) !== null && _a !== void 0 ? _a : reason;
+              reason = (_a2 = e.reason) !== null && _a2 !== void 0 ? _a2 : reason;
             } else {
               this.trace(trace_1.TraceLevel.Error, trace_1.SshTraceEventIds.receiveMessageFailed, `Error receiving message: ${e.message}`, e);
             }
@@ -12367,11 +12367,11 @@ var require_sshSession = __commonJS({
        */
       /* @internal */
       get canAcceptRequests() {
-        var _a;
-        return !this.kexService || !!((_a = this.protocol) === null || _a === void 0 ? void 0 : _a.algorithms) && (!this.protocol.algorithms.cipher || !!this.principal);
+        var _a2;
+        return !this.kexService || !!((_a2 = this.protocol) === null || _a2 === void 0 ? void 0 : _a2.algorithms) && (!this.protocol.algorithms.cipher || !!this.principal);
       }
       async sendMessage(message, cancellation) {
-        var _a, _b;
+        var _a2, _b;
         if (!message)
           throw new TypeError("Message expected.");
         if (cancellation && cancellation.isCancellationRequested)
@@ -12393,7 +12393,7 @@ var require_sshSession = __commonJS({
           this.blockedMessagesSemaphore.release();
           if (e instanceof errors_1.SshConnectionError) {
             const ce = e;
-            if (ce.reason === transportMessages_1.SshDisconnectReason.connectionLost && ((_a = this.protocolExtensions) === null || _a === void 0 ? void 0 : _a.has(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionReconnect))) {
+            if (ce.reason === transportMessages_1.SshDisconnectReason.connectionLost && ((_a2 = this.protocolExtensions) === null || _a2 === void 0 ? void 0 : _a2.has(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionReconnect))) {
               return;
             }
           }
@@ -12413,7 +12413,7 @@ var require_sshSession = __commonJS({
        * message types that are registered via `SshSessionConfiguration.messages`.
        */
       handleMessage(message, cancellation) {
-        var _a;
+        var _a2;
         if (message instanceof connectionMessages_1.ConnectionMessage && this.connectionService) {
           return this.connectionService.handleMessage(message, cancellation);
         } else if (message instanceof kexMessages_1.NewKeysMessage) {
@@ -12421,7 +12421,7 @@ var require_sshSession = __commonJS({
         } else if (message instanceof kexMessages_1.KeyExchangeMessage) {
           return this.handleKeyExchangeMessage(message, cancellation);
         } else if (message instanceof authenticationMessages_1.AuthenticationMessage) {
-          return (_a = this.getService(authenticationService_1.AuthenticationService)) === null || _a === void 0 ? void 0 : _a.handleMessage(message, cancellation);
+          return (_a2 = this.getService(authenticationService_1.AuthenticationService)) === null || _a2 === void 0 ? void 0 : _a2.handleMessage(message, cancellation);
         } else if (message instanceof transportMessages_1.ServiceRequestMessage) {
           return this.handleServiceRequestMessage(message, cancellation);
         } else if (message instanceof transportMessages_1.ServiceAcceptMessage) {
@@ -12450,7 +12450,7 @@ var require_sshSession = __commonJS({
       }
       /* @internal */
       async handleRequestMessage(message, cancellation) {
-        var _a;
+        var _a2;
         let result = false;
         let response = null;
         if (message.requestType === "initial-channel-request@microsoft.com" && this.config.protocolExtensions.includes(sshSessionConfiguration_1.SshProtocolExtensionNames.openChannelRequest)) {
@@ -12461,7 +12461,7 @@ var require_sshSession = __commonJS({
             sessionChannelRequest.request.wantReply = false;
             result = await channel.handleRequest(sessionChannelRequest.request, cancellation);
           }
-        } else if (message.requestType === "enable-session-reconnect@microsoft.com" && ((_a = this.config.protocolExtensions) === null || _a === void 0 ? void 0 : _a.includes(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionReconnect))) {
+        } else if (message.requestType === "enable-session-reconnect@microsoft.com" && ((_a2 = this.config.protocolExtensions) === null || _a2 === void 0 ? void 0 : _a2.includes(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionReconnect))) {
           if (!this.protocol.incomingMessagesHaveReconnectInfo) {
             this.protocol.incomingMessagesHaveReconnectInfo = true;
             this.protocol.incomingMessagesHaveLatencyInfo = this.protocol.extensions.has(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionLatency);
@@ -12526,11 +12526,11 @@ var require_sshSession = __commonJS({
       }
       /* @internal */
       async handleNewKeysMessage(message, cancellation) {
-        var _a;
+        var _a2;
         try {
           await this.blockedMessagesSemaphore.wait(cancellation);
           await this.protocol.handleNewKeys(cancellation);
-          if ((_a = this.algorithms) === null || _a === void 0 ? void 0 : _a.isExtensionInfoRequested) {
+          if ((_a2 = this.algorithms) === null || _a2 === void 0 ? void 0 : _a2.isExtensionInfoRequested) {
             await this.sendExtensionInfo(cancellation);
           }
           try {
@@ -12660,13 +12660,13 @@ var require_sshSession = __commonJS({
           throw new TypeError("Failure response type is required.");
         request.wantReply = true;
         const requestHandler = (err, result) => {
-          var _a, _b;
+          var _a2, _b;
           if (err) {
             requestCompletionSource.reject(err);
           } else if (requestHandler.isCancelled) {
             return;
           } else if (result instanceof transportMessages_1.SessionRequestFailureMessage) {
-            const failure = (_a = result === null || result === void 0 ? void 0 : result.convertTo(new failureType(), true)) !== null && _a !== void 0 ? _a : null;
+            const failure = (_a2 = result === null || result === void 0 ? void 0 : result.convertTo(new failureType(), true)) !== null && _a2 !== void 0 ? _a2 : null;
             requestCompletionSource.resolve(failure);
           } else if (result instanceof transportMessages_1.SessionRequestSuccessMessage) {
             const success = (_b = result === null || result === void 0 ? void 0 : result.convertTo(new successType(), true)) !== null && _b !== void 0 ? _b : null;
@@ -12734,7 +12734,7 @@ var require_sshSession = __commonJS({
         return await completionSource.promise;
       }
       async openChannelWithInitialRequest(openMessage, initialRequest, cancellation) {
-        var _a;
+        var _a2;
         this.activateService(connectionService_1.ConnectionService);
         const completionSource = new promiseCompletionSource_1.PromiseCompletionSource();
         const channelId = await this.connectionService.openChannel(openMessage, completionSource, cancellation);
@@ -12745,7 +12745,7 @@ var require_sshSession = __commonJS({
         }
         let channel;
         let requestResult;
-        const isExtensionSupported = this.config.protocolExtensions.includes(sshSessionConfiguration_1.SshProtocolExtensionNames.openChannelRequest) && ((_a = this.protocolExtensions) === null || _a === void 0 ? void 0 : _a.has(sshSessionConfiguration_1.SshProtocolExtensionNames.openChannelRequest));
+        const isExtensionSupported = this.config.protocolExtensions.includes(sshSessionConfiguration_1.SshProtocolExtensionNames.openChannelRequest) && ((_a2 = this.protocolExtensions) === null || _a2 === void 0 ? void 0 : _a2.has(sshSessionConfiguration_1.SshProtocolExtensionNames.openChannelRequest));
         if (isExtensionSupported === false) {
           channel = await completionSource.promise;
           requestResult = await channel.request(initialRequest, cancellation);
@@ -12822,7 +12822,7 @@ var require_sshSession = __commonJS({
         }
       }
       async close(reason, message, error) {
-        var _a, _b, _c;
+        var _a2, _b, _c;
         if (this.disposed || !this.connected) {
           return;
         }
@@ -12833,7 +12833,7 @@ var require_sshSession = __commonJS({
             const disconnectMessage = new transportMessages_1.DisconnectMessage();
             disconnectMessage.reasonCode = reason;
             disconnectMessage.description = message || "";
-            await ((_a = this.protocol) === null || _a === void 0 ? void 0 : _a.sendMessage(disconnectMessage));
+            await ((_a2 = this.protocol) === null || _a2 === void 0 ? void 0 : _a2.sendMessage(disconnectMessage));
           } catch (e) {
           }
         } else if (this.handleDisconnected()) {
@@ -12853,21 +12853,21 @@ var require_sshSession = __commonJS({
       }
       /* @internal */
       handleDisconnected() {
-        var _a, _b;
+        var _a2, _b;
         this.connectPromise = void 0;
-        (_a = this.kexService) === null || _a === void 0 ? void 0 : _a.abortKeyExchange();
+        (_a2 = this.kexService) === null || _a2 === void 0 ? void 0 : _a2.abortKeyExchange();
         if (!((_b = this.protocolExtensions) === null || _b === void 0 ? void 0 : _b.has(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionReconnect))) {
           return false;
         }
         return true;
       }
       async handleDisconnectMessage(message) {
-        var _a;
+        var _a2;
         const description = message.description || "Received disconnect message.";
-        await this.close((_a = message.reasonCode) !== null && _a !== void 0 ? _a : transportMessages_1.SshDisconnectReason.none, description);
+        await this.close((_a2 = message.reasonCode) !== null && _a2 !== void 0 ? _a2 : transportMessages_1.SshDisconnectReason.none, description);
       }
       dispose(error) {
-        var _a, _b;
+        var _a2, _b;
         const closedError = error !== null && error !== void 0 ? error : this.closedError instanceof errors_1.SshConnectionError ? this.closedError : new errors_1.SshConnectionError(this.constructor.name + " disposed.");
         if (!this.disposed) {
           this.trace(trace_1.TraceLevel.Info, trace_1.SshTraceEventIds.sessionClosing, `${this} disposed.`);
@@ -12880,7 +12880,7 @@ var require_sshSession = __commonJS({
         }
         this.invokeRequestHandler(void 0, void 0, closedError);
         this.metrics.close();
-        (_a = this.connectionService) === null || _a === void 0 ? void 0 : _a.dispose();
+        (_a2 = this.connectionService) === null || _a2 === void 0 ? void 0 : _a2.dispose();
         for (const service of this.activatedServices.values()) {
           if (service !== this.connectionService) {
             service.dispose();
@@ -12892,10 +12892,10 @@ var require_sshSession = __commonJS({
       }
       /* @internal */
       async enableReconnect(cancellation) {
-        var _a;
+        var _a2;
         try {
           await this.blockedMessagesSemaphore.wait();
-          if ((_a = this.kexService) === null || _a === void 0 ? void 0 : _a.exchanging) {
+          if ((_a2 = this.kexService) === null || _a2 === void 0 ? void 0 : _a2.exchanging) {
             this.trace(trace_1.TraceLevel.Error, trace_1.SshTraceEventIds.sessionReconnectInitFailed, "Failed to initialize session reconnect because a key-exchange was in-progress.");
           } else {
             const enableReconnectMessage = new transportMessages_1.SessionRequestMessage("enable-session-reconnect@microsoft.com", false);
@@ -13025,7 +13025,7 @@ var require_keyExchangeService = __commonJS({
         return [kexInitMessage, kexGuessMessage];
       }
       finishKeyExchange() {
-        var _a;
+        var _a2;
         if (!this.exchangeContext) {
           throw new errors_1.SshConnectionError("Key exchange not started.", transportMessages_1.SshDisconnectReason.protocolError);
         }
@@ -13033,7 +13033,7 @@ var require_keyExchangeService = __commonJS({
         if (!newAlgorithms) {
           throw new errors_1.SshConnectionError("Key exchange not completed.", transportMessages_1.SshDisconnectReason.protocolError);
         }
-        newAlgorithms.isExtensionInfoRequested = (_a = this.exchangeContext) === null || _a === void 0 ? void 0 : _a.isExtensionInfoRequested;
+        newAlgorithms.isExtensionInfoRequested = (_a2 = this.exchangeContext) === null || _a2 === void 0 ? void 0 : _a2.isExtensionInfoRequested;
         this.exchangeContext = null;
         return newAlgorithms;
       }
@@ -13060,10 +13060,10 @@ var require_keyExchangeService = __commonJS({
        * For a server session the list is filtered based on the available private keys.
        */
       getPublicKeyAlgorithms() {
-        var _a, _b;
+        var _a2, _b;
         let publicKeyAlgorithms = [...this.session.config.publicKeyAlgorithms];
         if (publicKeyAlgorithms.length > 1 && !this.session.isClientSession) {
-          const privateKeyAlgorithms = (_b = (_a = this.session.credentials) === null || _a === void 0 ? void 0 : _a.publicKeys) === null || _b === void 0 ? void 0 : _b.map((k) => k.keyAlgorithmName);
+          const privateKeyAlgorithms = (_b = (_a2 = this.session.credentials) === null || _a2 === void 0 ? void 0 : _a2.publicKeys) === null || _b === void 0 ? void 0 : _b.map((k) => k.keyAlgorithmName);
           if (privateKeyAlgorithms) {
             publicKeyAlgorithms = publicKeyAlgorithms.filter((a) => a && privateKeyAlgorithms.includes(a.keyAlgorithmName));
           }
@@ -13098,7 +13098,7 @@ var require_keyExchangeService = __commonJS({
         }
       }
       async handleInitMessage(message, cancellation) {
-        var _a, _b, _c, _d;
+        var _a2, _b, _c, _d;
         if (!this.exchangeContext) {
           throw new Error("Key exchange was not started.");
         }
@@ -13121,7 +13121,7 @@ var require_keyExchangeService = __commonJS({
         if (this.session.isClientSession) {
           this.exchangeContext.serverKexInitPayload = message.toBuffer();
           const alreadySentGuess = !!this.exchangeContext.exchangeValue;
-          const negotiatedKexAlgorithmIsPreferred = this.exchangeContext.keyExchange === ((_a = config.keyExchangeAlgorithms[0]) === null || _a === void 0 ? void 0 : _a.name);
+          const negotiatedKexAlgorithmIsPreferred = this.exchangeContext.keyExchange === ((_a2 = config.keyExchangeAlgorithms[0]) === null || _a2 === void 0 ? void 0 : _a2.name);
           if (!alreadySentGuess || !negotiatedKexAlgorithmIsPreferred) {
             const kexAlgorithm = config.getKeyExchangeAlgorithm(this.exchangeContext.keyExchange);
             this.exchangeContext.exchange = kexAlgorithm.createKeyExchange();
@@ -13145,7 +13145,7 @@ var require_keyExchangeService = __commonJS({
         }
       }
       async handleDhInitMessage(message, cancellation) {
-        var _a, _b, _c, _d, _e;
+        var _a2, _b, _c, _d, _e;
         if (this.session.isClientSession) {
           return;
         }
@@ -13166,7 +13166,7 @@ var require_keyExchangeService = __commonJS({
           throw new errors_1.SshConnectionError("Public key algorithm not supported: " + this.exchangeContext.publicKey, transportMessages_1.SshDisconnectReason.keyExchangeFailed);
         }
         let privateKey = null;
-        if ((_a = serverSession.credentials) === null || _a === void 0 ? void 0 : _a.publicKeys) {
+        if ((_a2 = serverSession.credentials) === null || _a2 === void 0 ? void 0 : _a2.publicKeys) {
           const publicKey = serverSession.credentials.publicKeys.find((k) => k.keyAlgorithmName === publicKeyAlg.keyAlgorithmName);
           privateKey = publicKey !== null && publicKey !== void 0 ? publicKey : null;
           if ((privateKey === null || privateKey === void 0 ? void 0 : privateKey.hasPrivateKey) === false) {
@@ -13234,7 +13234,7 @@ var require_keyExchangeService = __commonJS({
         await this.session.sendMessage(new kexMessages_1.NewKeysMessage(), cancellation);
       }
       async handleDhReplyMessage(message, cancellation) {
-        var _a, _b, _c, _d;
+        var _a2, _b, _c, _d;
         if (!this.session.isClientSession) {
           return;
         }
@@ -13280,7 +13280,7 @@ var require_keyExchangeService = __commonJS({
           this.session.sessionId = exchangeHash;
         }
         const [clientCipherIV, serverCipherIV, clientCipherKey, serverCipherKey, clientHmacKey, serverHmacKey] = await this.computeKeys(keyExchange, sharedSecret, exchangeHash, clientEncryption, serverEncryption, clientHmac, serverHmac);
-        const cipher = (_a = await (clientEncryption === null || clientEncryption === void 0 ? void 0 : clientEncryption.createCipher(true, clientCipherKey, clientCipherIV))) !== null && _a !== void 0 ? _a : null;
+        const cipher = (_a2 = await (clientEncryption === null || clientEncryption === void 0 ? void 0 : clientEncryption.createCipher(true, clientCipherKey, clientCipherIV))) !== null && _a2 !== void 0 ? _a2 : null;
         const decipher = (_b = await (serverEncryption === null || serverEncryption === void 0 ? void 0 : serverEncryption.createCipher(false, serverCipherKey, serverCipherIV))) !== null && _b !== void 0 ? _b : null;
         const signer = (_c = await (clientHmac === null || clientHmac === void 0 ? void 0 : clientHmac.createSigner(clientHmacKey))) !== null && _c !== void 0 ? _c : null;
         const verifier = (_d = await (serverHmac === null || serverHmac === void 0 ? void 0 : serverHmac.createVerifier(serverHmacKey))) !== null && _d !== void 0 ? _d : null;
@@ -13353,8 +13353,8 @@ var require_keyExchangeService = __commonJS({
         return hash;
       }
       async computeKeys(keyExchange, sharedSecret, exchangeHash, clientEncryption, serverEncryption, clientHmac, serverHmac) {
-        var _a, _b;
-        const writer = new sshData_1.SshDataWriter(buffer_1.Buffer.alloc(4 + sharedSecret.length + exchangeHash.length + Math.max(1 + ((_b = (_a = this.session.sessionId) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0), keyExchange.digestLength)));
+        var _a2, _b;
+        const writer = new sshData_1.SshDataWriter(buffer_1.Buffer.alloc(4 + sharedSecret.length + exchangeHash.length + Math.max(1 + ((_b = (_a2 = this.session.sessionId) === null || _a2 === void 0 ? void 0 : _a2.length) !== null && _b !== void 0 ? _b : 0), keyExchange.digestLength)));
         writer.writeBinary(sharedSecret);
         writer.write(exchangeHash);
         const offset = writer.position;
@@ -13640,11 +13640,11 @@ var require_sshClientSession = __commonJS({
         if (typeof callbackOrCancellation === "function") {
           return this.authenticateClientWithCompletion(credentials, callbackOrCancellation, cancellation);
         } else {
-          return new Promise((resolve3, reject) => this.authenticateClientWithCompletion(credentials, (err, result) => {
+          return new Promise((resolve8, reject) => this.authenticateClientWithCompletion(credentials, (err, result) => {
             if (err)
               reject(err);
             else
-              resolve3(result);
+              resolve8(result);
           }, callbackOrCancellation));
         }
       }
@@ -13761,10 +13761,10 @@ var require_sshClientSession = __commonJS({
         }
       }
       async reconnectInternal(stream, cancellation) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a2, _b, _c, _d, _e, _f;
         const previousSessionId = this.sessionId;
         const previousProtocolInstance = this.protocol;
-        const previousHostKey = (_a = this.kexService) === null || _a === void 0 ? void 0 : _a.hostKey;
+        const previousHostKey = (_a2 = this.kexService) === null || _a2 === void 0 ? void 0 : _a2.hostKey;
         if (!previousSessionId || !previousProtocolInstance || !this.kexService || !previousHostKey || !((_b = previousProtocolInstance.extensions) === null || _b === void 0 ? void 0 : _b.has(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionReconnect))) {
           throw new Error("Reconnect was not enabled for this session.");
         }
@@ -13879,8 +13879,8 @@ var require_sshServerSession = __commonJS({
       }
       /* @internal */
       async handleRequestMessage(message, cancellation) {
-        var _a;
-        if (message.requestType === "session-reconnect@microsoft.com" && ((_a = this.config.protocolExtensions) === null || _a === void 0 ? void 0 : _a.includes(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionReconnect))) {
+        var _a2;
+        if (message.requestType === "session-reconnect@microsoft.com" && ((_a2 = this.config.protocolExtensions) === null || _a2 === void 0 ? void 0 : _a2.includes(sshSessionConfiguration_1.SshProtocolExtensionNames.sessionReconnect))) {
           const reconnectRequest = message.convertTo(new transportMessages_1.SessionReconnectRequestMessage());
           await this.reconnect(reconnectRequest, cancellation);
           return;
@@ -13913,13 +13913,13 @@ var require_sshServerSession = __commonJS({
        */
       /* @internal */
       async reconnect(reconnectRequest, cancellation) {
-        var _a, _b, _c;
+        var _a2, _b, _c;
         if (!this.reconnectableSessions) {
           throw new Error("Disconnected sessions collection should have been initialized when reconnect is enabled.");
         }
         let reconnectSession;
         for (const reconnectableSession of this.reconnectableSessions) {
-          if (reconnectableSession !== this && await this.verifyReconnectToken(reconnectableSession.sessionId, this.sessionId, (_a = reconnectRequest.clientReconnectToken) !== null && _a !== void 0 ? _a : Buffer.alloc(0))) {
+          if (reconnectableSession !== this && await this.verifyReconnectToken(reconnectableSession.sessionId, this.sessionId, (_a2 = reconnectRequest.clientReconnectToken) !== null && _a2 !== void 0 ? _a2 : Buffer.alloc(0))) {
             reconnectSession = reconnectableSession;
             this.reconnectableSessions.splice(this.reconnectableSessions.indexOf(reconnectSession), 1);
             break;
@@ -13953,7 +13953,7 @@ var require_sshServerSession = __commonJS({
           reconnectSession.reconnecting = true;
           (_c = reconnectSession.protocol) === null || _c === void 0 ? void 0 : _c.dispose();
           while (reconnectSession.isConnected) {
-            await new Promise((resolve3) => setTimeout(() => resolve3(), 5));
+            await new Promise((resolve8) => setTimeout(() => resolve8(), 5));
           }
           reconnectSession.protocol = this.protocol;
           reconnectSession.protocol.kexService = reconnectSession.kexService;
@@ -14181,7 +14181,7 @@ var require_streams = __commonJS({
         } else if (this.error) {
           throw this.error;
         } else {
-          return await new Promise((resolve3, reject) => {
+          return await new Promise((resolve8, reject) => {
             if (cancellation) {
               if (cancellation.isCancellationRequested) {
                 reject(new cancellation_1.CancellationError());
@@ -14196,7 +14196,7 @@ var require_streams = __commonJS({
                 }
               });
             }
-            this.pendingReads.push({ count, resolve: resolve3, reject, cancellation });
+            this.pendingReads.push({ count, resolve: resolve8, reject, cancellation });
           });
         }
       }
@@ -14236,11 +14236,11 @@ var require_streams = __commonJS({
           throw new TypeError("Data is required.");
         if (this.disposed)
           throw new errors_1.ObjectDisposedError(this);
-        return new Promise((resolve3, reject) => {
+        return new Promise((resolve8, reject) => {
           handleCancellation(reject, cancellation);
           this.writeStream.write(data, (err) => {
             if (!err) {
-              resolve3();
+              resolve8();
             } else {
               reject(err);
             }
@@ -14250,9 +14250,9 @@ var require_streams = __commonJS({
       async close(error, cancellation) {
         if (this.disposed)
           throw new errors_1.ObjectDisposedError(this);
-        await new Promise((resolve3, reject) => {
+        await new Promise((resolve8, reject) => {
           handleCancellation(reject, cancellation);
-          this.writeStream.end(resolve3);
+          this.writeStream.end(resolve8);
         });
         this.disposed = true;
         this.onError(error || new errors_1.ObjectDisposedError(this));
@@ -14894,9 +14894,9 @@ var require_multiChannelStream = __commonJS({
        */
       async connectAndRunUntilClosed(cancellation) {
         const disposables = [];
-        const sessionClosedPromise = new Promise((resolve3, reject) => {
+        const sessionClosedPromise = new Promise((resolve8, reject) => {
           cancellation === null || cancellation === void 0 ? void 0 : cancellation.onCancellationRequested(reject, null, disposables);
-          this.session.onClosed(resolve3, null, disposables);
+          this.session.onClosed(resolve8, null, disposables);
         });
         try {
           await this.connect(cancellation);
@@ -15176,8 +15176,8 @@ var require_secureStream = __commonJS({
           this.session.dispose();
           this.unsubscribe();
           if (this.transportStream instanceof stream_1.Duplex) {
-            await new Promise((resolve3) => {
-              this.transportStream.end(resolve3);
+            await new Promise((resolve8) => {
+              this.transportStream.end(resolve8);
             });
           } else {
             await this.transportStream.close();
@@ -16041,7 +16041,7 @@ var require_tunnelAccessTokenProperties = __commonJS({
           const iss = tokenJson.iss;
           const exp = tokenJson.exp;
           return new _TunnelAccessTokenProperties(clusterId, tunnelId, typeof ports === "number" ? [ports] : ports, scp === null || scp === void 0 ? void 0 : scp.split(" "), iss, typeof exp === "number" ? new Date(exp * 1e3) : void 0);
-        } catch (_a) {
+        } catch (_a2) {
           return null;
         }
       }
@@ -16050,8 +16050,8 @@ var require_tunnelAccessTokenProperties = __commonJS({
        * 'none' if null or undefined, parsed token info if can be parsed, or 'token' if cannot be parsed.
        */
       static getTokenTrace(token) {
-        var _a, _b;
-        return !token ? "none" : (_b = (_a = _TunnelAccessTokenProperties.tryParse(token)) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : "token";
+        var _a2, _b;
+        return !token ? "none" : (_b = (_a2 = _TunnelAccessTokenProperties.tryParse(token)) === null || _a2 === void 0 ? void 0 : _a2.toString()) !== null && _b !== void 0 ? _b : "token";
       }
       /**
        * Gets a tunnel access token that matches any of the provided access token scopes.
@@ -16082,7 +16082,7 @@ var require_tunnelAccessTokenProperties = __commonJS({
         try {
           const result = atob(encodedString);
           return result;
-        } catch (_a) {
+        } catch (_a2) {
           return null;
         }
       }
@@ -24977,11 +24977,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path2) {
-      if (!path2 || typeof path2 !== "string") {
+    function lookup(path8) {
+      if (!path8 || typeof path8 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path2).toLowerCase().substr(1);
+      var extension2 = extname("x." + path8).toLowerCase().substr(1);
       if (!extension2) {
         return false;
       }
@@ -25934,11 +25934,11 @@ var require_get_intrinsic = __commonJS({
     var rePropName = /[^%.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|%$))/g;
     var reEscapeChar = /\\(\\)?/g;
     var stringToPath = function stringToPath2(string) {
-      var first = $strSlice(string, 0, 1);
-      var last = $strSlice(string, -1);
-      if (first === "%" && last !== "%") {
+      var first2 = $strSlice(string, 0, 1);
+      var last2 = $strSlice(string, -1);
+      if (first2 === "%" && last2 !== "%") {
         throw new $SyntaxError("invalid intrinsic syntax, expected closing `%`");
-      } else if (last === "%" && first !== "%") {
+      } else if (last2 === "%" && first2 !== "%") {
         throw new $SyntaxError("invalid intrinsic syntax, expected opening `%`");
       }
       var result = [];
@@ -25993,9 +25993,9 @@ var require_get_intrinsic = __commonJS({
       }
       for (var i = 1, isOwn = true; i < parts.length; i += 1) {
         var part = parts[i];
-        var first = $strSlice(part, 0, 1);
-        var last = $strSlice(part, -1);
-        if ((first === '"' || first === "'" || first === "`" || (last === '"' || last === "'" || last === "`")) && first !== last) {
+        var first2 = $strSlice(part, 0, 1);
+        var last2 = $strSlice(part, -1);
+        if ((first2 === '"' || first2 === "'" || first2 === "`" || (last2 === '"' || last2 === "'" || last2 === "`")) && first2 !== last2) {
           throw new $SyntaxError("property names with quotes must have matching quotes");
         }
         if (part === "constructor" || !isOwn) {
@@ -26096,11 +26096,11 @@ var require_form_data = __commonJS({
     "use strict";
     var CombinedStream = require_combined_stream();
     var util = require("util");
-    var path2 = require("path");
+    var path8 = require("path");
     var http = require("http");
     var https = require("https");
     var parseUrl = require("url").parse;
-    var fs2 = require("fs");
+    var fs8 = require("fs");
     var Stream = require("stream").Stream;
     var crypto2 = require("crypto");
     var mime = require_mime_types();
@@ -26129,7 +26129,7 @@ var require_form_data = __commonJS({
       if (typeof options === "string") {
         options = { filename: options };
       }
-      var append = CombinedStream.prototype.append.bind(this);
+      var append2 = CombinedStream.prototype.append.bind(this);
       if (typeof value === "number" || value == null) {
         value = String(value);
       }
@@ -26139,9 +26139,9 @@ var require_form_data = __commonJS({
       }
       var header = this._multiPartHeader(field, value, options);
       var footer = this._multiPartFooter();
-      append(header);
-      append(value);
-      append(footer);
+      append2(header);
+      append2(value);
+      append2(footer);
       this._trackLength(header, value, options);
     };
     FormData2.prototype._trackLength = function(header, value, options) {
@@ -26167,12 +26167,12 @@ var require_form_data = __commonJS({
         if (value.end != void 0 && value.end != Infinity && value.start != void 0) {
           callback2(null, value.end + 1 - (value.start ? value.start : 0));
         } else {
-          fs2.stat(value.path, function(err, stat) {
+          fs8.stat(value.path, function(err, stat3) {
             if (err) {
               callback2(err);
               return;
             }
-            var fileSize = stat.size - (value.start ? value.start : 0);
+            var fileSize = stat3.size - (value.start ? value.start : 0);
             callback2(null, fileSize);
           });
         }
@@ -26224,11 +26224,11 @@ var require_form_data = __commonJS({
     FormData2.prototype._getContentDisposition = function(value, options) {
       var filename;
       if (typeof options.filepath === "string") {
-        filename = path2.normalize(options.filepath).replace(/\\/g, "/");
+        filename = path8.normalize(options.filepath).replace(/\\/g, "/");
       } else if (options.filename || value && (value.name || value.path)) {
-        filename = path2.basename(options.filename || value && (value.name || value.path));
+        filename = path8.basename(options.filename || value && (value.name || value.path));
       } else if (value && value.readable && hasOwn(value, "httpVersion")) {
-        filename = path2.basename(value.client._httpMessage.path || "");
+        filename = path8.basename(value.client._httpMessage.path || "");
       }
       if (filename) {
         return 'filename="' + filename + '"';
@@ -26493,7 +26493,7 @@ var require_ms = __commonJS({
       options = options || {};
       var type = typeof val;
       if (type === "string" && val.length > 0) {
-        return parse(val);
+        return parse2(val);
       } else if (type === "number" && isFinite(val)) {
         return options.long ? fmtLong(val) : fmtShort(val);
       }
@@ -26501,7 +26501,7 @@ var require_ms = __commonJS({
         "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
       );
     };
-    function parse(str) {
+    function parse2(str) {
       str = String(str);
       if (str.length > 100) {
         return;
@@ -26629,11 +26629,11 @@ var require_common = __commonJS({
         let enableOverride = null;
         let namespacesCache;
         let enabledCache;
-        function debug(...args) {
-          if (!debug.enabled) {
+        function debug2(...args) {
+          if (!debug2.enabled) {
             return;
           }
-          const self2 = debug;
+          const self2 = debug2;
           const curr = Number(/* @__PURE__ */ new Date());
           const ms = curr - (prevTime || curr);
           self2.diff = ms;
@@ -26663,12 +26663,12 @@ var require_common = __commonJS({
           const logFn = self2.log || createDebug.log;
           logFn.apply(self2, args);
         }
-        debug.namespace = namespace;
-        debug.useColors = createDebug.useColors();
-        debug.color = createDebug.selectColor(namespace);
-        debug.extend = extend;
-        debug.destroy = createDebug.destroy;
-        Object.defineProperty(debug, "enabled", {
+        debug2.namespace = namespace;
+        debug2.useColors = createDebug.useColors();
+        debug2.color = createDebug.selectColor(namespace);
+        debug2.extend = extend;
+        debug2.destroy = createDebug.destroy;
+        Object.defineProperty(debug2, "enabled", {
           enumerable: true,
           configurable: false,
           get: () => {
@@ -26686,9 +26686,9 @@ var require_common = __commonJS({
           }
         });
         if (typeof createDebug.init === "function") {
-          createDebug.init(debug);
+          createDebug.init(debug2);
         }
-        return debug;
+        return debug2;
       }
       function extend(namespace, delimiter) {
         const newDebug = createDebug(this.namespace + (typeof delimiter === "undefined" ? ":" : delimiter) + namespace);
@@ -27100,11 +27100,11 @@ var require_node = __commonJS({
     function load() {
       return process.env.DEBUG;
     }
-    function init(debug) {
-      debug.inspectOpts = {};
+    function init(debug2) {
+      debug2.inspectOpts = {};
       const keys = Object.keys(exports2.inspectOpts);
       for (let i = 0; i < keys.length; i++) {
-        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
+        debug2.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
       }
     }
     module2.exports = require_common()(exports2);
@@ -27136,19 +27136,19 @@ var require_src = __commonJS({
 var require_debug = __commonJS({
   "../../node_modules/follow-redirects/debug.js"(exports2, module2) {
     "use strict";
-    var debug;
+    var debug2;
     module2.exports = function() {
-      if (!debug) {
+      if (!debug2) {
         try {
-          debug = require_src()("follow-redirects");
+          debug2 = require_src()("follow-redirects");
         } catch (error) {
         }
-        if (typeof debug !== "function") {
-          debug = function() {
+        if (typeof debug2 !== "function") {
+          debug2 = function() {
           };
         }
       }
-      debug.apply(null, arguments);
+      debug2.apply(null, arguments);
     };
   }
 });
@@ -27163,7 +27163,7 @@ var require_follow_redirects = __commonJS({
     var https = require("https");
     var Writable = require("stream").Writable;
     var assert = require("assert");
-    var debug = require_debug();
+    var debug2 = require_debug();
     (function detectUnsupportedEnvironment() {
       var looksLikeNode = typeof process !== "undefined";
       var looksLikeBrowser = typeof window !== "undefined" && typeof document !== "undefined";
@@ -27480,7 +27480,7 @@ var require_follow_redirects = __commonJS({
       var currentHost = currentHostHeader || currentUrlParts.host;
       var currentUrl = /^\w+:/.test(location) ? this._currentUrl : url.format(Object.assign(currentUrlParts, { host: currentHost }));
       var redirectUrl = resolveUrl(location, currentUrl);
-      debug("redirecting to", redirectUrl.href);
+      debug2("redirecting to", redirectUrl.href);
       this._isRedirect = true;
       spreadUrlObject(redirectUrl, this._options);
       if (redirectUrl.protocol !== currentUrlParts.protocol && redirectUrl.protocol !== "https:" || redirectUrl.host !== currentHost && !isSubdomain(redirectUrl.host, currentHost)) {
@@ -27534,7 +27534,7 @@ var require_follow_redirects = __commonJS({
             options.hostname = "::1";
           }
           assert.equal(options.protocol, protocol, "protocol mismatch");
-          debug("options", options);
+          debug2("options", options);
           return new RedirectableRequest(options, callback2);
         }
         function get(input, options, callback2) {
@@ -27563,8 +27563,8 @@ var require_follow_redirects = __commonJS({
       }
       return parsed;
     }
-    function resolveUrl(relative2, base) {
-      return useNativeURL ? new URL2(relative2, base) : parseUrl(url.resolve(base, relative2));
+    function resolveUrl(relative5, base) {
+      return useNativeURL ? new URL2(relative5, base) : parseUrl(url.resolve(base, relative5));
     }
     function validateUrl(input) {
       if (/^\[/.test(input.hostname) && !/^\[[:0-9a-f]+\]$/i.test(input.hostname)) {
@@ -27688,9 +27688,9 @@ var require_axios = __commonJS({
     var { toString } = Object.prototype;
     var { getPrototypeOf } = Object;
     var { iterator, toStringTag } = Symbol;
-    var kindOf = /* @__PURE__ */ ((cache) => (thing) => {
+    var kindOf = /* @__PURE__ */ ((cache2) => (thing) => {
       const str = toString.call(thing);
-      return cache[str] || (cache[str] = str.slice(8, -1).toLowerCase());
+      return cache2[str] || (cache2[str] = str.slice(8, -1).toLowerCase());
     })(/* @__PURE__ */ Object.create(null));
     var kindOfTest = (type) => {
       type = type.toLowerCase();
@@ -27747,7 +27747,7 @@ var require_axios = __commonJS({
     var isURLSearchParams = kindOfTest("URLSearchParams");
     var [isReadableStream, isRequest2, isResponse2, isHeaders] = ["ReadableStream", "Request", "Response", "Headers"].map(kindOfTest);
     var trim = (str) => str.trim ? str.trim() : str.replace(/^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g, "");
-    function forEach(obj, fn, { allOwnKeys = false } = {}) {
+    function forEach2(obj, fn, { allOwnKeys = false } = {}) {
       if (obj === null || typeof obj === "undefined") {
         return;
       }
@@ -27810,12 +27810,12 @@ var require_axios = __commonJS({
         }
       };
       for (let i = 0, l = arguments.length; i < l; i++) {
-        arguments[i] && forEach(arguments[i], assignValue);
+        arguments[i] && forEach2(arguments[i], assignValue);
       }
       return result;
     }
     var extend = (a, b, thisArg, { allOwnKeys } = {}) => {
-      forEach(b, (val, key) => {
+      forEach2(b, (val, key) => {
         if (thisArg && isFunction$1(val)) {
           a[key] = bind(val, thisArg);
         } else {
@@ -27915,7 +27915,7 @@ var require_axios = __commonJS({
     var reduceDescriptors = (obj, reducer) => {
       const descriptors2 = Object.getOwnPropertyDescriptors(obj);
       const reducedDescriptors = {};
-      forEach(descriptors2, (descriptor, name) => {
+      forEach2(descriptors2, (descriptor, name) => {
         let ret;
         if ((ret = reducer(descriptor, name, obj)) !== false) {
           reducedDescriptors[name] = ret || descriptor;
@@ -27973,7 +27973,7 @@ var require_axios = __commonJS({
           if (!("toJSON" in source)) {
             stack[i] = source;
             const target = isArray(source) ? [] : {};
-            forEach(source, (value, key) => {
+            forEach2(source, (value, key) => {
               const reducedValue = visit(value, i + 1);
               !isUndefined(reducedValue) && (target[key] = reducedValue);
             });
@@ -28034,7 +28034,7 @@ var require_axios = __commonJS({
       isURLSearchParams,
       isTypedArray,
       isFileList,
-      forEach,
+      forEach: forEach2,
       merge,
       extend,
       trim,
@@ -28150,9 +28150,9 @@ var require_axios = __commonJS({
     function removeBrackets(key) {
       return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
     }
-    function renderKey(path2, key, dots) {
-      if (!path2) return key;
-      return path2.concat(key).map(function each(token, i) {
+    function renderKey(path8, key, dots) {
+      if (!path8) return key;
+      return path8.concat(key).map(function each(token, i) {
         token = removeBrackets(token);
         return !dots && i ? "[" + token + "]" : token;
       }).join(dots ? "." : "");
@@ -28200,9 +28200,9 @@ var require_axios = __commonJS({
         }
         return value;
       }
-      function defaultVisitor(value, key, path2) {
+      function defaultVisitor(value, key, path8) {
         let arr = value;
-        if (value && !path2 && typeof value === "object") {
+        if (value && !path8 && typeof value === "object") {
           if (utils$1.endsWith(key, "{}")) {
             key = metaTokens ? key : key.slice(0, -2);
             value = JSON.stringify(value);
@@ -28221,7 +28221,7 @@ var require_axios = __commonJS({
         if (isVisitable(value)) {
           return true;
         }
-        formData.append(renderKey(path2, key, dots), convertValue(value));
+        formData.append(renderKey(path8, key, dots), convertValue(value));
         return false;
       }
       const stack = [];
@@ -28230,10 +28230,10 @@ var require_axios = __commonJS({
         convertValue,
         isVisitable
       });
-      function build2(value, path2) {
+      function build2(value, path8) {
         if (utils$1.isUndefined(value)) return;
         if (stack.indexOf(value) !== -1) {
-          throw Error("Circular reference detected in " + path2.join("."));
+          throw Error("Circular reference detected in " + path8.join("."));
         }
         stack.push(value);
         utils$1.forEach(value, function each(el, key) {
@@ -28241,11 +28241,11 @@ var require_axios = __commonJS({
             formData,
             el,
             utils$1.isString(key) ? key.trim() : key,
-            path2,
+            path8,
             exposedHelpers
           );
           if (result === true) {
-            build2(el, path2 ? path2.concat(key) : [key]);
+            build2(el, path8 ? path8.concat(key) : [key]);
           }
         });
         stack.pop();
@@ -28275,7 +28275,7 @@ var require_axios = __commonJS({
       params && toFormData(params, this, options);
     }
     var prototype = AxiosURLSearchParams.prototype;
-    prototype.append = function append(name, value) {
+    prototype.append = function append2(name, value) {
       this._pairs.push([name, value]);
     };
     prototype.toString = function toString2(encoder) {
@@ -28433,7 +28433,7 @@ var require_axios = __commonJS({
     };
     function toURLEncodedForm(data, options) {
       return toFormData(data, new platform.classes.URLSearchParams(), {
-        visitor: function(value, key, path2, helpers) {
+        visitor: function(value, key, path8, helpers) {
           if (platform.isNode && utils$1.isBuffer(value)) {
             this.append(key, value.toString("base64"));
             return false;
@@ -28461,11 +28461,11 @@ var require_axios = __commonJS({
       return obj;
     }
     function formDataToJSON(formData) {
-      function buildPath(path2, value, target, index) {
-        let name = path2[index++];
+      function buildPath(path8, value, target, index) {
+        let name = path8[index++];
         if (name === "__proto__") return true;
         const isNumericKey = Number.isFinite(+name);
-        const isLast = index >= path2.length;
+        const isLast = index >= path8.length;
         name = !name && utils$1.isArray(target) ? target.length : name;
         if (isLast) {
           if (utils$1.hasOwnProp(target, name)) {
@@ -28478,7 +28478,7 @@ var require_axios = __commonJS({
         if (!target[name] || !utils$1.isObject(target[name])) {
           target[name] = [];
         }
-        const result = buildPath(path2, value, target[name], index);
+        const result = buildPath(path8, value, target[name], index);
         if (result && utils$1.isArray(target[name])) {
           target[name] = arrayToObject(target[name]);
         }
@@ -28493,10 +28493,10 @@ var require_axios = __commonJS({
       }
       return null;
     }
-    function stringifySafely(rawValue, parser, encoder) {
+    function stringifySafely(rawValue, parser4, encoder) {
       if (utils$1.isString(rawValue)) {
         try {
-          (parser || JSON.parse)(rawValue);
+          (parser4 || JSON.parse)(rawValue);
           return utils$1.trim(rawValue);
         } catch (e) {
           if (e.name !== "SyntaxError") {
@@ -28624,7 +28624,7 @@ var require_axios = __commonJS({
       let key;
       let val;
       let i;
-      rawHeaders && rawHeaders.split("\n").forEach(function parser(line) {
+      rawHeaders && rawHeaders.split("\n").forEach(function parser4(line) {
         i = line.indexOf(":");
         key = line.substring(0, i).trim().toLowerCase();
         val = line.substring(i + 1).trim();
@@ -28729,23 +28729,23 @@ var require_axios = __commonJS({
         }
         return this;
       }
-      get(header, parser) {
+      get(header, parser4) {
         header = normalizeHeader(header);
         if (header) {
           const key = utils$1.findKey(this, header);
           if (key) {
             const value = this[key];
-            if (!parser) {
+            if (!parser4) {
               return value;
             }
-            if (parser === true) {
+            if (parser4 === true) {
               return parseTokens(value);
             }
-            if (utils$1.isFunction(parser)) {
-              return parser.call(this, value, key);
+            if (utils$1.isFunction(parser4)) {
+              return parser4.call(this, value, key);
             }
-            if (utils$1.isRegExp(parser)) {
-              return parser.exec(value);
+            if (utils$1.isRegExp(parser4)) {
+              return parser4.exec(value);
             }
             throw new TypeError("parser must be boolean|regexp|function");
           }
@@ -28836,8 +28836,8 @@ var require_axios = __commonJS({
       static from(thing) {
         return thing instanceof this ? thing : new this(thing);
       }
-      static concat(first, ...targets) {
-        const computed = new this(first);
+      static concat(first2, ...targets) {
+        const computed = new this(first2);
         targets.forEach((target) => computed.set(target));
         return computed;
       }
@@ -28891,10 +28891,10 @@ var require_axios = __commonJS({
     utils$1.inherits(CanceledError, AxiosError, {
       __CANCEL__: true
     });
-    function settle(resolve3, reject, response) {
+    function settle(resolve8, reject, response) {
       const validateStatus = response.config.validateStatus;
       if (!response.status || !validateStatus || validateStatus(response.status)) {
-        resolve3(response);
+        resolve8(response);
       } else {
         reject(new AxiosError(
           "Request failed with status code " + response.status,
@@ -29462,7 +29462,7 @@ var require_axios = __commonJS({
     }
     var isHttpAdapterSupported = typeof process !== "undefined" && utils$1.kindOf(process) === "process";
     var wrapAsync = (asyncExecutor) => {
-      return new Promise((resolve3, reject) => {
+      return new Promise((resolve8, reject) => {
         let onDone;
         let isDone;
         const done = (value, isRejected) => {
@@ -29472,7 +29472,7 @@ var require_axios = __commonJS({
         };
         const _resolve = (value) => {
           done(value);
-          resolve3(value);
+          resolve8(value);
         };
         const _reject = (reason) => {
           done(reason, true);
@@ -29524,7 +29524,7 @@ var require_axios = __commonJS({
       }
     };
     var httpAdapter = isHttpAdapterSupported && function httpAdapter2(config) {
-      return wrapAsync(async function dispatchHttpRequest(resolve3, reject, onDone) {
+      return wrapAsync(async function dispatchHttpRequest(resolve8, reject, onDone) {
         let { data, lookup, family, httpVersion = 1, http2Options } = config;
         const { responseType, responseEncoding } = config;
         const method = config.method.toUpperCase();
@@ -29609,7 +29609,7 @@ var require_axios = __commonJS({
           }
           let convertedData;
           if (method !== "GET") {
-            return settle(resolve3, reject, {
+            return settle(resolve8, reject, {
               status: 405,
               statusText: "method not allowed",
               headers: {},
@@ -29631,7 +29631,7 @@ var require_axios = __commonJS({
           } else if (responseType === "stream") {
             convertedData = stream__default["default"].Readable.from(convertedData);
           }
-          return settle(resolve3, reject, {
+          return settle(resolve8, reject, {
             data: convertedData,
             status: 200,
             statusText: "OK",
@@ -29729,9 +29729,9 @@ var require_axios = __commonJS({
           auth = urlUsername + ":" + urlPassword;
         }
         auth && headers.delete("authorization");
-        let path2;
+        let path8;
         try {
-          path2 = buildURL(
+          path8 = buildURL(
             parsed.pathname + parsed.search,
             config.params,
             config.paramsSerializer
@@ -29749,7 +29749,7 @@ var require_axios = __commonJS({
           false
         );
         const options = {
-          path: path2,
+          path: path8,
           method,
           headers: headers.toJSON(),
           agents: { http: config.httpAgent, https: config.httpsAgent },
@@ -29850,7 +29850,7 @@ var require_axios = __commonJS({
           };
           if (responseType === "stream") {
             response.data = responseStream;
-            settle(resolve3, reject, response);
+            settle(resolve8, reject, response);
           } else {
             const responseBuffer = [];
             let totalResponseBytes = 0;
@@ -29898,7 +29898,7 @@ var require_axios = __commonJS({
               } catch (err) {
                 return reject(AxiosError.from(err, null, config, response.request, response));
               }
-              settle(resolve3, reject, response);
+              settle(resolve8, reject, response);
             });
           }
           abortEmitter.once("abort", (err) => {
@@ -29981,14 +29981,14 @@ var require_axios = __commonJS({
     var cookies = platform.hasStandardBrowserEnv ? (
       // Standard browser envs support document.cookie
       {
-        write(name, value, expires, path2, domain, secure, sameSite) {
+        write(name, value, expires, path8, domain, secure, sameSite) {
           if (typeof document === "undefined") return;
           const cookie = [`${name}=${encodeURIComponent(value)}`];
           if (utils$1.isNumber(expires)) {
             cookie.push(`expires=${new Date(expires).toUTCString()}`);
           }
-          if (utils$1.isString(path2)) {
-            cookie.push(`path=${path2}`);
+          if (utils$1.isString(path8)) {
+            cookie.push(`path=${path8}`);
           }
           if (utils$1.isString(domain)) {
             cookie.push(`domain=${domain}`);
@@ -30137,7 +30137,7 @@ var require_axios = __commonJS({
     };
     var isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
     var xhrAdapter = isXHRAdapterSupported && function(config) {
-      return new Promise(function dispatchXhrRequest(resolve3, reject) {
+      return new Promise(function dispatchXhrRequest(resolve8, reject) {
         const _config = resolveConfig(config);
         let requestData = _config.data;
         const requestHeaders = AxiosHeaders$1.from(_config.headers).normalize();
@@ -30171,7 +30171,7 @@ var require_axios = __commonJS({
             request
           };
           settle(function _resolve(value) {
-            resolve3(value);
+            resolve8(value);
             done();
           }, function _reject(err) {
             reject(err);
@@ -30536,8 +30536,8 @@ var require_axios = __commonJS({
           responseType = responseType || "text";
           let responseData = await resolvers[utils$1.findKey(resolvers, responseType) || "text"](response, config);
           !isStreamResponse && unsubscribe && unsubscribe();
-          return await new Promise((resolve3, reject) => {
-            settle(resolve3, reject, {
+          return await new Promise((resolve8, reject) => {
+            settle(resolve8, reject, {
               data: responseData,
               headers: AxiosHeaders$1.from(response.headers),
               status: response.status,
@@ -30923,8 +30923,8 @@ var require_axios = __commonJS({
           throw new TypeError("executor must be a function.");
         }
         let resolvePromise;
-        this.promise = new Promise(function promiseExecutor(resolve3) {
-          resolvePromise = resolve3;
+        this.promise = new Promise(function promiseExecutor(resolve8) {
+          resolvePromise = resolve8;
         });
         const token = this;
         this.promise.then((cancel) => {
@@ -30937,9 +30937,9 @@ var require_axios = __commonJS({
         });
         this.promise.then = (onfulfilled) => {
           let _resolve;
-          const promise2 = new Promise((resolve3) => {
-            token.subscribe(resolve3);
-            _resolve = resolve3;
+          const promise2 = new Promise((resolve8) => {
+            token.subscribe(resolve8);
+            _resolve = resolve8;
           }).then(onfulfilled);
           promise2.cancel = function reject() {
             token.unsubscribe(_resolve);
@@ -31115,8 +31115,8 @@ var require_axios = __commonJS({
     axios.toFormData = toFormData;
     axios.AxiosError = AxiosError;
     axios.Cancel = axios.CanceledError;
-    axios.all = function all(promises) {
-      return Promise.all(promises);
+    axios.all = function all(promises2) {
+      return Promise.all(promises2);
     };
     axios.spread = spread;
     axios.isAxiosError = isAxiosError;
@@ -31184,7 +31184,7 @@ var require_tunnelPlanTokenProperties = __commonJS({
           const iss = tokenJson.iss;
           const exp = tokenJson.exp;
           return new _TunnelPlanTokenProperties(clusterId, iss, typeof exp === "number" ? new Date(exp * 1e3) : void 0, userEmail, tunnelPlanId, subscriptionId, scp === null || scp === void 0 ? void 0 : scp.split(" "));
-        } catch (_a) {
+        } catch (_a2) {
           return null;
         }
       }
@@ -31193,8 +31193,8 @@ var require_tunnelPlanTokenProperties = __commonJS({
        * 'none' if null or undefined, parsed token info if can be parsed, or 'token' if cannot be parsed.
        */
       static getTokenTrace(token) {
-        var _a, _b;
-        return !token ? "none" : (_b = (_a = _TunnelPlanTokenProperties.tryParse(token)) === null || _a === void 0 ? void 0 : _a.toString()) !== null && _b !== void 0 ? _b : "token";
+        var _a2, _b;
+        return !token ? "none" : (_b = (_a2 = _TunnelPlanTokenProperties.tryParse(token)) === null || _a2 === void 0 ? void 0 : _a2.toString()) !== null && _b !== void 0 ? _b : "token";
       }
       static base64UrlDecode(encodedString) {
         encodedString = encodedString.replace("-", "+");
@@ -31204,7 +31204,7 @@ var require_tunnelPlanTokenProperties = __commonJS({
         try {
           const result = atob(encodedString);
           return result;
-        } catch (_a) {
+        } catch (_a2) {
           return null;
         }
       }
@@ -31266,8 +31266,8 @@ var require_tunnelManagementHttpClient = __commonJS({
       ManagementApiVersions4["Version20230927preview"] = "2023-09-27-preview";
     })(ManagementApiVersions3 = exports2.ManagementApiVersions || (exports2.ManagementApiVersions = {}));
     function comparePorts(a, b) {
-      var _a, _b;
-      return ((_a = a.portNumber) !== null && _a !== void 0 ? _a : Number.MAX_SAFE_INTEGER) - ((_b = b.portNumber) !== null && _b !== void 0 ? _b : Number.MAX_SAFE_INTEGER);
+      var _a2, _b;
+      return ((_a2 = a.portNumber) !== null && _a2 !== void 0 ? _a2 : Number.MAX_SAFE_INTEGER) - ((_b = b.portNumber) !== null && _b !== void 0 ? _b : Number.MAX_SAFE_INTEGER);
     }
     function parseDate(value) {
       return typeof value === "string" ? new Date(Date.parse(value)) : value;
@@ -31289,9 +31289,9 @@ var require_tunnelManagementHttpClient = __commonJS({
       }
     }
     function preserveAccessTokens(requestObject, resultObject) {
-      var _a;
+      var _a2;
       if (requestObject.accessTokens && resultObject) {
-        (_a = resultObject.accessTokens) !== null && _a !== void 0 ? _a : resultObject.accessTokens = {};
+        (_a2 = resultObject.accessTokens) !== null && _a2 !== void 0 ? _a2 : resultObject.accessTokens = {};
         for (const scopeAndToken of Object.entries(requestObject.accessTokens)) {
           if (!resultObject.accessTokens[scopeAndToken[0]]) {
             resultObject.accessTokens[scopeAndToken[0]] = scopeAndToken[1];
@@ -31332,7 +31332,7 @@ var require_tunnelManagementHttpClient = __commonJS({
        * @param adapter Optional axios adapter to use for HTTP requests.
        */
       constructor(userAgents, apiVersion, userTokenCallback, tunnelServiceUri, httpsAgent, adapter) {
-        var _a;
+        var _a2;
         this.httpsAgent = httpsAgent;
         this.adapter = adapter;
         this.reportProgressEmitter = new vscode_jsonrpc_1.Emitter();
@@ -31357,7 +31357,7 @@ var require_tunnelManagementHttpClient = __commonJS({
           }
           let combinedUserAgents = "";
           userAgents.forEach((userAgent) => {
-            var _a2;
+            var _a3;
             if (typeof userAgent !== "string") {
               if (!userAgent.name) {
                 throw new TypeError("Invalid user agent. The name must be provided.");
@@ -31368,7 +31368,7 @@ var require_tunnelManagementHttpClient = __commonJS({
               if (userAgent.version && typeof userAgent.version !== "string") {
                 throw new TypeError("Invalid user agent. The version must be a string.");
               }
-              combinedUserAgents = `${combinedUserAgents}${userAgent.name}/${(_a2 = userAgent.version) !== null && _a2 !== void 0 ? _a2 : "unknown"} `;
+              combinedUserAgents = `${combinedUserAgents}${userAgent.name}/${(_a3 = userAgent.version) !== null && _a3 !== void 0 ? _a3 : "unknown"} `;
             } else {
               combinedUserAgents = `${combinedUserAgents}${userAgent} `;
             }
@@ -31384,7 +31384,7 @@ var require_tunnelManagementHttpClient = __commonJS({
           if (userAgents.version && typeof userAgents.version !== "string") {
             throw new TypeError("Invalid user agent. The version must be a string.");
           }
-          this.userAgents = `${userAgents.name}/${(_a = userAgents.version) !== null && _a !== void 0 ? _a : "unknown"}`;
+          this.userAgents = `${userAgents.name}/${(_a2 = userAgents.version) !== null && _a2 !== void 0 ? _a2 : "unknown"}`;
         } else {
           this.userAgents = userAgents;
         }
@@ -31488,16 +31488,16 @@ var require_tunnelManagementHttpClient = __commonJS({
         if (endpoint.id == null) {
           throw new Error("Endpoint ID must be specified when updating an endpoint.");
         }
-        const path2 = `${endpointsApiSubPath}/${endpoint.id}`;
-        const result = await this.sendTunnelRequest("PUT", tunnel, hostAccessTokenScope, path2, "connectionMode=" + endpoint.connectionMode, options, endpoint, void 0, cancellation);
+        const path8 = `${endpointsApiSubPath}/${endpoint.id}`;
+        const result = await this.sendTunnelRequest("PUT", tunnel, hostAccessTokenScope, path8, "connectionMode=" + endpoint.connectionMode, options, endpoint, void 0, cancellation);
         if (tunnel.endpoints) {
           tunnel.endpoints = tunnel.endpoints.filter((e) => e.hostId !== endpoint.hostId || e.connectionMode !== endpoint.connectionMode).concat(result);
         }
         return result;
       }
       async deleteTunnelEndpoints(tunnel, id, options, cancellation) {
-        const path2 = `${endpointsApiSubPath}/${id}`;
-        const result = await this.sendTunnelRequest("DELETE", tunnel, hostAccessTokenScope, path2, void 0, options, void 0, true, cancellation);
+        const path8 = `${endpointsApiSubPath}/${id}`;
+        const result = await this.sendTunnelRequest("DELETE", tunnel, hostAccessTokenScope, path8, void 0, options, void 0, true, cancellation);
         if (result && tunnel.endpoints) {
           tunnel.endpoints = tunnel.endpoints.filter((e) => e.id !== id);
         }
@@ -31516,8 +31516,8 @@ var require_tunnelManagementHttpClient = __commonJS({
       }
       async getTunnelPort(tunnel, portNumber, options, cancellation) {
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingGetTunnelPort);
-        const path2 = `${portsApiSubPath}/${portNumber}`;
-        const result = await this.sendTunnelRequest("GET", tunnel, readAccessTokenScopes, path2, void 0, options, void 0, void 0, cancellation);
+        const path8 = `${portsApiSubPath}/${portNumber}`;
+        const result = await this.sendTunnelRequest("GET", tunnel, readAccessTokenScopes, path8, void 0, options, void 0, void 0, cancellation);
         parseTunnelPortDates(result);
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.CompletedGetTunnelPort);
         return result;
@@ -31525,11 +31525,11 @@ var require_tunnelManagementHttpClient = __commonJS({
       async createTunnelPort(tunnel, tunnelPort, options, cancellation) {
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingCreateTunnelPort);
         tunnelPort = this.convertTunnelPortForRequest(tunnel, tunnelPort);
-        const path2 = `${portsApiSubPath}/${tunnelPort.portNumber}`;
+        const path8 = `${portsApiSubPath}/${tunnelPort.portNumber}`;
         options = options || {};
         options.additionalHeaders = options.additionalHeaders || {};
         options.additionalHeaders["If-Not-Match"] = "*";
-        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path2, void 0, options, tunnelPort, void 0, cancellation);
+        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path8, void 0, options, tunnelPort, void 0, cancellation);
         tunnel.ports = tunnel.ports || [];
         tunnel.ports = tunnel.ports.filter((p) => p.portNumber !== tunnelPort.portNumber).concat(result).sort(comparePorts);
         parseTunnelPortDates(result);
@@ -31544,9 +31544,9 @@ var require_tunnelManagementHttpClient = __commonJS({
         options.additionalHeaders = options.additionalHeaders || {};
         options.additionalHeaders["If-Match"] = "*";
         const portNumber = tunnelPort.portNumber;
-        const path2 = `${portsApiSubPath}/${portNumber}`;
+        const path8 = `${portsApiSubPath}/${portNumber}`;
         tunnelPort = this.convertTunnelPortForRequest(tunnel, tunnelPort);
-        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path2, void 0, options, tunnelPort, void 0, cancellation);
+        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path8, void 0, options, tunnelPort, void 0, cancellation);
         preserveAccessTokens(tunnelPort, result);
         parseTunnelPortDates(result);
         tunnel.ports = tunnel.ports || [];
@@ -31555,16 +31555,16 @@ var require_tunnelManagementHttpClient = __commonJS({
       }
       async createOrUpdateTunnelPort(tunnel, tunnelPort, options, cancellation) {
         tunnelPort = this.convertTunnelPortForRequest(tunnel, tunnelPort);
-        const path2 = `${portsApiSubPath}/${tunnelPort.portNumber}`;
-        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path2, void 0, options, tunnelPort, void 0, cancellation);
+        const path8 = `${portsApiSubPath}/${tunnelPort.portNumber}`;
+        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path8, void 0, options, tunnelPort, void 0, cancellation);
         tunnel.ports = tunnel.ports || [];
         tunnel.ports = tunnel.ports.filter((p) => p.portNumber !== tunnelPort.portNumber).concat(result).sort(comparePorts);
         parseTunnelPortDates(result);
         return result;
       }
       async deleteTunnelPort(tunnel, portNumber, options, cancellation) {
-        const path2 = `${portsApiSubPath}/${portNumber}`;
-        const result = await this.sendTunnelRequest("DELETE", tunnel, managePortsAccessTokenScopes, path2, void 0, options, void 0, true, cancellation);
+        const path8 = `${portsApiSubPath}/${portNumber}`;
+        const result = await this.sendTunnelRequest("DELETE", tunnel, managePortsAccessTokenScopes, path8, void 0, options, void 0, true, cancellation);
         if (result && tunnel.ports) {
           tunnel.ports = tunnel.ports.filter((p) => p.portNumber !== portNumber).sort(comparePorts);
         }
@@ -31590,9 +31590,9 @@ var require_tunnelManagementHttpClient = __commonJS({
        * @param isCreate Set to true if this is a tunnel create request, default is false.
        * @returns Result of the request.
        */
-      async sendTunnelRequest(method, tunnel, accessTokenScopes, path2, query, options, body, allowNotFound, cancellation, isCreate = false) {
+      async sendTunnelRequest(method, tunnel, accessTokenScopes, path8, query, options, body, allowNotFound, cancellation, isCreate = false) {
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingRequestUri);
-        const uri = await this.buildUriForTunnel(tunnel, path2, query, options, isCreate);
+        const uri = await this.buildUriForTunnel(tunnel, path8, query, options, isCreate);
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingRequestConfig);
         const config = await this.getAxiosRequestConfig(tunnel, options, accessTokenScopes);
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingSendTunnelRequest);
@@ -31623,9 +31623,9 @@ var require_tunnelManagementHttpClient = __commonJS({
        * @param cancellationToken Optional cancellation token for the request.
        * @returns Result of the request.
        */
-      async sendRequest(method, clusterId, path2, query, options, body, allowNotFound, cancellation) {
+      async sendRequest(method, clusterId, path8, query, options, body, allowNotFound, cancellation) {
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingSendTunnelRequest);
-        const uri = await this.buildUri(clusterId, path2, query, options);
+        const uri = await this.buildUri(clusterId, path8, query, options);
         const config = await this.getAxiosRequestConfig(void 0, options);
         try {
           const result = await this.request(method, uri, body, config, allowNotFound, cancellation);
@@ -31648,7 +31648,7 @@ var require_tunnelManagementHttpClient = __commonJS({
         return await this.request("GET", uri, void 0, config, void 0, cancellation);
       }
       reportEvent(tunnel, tunnelEvent, options) {
-        var _a;
+        var _a2;
         if (!tunnel) {
           throw new TypeError("A tunnel is required.");
         }
@@ -31664,7 +31664,7 @@ var require_tunnelManagementHttpClient = __commonJS({
         if (this.isDisposed) {
           return;
         }
-        (_a = tunnelEvent.timestamp) !== null && _a !== void 0 ? _a : tunnelEvent.timestamp = /* @__PURE__ */ new Date();
+        (_a2 = tunnelEvent.timestamp) !== null && _a2 !== void 0 ? _a2 : tunnelEvent.timestamp = /* @__PURE__ */ new Date();
         const wasEmpty = this.eventsQueue.length === 0;
         this.eventsQueue.push({
           tunnel,
@@ -31722,7 +31722,7 @@ var require_tunnelManagementHttpClient = __commonJS({
         this.reportProgressEmitter.fire(args);
       }
       getResponseErrorMessage(error, signal) {
-        var _a, _b, _c, _d, _e, _f;
+        var _a2, _b, _c, _d, _e, _f;
         let errorMessage = "";
         if (signal.aborted) {
           error.code = "ECONNABORTED";
@@ -31730,7 +31730,7 @@ var require_tunnelManagementHttpClient = __commonJS({
         } else if (error.code === "ECONNABORTED") {
           errorMessage = `ECONNABORTED: (timeout) ${error.message}`;
         }
-        if ((_a = error.response) === null || _a === void 0 ? void 0 : _a.data) {
+        if ((_a2 = error.response) === null || _a2 === void 0 ? void 0 : _a2.data) {
           const problemDetails = error.response.data;
           if (problemDetails.title || problemDetails.detail) {
             errorMessage = `Tunnel service error: ${problemDetails.title}`;
@@ -31765,7 +31765,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
         return errorMessage;
       }
       // Helper functions
-      async buildUri(clusterId, path2, query, options) {
+      async buildUri(clusterId, path8, query, options) {
         if (clusterId === void 0 && this.userTokenCallback) {
           let token = await this.userTokenCallback();
           if (token && token.startsWith("tunnelplan")) {
@@ -31789,7 +31789,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
           }
           baseAddress = url.toString();
         }
-        baseAddress = `${baseAddress.replace(/\/$/, "")}${path2}`;
+        baseAddress = `${baseAddress.replace(/\/$/, "")}${path8}`;
         const optionsQuery = this.tunnelRequestOptionsToQueryString(options, query);
         if (optionsQuery) {
           baseAddress += `?${optionsQuery}`;
@@ -31806,7 +31806,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
           return `${clusterId}.${hostname}`;
         }
       }
-      buildUriForTunnel(tunnel, path2, query, options, isCreate = false) {
+      buildUriForTunnel(tunnel, path8, query, options, isCreate = false) {
         let tunnelPath = "";
         if ((tunnel.clusterId || isCreate) && tunnel.tunnelId) {
           tunnelPath = `${tunnelsApiPath}/${tunnel.tunnelId}`;
@@ -31822,7 +31822,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
             }
           }
         }
-        return this.buildUri(tunnel.clusterId, tunnelPath + (path2 ? path2 : ""), query, options);
+        return this.buildUri(tunnel.clusterId, tunnelPath + (path8 ? path8 : ""), query, options);
       }
       async getAxiosRequestConfig(tunnel, options, accessTokenScopes) {
         const headers = {};
@@ -31859,7 +31859,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
         return config;
       }
       convertTunnelForRequest(tunnel) {
-        var _a;
+        var _a2;
         const convertedTunnel = {
           tunnelId: tunnel.tunnelId,
           name: tunnel.name,
@@ -31870,7 +31870,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
           customExpiration: tunnel.customExpiration,
           accessControl: !tunnel.accessControl ? void 0 : { entries: tunnel.accessControl.entries.filter((ace) => !ace.isInherited) },
           endpoints: tunnel.endpoints,
-          ports: (_a = tunnel.ports) === null || _a === void 0 ? void 0 : _a.map((p) => this.convertTunnelPortForRequest(tunnel, p))
+          ports: (_a2 = tunnel.ports) === null || _a2 === void 0 ? void 0 : _a2.map((p) => this.convertTunnelPortForRequest(tunnel, p))
         };
         return convertedTunnel;
       }
@@ -31942,7 +31942,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
        * Makes an HTTP request using Axios, while tracing request and response details.
        */
       async request(method, uri, data, config, allowNotFound, cancellation) {
-        var _a, _b;
+        var _a2, _b;
         this.trace(`${method} ${uri}`);
         if (config.headers) {
           this.traceHeaders(config.headers);
@@ -31988,7 +31988,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
           requestError.message = this.getResponseErrorMessage(requestError, abortController.signal);
           delete requestError.request;
           if (requestError.response) {
-            (_a = requestError.config) === null || _a === void 0 ? true : delete _a.httpAgent;
+            (_a2 = requestError.config) === null || _a2 === void 0 ? true : delete _a2.httpAgent;
             (_b = requestError.config) === null || _b === void 0 ? true : delete _b.httpsAgent;
             delete requestError.response.request;
           }
@@ -32037,13 +32037,13 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
         }
       }
       static replaceTokensInContent(content) {
-        var _a;
+        var _a2;
         const tokenRegex = /"(eyJ[a-zA-z0-9\-_]+\.[a-zA-z0-9\-_]+\.[a-zA-z0-9\-_]+)"/;
         let match = tokenRegex.exec(content);
         while (match) {
           let token = match[1];
           const tokenProperties = tunnelAccessTokenProperties_1.TunnelAccessTokenProperties.tryParse(token);
-          token = (_a = tokenProperties === null || tokenProperties === void 0 ? void 0 : tokenProperties.toString()) !== null && _a !== void 0 ? _a : "token";
+          token = (_a2 = tokenProperties === null || tokenProperties === void 0 ? void 0 : tokenProperties.toString()) !== null && _a2 !== void 0 ? _a2 : "token";
           content = content.substring(0, match.index + 1) + "<" + token + ">" + content.substring(match.index + match[0].length - 1);
           match = tokenRegex.exec(content);
         }
@@ -32198,8 +32198,8 @@ var require_utils = __commonJS({
       }
     };
     exports2.List = List;
-    function delay(milliseconds, cancellation) {
-      return new Promise((resolve3, reject) => {
+    function delay2(milliseconds, cancellation) {
+      return new Promise((resolve8, reject) => {
         let cancellationDisposable;
         let timeout = void 0;
         if (cancellation) {
@@ -32217,16 +32217,16 @@ var require_utils = __commonJS({
         }
         timeout = setTimeout(() => {
           cancellationDisposable === null || cancellationDisposable === void 0 ? void 0 : cancellationDisposable.dispose();
-          resolve3();
+          resolve8();
         }, milliseconds);
       });
     }
-    exports2.delay = delay;
-    function getErrorMessage(e) {
-      var _a;
-      return String((_a = e === null || e === void 0 ? void 0 : e.message) !== null && _a !== void 0 ? _a : e);
+    exports2.delay = delay2;
+    function getErrorMessage2(e) {
+      var _a2;
+      return String((_a2 = e === null || e === void 0 ? void 0 : e.message) !== null && _a2 !== void 0 ? _a2 : e);
     }
-    exports2.getErrorMessage = getErrorMessage;
+    exports2.getErrorMessage = getErrorMessage2;
     function getError(e, messagePrefix) {
       return e instanceof Error ? e : new Error(`${messagePrefix !== null && messagePrefix !== void 0 ? messagePrefix : ""}${e}`);
     }
@@ -32237,7 +32237,7 @@ var require_utils = __commonJS({
       }
       return Promise.race([
         promise2,
-        new Promise((resolve3, reject) => {
+        new Promise((resolve8, reject) => {
           if (cancellation.isCancellationRequested) {
             reject(new dev_tunnels_ssh_1.CancellationError());
           } else {
@@ -32452,8 +32452,8 @@ var require_multiModeTunnelClient = __commonJS({
         this.clients.forEach((c) => c.acceptLocalConnectionsForForwardedPorts = value);
       }
       get localForwardingHostAddress() {
-        var _a;
-        return (_a = this.clients[0]) === null || _a === void 0 ? void 0 : _a.localForwardingHostAddress;
+        var _a2;
+        return (_a2 = this.clients[0]) === null || _a2 === void 0 ? void 0 : _a2.localForwardingHostAddress;
       }
       set localForwardingHostAddress(value) {
         this.clients.forEach((c) => c.localForwardingHostAddress = value);
@@ -32462,7 +32462,7 @@ var require_multiModeTunnelClient = __commonJS({
         if (!tunnel) {
           throw new Error("Tunnel cannot be null");
         }
-        return new Promise((resolve3) => {
+        return new Promise((resolve8) => {
         });
       }
       get portForwarding() {
@@ -32715,7 +32715,7 @@ var require_retryTcpListenerFactory = __commonJS({
         for (let offset = 0; ; offset++) {
           const localPortNumber = offset === maxOffset ? 0 : localPort + offset;
           try {
-            return await new Promise((resolve3, reject) => {
+            return await new Promise((resolve8, reject) => {
               listener.listen({
                 host: localIPAddress,
                 port: localPortNumber,
@@ -32726,7 +32726,7 @@ var require_retryTcpListenerFactory = __commonJS({
                   const { address, port } = listener.address();
                   console.log(`Forwarding from ${address}:${port} to host port ${remotePort}.`);
                 }
-                resolve3(listener);
+                resolve8(listener);
               });
               listener.on("error", (err) => {
                 reject(err);
@@ -32783,7 +32783,7 @@ var require_ms2 = __commonJS({
       options = options || {};
       var type = typeof val;
       if (type === "string" && val.length > 0) {
-        return parse(val);
+        return parse2(val);
       } else if (type === "number" && isNaN(val) === false) {
         return options.long ? fmtLong(val) : fmtShort(val);
       }
@@ -32791,7 +32791,7 @@ var require_ms2 = __commonJS({
         "val is not a non-empty string or a valid number. val=" + JSON.stringify(val)
       );
     };
-    function parse(str) {
+    function parse2(str) {
       str = String(str);
       if (str.length > 100) {
         return;
@@ -32896,9 +32896,9 @@ var require_debug2 = __commonJS({
       return exports2.colors[Math.abs(hash) % exports2.colors.length];
     }
     function createDebug(namespace) {
-      function debug() {
-        if (!debug.enabled) return;
-        var self2 = debug;
+      function debug2() {
+        if (!debug2.enabled) return;
+        var self2 = debug2;
         var curr = +/* @__PURE__ */ new Date();
         var ms = curr - (prevTime || curr);
         self2.diff = ms;
@@ -32927,17 +32927,17 @@ var require_debug2 = __commonJS({
           return match;
         });
         exports2.formatArgs.call(self2, args);
-        var logFn = debug.log || exports2.log || console.log.bind(console);
+        var logFn = debug2.log || exports2.log || console.log.bind(console);
         logFn.apply(self2, args);
       }
-      debug.namespace = namespace;
-      debug.enabled = exports2.enabled(namespace);
-      debug.useColors = exports2.useColors();
-      debug.color = selectColor(namespace);
+      debug2.namespace = namespace;
+      debug2.enabled = exports2.enabled(namespace);
+      debug2.useColors = exports2.useColors();
+      debug2.color = selectColor(namespace);
       if ("function" === typeof exports2.init) {
-        exports2.init(debug);
+        exports2.init(debug2);
       }
-      return debug;
+      return debug2;
     }
     function enable(namespaces) {
       exports2.save(namespaces);
@@ -33150,8 +33150,8 @@ var require_node2 = __commonJS({
           }
           break;
         case "FILE":
-          var fs2 = require("fs");
-          stream2 = new fs2.SyncWriteStream(fd2, { autoClose: false });
+          var fs8 = require("fs");
+          stream2 = new fs8.SyncWriteStream(fd2, { autoClose: false });
           stream2._type = "fs";
           break;
         case "PIPE":
@@ -33176,11 +33176,11 @@ var require_node2 = __commonJS({
       stream2._isStdio = true;
       return stream2;
     }
-    function init(debug) {
-      debug.inspectOpts = {};
+    function init(debug2) {
+      debug2.inspectOpts = {};
       var keys = Object.keys(exports2.inspectOpts);
       for (var i = 0; i < keys.length; i++) {
-        debug.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
+        debug2.inspectOpts[keys[i]] = exports2.inspectOpts[keys[i]];
       }
     }
     exports2.enable(load());
@@ -33223,10 +33223,10 @@ var require_utils2 = __commonJS({
       var logFunction = require_src2()(identifier);
       if (logFunction.enabled) {
         var logger = new BufferingLogger(identifier, uniqueID, logFunction);
-        var debug = logger.log.bind(logger);
-        debug.printOutput = logger.printOutput.bind(logger);
-        debug.enabled = logFunction.enabled;
-        return debug;
+        var debug2 = logger.log.bind(logger);
+        debug2.printOutput = logger.printOutput.bind(logger);
+        debug2.enabled = logFunction.enabled;
+        return debug2;
       }
       logFunction.printOutput = noop;
       return logFunction;
@@ -33268,8 +33268,8 @@ var require_utils2 = __commonJS({
 var require_node_gyp_build = __commonJS({
   "../../node_modules/node-gyp-build/node-gyp-build.js"(exports2, module2) {
     "use strict";
-    var fs2 = require("fs");
-    var path2 = require("path");
+    var fs8 = require("fs");
+    var path8 = require("path");
     var os3 = require("os");
     var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
     var vars = process.config && process.config.variables || {};
@@ -33286,21 +33286,21 @@ var require_node_gyp_build = __commonJS({
       return runtimeRequire(load.resolve(dir));
     }
     load.resolve = load.path = function(dir) {
-      dir = path2.resolve(dir || ".");
+      dir = path8.resolve(dir || ".");
       try {
-        var name = runtimeRequire(path2.join(dir, "package.json")).name.toUpperCase().replace(/-/g, "_");
+        var name = runtimeRequire(path8.join(dir, "package.json")).name.toUpperCase().replace(/-/g, "_");
         if (process.env[name + "_PREBUILD"]) dir = process.env[name + "_PREBUILD"];
       } catch (err) {
       }
       if (!prebuildsOnly) {
-        var release = getFirst(path2.join(dir, "build/Release"), matchBuild);
+        var release = getFirst(path8.join(dir, "build/Release"), matchBuild);
         if (release) return release;
-        var debug = getFirst(path2.join(dir, "build/Debug"), matchBuild);
-        if (debug) return debug;
+        var debug2 = getFirst(path8.join(dir, "build/Debug"), matchBuild);
+        if (debug2) return debug2;
       }
-      var prebuild = resolve3(dir);
+      var prebuild = resolve8(dir);
       if (prebuild) return prebuild;
-      var nearby = resolve3(path2.dirname(process.execPath));
+      var nearby = resolve8(path8.dirname(process.execPath));
       if (nearby) return nearby;
       var target = [
         "platform=" + platform,
@@ -33316,27 +33316,27 @@ var require_node_gyp_build = __commonJS({
         // eslint-disable-line
       ].filter(Boolean).join(" ");
       throw new Error("No native build was found for " + target + "\n    loaded from: " + dir + "\n");
-      function resolve3(dir2) {
-        var tuples = readdirSync(path2.join(dir2, "prebuilds")).map(parseTuple);
+      function resolve8(dir2) {
+        var tuples = readdirSync(path8.join(dir2, "prebuilds")).map(parseTuple);
         var tuple = tuples.filter(matchTuple(platform, arch)).sort(compareTuples)[0];
         if (!tuple) return;
-        var prebuilds = path2.join(dir2, "prebuilds", tuple.name);
+        var prebuilds = path8.join(dir2, "prebuilds", tuple.name);
         var parsed = readdirSync(prebuilds).map(parseTags);
         var candidates = parsed.filter(matchTags(runtime, abi));
         var winner = candidates.sort(compareTags(runtime))[0];
-        if (winner) return path2.join(prebuilds, winner.file);
+        if (winner) return path8.join(prebuilds, winner.file);
       }
     };
     function readdirSync(dir) {
       try {
-        return fs2.readdirSync(dir);
+        return fs8.readdirSync(dir);
       } catch (err) {
         return [];
       }
     }
     function getFirst(dir, filter) {
       var files = readdirSync(dir).filter(filter);
-      return files[0] && path2.join(dir, files[0]);
+      return files[0] && path8.join(dir, files[0]);
     }
     function matchBuild(name) {
       return /\.node$/.test(name);
@@ -33423,7 +33423,7 @@ var require_node_gyp_build = __commonJS({
       return typeof window !== "undefined" && window.process && window.process.type === "renderer";
     }
     function isAlpine(platform2) {
-      return platform2 === "linux" && fs2.existsSync("/etc/alpine-release");
+      return platform2 === "linux" && fs8.existsSync("/etc/alpine-release");
     }
     load.parseTags = parseTags;
     load.matchTags = matchTags;
@@ -33696,19 +33696,19 @@ var require_WebSocketFrame = __commonJS({
 var require_FastBufferList = __commonJS({
   "../../node_modules/websocket/vendor/FastBufferList.js"(exports2, module2) {
     "use strict";
-    var Buffer2 = require("buffer").Buffer;
-    var EventEmitter2 = require("events").EventEmitter;
+    var Buffer3 = require("buffer").Buffer;
+    var EventEmitter4 = require("events").EventEmitter;
     var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
     module2.exports = BufferList;
     module2.exports.BufferList = BufferList;
     function BufferList(opts) {
       if (!(this instanceof BufferList)) return new BufferList(opts);
-      EventEmitter2.call(this);
+      EventEmitter4.call(this);
       var self2 = this;
       if (typeof opts == "undefined") opts = {};
       self2.encoding = opts.encoding;
       var head = { next: null, buffer: null };
-      var last = { next: null, buffer: null };
+      var last2 = { next: null, buffer: null };
       var length = 0;
       self2.__defineGetter__("length", function() {
         return length;
@@ -33717,17 +33717,17 @@ var require_FastBufferList = __commonJS({
       self2.write = function(buf) {
         if (!head.buffer) {
           head.buffer = buf;
-          last = head;
+          last2 = head;
         } else {
-          last.next = { next: null, buffer: buf };
-          last = last.next;
+          last2.next = { next: null, buffer: buf };
+          last2 = last2.next;
         }
         length += buf.length;
         self2.emit("write", buf);
         return true;
       };
       self2.end = function(buf) {
-        if (Buffer2.isBuffer(buf)) self2.write(buf);
+        if (Buffer3.isBuffer(buf)) self2.write(buf);
       };
       self2.push = function() {
         var args = [].concat.apply([], arguments);
@@ -33796,7 +33796,7 @@ var require_FastBufferList = __commonJS({
           offset -= head.buffer.length;
           head = head.next ? head.next : { buffer: null, next: null };
         }
-        if (head.buffer === null) last = { next: null, buffer: null };
+        if (head.buffer === null) last2 = { next: null, buffer: null };
         self2.emit("advance", n);
         return self2;
       };
@@ -33828,7 +33828,7 @@ var require_FastBufferList = __commonJS({
         return self2.take("binary");
       };
     }
-    require("util").inherits(BufferList, EventEmitter2);
+    require("util").inherits(BufferList, EventEmitter4);
   }
 });
 
@@ -33887,7 +33887,7 @@ var require_WebSocketConnection = __commonJS({
     "use strict";
     var util = require("util");
     var utils = require_utils2();
-    var EventEmitter2 = require("events").EventEmitter;
+    var EventEmitter4 = require("events").EventEmitter;
     var WebSocketFrame = require_WebSocketFrame();
     var BufferList = require_FastBufferList();
     var isValidUTF8 = require_utf_8_validate();
@@ -33905,7 +33905,7 @@ var require_WebSocketConnection = __commonJS({
       if (this._debug.enabled) {
         instrumentSocketForDebugging(this, socket);
       }
-      EventEmitter2.call(this);
+      EventEmitter4.call(this);
       this._pingListenerCount = 0;
       this.on("newListener", function(ev) {
         if (ev === "ping") {
@@ -34009,7 +34009,7 @@ var require_WebSocketConnection = __commonJS({
         return false;
       }
     }
-    util.inherits(WebSocketConnection, EventEmitter2);
+    util.inherits(WebSocketConnection, EventEmitter4);
     WebSocketConnection.prototype._addSocketEventListeners = function() {
       this.socket.on("error", this.handleSocketError.bind(this));
       this.socket.on("end", this.handleSocketEnd.bind(this));
@@ -34609,7 +34609,7 @@ var require_WebSocketRequest = __commonJS({
     var crypto2 = require("crypto");
     var util = require("util");
     var url = require("url");
-    var EventEmitter2 = require("events").EventEmitter;
+    var EventEmitter4 = require("events").EventEmitter;
     var WebSocketConnection = require_WebSocketConnection();
     var headerValueSplitRegExp = /,\s*/;
     var headerParamSplitRegExp = /;\s*/;
@@ -34691,7 +34691,7 @@ var require_WebSocketRequest = __commonJS({
       505: "HTTP Version Not Supported"
     };
     function WebSocketRequest(socket, httpRequest, serverConfig) {
-      EventEmitter2.call(this);
+      EventEmitter4.call(this);
       this.socket = socket;
       this.httpRequest = httpRequest;
       this.resource = httpRequest.url;
@@ -34704,7 +34704,7 @@ var require_WebSocketRequest = __commonJS({
       this.socket.on("close", this._socketCloseHandler);
       this._resolved = false;
     }
-    util.inherits(WebSocketRequest, EventEmitter2);
+    util.inherits(WebSocketRequest, EventEmitter4);
     WebSocketRequest.prototype.readHandshake = function() {
       var self2 = this;
       var request = this.httpRequest;
@@ -35025,11 +35025,11 @@ var require_WebSocketServer = __commonJS({
     var extend = require_utils2().extend;
     var utils = require_utils2();
     var util = require("util");
-    var debug = require_src2()("websocket:server");
-    var EventEmitter2 = require("events").EventEmitter;
+    var debug2 = require_src2()("websocket:server");
+    var EventEmitter4 = require("events").EventEmitter;
     var WebSocketRequest = require_WebSocketRequest();
     var WebSocketServer = function WebSocketServer2(config) {
-      EventEmitter2.call(this);
+      EventEmitter4.call(this);
       this._handlers = {
         upgrade: this.handleUpgrade.bind(this),
         requestAccepted: this.handleRequestAccepted.bind(this),
@@ -35041,7 +35041,7 @@ var require_WebSocketServer = __commonJS({
         this.mount(config);
       }
     };
-    util.inherits(WebSocketServer, EventEmitter2);
+    util.inherits(WebSocketServer, EventEmitter4);
     WebSocketServer.prototype.mount = function(config) {
       this.config = {
         // The http server instance to attach to.  Required.
@@ -35183,7 +35183,7 @@ var require_WebSocketServer = __commonJS({
           e.message,
           e.headers
         );
-        debug("Invalid handshake: %s", e.message);
+        debug2("Invalid handshake: %s", e.message);
         this.emit("upgradeError", e);
         return;
       }
@@ -35233,7 +35233,7 @@ var require_WebSocketClient = __commonJS({
     var utils = require_utils2();
     var extend = utils.extend;
     var util = require("util");
-    var EventEmitter2 = require("events").EventEmitter;
+    var EventEmitter4 = require("events").EventEmitter;
     var http = require("http");
     var https = require("https");
     var url = require("url");
@@ -35263,7 +35263,7 @@ var require_WebSocketClient = __commonJS({
     ];
     var excludedTlsOptions = ["hostname", "port", "method", "path", "headers"];
     function WebSocketClient(config) {
-      EventEmitter2.call(this);
+      EventEmitter4.call(this);
       this.config = {
         // 1MiB max frame size.
         maxReceivedFrameSize: 1048576,
@@ -35324,7 +35324,7 @@ var require_WebSocketClient = __commonJS({
           throw new Error("Requested webSocketVersion is not supported. Allowed values are 8 and 13.");
       }
     }
-    util.inherits(WebSocketClient, EventEmitter2);
+    util.inherits(WebSocketClient, EventEmitter4);
     WebSocketClient.prototype.connect = function(requestUrl, protocols, origin, headers, extraRequestOptions) {
       var self2 = this;
       if (typeof protocols === "string") {
@@ -35527,9 +35527,9 @@ var require_WebSocketRouterRequest = __commonJS({
   "../../node_modules/websocket/lib/WebSocketRouterRequest.js"(exports2, module2) {
     "use strict";
     var util = require("util");
-    var EventEmitter2 = require("events").EventEmitter;
+    var EventEmitter4 = require("events").EventEmitter;
     function WebSocketRouterRequest(webSocketRequest, resolvedProtocol) {
-      EventEmitter2.call(this);
+      EventEmitter4.call(this);
       this.webSocketRequest = webSocketRequest;
       if (resolvedProtocol === "____no_protocol____") {
         this.protocol = null;
@@ -35545,7 +35545,7 @@ var require_WebSocketRouterRequest = __commonJS({
       this.requestedExtensions = webSocketRequest.requestedExtensions;
       this.cookies = webSocketRequest.cookies;
     }
-    util.inherits(WebSocketRouterRequest, EventEmitter2);
+    util.inherits(WebSocketRouterRequest, EventEmitter4);
     WebSocketRouterRequest.prototype.accept = function(origin, cookies) {
       var connection = this.webSocketRequest.accept(this.protocol, origin, cookies);
       this.emit("requestAccepted", connection);
@@ -35565,10 +35565,10 @@ var require_WebSocketRouter = __commonJS({
     "use strict";
     var extend = require_utils2().extend;
     var util = require("util");
-    var EventEmitter2 = require("events").EventEmitter;
+    var EventEmitter4 = require("events").EventEmitter;
     var WebSocketRouterRequest = require_WebSocketRouterRequest();
     function WebSocketRouter(config) {
-      EventEmitter2.call(this);
+      EventEmitter4.call(this);
       this.config = {
         // The WebSocketServer instance to attach to.
         server: null
@@ -35582,7 +35582,7 @@ var require_WebSocketRouter = __commonJS({
         this.attachServer(this.config.server);
       }
     }
-    util.inherits(WebSocketRouter, EventEmitter2);
+    util.inherits(WebSocketRouter, EventEmitter4);
     WebSocketRouter.prototype.attachServer = function(server) {
       if (server) {
         this.server = server;
@@ -35599,8 +35599,8 @@ var require_WebSocketRouter = __commonJS({
         throw new Error("Cannot detach from server: not attached.");
       }
     };
-    WebSocketRouter.prototype.mount = function(path2, protocol, callback2) {
-      if (!path2) {
+    WebSocketRouter.prototype.mount = function(path8, protocol, callback2) {
+      if (!path8) {
         throw new Error("You must specify a path for this handler.");
       }
       if (!protocol) {
@@ -35609,24 +35609,24 @@ var require_WebSocketRouter = __commonJS({
       if (!callback2) {
         throw new Error("You must specify a callback for this handler.");
       }
-      path2 = this.pathToRegExp(path2);
-      if (!(path2 instanceof RegExp)) {
+      path8 = this.pathToRegExp(path8);
+      if (!(path8 instanceof RegExp)) {
         throw new Error("Path must be specified as either a string or a RegExp.");
       }
-      var pathString = path2.toString();
+      var pathString = path8.toString();
       protocol = protocol.toLocaleLowerCase();
       if (this.findHandlerIndex(pathString, protocol) !== -1) {
         throw new Error("You may only mount one handler per path/protocol combination.");
       }
       this.handlers.push({
-        "path": path2,
+        "path": path8,
         "pathString": pathString,
         "protocol": protocol,
         "callback": callback2
       });
     };
-    WebSocketRouter.prototype.unmount = function(path2, protocol) {
-      var index = this.findHandlerIndex(this.pathToRegExp(path2).toString(), protocol);
+    WebSocketRouter.prototype.unmount = function(path8, protocol) {
+      var index = this.findHandlerIndex(this.pathToRegExp(path8).toString(), protocol);
       if (index !== -1) {
         this.handlers.splice(index, 1);
       } else {
@@ -35643,16 +35643,16 @@ var require_WebSocketRouter = __commonJS({
       }
       return -1;
     };
-    WebSocketRouter.prototype.pathToRegExp = function(path2) {
-      if (typeof path2 === "string") {
-        if (path2 === "*") {
-          path2 = /^.*$/;
+    WebSocketRouter.prototype.pathToRegExp = function(path8) {
+      if (typeof path8 === "string") {
+        if (path8 === "*") {
+          path8 = /^.*$/;
         } else {
-          path2 = path2.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-          path2 = new RegExp("^" + path2 + "$");
+          path8 = path8.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+          path8 = new RegExp("^" + path8 + "$");
         }
       }
-      return path2;
+      return path8;
     };
     WebSocketRouter.prototype.handleRequest = function(request) {
       var requestedProtocols = request.requestedProtocols;
@@ -36208,10 +36208,10 @@ var require_sshHelpers = __commonJS({
        */
       static webSshStreamFactory(socket) {
         socket.binaryType = "arraybuffer";
-        return new Promise((resolve3, reject) => {
+        return new Promise((resolve8, reject) => {
           const relayError = "Failed to connect to relay url";
           socket.onopen = () => {
-            resolve3(new ssh.WebSocketStream(socket));
+            resolve8(new ssh.WebSocketStream(socket));
           };
           socket.onerror = (e) => {
             setTimeout(() => reject(new BrowserWebSocketRelayError(relayError)), 100);
@@ -36233,13 +36233,13 @@ var require_sshHelpers = __commonJS({
       }
       static nodeSshStreamFactory(relayUri, protocols, headers, clientConfig) {
         const client = new websocket_1.client(clientConfig);
-        return new Promise((resolve3, reject) => {
+        return new Promise((resolve8, reject) => {
           client.on("connect", (connection) => {
-            resolve3(new ssh.WebSocketStream(new WebsocketStreamAdapter(connection)));
+            resolve8(new ssh.WebSocketStream(new WebsocketStreamAdapter(connection)));
           });
           client.on("httpResponse", ({ statusCode, statusMessage }) => {
-            var _a;
-            const errorContext = (_a = webSocketClientContexts.find((c) => c.statusCode === statusCode)) !== null && _a !== void 0 ? _a : {
+            var _a2;
+            const errorContext = (_a2 = webSocketClientContexts.find((c) => c.statusCode === statusCode)) !== null && _a2 !== void 0 ? _a2 : {
               statusCode,
               errorType: RelayErrorType.ServerError,
               error: `relayConnectionError Server responded with a non-101 status: ${statusCode} ${statusMessage}`
@@ -36247,11 +36247,11 @@ var require_sshHelpers = __commonJS({
             reject(new RelayConnectionError(`error.${errorContext.error}`, errorContext));
           });
           client.on("connectFailed", ({ message }) => {
-            var _a;
+            var _a2;
             if (message && message.startsWith("Error: ")) {
               message = message.substr(7);
             }
-            const errorContext = (_a = webSocketClientContexts.find((c) => c.regex && c.regex.test(message))) !== null && _a !== void 0 ? _a : {
+            const errorContext = (_a2 = webSocketClientContexts.find((c) => c.regex && c.regex.test(message))) !== null && _a2 !== void 0 ? _a2 : {
               // Other errors are most likely connectivity issues.
               // The original error message may have additional helpful details.
               errorType: RelayErrorType.ServerError,
@@ -36432,8 +36432,8 @@ var require_sshClient = __commonJS({
       }
       async openConnection(serverHost, serverPort, cancellation) {
         const socket = new net2.Socket();
-        await new Promise((resolve3, reject) => {
-          socket.on("connect", resolve3);
+        await new Promise((resolve8, reject) => {
+          socket.on("connect", resolve8);
           socket.on("error", reject);
           if (cancellation) {
             if (cancellation.isCancellationRequested) {
@@ -36476,14 +36476,14 @@ var require_tcpListenerFactory = __commonJS({
         if (!Number.isInteger(localPort) || localPort < 0)
           throw new TypeError("Local port must be a non-negative integer.");
         const listener = net2.createServer();
-        await new Promise((resolve3, reject) => {
+        await new Promise((resolve8, reject) => {
           listener.listen({
             host: localIPAddress,
             port: localPort,
             ipv6Only: net2.isIPv6(localIPAddress),
             exclusive: false
           });
-          listener.on("listening", resolve3);
+          listener.on("listening", resolve8);
           listener.on("error", reject);
         });
         return listener;
@@ -36574,8 +36574,8 @@ var require_sshServer = __commonJS({
         }
       }
       dispose() {
-        var _a;
-        (_a = this.tcpListener) === null || _a === void 0 ? void 0 : _a.close();
+        var _a2;
+        (_a2 = this.tcpListener) === null || _a2 === void 0 ? void 0 : _a2.close();
       }
     };
     exports2.SshServer = SshServer;
@@ -37036,7 +37036,7 @@ var require_localPortForwarder = __commonJS({
       }
       /* @internal */
       async startForwarding(cancellation) {
-        var _a;
+        var _a2;
         let listenAddress = this.localIPAddress;
         try {
           this.tcpListener = await this.pfs.tcpListenerFactory.createTcpListener(this.remotePort, listenAddress, this.port, true);
@@ -37064,18 +37064,18 @@ var require_localPortForwarder = __commonJS({
           throw e;
         }
         this.tcpListener.on("connection", this.acceptConnection.bind(this));
-        (_a = this.tcpListener2) === null || _a === void 0 ? void 0 : _a.on("connection", this.acceptConnection.bind(this));
+        (_a2 = this.tcpListener2) === null || _a2 === void 0 ? void 0 : _a2.on("connection", this.acceptConnection.bind(this));
         this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService listening on ${this.localIPAddress}:${this.port}.`);
         if (this.tcpListener2) {
           this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService also listening on ${listenAddress}:${this.port}.`);
         }
       }
       async acceptConnection(socket) {
-        var _a, _b, _c, _d, _e;
+        var _a2, _b, _c, _d, _e;
         this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardConnectionAccepted, `PortForwardingService accepted connection from: ${socket.remoteAddress} on port ${this.port}`);
         let channel;
         try {
-          channel = await this.pfs.openChannel(this.session, this.channelType, (_a = socket.remoteAddress) !== null && _a !== void 0 ? _a : null, (_b = socket.remotePort) !== null && _b !== void 0 ? _b : null, (_c = this.remoteHost) !== null && _c !== void 0 ? _c : this.localIPAddress, (_d = this.remotePort) !== null && _d !== void 0 ? _d : this.localPort);
+          channel = await this.pfs.openChannel(this.session, this.channelType, (_a2 = socket.remoteAddress) !== null && _a2 !== void 0 ? _a2 : null, (_b = socket.remotePort) !== null && _b !== void 0 ? _b : null, (_c = this.remoteHost) !== null && _c !== void 0 ? _c : this.localIPAddress, (_d = this.remotePort) !== null && _d !== void 0 ? _d : this.localPort);
         } catch (e) {
           if (!(e instanceof Error))
             throw e;
@@ -37090,8 +37090,8 @@ var require_localPortForwarder = __commonJS({
         this.pfs.streamForwarders.push(forwarder);
       }
       dispose() {
-        var _a, _b;
-        (_a = this.tcpListener) === null || _a === void 0 ? void 0 : _a.close();
+        var _a2, _b;
+        (_a2 = this.tcpListener) === null || _a2 === void 0 ? void 0 : _a2.close();
         (_b = this.tcpListener2) === null || _b === void 0 ? void 0 : _b.close();
         this.trace(dev_tunnels_ssh_1.TraceLevel.Info, dev_tunnels_ssh_1.SshTraceEventIds.portForwardServerListening, `PortForwardingService stopped listening on ${this.localIPAddress}:${this.port}.`);
         super.dispose();
@@ -37595,7 +37595,7 @@ var require_portForwardingService = __commonJS({
         return false;
       }
       async onChannelOpening(request, cancellation) {
-        var _a;
+        var _a2;
         if (!request)
           throw new TypeError("Request is required.");
         const channelType = request.request.channelType;
@@ -37609,7 +37609,7 @@ var require_portForwardingService = __commonJS({
           if (channelType === PortForwardingService_1.portForwardChannelType) {
             const remoteIPAddress = ipAddressConversions_1.IPAddressConversions.fromSshAddress(portForwardMessage.host);
             const remoteEndPoint = `${remoteIPAddress}:${portForwardMessage.port}`;
-            remoteConnector = (_a = this.remoteConnectors.get(portForwardMessage.port)) !== null && _a !== void 0 ? _a : null;
+            remoteConnector = (_a2 = this.remoteConnectors.get(portForwardMessage.port)) !== null && _a2 !== void 0 ? _a2 : null;
             if (!remoteConnector) {
               this.trace(dev_tunnels_ssh_1.TraceLevel.Error, dev_tunnels_ssh_1.SshTraceEventIds.portForwardRequestInvalid, `PortForwardingService received forwarding channel for ${remoteEndPoint} that was not requested.`);
               request.failureReason = dev_tunnels_ssh_1.SshChannelOpenFailureReason.connectFailed;
@@ -37834,7 +37834,7 @@ var require_relayTunnelConnector = __commonJS({
        * @param cancellation Cancellation token.
        */
       async connectSession(isReconnect, options, cancellation) {
-        var _a, _b;
+        var _a2, _b;
         let disconnectReason;
         let error;
         function throwIfCancellation(e) {
@@ -37865,7 +37865,7 @@ var require_relayTunnelConnector = __commonJS({
             }
             if (attempt > 0) {
               if (error) {
-                if (!((_a = options === null || options === void 0 ? void 0 : options.enableRetry) !== null && _a !== void 0 ? _a : true)) {
+                if (!((_a2 = options === null || options === void 0 ? void 0 : options.enableRetry) !== null && _a2 !== void 0 ? _a2 : true)) {
                   throw error;
                 }
                 const args = new retryingTunnelConnectionEventArgs_1.RetryingTunnelConnectionEventArgs(error, attemptDelayMs);
@@ -38061,9 +38061,9 @@ var require_portRelayConnectRequestMessage = __commonJS({
         this.isE2EEncryptionRequested = false;
       }
       onWrite(writer) {
-        var _a;
+        var _a2;
         super.onWrite(writer);
-        writer.writeString((_a = this.accessToken) !== null && _a !== void 0 ? _a : "", "utf8");
+        writer.writeString((_a2 = this.accessToken) !== null && _a2 !== void 0 ? _a2 : "", "utf8");
         writer.writeBoolean(this.isE2EEncryptionRequested);
       }
       onRead(reader) {
@@ -38151,12 +38151,12 @@ var require_tunnelConnectionSession = __commonJS({
        * @internal onRetrying override to report tunnel events.
        */
       onRetrying(event) {
-        var _a;
+        var _a2;
         if (this.tunnel && this.managementClient) {
           const retryingEvent = {
             name: `${this.connectionRole}_connect_retrying`,
             severity: dev_tunnels_contracts_1.TunnelEvent.warning,
-            details: (_a = event.error) === null || _a === void 0 ? void 0 : _a.toString(),
+            details: (_a2 = event.error) === null || _a2 === void 0 ? void 0 : _a2.toString(),
             properties: {
               "Retry": event.retry.toString(),
               "Delay": event.delayMs.toString()
@@ -38341,7 +38341,7 @@ var require_tunnelConnectionSession = __commonJS({
        * @internal
        */
       async refreshTunnelAccessToken(cancellation) {
-        var _a;
+        var _a2;
         if (this.isDisposed) {
           return false;
         }
@@ -38352,7 +38352,7 @@ var require_tunnelConnectionSession = __commonJS({
         try {
           this.traceVerbose(`Refreshing tunnel access token. Current token: ${dev_tunnels_management_1.TunnelAccessTokenProperties.getTokenTrace(this.accessToken)}`);
           if (this.isRefreshingTunnelAccessTokenEventHandled) {
-            this.accessToken = (_a = await this.getFreshTunnelAccessToken(cancellation)) !== null && _a !== void 0 ? _a : void 0;
+            this.accessToken = (_a2 = await this.getFreshTunnelAccessToken(cancellation)) !== null && _a2 !== void 0 ? _a2 : void 0;
           } else {
             await this.refreshTunnel(false, cancellation);
           }
@@ -38465,7 +38465,7 @@ var require_tunnelConnectionSession = __commonJS({
        * Start reconnecting if the tunnel connection is not yet disposed.
        */
       maybeStartReconnecting(reason, message, error) {
-        var _a, _b, _c, _d;
+        var _a2, _b, _c, _d;
         const traceMessage = `Connection to ${this.connectionRole} tunnel relay closed.${this.getDisconnectReason(reason, message, error)}`;
         if (this.isDisposed || this.connectionStatus === connectionStatus_1.ConnectionStatus.Disconnected) {
           this.traceInfo(traceMessage);
@@ -38479,7 +38479,7 @@ var require_tunnelConnectionSession = __commonJS({
           this.traceInfo(traceMessage);
           return;
         }
-        if (((_b = (_a = this.connectionOptions) === null || _a === void 0 ? void 0 : _a.enableReconnect) !== null && _b !== void 0 ? _b : true) && reason === dev_tunnels_ssh_1.SshDisconnectReason.connectionLost && this.connector) {
+        if (((_b = (_a2 = this.connectionOptions) === null || _a2 === void 0 ? void 0 : _a2.enableReconnect) !== null && _b !== void 0 ? _b : true) && reason === dev_tunnels_ssh_1.SshDisconnectReason.connectionLost && this.connector) {
           if (this.tunnel && this.managementClient) {
             const reconnectEvent = {
               name: `${this.connectionRole}_reconnect`,
@@ -38584,13 +38584,13 @@ var require_tunnelConnectionSession = __commonJS({
        *     Tunnel object to get the connection information from that tunnel.
        */
       async connectTunnelSession(tunnel, options, cancellation) {
-        var _a;
+        var _a2;
         if (tunnel) {
           this.tunnel = tunnel;
         }
         if (options) {
           this.connectionOptions = options;
-          (_a = this.httpAgent) !== null && _a !== void 0 ? _a : this.httpAgent = options === null || options === void 0 ? void 0 : options.httpAgent;
+          (_a2 = this.httpAgent) !== null && _a2 !== void 0 ? _a2 : this.httpAgent = options === null || options === void 0 ? void 0 : options.httpAgent;
         }
         await this.connectSession(async () => {
           const isReconnect = this.isReconnectable && !tunnel;
@@ -38726,8 +38726,8 @@ var require_tunnelRelayTunnelClient = __commonJS({
         this.sshSessionClosed = this.sshSessionClosedEmitter.event;
       }
       get isSshSessionActive() {
-        var _a;
-        return !!((_a = this.sshSession) === null || _a === void 0 ? void 0 : _a.isConnected);
+        var _a2;
+        return !!((_a2 = this.sshSession) === null || _a2 === void 0 ? void 0 : _a2.isConnected);
       }
       /**
        * Get a value indicating if remote port is forwarded and has any channels open on the client,
@@ -38735,11 +38735,11 @@ var require_tunnelRelayTunnelClient = __commonJS({
        * streamed via <see cref="ConnectToForwardedPortAsync(int, CancellationToken)"/>.
        */
       hasForwardedChannels(port) {
-        var _a;
+        var _a2;
         if (!this.isSshSessionActive) {
           return false;
         }
-        const pfs = (_a = this.sshSession) === null || _a === void 0 ? void 0 : _a.activateService(dev_tunnels_ssh_tcp_1.PortForwardingService);
+        const pfs = (_a2 = this.sshSession) === null || _a2 === void 0 ? void 0 : _a2.activateService(dev_tunnels_ssh_tcp_1.PortForwardingService);
         const remoteForwardedPorts = pfs === null || pfs === void 0 ? void 0 : pfs.remoteForwardedPorts;
         const forwardedPort = remoteForwardedPorts === null || remoteForwardedPorts === void 0 ? void 0 : remoteForwardedPorts.find((p) => p.remotePort === port);
         return !!forwardedPort && remoteForwardedPorts.getChannels(forwardedPort).length > 0;
@@ -38775,8 +38775,8 @@ var require_tunnelRelayTunnelClient = __commonJS({
         }
       }
       get forwardedPorts() {
-        var _a;
-        const pfs = (_a = this.sshSession) === null || _a === void 0 ? void 0 : _a.activateService(dev_tunnels_ssh_tcp_1.PortForwardingService);
+        var _a2;
+        const pfs = (_a2 = this.sshSession) === null || _a2 === void 0 ? void 0 : _a2.activateService(dev_tunnels_ssh_tcp_1.PortForwardingService);
         return pfs === null || pfs === void 0 ? void 0 : pfs.remoteForwardedPorts;
       }
       async connect(tunnel, options, cancellation) {
@@ -38784,7 +38784,7 @@ var require_tunnelRelayTunnelClient = __commonJS({
         await this.connectTunnelSession(tunnel, options, cancellation);
       }
       tunnelChanged() {
-        var _a;
+        var _a2;
         super.tunnelChanged();
         this.endpoints = void 0;
         if (this.tunnel) {
@@ -38803,7 +38803,7 @@ var require_tunnelRelayTunnelClient = __commonJS({
           } else if (endpointGroups.size > 1) {
             throw new Error("There are multiple hosts for the tunnel. Specify a host ID to connect to.");
           } else {
-            this.endpoints = (_a = endpointGroups.entries().next().value) === null || _a === void 0 ? void 0 : _a[1];
+            this.endpoints = (_a2 = endpointGroups.entries().next().value) === null || _a2 === void 0 ? void 0 : _a2[1];
           }
           const tunnelEndpoints = this.endpoints.filter((ep) => ep.connectionMode === dev_tunnels_contracts_1.TunnelConnectionMode.TunnelRelay);
           if (tunnelEndpoints.length === 0) {
@@ -38841,14 +38841,14 @@ var require_tunnelRelayTunnelClient = __commonJS({
       startSshSession(stream, cancellation) {
         return this.connectSession(async () => {
           this.sshSession = sshHelpers_1.SshHelpers.createSshClientSession((config) => {
-            var _a;
+            var _a2;
             config.addService(dev_tunnels_ssh_tcp_1.PortForwardingService);
             if (this.connectionProtocol === exports2.webSocketSubProtocol) {
               config.protocolExtensions.push(dev_tunnels_ssh_1.SshProtocolExtensionNames.sessionReconnect);
             } else {
               config.keyExchangeAlgorithms.splice(0, 0, dev_tunnels_ssh_1.SshAlgorithms.keyExchange.none);
             }
-            const keepAliveInterval = (_a = this.connectionOptions) === null || _a === void 0 ? void 0 : _a.keepAliveIntervalInSeconds;
+            const keepAliveInterval = (_a2 = this.connectionOptions) === null || _a2 === void 0 ? void 0 : _a2.keepAliveIntervalInSeconds;
             if (keepAliveInterval && keepAliveInterval > 0) {
               config.keepAliveTimeoutInSeconds = keepAliveInterval;
             }
@@ -38891,12 +38891,12 @@ var require_tunnelRelayTunnelClient = __commonJS({
         }
       }
       onForwardedPortAdded(pfs, e) {
-        var _a, _b;
+        var _a2, _b;
         const port = e.port.remotePort;
         if (typeof port !== "number") {
           return;
         }
-        const disconnectedStreamsCount = (_b = (_a = this.disconnectedStreams.get(port)) === null || _a === void 0 ? void 0 : _a.length) !== null && _b !== void 0 ? _b : 0;
+        const disconnectedStreamsCount = (_b = (_a2 = this.disconnectedStreams.get(port)) === null || _a2 === void 0 ? void 0 : _a2.length) !== null && _b !== void 0 ? _b : 0;
         for (let i = 0; i < disconnectedStreamsCount; i++) {
           pfs.connectToForwardedPort(port).then(() => {
             this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, `Reconnected stream to fowarded port ${port}`);
@@ -38919,21 +38919,21 @@ var require_tunnelRelayTunnelClient = __commonJS({
         const relayResponseMessage = channel.openConfirmationMessage.convertTo(new portRelayConnectResponseMessage_1.PortRelayConnectResponseMessage());
         if (relayResponseMessage.isE2EEncryptionEnabled) {
           const clientCredentials = { username: "tunnel" };
-          e.transformPromise = new Promise((resolve3, reject) => {
-            var _a;
-            let secureStream = (_a = this.disconnectedStreams.get(e.port)) === null || _a === void 0 ? void 0 : _a.shift();
+          e.transformPromise = new Promise((resolve8, reject) => {
+            var _a2;
+            let secureStream = (_a2 = this.disconnectedStreams.get(e.port)) === null || _a2 === void 0 ? void 0 : _a2.shift();
             if (secureStream) {
               this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, `Reconnecting encrypted stream for port ${e.port}...`);
               secureStream.reconnect(e.stream).then(() => {
                 this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, `Reconnecting encrypted stream for port ${e.port} succeeded.`);
-                resolve3(secureStream);
+                resolve8(secureStream);
               }).catch(reject);
             } else {
               secureStream = new dev_tunnels_ssh_1.SecureStream(e.stream, clientCredentials);
               secureStream.trace = this.trace;
               secureStream.onAuthenticating((authEvent) => authEvent.authenticationPromise = this.onHostAuthenticating(authEvent).catch());
               secureStream.onDisconnected(() => this.onSecureStreamDisconnected(e.port, secureStream));
-              secureStream.connect().then(() => resolve3(secureStream)).catch(reject);
+              secureStream.connect().then(() => resolve8(secureStream)).catch(reject);
             }
           });
         }
@@ -38949,12 +38949,12 @@ var require_tunnelRelayTunnelClient = __commonJS({
         }
       }
       async onHostAuthenticating(e) {
-        var _a, _b;
+        var _a2, _b;
         if (e.authenticationType !== dev_tunnels_ssh_1.SshAuthenticationType.serverPublicKey || !e.publicKey) {
           this.traceWarning("Invalid host authenticating event.");
           return null;
         }
-        const hostKey = (_b = (_a = await e.publicKey.getPublicKeyBytes(e.publicKey.keyAlgorithmName)) === null || _a === void 0 ? void 0 : _a.toString("base64")) !== null && _b !== void 0 ? _b : "";
+        const hostKey = (_b = (_a2 = await e.publicKey.getPublicKeyBytes(e.publicKey.keyAlgorithmName)) === null || _a2 === void 0 ? void 0 : _a2.toString("base64")) !== null && _b !== void 0 ? _b : "";
         if (!this.hostPublicKeys) {
           this.traceWarning("Host identity could not be verified because no public keys were provided.");
           this.traceVerbose(`Host key: ${hostKey}`);
@@ -38997,8 +38997,8 @@ var require_tunnelRelayTunnelClient = __commonJS({
         this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, "Forwarded port " + forwardedPort + " is ready.");
       }
       getSshSessionPfs() {
-        var _a, _b;
-        return (_b = (_a = this.sshSession) === null || _a === void 0 ? void 0 : _a.getService(dev_tunnels_ssh_tcp_1.PortForwardingService)) !== null && _b !== void 0 ? _b : void 0;
+        var _a2, _b;
+        return (_b = (_a2 = this.sshSession) === null || _a2 === void 0 ? void 0 : _a2.getService(dev_tunnels_ssh_tcp_1.PortForwardingService)) !== null && _b !== void 0 ? _b : void 0;
       }
       async refreshPorts() {
         if (!this.sshSession || this.sshSession.isClosed) {
@@ -39170,7 +39170,7 @@ var require_tunnelRelayTunnelHost = __commonJS({
        * @internal
        */
       async onConnectingToTunnel() {
-        var _a, _b, _c, _d, _e;
+        var _a2, _b, _c, _d, _e;
         if (!this.hostPrivateKey || !this.hostPublicKeys) {
           if (!this.hostPrivateKeyPromise) {
             throw new Error("Cannot create host keys");
@@ -39182,7 +39182,7 @@ var require_tunnelRelayTunnelHost = __commonJS({
           }
           this.hostPublicKeys = [buffer.toString("base64")];
         }
-        const tunnelHasSshPort = ((_a = this.tunnel) === null || _a === void 0 ? void 0 : _a.ports) != null && this.tunnel.ports.find((v) => v.protocol === dev_tunnels_contracts_1.TunnelProtocol.Ssh);
+        const tunnelHasSshPort = ((_a2 = this.tunnel) === null || _a2 === void 0 ? void 0 : _a2.ports) != null && this.tunnel.ports.find((v) => v.protocol === dev_tunnels_contracts_1.TunnelProtocol.Ssh);
         const endpointSignature = `${(_b = this.tunnel) === null || _b === void 0 ? void 0 : _b.tunnelId}.${(_c = this.tunnel) === null || _c === void 0 ? void 0 : _c.clusterId}:${(_d = this.tunnel) === null || _d === void 0 ? void 0 : _d.name}.${(_e = this.tunnel) === null || _e === void 0 ? void 0 : _e.domain}:${tunnelHasSshPort}:${this.hostId}:${this.hostPublicKeys}`;
         if (!this.relayUri || this.endpointSignature !== endpointSignature) {
           if (!this.tunnel) {
@@ -39210,16 +39210,16 @@ var require_tunnelRelayTunnelHost = __commonJS({
        */
       async dispose() {
         await super.dispose();
-        const promises = Object.assign([], this.clientSessionPromises);
+        const promises2 = Object.assign([], this.clientSessionPromises);
         this.clientSessionPromises.length = 0;
         if (this.tunnel && this.endpointSignature && this.disconnectReason !== dev_tunnels_ssh_1.SshDisconnectReason.tooManyConnections) {
           const promise2 = this.managementClient.deleteTunnelEndpoints(this.tunnel, this.id);
-          promises.push(promise2);
+          promises2.push(promise2);
         }
         for (const forwarder of this.remoteForwarders.values()) {
           forwarder.dispose();
         }
-        await Promise.all(promises);
+        await Promise.all(promises2);
       }
       hostSession_ChannelOpening(e) {
         if (!e.isRemoteRequest) {
@@ -39289,10 +39289,10 @@ var require_tunnelRelayTunnelHost = __commonJS({
         }
         const clientChannelId = stream.channel.channelId;
         const session = sshHelpers_1.SshHelpers.createSshServerSession(this.reconnectableSessions, (config) => {
-          var _a;
+          var _a2;
           config.protocolExtensions.push(dev_tunnels_ssh_1.SshProtocolExtensionNames.sessionReconnect);
           config.addService(dev_tunnels_ssh_tcp_1.PortForwardingService);
-          const keepAliveInterval = (_a = this.connectionOptions) === null || _a === void 0 ? void 0 : _a.keepAliveIntervalInSeconds;
+          const keepAliveInterval = (_a2 = this.connectionOptions) === null || _a2 === void 0 ? void 0 : _a2.keepAliveIntervalInSeconds;
           if (keepAliveInterval && keepAliveInterval > 0) {
             config.keepAliveTimeoutInSeconds = keepAliveInterval;
           }
@@ -39363,10 +39363,10 @@ var require_tunnelRelayTunnelHost = __commonJS({
         void this.startForwardingExistingPorts(session);
       }
       async startForwardingExistingPorts(session) {
-        var _a, _b;
+        var _a2, _b;
         const pfs = session.activateService(dev_tunnels_ssh_tcp_1.PortForwardingService);
         pfs.forwardConnectionsToLocalPorts = this.forwardConnectionsToLocalPorts;
-        for (const port of (_b = (_a = this.tunnel) === null || _a === void 0 ? void 0 : _a.ports) !== null && _b !== void 0 ? _b : []) {
+        for (const port of (_b = (_a2 = this.tunnel) === null || _a2 === void 0 ? void 0 : _a2.ports) !== null && _b !== void 0 ? _b : []) {
           this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, `Forwarding port ${port.portNumber}`);
           try {
             await this.forwardPort(pfs, port);
@@ -39462,12 +39462,12 @@ ${e.error}`;
         }
       }
       async refreshPorts(cancellation) {
-        var _a, _b;
+        var _a2, _b;
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingRefreshPorts);
         if (!await this.refreshTunnel(true, cancellation)) {
           return;
         }
-        const ports = (_b = (_a = this.tunnel) === null || _a === void 0 ? void 0 : _a.ports) !== null && _b !== void 0 ? _b : [];
+        const ports = (_b = (_a2 = this.tunnel) === null || _a2 === void 0 ? void 0 : _a2.ports) !== null && _b !== void 0 ? _b : [];
         let sessions = this.sshSessions;
         if (this.connectionProtocol === webSocketSubProtocolv2 && this.sshSession) {
           sessions = [...sessions, this.sshSession];
@@ -39834,20 +39834,20 @@ var require_utils3 = __commonJS({
     };
     exports2.wrapOutput = (input, state = {}, options = {}) => {
       const prepend = options.contains ? "" : "^";
-      const append = options.contains ? "" : "$";
-      let output = `${prepend}(?:${input})${append}`;
+      const append2 = options.contains ? "" : "$";
+      let output = `${prepend}(?:${input})${append2}`;
       if (state.negated === true) {
         output = `(?:^(?!${output}).*$)`;
       }
       return output;
     };
-    exports2.basename = (path2, { windows } = {}) => {
-      const segs = path2.split(windows ? /[\\/]/ : "/");
-      const last = segs[segs.length - 1];
-      if (last === "") {
+    exports2.basename = (path8, { windows } = {}) => {
+      const segs = path8.split(windows ? /[\\/]/ : "/");
+      const last2 = segs[segs.length - 1];
+      if (last2 === "") {
         return segs[segs.length - 2];
       }
-      return last;
+      return last2;
     };
   }
 });
@@ -40211,7 +40211,7 @@ var require_parse = __commonJS({
     var syntaxError = (type, char) => {
       return `Missing ${type}: "${char}" - use "\\\\${char}" to match literal characters`;
     };
-    var parse = (input, options) => {
+    var parse2 = (input, options) => {
       if (typeof input !== "string") {
         throw new TypeError("Expected a string");
       }
@@ -40285,7 +40285,7 @@ var require_parse = __commonJS({
         state.consumed += value2;
         state.index += num;
       };
-      const append = (token) => {
+      const append2 = (token) => {
         state.output += token.output != null ? token.output : token.value;
         consume(token.value);
       };
@@ -40326,7 +40326,7 @@ var require_parse = __commonJS({
         if (extglobs.length && tok.type !== "paren") {
           extglobs[extglobs.length - 1].inner += tok.value;
         }
-        if (tok.value || tok.output) append(tok);
+        if (tok.value || tok.output) append2(tok);
         if (prev && prev.type === "text" && tok.type === "text") {
           prev.output = (prev.output || prev.value) + tok.value;
           prev.value += tok.value;
@@ -40359,7 +40359,7 @@ var require_parse = __commonJS({
             output = token.close = `)$))${extglobStar}`;
           }
           if (token.inner.includes("*") && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
-            const expression = parse(rest, { ...options, fastpaths: false }).output;
+            const expression = parse2(rest, { ...options, fastpaths: false }).output;
             output = token.close = `)${expression})${extglobStar})`;
           }
           if (token.prev.type === "bos") {
@@ -40371,26 +40371,26 @@ var require_parse = __commonJS({
       };
       if (opts.fastpaths !== false && !/(^[*!]|[/()[\]{}"])/.test(input)) {
         let backslashes = false;
-        let output = input.replace(REGEX_SPECIAL_CHARS_BACKREF, (m, esc, chars, first, rest, index) => {
-          if (first === "\\") {
+        let output = input.replace(REGEX_SPECIAL_CHARS_BACKREF, (m, esc, chars, first2, rest, index) => {
+          if (first2 === "\\") {
             backslashes = true;
             return m;
           }
-          if (first === "?") {
+          if (first2 === "?") {
             if (esc) {
-              return esc + first + (rest ? QMARK.repeat(rest.length) : "");
+              return esc + first2 + (rest ? QMARK.repeat(rest.length) : "");
             }
             if (index === 0) {
               return qmarkNoDot + (rest ? QMARK.repeat(rest.length) : "");
             }
             return QMARK.repeat(chars.length);
           }
-          if (first === ".") {
+          if (first2 === ".") {
             return DOT_LITERAL.repeat(chars.length);
           }
-          if (first === "*") {
+          if (first2 === "*") {
             if (esc) {
-              return esc + first + (rest ? star : "");
+              return esc + first2 + (rest ? star : "");
             }
             return star;
           }
@@ -40481,13 +40481,13 @@ var require_parse = __commonJS({
             value = "^";
           }
           prev.value += value;
-          append({ value });
+          append2({ value });
           continue;
         }
         if (state.quotes === 1 && value !== '"') {
           value = utils.escapeRegex(value);
           prev.value += value;
-          append({ value });
+          append2({ value });
           continue;
         }
         if (value === '"') {
@@ -40545,7 +40545,7 @@ var require_parse = __commonJS({
             value = `/${value}`;
           }
           prev.value += value;
-          append({ value });
+          append2({ value });
           if (opts.literalBrackets === false || utils.hasRegexChars(prevValue)) {
             continue;
           }
@@ -40881,7 +40881,7 @@ var require_parse = __commonJS({
       }
       return state;
     };
-    parse.fastpaths = (input, options) => {
+    parse2.fastpaths = (input, options) => {
       const opts = { ...options };
       const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
       const len = input.length;
@@ -40946,7 +40946,7 @@ var require_parse = __commonJS({
       }
       return source;
     };
-    module2.exports = parse;
+    module2.exports = parse2;
   }
 });
 
@@ -40955,7 +40955,7 @@ var require_picomatch = __commonJS({
   "../../node_modules/picomatch/lib/picomatch.js"(exports2, module2) {
     "use strict";
     var scan = require_scan();
-    var parse = require_parse();
+    var parse2 = require_parse();
     var utils = require_utils3();
     var constants = require_constants();
     var isObject = (val) => val && typeof val === "object" && !Array.isArray(val);
@@ -41043,7 +41043,7 @@ var require_picomatch = __commonJS({
     picomatch2.isMatch = (str, patterns, options) => picomatch2(patterns, options)(str);
     picomatch2.parse = (pattern, options) => {
       if (Array.isArray(pattern)) return pattern.map((p) => picomatch2.parse(p, options));
-      return parse(pattern, { ...options, fastpaths: false });
+      return parse2(pattern, { ...options, fastpaths: false });
     };
     picomatch2.scan = (input, options) => scan(input, options);
     picomatch2.compileRe = (state, options, returnOutput = false, returnState = false) => {
@@ -41052,8 +41052,8 @@ var require_picomatch = __commonJS({
       }
       const opts = options || {};
       const prepend = opts.contains ? "" : "^";
-      const append = opts.contains ? "" : "$";
-      let source = `${prepend}(?:${state.output})${append}`;
+      const append2 = opts.contains ? "" : "$";
+      let source = `${prepend}(?:${state.output})${append2}`;
       if (state && state.negated === true) {
         source = `^(?!${source}).*$`;
       }
@@ -41069,10 +41069,10 @@ var require_picomatch = __commonJS({
       }
       let parsed = { negated: false, fastpaths: true };
       if (options.fastpaths !== false && (input[0] === "." || input[0] === "*")) {
-        parsed.output = parse.fastpaths(input, options);
+        parsed.output = parse2.fastpaths(input, options);
       }
       if (!parsed.output) {
-        parsed = parse(input, options);
+        parsed = parse2(input, options);
       }
       return picomatch2.compileRe(parsed, options, returnOutput, returnState);
     };
@@ -41104,6 +41104,562 @@ var require_picomatch2 = __commonJS({
     }
     Object.assign(picomatch2, pico);
     module2.exports = picomatch2;
+  }
+});
+
+// ../../node_modules/ignore/index.js
+var require_ignore = __commonJS({
+  "../../node_modules/ignore/index.js"(exports2, module2) {
+    "use strict";
+    function makeArray(subject) {
+      return Array.isArray(subject) ? subject : [subject];
+    }
+    var UNDEFINED = void 0;
+    var EMPTY = "";
+    var SPACE = " ";
+    var ESCAPE = "\\";
+    var REGEX_TEST_BLANK_LINE = /^\s+$/;
+    var REGEX_INVALID_TRAILING_BACKSLASH = /(?:[^\\]|^)\\$/;
+    var REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION = /^\\!/;
+    var REGEX_REPLACE_LEADING_EXCAPED_HASH = /^\\#/;
+    var REGEX_SPLITALL_CRLF = /\r?\n/g;
+    var REGEX_TEST_INVALID_PATH = /^\.{0,2}\/|^\.{1,2}$/;
+    var REGEX_TEST_TRAILING_SLASH = /\/$/;
+    var SLASH = "/";
+    var TMP_KEY_IGNORE = "node-ignore";
+    if (typeof Symbol !== "undefined") {
+      TMP_KEY_IGNORE = /* @__PURE__ */ Symbol.for("node-ignore");
+    }
+    var KEY_IGNORE = TMP_KEY_IGNORE;
+    var define = (object, key, value) => {
+      Object.defineProperty(object, key, { value });
+      return value;
+    };
+    var REGEX_REGEXP_RANGE = /([0-z])-([0-z])/g;
+    var RETURN_FALSE = () => false;
+    var sanitizeRange = (range) => range.replace(
+      REGEX_REGEXP_RANGE,
+      (match, from, to) => from.charCodeAt(0) <= to.charCodeAt(0) ? match : EMPTY
+    );
+    var cleanRangeBackSlash = (slashes) => {
+      const { length } = slashes;
+      return slashes.slice(0, length - length % 2);
+    };
+    var REPLACERS = [
+      [
+        // Remove BOM
+        // TODO:
+        // Other similar zero-width characters?
+        /^\uFEFF/,
+        () => EMPTY
+      ],
+      // > Trailing spaces are ignored unless they are quoted with backslash ("\")
+      [
+        // (a\ ) -> (a )
+        // (a  ) -> (a)
+        // (a ) -> (a)
+        // (a \ ) -> (a  )
+        /((?:\\\\)*?)(\\?\s+)$/,
+        (_, m1, m2) => m1 + (m2.indexOf("\\") === 0 ? SPACE : EMPTY)
+      ],
+      // Replace (\ ) with ' '
+      // (\ ) -> ' '
+      // (\\ ) -> '\\ '
+      // (\\\ ) -> '\\ '
+      [
+        /(\\+?)\s/g,
+        (_, m1) => {
+          const { length } = m1;
+          return m1.slice(0, length - length % 2) + SPACE;
+        }
+      ],
+      // Escape metacharacters
+      // which is written down by users but means special for regular expressions.
+      // > There are 12 characters with special meanings:
+      // > - the backslash \,
+      // > - the caret ^,
+      // > - the dollar sign $,
+      // > - the period or dot .,
+      // > - the vertical bar or pipe symbol |,
+      // > - the question mark ?,
+      // > - the asterisk or star *,
+      // > - the plus sign +,
+      // > - the opening parenthesis (,
+      // > - the closing parenthesis ),
+      // > - and the opening square bracket [,
+      // > - the opening curly brace {,
+      // > These special characters are often called "metacharacters".
+      [
+        /[\\$.|*+(){^]/g,
+        (match) => `\\${match}`
+      ],
+      [
+        // > a question mark (?) matches a single character
+        /(?!\\)\?/g,
+        () => "[^/]"
+      ],
+      // leading slash
+      [
+        // > A leading slash matches the beginning of the pathname.
+        // > For example, "/*.c" matches "cat-file.c" but not "mozilla-sha1/sha1.c".
+        // A leading slash matches the beginning of the pathname
+        /^\//,
+        () => "^"
+      ],
+      // replace special metacharacter slash after the leading slash
+      [
+        /\//g,
+        () => "\\/"
+      ],
+      [
+        // > A leading "**" followed by a slash means match in all directories.
+        // > For example, "**/foo" matches file or directory "foo" anywhere,
+        // > the same as pattern "foo".
+        // > "**/foo/bar" matches file or directory "bar" anywhere that is directly
+        // >   under directory "foo".
+        // Notice that the '*'s have been replaced as '\\*'
+        /^\^*\\\*\\\*\\\//,
+        // '**/foo' <-> 'foo'
+        () => "^(?:.*\\/)?"
+      ],
+      // starting
+      [
+        // there will be no leading '/'
+        //   (which has been replaced by section "leading slash")
+        // If starts with '**', adding a '^' to the regular expression also works
+        /^(?=[^^])/,
+        function startingReplacer() {
+          return !/\/(?!$)/.test(this) ? "(?:^|\\/)" : "^";
+        }
+      ],
+      // two globstars
+      [
+        // Use lookahead assertions so that we could match more than one `'/**'`
+        /\\\/\\\*\\\*(?=\\\/|$)/g,
+        // Zero, one or several directories
+        // should not use '*', or it will be replaced by the next replacer
+        // Check if it is not the last `'/**'`
+        (_, index, str) => index + 6 < str.length ? "(?:\\/[^\\/]+)*" : "\\/.+"
+      ],
+      // normal intermediate wildcards
+      [
+        // Never replace escaped '*'
+        // ignore rule '\*' will match the path '*'
+        // 'abc.*/' -> go
+        // 'abc.*'  -> skip this rule,
+        //    coz trailing single wildcard will be handed by [trailing wildcard]
+        /(^|[^\\]+)(\\\*)+(?=.+)/g,
+        // '*.js' matches '.js'
+        // '*.js' doesn't match 'abc'
+        (_, p1, p2) => {
+          const unescaped = p2.replace(/\\\*/g, "[^\\/]*");
+          return p1 + unescaped;
+        }
+      ],
+      [
+        // unescape, revert step 3 except for back slash
+        // For example, if a user escape a '\\*',
+        // after step 3, the result will be '\\\\\\*'
+        /\\\\\\(?=[$.|*+(){^])/g,
+        () => ESCAPE
+      ],
+      [
+        // '\\\\' -> '\\'
+        /\\\\/g,
+        () => ESCAPE
+      ],
+      [
+        // > The range notation, e.g. [a-zA-Z],
+        // > can be used to match one of the characters in a range.
+        // `\` is escaped by step 3
+        /(\\)?\[([^\]/]*?)(\\*)($|\])/g,
+        (match, leadEscape, range, endEscape, close) => leadEscape === ESCAPE ? `\\[${range}${cleanRangeBackSlash(endEscape)}${close}` : close === "]" ? endEscape.length % 2 === 0 ? `[${sanitizeRange(range)}${endEscape}]` : "[]" : "[]"
+      ],
+      // ending
+      [
+        // 'js' will not match 'js.'
+        // 'ab' will not match 'abc'
+        /(?:[^*])$/,
+        // WTF!
+        // https://git-scm.com/docs/gitignore
+        // changes in [2.22.1](https://git-scm.com/docs/gitignore/2.22.1)
+        // which re-fixes #24, #38
+        // > If there is a separator at the end of the pattern then the pattern
+        // > will only match directories, otherwise the pattern can match both
+        // > files and directories.
+        // 'js*' will not match 'a.js'
+        // 'js/' will not match 'a.js'
+        // 'js' will match 'a.js' and 'a.js/'
+        (match) => /\/$/.test(match) ? `${match}$` : `${match}(?=$|\\/$)`
+      ]
+    ];
+    var REGEX_REPLACE_TRAILING_WILDCARD = /(^|\\\/)?\\\*$/;
+    var MODE_IGNORE = "regex";
+    var MODE_CHECK_IGNORE = "checkRegex";
+    var UNDERSCORE = "_";
+    var TRAILING_WILD_CARD_REPLACERS = {
+      [MODE_IGNORE](_, p1) {
+        const prefix = p1 ? `${p1}[^/]+` : "[^/]*";
+        return `${prefix}(?=$|\\/$)`;
+      },
+      [MODE_CHECK_IGNORE](_, p1) {
+        const prefix = p1 ? `${p1}[^/]*` : "[^/]*";
+        return `${prefix}(?=$|\\/$)`;
+      }
+    };
+    var makeRegexPrefix = (pattern) => REPLACERS.reduce(
+      (prev, [matcher, replacer]) => prev.replace(matcher, replacer.bind(pattern)),
+      pattern
+    );
+    var isString = (subject) => typeof subject === "string";
+    var checkPattern = (pattern) => pattern && isString(pattern) && !REGEX_TEST_BLANK_LINE.test(pattern) && !REGEX_INVALID_TRAILING_BACKSLASH.test(pattern) && pattern.indexOf("#") !== 0;
+    var splitPattern = (pattern) => pattern.split(REGEX_SPLITALL_CRLF).filter(Boolean);
+    var IgnoreRule = class {
+      constructor(pattern, mark, body, ignoreCase, negative, prefix) {
+        this.pattern = pattern;
+        this.mark = mark;
+        this.negative = negative;
+        define(this, "body", body);
+        define(this, "ignoreCase", ignoreCase);
+        define(this, "regexPrefix", prefix);
+      }
+      get regex() {
+        const key = UNDERSCORE + MODE_IGNORE;
+        if (this[key]) {
+          return this[key];
+        }
+        return this._make(MODE_IGNORE, key);
+      }
+      get checkRegex() {
+        const key = UNDERSCORE + MODE_CHECK_IGNORE;
+        if (this[key]) {
+          return this[key];
+        }
+        return this._make(MODE_CHECK_IGNORE, key);
+      }
+      _make(mode, key) {
+        const str = this.regexPrefix.replace(
+          REGEX_REPLACE_TRAILING_WILDCARD,
+          // It does not need to bind pattern
+          TRAILING_WILD_CARD_REPLACERS[mode]
+        );
+        const regex = this.ignoreCase ? new RegExp(str, "i") : new RegExp(str);
+        return define(this, key, regex);
+      }
+    };
+    var createRule = ({
+      pattern,
+      mark
+    }, ignoreCase) => {
+      let negative = false;
+      let body = pattern;
+      if (body.indexOf("!") === 0) {
+        negative = true;
+        body = body.substr(1);
+      }
+      body = body.replace(REGEX_REPLACE_LEADING_EXCAPED_EXCLAMATION, "!").replace(REGEX_REPLACE_LEADING_EXCAPED_HASH, "#");
+      const regexPrefix = makeRegexPrefix(body);
+      return new IgnoreRule(
+        pattern,
+        mark,
+        body,
+        ignoreCase,
+        negative,
+        regexPrefix
+      );
+    };
+    var RuleManager = class {
+      constructor(ignoreCase) {
+        this._ignoreCase = ignoreCase;
+        this._rules = [];
+      }
+      _add(pattern) {
+        if (pattern && pattern[KEY_IGNORE]) {
+          this._rules = this._rules.concat(pattern._rules._rules);
+          this._added = true;
+          return;
+        }
+        if (isString(pattern)) {
+          pattern = {
+            pattern
+          };
+        }
+        if (checkPattern(pattern.pattern)) {
+          const rule = createRule(pattern, this._ignoreCase);
+          this._added = true;
+          this._rules.push(rule);
+        }
+      }
+      // @param {Array<string> | string | Ignore} pattern
+      add(pattern) {
+        this._added = false;
+        makeArray(
+          isString(pattern) ? splitPattern(pattern) : pattern
+        ).forEach(this._add, this);
+        return this._added;
+      }
+      // Test one single path without recursively checking parent directories
+      //
+      // - checkUnignored `boolean` whether should check if the path is unignored,
+      //   setting `checkUnignored` to `false` could reduce additional
+      //   path matching.
+      // - check `string` either `MODE_IGNORE` or `MODE_CHECK_IGNORE`
+      // @returns {TestResult} true if a file is ignored
+      test(path8, checkUnignored, mode) {
+        let ignored = false;
+        let unignored = false;
+        let matchedRule;
+        this._rules.forEach((rule) => {
+          const { negative } = rule;
+          if (unignored === negative && ignored !== unignored || negative && !ignored && !unignored && !checkUnignored) {
+            return;
+          }
+          const matched = rule[mode].test(path8);
+          if (!matched) {
+            return;
+          }
+          ignored = !negative;
+          unignored = negative;
+          matchedRule = negative ? UNDEFINED : rule;
+        });
+        const ret = {
+          ignored,
+          unignored
+        };
+        if (matchedRule) {
+          ret.rule = matchedRule;
+        }
+        return ret;
+      }
+    };
+    var throwError = (message, Ctor) => {
+      throw new Ctor(message);
+    };
+    var checkPath = (path8, originalPath, doThrow) => {
+      if (!isString(path8)) {
+        return doThrow(
+          `path must be a string, but got \`${originalPath}\``,
+          TypeError
+        );
+      }
+      if (!path8) {
+        return doThrow(`path must not be empty`, TypeError);
+      }
+      if (checkPath.isNotRelative(path8)) {
+        const r = "`path.relative()`d";
+        return doThrow(
+          `path should be a ${r} string, but got "${originalPath}"`,
+          RangeError
+        );
+      }
+      return true;
+    };
+    var isNotRelative = (path8) => REGEX_TEST_INVALID_PATH.test(path8);
+    checkPath.isNotRelative = isNotRelative;
+    checkPath.convert = (p) => p;
+    var Ignore = class {
+      constructor({
+        ignorecase = true,
+        ignoreCase = ignorecase,
+        allowRelativePaths = false
+      } = {}) {
+        define(this, KEY_IGNORE, true);
+        this._rules = new RuleManager(ignoreCase);
+        this._strictPathCheck = !allowRelativePaths;
+        this._initCache();
+      }
+      _initCache() {
+        this._ignoreCache = /* @__PURE__ */ Object.create(null);
+        this._testCache = /* @__PURE__ */ Object.create(null);
+      }
+      add(pattern) {
+        if (this._rules.add(pattern)) {
+          this._initCache();
+        }
+        return this;
+      }
+      // legacy
+      addPattern(pattern) {
+        return this.add(pattern);
+      }
+      // @returns {TestResult}
+      _test(originalPath, cache2, checkUnignored, slices) {
+        const path8 = originalPath && checkPath.convert(originalPath);
+        checkPath(
+          path8,
+          originalPath,
+          this._strictPathCheck ? throwError : RETURN_FALSE
+        );
+        return this._t(path8, cache2, checkUnignored, slices);
+      }
+      checkIgnore(path8) {
+        if (!REGEX_TEST_TRAILING_SLASH.test(path8)) {
+          return this.test(path8);
+        }
+        const slices = path8.split(SLASH).filter(Boolean);
+        slices.pop();
+        if (slices.length) {
+          const parent = this._t(
+            slices.join(SLASH) + SLASH,
+            this._testCache,
+            true,
+            slices
+          );
+          if (parent.ignored) {
+            return parent;
+          }
+        }
+        return this._rules.test(path8, false, MODE_CHECK_IGNORE);
+      }
+      _t(path8, cache2, checkUnignored, slices) {
+        if (path8 in cache2) {
+          return cache2[path8];
+        }
+        if (!slices) {
+          slices = path8.split(SLASH).filter(Boolean);
+        }
+        slices.pop();
+        if (!slices.length) {
+          return cache2[path8] = this._rules.test(path8, checkUnignored, MODE_IGNORE);
+        }
+        const parent = this._t(
+          slices.join(SLASH) + SLASH,
+          cache2,
+          checkUnignored,
+          slices
+        );
+        return cache2[path8] = parent.ignored ? parent : this._rules.test(path8, checkUnignored, MODE_IGNORE);
+      }
+      ignores(path8) {
+        return this._test(path8, this._ignoreCache, false).ignored;
+      }
+      createFilter() {
+        return (path8) => !this.ignores(path8);
+      }
+      filter(paths) {
+        return makeArray(paths).filter(this.createFilter());
+      }
+      // @returns {TestResult}
+      test(path8) {
+        return this._test(path8, this._testCache, true);
+      }
+    };
+    var factory = (options) => new Ignore(options);
+    var isPathValid = (path8) => checkPath(path8 && checkPath.convert(path8), path8, RETURN_FALSE);
+    var setupWindows = () => {
+      const makePosix = (str) => /^\\\\\?\\/.test(str) || /["<>|\u0000-\u001F]+/u.test(str) ? str : str.replace(/\\/g, "/");
+      checkPath.convert = makePosix;
+      const REGEX_TEST_WINDOWS_PATH_ABSOLUTE = /^[a-z]:\//i;
+      checkPath.isNotRelative = (path8) => REGEX_TEST_WINDOWS_PATH_ABSOLUTE.test(path8) || isNotRelative(path8);
+    };
+    if (
+      // Detect `process` so that it can run in browsers.
+      typeof process !== "undefined" && process.platform === "win32"
+    ) {
+      setupWindows();
+    }
+    module2.exports = factory;
+    factory.default = factory;
+    module2.exports.isPathValid = isPathValid;
+    define(module2.exports, /* @__PURE__ */ Symbol.for("setupWindows"), setupWindows);
+  }
+});
+
+// ../../node_modules/@kwsites/file-exists/dist/src/index.js
+var require_src3 = __commonJS({
+  "../../node_modules/@kwsites/file-exists/dist/src/index.js"(exports2) {
+    "use strict";
+    var __importDefault = exports2 && exports2.__importDefault || function(mod) {
+      return mod && mod.__esModule ? mod : { "default": mod };
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    var fs_1 = require("fs");
+    var debug_1 = __importDefault(require_src());
+    var log = debug_1.default("@kwsites/file-exists");
+    function check(path8, isFile, isDirectory) {
+      log(`checking %s`, path8);
+      try {
+        const stat3 = fs_1.statSync(path8);
+        if (stat3.isFile() && isFile) {
+          log(`[OK] path represents a file`);
+          return true;
+        }
+        if (stat3.isDirectory() && isDirectory) {
+          log(`[OK] path represents a directory`);
+          return true;
+        }
+        log(`[FAIL] path represents something other than a file or directory`);
+        return false;
+      } catch (e) {
+        if (e.code === "ENOENT") {
+          log(`[FAIL] path is not accessible: %o`, e);
+          return false;
+        }
+        log(`[FATAL] %o`, e);
+        throw e;
+      }
+    }
+    function exists2(path8, type = exports2.READABLE) {
+      return check(path8, (type & exports2.FILE) > 0, (type & exports2.FOLDER) > 0);
+    }
+    exports2.exists = exists2;
+    exports2.FILE = 1;
+    exports2.FOLDER = 2;
+    exports2.READABLE = exports2.FILE + exports2.FOLDER;
+  }
+});
+
+// ../../node_modules/@kwsites/file-exists/dist/index.js
+var require_dist = __commonJS({
+  "../../node_modules/@kwsites/file-exists/dist/index.js"(exports2) {
+    "use strict";
+    function __export2(m) {
+      for (var p in m) if (!exports2.hasOwnProperty(p)) exports2[p] = m[p];
+    }
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    __export2(require_src3());
+  }
+});
+
+// ../../node_modules/@kwsites/promise-deferred/dist/index.js
+var require_dist2 = __commonJS({
+  "../../node_modules/@kwsites/promise-deferred/dist/index.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.createDeferred = exports2.deferred = void 0;
+    function deferred2() {
+      let done;
+      let fail;
+      let status = "pending";
+      const promise2 = new Promise((_done, _fail) => {
+        done = _done;
+        fail = _fail;
+      });
+      return {
+        promise: promise2,
+        done(result) {
+          if (status === "pending") {
+            status = "resolved";
+            done(result);
+          }
+        },
+        fail(error) {
+          if (status === "pending") {
+            status = "rejected";
+            fail(error);
+          }
+        },
+        get fulfilled() {
+          return status !== "pending";
+        },
+        get status() {
+          return status;
+        }
+      };
+    }
+    exports2.deferred = deferred2;
+    exports2.createDeferred = deferred2;
+    exports2.default = deferred2;
   }
 });
 
@@ -41276,11 +41832,11 @@ var DevTunnelHostAdapter = class {
    * Check if network is available by attempting DNS resolution with timeout.
    */
   async checkNetworkAvailable() {
-    return new Promise((resolve3) => {
-      const timeout = setTimeout(() => resolve3(false), DNS_TIMEOUT_MS);
+    return new Promise((resolve8) => {
+      const timeout = setTimeout(() => resolve8(false), DNS_TIMEOUT_MS);
       dns.resolve("github.com", (err) => {
         clearTimeout(timeout);
-        resolve3(!err);
+        resolve8(!err);
       });
     });
   }
@@ -41710,8 +42266,8 @@ var DevTunnelHostAdapter = class {
     this.tunnel = null;
     this.managementClient = null;
     if (this.server) {
-      await new Promise((resolve3) => {
-        this.server.close(() => resolve3());
+      await new Promise((resolve8) => {
+        this.server.close(() => resolve8());
       });
       this.server = null;
     }
@@ -41736,7 +42292,7 @@ var DevTunnelHostAdapter = class {
     };
   }
   createServer() {
-    return new Promise((resolve3, reject) => {
+    return new Promise((resolve8, reject) => {
       const server = net.createServer((socket) => {
         if (this.isDisposed) {
           socket.destroy();
@@ -41777,7 +42333,7 @@ var DevTunnelHostAdapter = class {
       });
       server.on("error", reject);
       server.listen(this.config.port || 0, () => {
-        resolve3(server);
+        resolve8(server);
       });
     });
   }
@@ -42017,7 +42573,7 @@ var DevTunnelHostAdapter = class {
     throw new Error("Device code expired before authentication completed.");
   }
   sleep(ms) {
-    return new Promise((resolve3) => setTimeout(resolve3, ms));
+    return new Promise((resolve8) => setTimeout(resolve8, ms));
   }
 };
 function createTunnelHostAdapter(config) {
@@ -42201,7 +42757,6 @@ function resolveCopilotBinary(explicitPath) {
     }
     const found = findCopilotInDir(explicitPath);
     if (found) return found;
-    console.warn(`COPILOT_CLI_PATH set but not usable: ${explicitPath}`);
   }
   const envPath = process.env.COPILOT_CLI_PATH;
   if (envPath) {
@@ -42210,7 +42765,6 @@ function resolveCopilotBinary(explicitPath) {
     }
     const found = findCopilotInDir(envPath);
     if (found) return found;
-    console.warn(`COPILOT_CLI_PATH set but not usable: ${envPath}`);
   }
   for (const dir of collectSearchPaths()) {
     const found = findCopilotInDir(dir);
@@ -42225,19 +42779,29 @@ var CliProcess = class extends import_node_events.EventEmitter {
     super();
     this.options = options;
     this.cwd = options.cwd;
+    this.log = options.log ?? ((level, message) => {
+      if (level === "error") {
+        console.error(message);
+      } else if (level === "warn") {
+        console.warn(message);
+      } else {
+        console.log(message);
+      }
+    });
   }
   child = null;
   decoder = new JsonRpcDecoder();
   requestId = 0;
   pendingRequests = /* @__PURE__ */ new Map();
   _isAlive = false;
+  log;
   cwd;
   /**
    * Spawn the copilot CLI process.
    */
   async spawn() {
     const cliPath = resolveCopilotBinary(this.options.cliPath);
-    console.log(`[CliProcess] Spawning CLI for: ${this.cwd}`);
+    this.log("debug", `[CliProcess] Spawning CLI for: ${this.cwd}`);
     const args = ["--server", "--stdio", "--log-level", this.options.logLevel ?? "info"];
     this.child = (0, import_node_child_process.spawn)(cliPath, args, {
       cwd: this.cwd,
@@ -42302,7 +42866,7 @@ var CliProcess = class extends import_node_events.EventEmitter {
       method,
       params
     };
-    return new Promise((resolve3, reject) => {
+    return new Promise((resolve8, reject) => {
       let timeoutId;
       const cleanup = () => {
         if (timeoutId) {
@@ -42322,7 +42886,7 @@ var CliProcess = class extends import_node_events.EventEmitter {
           if (response.error) {
             reject(new Error(response.error.message));
           } else {
-            resolve3(response.result);
+            resolve8(response.result);
           }
         },
         reject: (err) => {
@@ -42426,27 +42990,27 @@ var import_module = require("module");
 var import_path = require("path");
 var nativeFs = __toESM(require("fs"), 1);
 var __require = /* @__PURE__ */ (0, import_module.createRequire)(__bundled_import_meta_url);
-function cleanPath(path2) {
-  let normalized = (0, import_path.normalize)(path2);
+function cleanPath(path8) {
+  let normalized = (0, import_path.normalize)(path8);
   if (normalized.length > 1 && normalized[normalized.length - 1] === import_path.sep) normalized = normalized.substring(0, normalized.length - 1);
   return normalized;
 }
 var SLASHES_REGEX = /[\\/]/g;
-function convertSlashes(path2, separator) {
-  return path2.replace(SLASHES_REGEX, separator);
+function convertSlashes(path8, separator) {
+  return path8.replace(SLASHES_REGEX, separator);
 }
 var WINDOWS_ROOT_DIR_REGEX = /^[a-z]:[\\/]$/i;
-function isRootDirectory(path2) {
-  return path2 === "/" || WINDOWS_ROOT_DIR_REGEX.test(path2);
+function isRootDirectory(path8) {
+  return path8 === "/" || WINDOWS_ROOT_DIR_REGEX.test(path8);
 }
-function normalizePath(path2, options) {
+function normalizePath(path8, options) {
   const { resolvePaths, normalizePath: normalizePath$1, pathSeparator } = options;
-  const pathNeedsCleaning = process.platform === "win32" && path2.includes("/") || path2.startsWith(".");
-  if (resolvePaths) path2 = (0, import_path.resolve)(path2);
-  if (normalizePath$1 || pathNeedsCleaning) path2 = cleanPath(path2);
-  if (path2 === ".") return "";
-  const needsSeperator = path2[path2.length - 1] !== pathSeparator;
-  return convertSlashes(needsSeperator ? path2 + pathSeparator : path2, pathSeparator);
+  const pathNeedsCleaning = process.platform === "win32" && path8.includes("/") || path8.startsWith(".");
+  if (resolvePaths) path8 = (0, import_path.resolve)(path8);
+  if (normalizePath$1 || pathNeedsCleaning) path8 = cleanPath(path8);
+  if (path8 === ".") return "";
+  const needsSeperator = path8[path8.length - 1] !== pathSeparator;
+  return convertSlashes(needsSeperator ? path8 + pathSeparator : path8, pathSeparator);
 }
 function joinPathWithBasePath(filename, directoryPath) {
   return directoryPath + filename;
@@ -42483,8 +43047,8 @@ var pushDirectory = (directoryPath, paths) => {
   paths.push(directoryPath || ".");
 };
 var pushDirectoryFilter = (directoryPath, paths, filters) => {
-  const path2 = directoryPath || ".";
-  if (filters.every((filter) => filter(path2, true))) paths.push(path2);
+  const path8 = directoryPath || ".";
+  if (filters.every((filter) => filter(path8, true))) paths.push(path8);
 };
 var empty$2 = () => {
 };
@@ -42536,27 +43100,27 @@ var empty = () => {
 function build$3(options) {
   return options.group ? groupFiles : empty;
 }
-var resolveSymlinksAsync = function(path2, state, callback$1) {
-  const { queue, fs: fs2, options: { suppressErrors } } = state;
+var resolveSymlinksAsync = function(path8, state, callback$1) {
+  const { queue, fs: fs8, options: { suppressErrors } } = state;
   queue.enqueue();
-  fs2.realpath(path2, (error, resolvedPath) => {
+  fs8.realpath(path8, (error, resolvedPath) => {
     if (error) return queue.dequeue(suppressErrors ? null : error, state);
-    fs2.stat(resolvedPath, (error$1, stat) => {
+    fs8.stat(resolvedPath, (error$1, stat3) => {
       if (error$1) return queue.dequeue(suppressErrors ? null : error$1, state);
-      if (stat.isDirectory() && isRecursive(path2, resolvedPath, state)) return queue.dequeue(null, state);
-      callback$1(stat, resolvedPath);
+      if (stat3.isDirectory() && isRecursive(path8, resolvedPath, state)) return queue.dequeue(null, state);
+      callback$1(stat3, resolvedPath);
       queue.dequeue(null, state);
     });
   });
 };
-var resolveSymlinks = function(path2, state, callback$1) {
-  const { queue, fs: fs2, options: { suppressErrors } } = state;
+var resolveSymlinks = function(path8, state, callback$1) {
+  const { queue, fs: fs8, options: { suppressErrors } } = state;
   queue.enqueue();
   try {
-    const resolvedPath = fs2.realpathSync(path2);
-    const stat = fs2.statSync(resolvedPath);
-    if (stat.isDirectory() && isRecursive(path2, resolvedPath, state)) return;
-    callback$1(stat, resolvedPath);
+    const resolvedPath = fs8.realpathSync(path8);
+    const stat3 = fs8.statSync(resolvedPath);
+    if (stat3.isDirectory() && isRecursive(path8, resolvedPath, state)) return;
+    callback$1(stat3, resolvedPath);
   } catch (e) {
     if (!suppressErrors) throw e;
   }
@@ -42565,9 +43129,9 @@ function build$2(options, isSynchronous) {
   if (!options.resolveSymlinks || options.excludeSymlinks) return null;
   return isSynchronous ? resolveSymlinks : resolveSymlinksAsync;
 }
-function isRecursive(path2, resolved, state) {
+function isRecursive(path8, resolved, state) {
   if (state.options.useRealPaths) return isRecursiveUsingRealPaths(resolved, state);
-  let parent = (0, import_path.dirname)(path2);
+  let parent = (0, import_path.dirname)(path8);
   let depth = 1;
   while (parent !== state.root && depth < 2) {
     const resolvedPath = state.symlinks.get(parent);
@@ -42575,7 +43139,7 @@ function isRecursive(path2, resolved, state) {
     if (isSameRoot) depth++;
     else parent = (0, import_path.dirname)(parent);
   }
-  state.symlinks.set(path2, resolved);
+  state.symlinks.set(path8, resolved);
   return depth > 1;
 }
 function isRecursiveUsingRealPaths(resolved, state) {
@@ -42624,22 +43188,22 @@ var readdirOpts = { withFileTypes: true };
 var walkAsync = (state, crawlPath, directoryPath, currentDepth, callback$1) => {
   state.queue.enqueue();
   if (currentDepth < 0) return state.queue.dequeue(null, state);
-  const { fs: fs2 } = state;
+  const { fs: fs8 } = state;
   state.visited.push(crawlPath);
   state.counts.directories++;
-  fs2.readdir(crawlPath || ".", readdirOpts, (error, entries = []) => {
+  fs8.readdir(crawlPath || ".", readdirOpts, (error, entries = []) => {
     callback$1(entries, directoryPath, currentDepth);
     state.queue.dequeue(state.options.suppressErrors ? null : error, state);
   });
 };
 var walkSync = (state, crawlPath, directoryPath, currentDepth, callback$1) => {
-  const { fs: fs2 } = state;
+  const { fs: fs8 } = state;
   if (currentDepth < 0) return;
   state.visited.push(crawlPath);
   state.counts.directories++;
   let entries = [];
   try {
-    entries = fs2.readdirSync(crawlPath || ".", readdirOpts);
+    entries = fs8.readdirSync(crawlPath || ".", readdirOpts);
   } catch (e) {
     if (!state.options.suppressErrors) throw e;
   }
@@ -42747,19 +43311,19 @@ var Walker = class {
         const filename = this.joinPath(entry.name, directoryPath);
         this.pushFile(filename, files, this.state.counts, filters);
       } else if (entry.isDirectory()) {
-        let path2 = joinDirectoryPath(entry.name, directoryPath, this.state.options.pathSeparator);
-        if (exclude && exclude(entry.name, path2)) continue;
-        this.pushDirectory(path2, paths, filters);
-        this.walkDirectory(this.state, path2, path2, depth - 1, this.walk);
+        let path8 = joinDirectoryPath(entry.name, directoryPath, this.state.options.pathSeparator);
+        if (exclude && exclude(entry.name, path8)) continue;
+        this.pushDirectory(path8, paths, filters);
+        this.walkDirectory(this.state, path8, path8, depth - 1, this.walk);
       } else if (this.resolveSymlink && entry.isSymbolicLink()) {
-        let path2 = joinPathWithBasePath(entry.name, directoryPath);
-        this.resolveSymlink(path2, this.state, (stat, resolvedPath) => {
-          if (stat.isDirectory()) {
+        let path8 = joinPathWithBasePath(entry.name, directoryPath);
+        this.resolveSymlink(path8, this.state, (stat3, resolvedPath) => {
+          if (stat3.isDirectory()) {
             resolvedPath = normalizePath(resolvedPath, this.state.options);
-            if (exclude && exclude(entry.name, useRealPaths ? resolvedPath : path2 + pathSeparator)) return;
-            this.walkDirectory(this.state, resolvedPath, useRealPaths ? resolvedPath : path2 + pathSeparator, depth - 1, this.walk);
+            if (exclude && exclude(entry.name, useRealPaths ? resolvedPath : path8 + pathSeparator)) return;
+            this.walkDirectory(this.state, resolvedPath, useRealPaths ? resolvedPath : path8 + pathSeparator, depth - 1, this.walk);
           } else {
-            resolvedPath = useRealPaths ? resolvedPath : path2;
+            resolvedPath = useRealPaths ? resolvedPath : path8;
             const filename = (0, import_path.basename)(resolvedPath);
             const directoryPath$1 = normalizePath((0, import_path.dirname)(resolvedPath), this.state.options);
             resolvedPath = this.joinPath(filename, directoryPath$1);
@@ -42925,7 +43489,7 @@ var Builder = class {
       isMatch = globFn(patterns, ...options);
       this.globCache[patterns.join("\0")] = isMatch;
     }
-    this.options.filters.push((path2) => isMatch(path2));
+    this.options.filters.push((path8) => isMatch(path8));
     return this;
   }
 };
@@ -43070,17 +43634,17 @@ var FileSearchService = class {
   }
   async performSearch(files, query, maxResults) {
     if (!query) {
-      return files.slice().sort((a, b) => a.length - b.length).slice(0, maxResults).map((path2) => ({
-        path: path2,
-        type: this.getType(path2),
+      return files.slice().sort((a, b) => a.length - b.length).slice(0, maxResults).map((path8) => ({
+        path: path8,
+        type: this.getType(path8),
         score: 0
       }));
     }
     if (query.includes("*") || query.includes("?")) {
       const matcher = (0, import_picomatch.default)(query, { nocase: true, dot: true });
-      return files.filter((f) => matcher(f)).slice(0, maxResults).map((path2) => ({
-        path: path2,
-        type: this.getType(path2),
+      return files.filter((f) => matcher(f)).slice(0, maxResults).map((path8) => ({
+        path: path8,
+        type: this.getType(path8),
         score: 1
       }));
     }
@@ -43092,9 +43656,9 @@ var FileSearchService = class {
         results.push({ path: filePath, score: totalScore });
       }
     }
-    return results.sort((a, b) => b.score - a.score).slice(0, maxResults).map(({ path: path2, score }) => ({
-      path: path2,
-      type: this.getType(path2),
+    return results.sort((a, b) => b.score - a.score).slice(0, maxResults).map(({ path: path8, score }) => ({
+      path: path8,
+      type: this.getType(path8),
       score
     }));
   }
@@ -43124,8 +43688,8595 @@ var FileSearchService = class {
   }
 };
 
+// src/fs/disk-fs-provider.ts
+var fs4 = __toESM(require("fs/promises"), 1);
+var nodePath = __toESM(require("path"), 1);
+
+// src/shared/event-emitter.ts
+var EventEmitter2 = class {
+  /**
+   * Set of registered listeners.
+   *
+   * Using a Set ensures:
+   * - O(1) add/remove operations
+   * - No duplicate listeners
+   * - Iteration order matches insertion order
+   */
+  listeners = /* @__PURE__ */ new Set();
+  /**
+   * Whether this emitter has been disposed.
+   *
+   * Once disposed, no new listeners can be added and fire() is a no-op.
+   */
+  disposed = false;
+  /**
+   * The public event property for subscribing.
+   *
+   * This is a function that takes a listener and returns a disposable.
+   * Consumers use this to subscribe to events.
+   *
+   * @example
+   * ```typescript
+   * const subscription = emitter.event((data) => {
+   *   console.log('Received:', data);
+   * });
+   * ```
+   */
+  event = (listener) => {
+    if (this.disposed) {
+      return { dispose: () => {
+      } };
+    }
+    this.listeners.add(listener);
+    return {
+      dispose: () => {
+        this.listeners.delete(listener);
+      }
+    };
+  };
+  /**
+   * Fire the event, notifying all listeners.
+   *
+   * Listeners are called synchronously in insertion order.
+   * Errors in listeners are caught and logged to prevent one
+   * bad listener from breaking others.
+   *
+   * @param data - The event data to pass to listeners
+   */
+  fire(data) {
+    if (this.disposed) {
+      return;
+    }
+    const listenersSnapshot = [...this.listeners];
+    for (const listener of listenersSnapshot) {
+      try {
+        listener(data);
+      } catch (error) {
+        console.error("[EventEmitter] Listener threw an error:", error);
+      }
+    }
+  }
+  /**
+   * Check if there are any registered listeners.
+   *
+   * Useful for optimization - skip work if no one is listening.
+   */
+  hasListeners() {
+    return this.listeners.size > 0;
+  }
+  /**
+   * Get the number of registered listeners.
+   *
+   * Useful for debugging and testing.
+   */
+  get listenerCount() {
+    return this.listeners.size;
+  }
+  /**
+   * Dispose the emitter, clearing all listeners.
+   *
+   * After disposal:
+   * - All existing listeners are removed
+   * - New subscriptions return no-op disposables
+   * - fire() becomes a no-op
+   *
+   * This should be called when the owning object is disposed
+   * to prevent memory leaks.
+   */
+  dispose() {
+    this.disposed = true;
+    this.listeners.clear();
+  }
+};
+
+// src/fs/path-utils.ts
+var path2 = __toESM(require("path"), 1);
+var isCaseInsensitiveFS = process.platform === "darwin" || process.platform === "win32";
+function normalizePathForComparison(filePath) {
+  return isCaseInsensitiveFS ? filePath.toLowerCase() : filePath;
+}
+function pathStartsWith(filePath, prefix) {
+  const normalizedPath = normalizePathForComparison(filePath);
+  const normalizedPrefix = normalizePathForComparison(prefix);
+  if (normalizedPath === normalizedPrefix) {
+    return true;
+  }
+  return normalizedPath.startsWith(normalizedPrefix + path2.sep);
+}
+function safeRelativePath(from, to) {
+  const normalizedFrom = normalizePathForComparison(from);
+  const normalizedTo = normalizePathForComparison(to);
+  return path2.relative(normalizedFrom, normalizedTo);
+}
+function isPathOutside(relativePath) {
+  return relativePath.startsWith("..");
+}
+
+// src/fs/directory-cache.ts
+var DirectoryCacheImpl = class {
+  /**
+   * The main cache storage.
+   * Key: normalized absolute path
+   * Value: CacheEntry with entries, version, and timestamp
+   */
+  cache = /* @__PURE__ */ new Map();
+  /**
+   * Listeners for cache changes.
+   * Key: path pattern (or '*' for all)
+   * Value: Set of listener callbacks
+   */
+  listeners = /* @__PURE__ */ new Map();
+  /**
+   * Tracks access order for LRU eviction.
+   * Most recently accessed paths are at the end.
+   */
+  accessOrder = [];
+  /**
+   * Maximum number of entries before LRU eviction kicks in.
+   * Can be configured via setMaxSize() for testing.
+   */
+  maxSize = 500;
+  // -------------------------------------------------------------------------
+  // Core Operations
+  // -------------------------------------------------------------------------
+  /**
+   * Get a cached directory entry.
+   *
+   * Updates access order for LRU tracking (this path becomes most-recently-used).
+   *
+   * @param dirPath - Absolute path to the directory
+   * @returns CacheEntry if found, undefined if not cached
+   */
+  get(dirPath) {
+    const normalizedPath = this.normalizePath(dirPath);
+    const entry = this.cache.get(normalizedPath);
+    if (entry) {
+      this.updateAccessOrder(normalizedPath);
+    }
+    return entry;
+  }
+  /**
+   * Cache a directory listing.
+   *
+   * If an entry already exists, its version is incremented.
+   * If the cache is full, the least-recently-used entry is evicted.
+   *
+   * @param dirPath - Absolute path to the directory
+   * @param entries - Directory entries to cache
+   */
+  set(dirPath, entries) {
+    const normalizedPath = this.normalizePath(dirPath);
+    const existing = this.cache.get(normalizedPath);
+    if (!existing && this.cache.size >= this.maxSize) {
+      this.evictLRU();
+    }
+    const newEntry = {
+      entries,
+      version: (existing?.version ?? 0) + 1,
+      timestamp: Date.now()
+    };
+    this.cache.set(normalizedPath, newEntry);
+    this.updateAccessOrder(normalizedPath);
+    this.notifyListeners(normalizedPath, newEntry);
+  }
+  /**
+   * Check if a directory is cached.
+   *
+   * Does NOT update access order (peek operation).
+   *
+   * @param dirPath - Absolute path to the directory
+   * @returns true if the directory is in the cache
+   */
+  has(dirPath) {
+    const normalizedPath = this.normalizePath(dirPath);
+    return this.cache.has(normalizedPath);
+  }
+  /**
+   * Get the version number of a cached entry.
+   *
+   * Useful for comparing if data has changed since last read.
+   *
+   * @param dirPath - Absolute path to the directory
+   * @returns Version number, or 0 if not cached
+   */
+  getVersion(dirPath) {
+    const normalizedPath = this.normalizePath(dirPath);
+    return this.cache.get(normalizedPath)?.version ?? 0;
+  }
+  // -------------------------------------------------------------------------
+  // In-Place Updates
+  // -------------------------------------------------------------------------
+  /**
+   * Add a single entry to a cached directory listing.
+   *
+   * If the directory is not cached, this is a no-op.
+   * If an entry with the same name already exists, it is replaced.
+   *
+   * @param dirPath - Absolute path to the directory
+   * @param entry - The entry to add
+   */
+  addEntry(dirPath, entry) {
+    const normalizedPath = this.normalizePath(dirPath);
+    const cached = this.cache.get(normalizedPath);
+    if (!cached) {
+      return;
+    }
+    const entries = cached.entries.filter(
+      (e) => !this.entryNamesMatch(e.name, entry.name)
+    );
+    entries.push(entry);
+    entries.sort((a, b) => {
+      if (a.type !== b.type) {
+        return a.type === "directory" ? -1 : 1;
+      }
+      return a.name.localeCompare(b.name);
+    });
+    cached.entries = entries;
+    cached.version++;
+    cached.timestamp = Date.now();
+    this.notifyListeners(normalizedPath, cached);
+  }
+  /**
+   * Remove a single entry from a cached directory listing.
+   *
+   * If the directory is not cached or the entry doesn't exist, this is a no-op.
+   *
+   * @param dirPath - Absolute path to the directory
+   * @param entryName - Name of the entry to remove
+   */
+  removeEntry(dirPath, entryName) {
+    const normalizedPath = this.normalizePath(dirPath);
+    const cached = this.cache.get(normalizedPath);
+    if (!cached) {
+      return;
+    }
+    const originalLength = cached.entries.length;
+    cached.entries = cached.entries.filter(
+      (e) => !this.entryNamesMatch(e.name, entryName)
+    );
+    if (cached.entries.length !== originalLength) {
+      cached.version++;
+      cached.timestamp = Date.now();
+      this.notifyListeners(normalizedPath, cached);
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Invalidation
+  // -------------------------------------------------------------------------
+  /**
+   * Invalidate a cached entry without removing it.
+   *
+   * This increments the version number, signaling that the data may be stale.
+   * The entry remains in cache so stale data can be returned immediately
+   * while fresh data is fetched in the background.
+   *
+   * @param dirPath - Absolute path to the directory
+   */
+  invalidate(dirPath) {
+    const normalizedPath = this.normalizePath(dirPath);
+    const entry = this.cache.get(normalizedPath);
+    if (entry) {
+      entry.version++;
+      entry.timestamp = Date.now();
+      this.notifyListeners(normalizedPath, entry);
+    }
+  }
+  /**
+   * Remove a cached entry completely.
+   *
+   * Use this when a directory is deleted or you want to force a fresh read.
+   * For normal invalidation (file changed), prefer `invalidate()`.
+   *
+   * @param dirPath - Absolute path to the directory
+   */
+  delete(dirPath) {
+    const normalizedPath = this.normalizePath(dirPath);
+    if (this.cache.delete(normalizedPath)) {
+      const index = this.accessOrder.indexOf(normalizedPath);
+      if (index !== -1) {
+        this.accessOrder.splice(index, 1);
+      }
+      this.notifyListeners(normalizedPath, null);
+    }
+  }
+  /**
+   * Clear the entire cache.
+   *
+   * Use sparingly - typically only needed for testing or major CWD changes.
+   */
+  clear() {
+    const paths = [...this.cache.keys()];
+    this.cache.clear();
+    this.accessOrder = [];
+    for (const path8 of paths) {
+      this.notifyListeners(path8, null);
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Subscription
+  // -------------------------------------------------------------------------
+  /**
+   * Subscribe to cache changes for a specific path.
+   *
+   * @param dirPath - Path to watch, or '*' for all changes
+   * @param listener - Callback when cache changes
+   * @returns Disposable to unsubscribe
+   */
+  subscribe(dirPath, listener) {
+    const normalizedPath = dirPath === "*" ? "*" : this.normalizePath(dirPath);
+    let pathListeners = this.listeners.get(normalizedPath);
+    if (!pathListeners) {
+      pathListeners = /* @__PURE__ */ new Set();
+      this.listeners.set(normalizedPath, pathListeners);
+    }
+    pathListeners.add(listener);
+    return {
+      dispose: () => {
+        const listeners = this.listeners.get(normalizedPath);
+        if (listeners) {
+          listeners.delete(listener);
+          if (listeners.size === 0) {
+            this.listeners.delete(normalizedPath);
+          }
+        }
+      }
+    };
+  }
+  // -------------------------------------------------------------------------
+  // Configuration
+  // -------------------------------------------------------------------------
+  /**
+   * Set the maximum cache size.
+   *
+   * If the new size is smaller than current cache size,
+   * LRU entries will be evicted immediately.
+   *
+   * @param size - Maximum number of entries
+   */
+  setMaxSize(size) {
+    this.maxSize = size;
+    while (this.cache.size > this.maxSize) {
+      this.evictLRU();
+    }
+  }
+  /**
+   * Get the current cache size (number of entries).
+   */
+  get size() {
+    return this.cache.size;
+  }
+  /**
+   * Get all cached directory paths under a given prefix.
+   *
+   * Used for bulk operations like refreshing gitignore status.
+   * Does NOT update access order (peek operation).
+   *
+   * @param prefix - Path prefix to filter by (e.g., git root)
+   * @returns Array of cached paths that start with the prefix
+   */
+  getPathsUnder(prefix) {
+    const normalizedPrefix = this.normalizePath(prefix);
+    const paths = [];
+    const prefixToMatch = normalizePathForComparison(normalizedPrefix);
+    for (const cachedPath of this.cache.keys()) {
+      const pathToMatch = normalizePathForComparison(cachedPath);
+      if (pathToMatch === prefixToMatch || pathStartsWith(cachedPath, normalizedPrefix)) {
+        paths.push(cachedPath);
+      }
+    }
+    return paths;
+  }
+  // -------------------------------------------------------------------------
+  // Internal Helpers
+  // -------------------------------------------------------------------------
+  /**
+   * Normalize a path for consistent cache keys.
+   *
+   * - Removes trailing slashes (except for root '/')
+   * - Lowercases on case-insensitive filesystems (macOS/Windows)
+   * - Ensures consistent format
+   */
+  normalizePath(dirPath) {
+    let normalized = dirPath;
+    if (normalized.length > 1 && normalized.endsWith("/")) {
+      normalized = normalized.slice(0, -1);
+    }
+    return normalizePathForComparison(normalized);
+  }
+  /**
+   * Check if two entry names match, handling case sensitivity correctly.
+   *
+   * On case-insensitive filesystems (macOS/Windows), comparison is case-insensitive.
+   * This ensures that when a watcher reports a file with different casing than
+   * what's in the cache, we still match correctly.
+   */
+  entryNamesMatch(name1, name2) {
+    if (isCaseInsensitiveFS) {
+      return name1.toLowerCase() === name2.toLowerCase();
+    }
+    return name1 === name2;
+  }
+  /**
+   * Update access order for LRU tracking.
+   *
+   * Moves the path to the end of accessOrder (most recently used).
+   */
+  updateAccessOrder(normalizedPath) {
+    const index = this.accessOrder.indexOf(normalizedPath);
+    if (index !== -1) {
+      this.accessOrder.splice(index, 1);
+    }
+    this.accessOrder.push(normalizedPath);
+  }
+  /**
+   * Evict the least-recently-used entry.
+   */
+  evictLRU() {
+    if (this.accessOrder.length === 0) {
+      return;
+    }
+    const lruPath = this.accessOrder.shift();
+    if (lruPath) {
+      this.cache.delete(lruPath);
+      this.notifyListeners(lruPath, null);
+    }
+  }
+  /**
+   * Notify listeners about a cache change.
+   */
+  notifyListeners(path8, entry) {
+    const pathListeners = this.listeners.get(path8);
+    if (pathListeners) {
+      for (const listener of pathListeners) {
+        try {
+          listener(path8, entry);
+        } catch (error) {
+          console.error("[DirectoryCache] Listener threw an error:", error);
+        }
+      }
+    }
+    const wildcardListeners = this.listeners.get("*");
+    if (wildcardListeners) {
+      for (const listener of wildcardListeners) {
+        try {
+          listener(path8, entry);
+        } catch (error) {
+          console.error("[DirectoryCache] Listener threw an error:", error);
+        }
+      }
+    }
+  }
+};
+var DirectoryCache = new DirectoryCacheImpl();
+
+// src/fs/gitignore-cache.ts
+var import_ignore = __toESM(require_ignore(), 1);
+var import_node_child_process2 = require("child_process");
+var fs2 = __toESM(require("fs"), 1);
+var path3 = __toESM(require("path"), 1);
+var GitIgnoreCacheImpl = class {
+  /**
+   * Cache of directory path -> git root path (or null if not in a repo).
+   * This rarely changes, so we cache indefinitely.
+   */
+  gitRootCache = /* @__PURE__ */ new Map();
+  /**
+   * Cache of git root -> ignore matcher instance.
+   * The matcher contains all rules from .gitignore files in that repo.
+   */
+  matcherCache = /* @__PURE__ */ new Map();
+  /**
+   * Tracks which .gitignore files have been loaded for each git root.
+   * Key: gitRoot, Value: Set of .gitignore file paths that have been loaded.
+   */
+  loadedGitignoreFiles = /* @__PURE__ */ new Map();
+  // -------------------------------------------------------------------------
+  // Git Root Lookup
+  // -------------------------------------------------------------------------
+  /**
+   * Normalize a path for cache key (case-insensitive on macOS/Windows).
+   */
+  normalizeCacheKey(filePath) {
+    return normalizePathForComparison(path3.resolve(filePath));
+  }
+  /**
+   * Find the git root for a directory, with caching.
+   */
+  async getGitRoot(dirPath) {
+    const cacheKey = this.normalizeCacheKey(dirPath);
+    if (this.gitRootCache.has(cacheKey)) {
+      return this.gitRootCache.get(cacheKey) ?? null;
+    }
+    const resolved = path3.resolve(dirPath);
+    const gitRoot = await this.findGitRoot(resolved);
+    this.gitRootCache.set(cacheKey, gitRoot);
+    if (gitRoot) {
+      let current = path3.dirname(resolved);
+      while (current.length >= gitRoot.length) {
+        this.gitRootCache.set(this.normalizeCacheKey(current), gitRoot);
+        const parent = path3.dirname(current);
+        if (parent === current) break;
+        current = parent;
+      }
+    }
+    return gitRoot;
+  }
+  findGitRoot(dirPath) {
+    return new Promise((resolve8) => {
+      try {
+        const child = (0, import_node_child_process2.spawn)("git", ["rev-parse", "--show-toplevel"], {
+          cwd: dirPath,
+          stdio: ["ignore", "pipe", "ignore"]
+        });
+        let output = "";
+        child.stdout.on("data", (chunk) => {
+          output += chunk.toString();
+        });
+        child.once("error", () => {
+          resolve8(null);
+        });
+        child.once("close", (code) => {
+          if (code === 0 && output.trim()) {
+            resolve8(output.trim());
+          } else {
+            resolve8(null);
+          }
+        });
+      } catch {
+        resolve8(null);
+      }
+    });
+  }
+  // -------------------------------------------------------------------------
+  // Ignore Matcher Management
+  // -------------------------------------------------------------------------
+  /**
+   * Get or create the ignore matcher for a git root.
+   * Automatically loads the root .gitignore if not already loaded.
+   */
+  getOrCreateMatcher(gitRoot) {
+    const normalizedRoot = normalizePathForComparison(gitRoot);
+    let matcher = this.matcherCache.get(normalizedRoot);
+    if (!matcher) {
+      matcher = (0, import_ignore.default)();
+      this.matcherCache.set(normalizedRoot, matcher);
+      this.loadedGitignoreFiles.set(normalizedRoot, /* @__PURE__ */ new Set());
+      this.loadGitignoreFile(
+        normalizedRoot,
+        gitRoot,
+        path3.join(gitRoot, ".gitignore")
+      );
+    }
+    return matcher;
+  }
+  /**
+   * Load a .gitignore file and add its rules to the matcher.
+   * Rules are prefixed with the relative directory path to handle nested .gitignore files.
+   *
+   * @param normalizedRoot - Normalized cache key for lookups (case-insensitive on macOS/Windows)
+   * @param originalGitRoot - Original git root path for filesystem operations
+   * @param gitignorePath - Path to the .gitignore file to load
+   */
+  loadGitignoreFile(normalizedRoot, originalGitRoot, gitignorePath) {
+    const loadedFiles = this.loadedGitignoreFiles.get(normalizedRoot);
+    if (!loadedFiles || loadedFiles.has(gitignorePath)) {
+      return;
+    }
+    if (!fs2.existsSync(gitignorePath)) {
+      return;
+    }
+    try {
+      const content = fs2.readFileSync(gitignorePath, "utf-8");
+      const matcher = this.matcherCache.get(normalizedRoot);
+      if (!matcher) return;
+      const gitignoreDir = path3.dirname(gitignorePath);
+      const relativeDir = path3.relative(originalGitRoot, gitignoreDir);
+      const rules = content.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
+      if (relativeDir) {
+        const prefixedRules = rules.map((rule) => {
+          if (rule.startsWith("!")) {
+            const pattern = rule.slice(1);
+            return `!${relativeDir}/${pattern}`;
+          }
+          return `${relativeDir}/${rule}`;
+        });
+        matcher.add(prefixedRules);
+      } else {
+        matcher.add(rules);
+      }
+      loadedFiles.add(gitignorePath);
+    } catch {
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Gitignore Checking
+  // -------------------------------------------------------------------------
+  /**
+   * Check if entries are gitignored using the ignore package (no git spawning).
+   * Returns a Set of entry names that are ignored.
+   *
+   * @param dirPath - Directory containing the entries
+   * @param entries - Entries to check, with name and whether they're directories
+   * @param gitRoot - Optional pre-resolved git root (avoids lookup if provided)
+   */
+  async getIgnoredEntries(dirPath, entries, gitRoot) {
+    const resolvedGitRoot = gitRoot !== void 0 ? gitRoot : await this.getGitRoot(dirPath);
+    if (!resolvedGitRoot) {
+      return /* @__PURE__ */ new Set();
+    }
+    const relativeDir = safeRelativePath(resolvedGitRoot, dirPath);
+    if (isPathOutside(relativeDir)) {
+      return /* @__PURE__ */ new Set();
+    }
+    const matcher = this.getOrCreateMatcher(resolvedGitRoot);
+    const normalizedRoot = normalizePathForComparison(resolvedGitRoot);
+    const localGitignore = path3.join(dirPath, ".gitignore");
+    this.loadGitignoreFile(normalizedRoot, resolvedGitRoot, localGitignore);
+    const ignored = /* @__PURE__ */ new Set();
+    for (const { name, isDirectory } of entries) {
+      const relativePath = relativeDir ? `${relativeDir}/${name}` : name;
+      const pathToCheck = isDirectory ? `${relativePath}/` : relativePath;
+      if (matcher.ignores(pathToCheck)) {
+        ignored.add(name);
+      }
+    }
+    return ignored;
+  }
+  /**
+   * Check if a single path is ignored (synchronous, for watcher filtering).
+   * Requires git root to be pre-resolved.
+   *
+   * Note: This uses only the currently loaded .gitignore rules. If the file
+   * is in a directory that hasn't been traversed yet, nested .gitignore files
+   * for that directory won't be loaded. This is acceptable for watcher filtering
+   * since we err on the side of not filtering (showing events for potentially
+   * ignored files is better than missing events for non-ignored files).
+   *
+   * @param gitRoot - The git root directory
+   * @param filePath - Absolute path to check
+   * @returns true if the path is ignored
+   */
+  isIgnored(gitRoot, filePath) {
+    const relativePath = safeRelativePath(gitRoot, filePath);
+    if (isPathOutside(relativePath)) {
+      return false;
+    }
+    const matcher = this.getOrCreateMatcher(gitRoot);
+    return matcher.ignores(relativePath);
+  }
+  // -------------------------------------------------------------------------
+  // Cache Invalidation
+  // -------------------------------------------------------------------------
+  /**
+   * Invalidate gitignore cache when .gitignore changes (created/modified/deleted).
+   * Rebuilds the matcher for the affected git root.
+   *
+   * @param gitignorePath - Path to the .gitignore file that changed
+   */
+  invalidateForGitignore(gitignorePath) {
+    const gitignoreDir = path3.dirname(gitignorePath);
+    const cacheKey = this.normalizeCacheKey(gitignoreDir);
+    const gitRoot = this.gitRootCache.get(cacheKey);
+    if (gitRoot) {
+      const normalizedGitRoot = normalizePathForComparison(gitRoot);
+      this.matcherCache.delete(normalizedGitRoot);
+      this.loadedGitignoreFiles.delete(normalizedGitRoot);
+    } else {
+      this.matcherCache.clear();
+      this.loadedGitignoreFiles.clear();
+    }
+  }
+  /**
+   * Clear all caches.
+   */
+  clear() {
+    this.gitRootCache.clear();
+    this.matcherCache.clear();
+    this.loadedGitignoreFiles.clear();
+  }
+  /**
+   * Get cache statistics for debugging.
+   */
+  getStats() {
+    let totalLoadedFiles = 0;
+    for (const files of this.loadedGitignoreFiles.values()) {
+      totalLoadedFiles += files.size;
+    }
+    return {
+      gitRootEntries: this.gitRootCache.size,
+      matcherCount: this.matcherCache.size,
+      loadedGitignoreFiles: totalLoadedFiles
+    };
+  }
+};
+var GitIgnoreCache = new GitIgnoreCacheImpl();
+
+// src/fs/parcel-file-watcher.ts
+var import_watcher = __toESM(require("@parcel/watcher"), 1);
+var import_node_fs2 = __toESM(require("fs"), 1);
+var import_node_path3 = __toESM(require("path"), 1);
+var DEFAULT_IGNORED_PATTERNS = [
+  "**/node_modules/**",
+  "**/.git/**",
+  "**/dist/**",
+  "**/build/**",
+  "**/.next/**",
+  "**/.cache/**",
+  "**/coverage/**",
+  "**/*.log",
+  "**/.DS_Store"
+];
+var RenameDetector = class {
+  /** Pending DELETE events: normalized path → { originalPath, timestamp } */
+  pendingDeletes = /* @__PURE__ */ new Map();
+  /** Pending CREATE events: normalized path → { originalPath, timestamp } */
+  pendingCreates = /* @__PURE__ */ new Map();
+  /** Time window for correlating events (ms) */
+  correlationWindow = 500;
+  /**
+   * Normalize a path for case-insensitive comparison on macOS/Windows.
+   */
+  normalizePath(filePath) {
+    return normalizePathForComparison(filePath);
+  }
+  /**
+   * Record a DELETE event for potential rename detection.
+   */
+  recordDelete(filePath) {
+    const normalized = this.normalizePath(filePath);
+    this.pendingDeletes.set(normalized, {
+      originalPath: filePath,
+      timestamp: Date.now()
+    });
+    setTimeout(() => {
+      this.pendingDeletes.delete(normalized);
+    }, this.correlationWindow);
+  }
+  /**
+   * Record a CREATE event for potential rename detection.
+   */
+  recordCreate(filePath) {
+    const normalized = this.normalizePath(filePath);
+    this.pendingCreates.set(normalized, {
+      originalPath: filePath,
+      timestamp: Date.now()
+    });
+    setTimeout(() => {
+      this.pendingCreates.delete(normalized);
+    }, this.correlationWindow);
+  }
+  /**
+   * Check if a CREATE event is actually a rename (DELETE came first).
+   *
+   * @param newPath - The path of the created file
+   * @returns The old path if this is a rename, null otherwise
+   */
+  matchCreateWithDelete(newPath) {
+    const newDirNormalized = this.normalizePath(import_node_path3.default.dirname(newPath));
+    const newPathNormalized = this.normalizePath(newPath);
+    const now = Date.now();
+    for (const [oldPathNormalized, entry] of this.pendingDeletes.entries()) {
+      if (now - entry.timestamp > this.correlationWindow) {
+        continue;
+      }
+      const oldDirNormalized = this.normalizePath(
+        import_node_path3.default.dirname(entry.originalPath)
+      );
+      if (oldDirNormalized !== newDirNormalized) {
+        continue;
+      }
+      if (oldPathNormalized === newPathNormalized) {
+        continue;
+      }
+      this.pendingDeletes.delete(oldPathNormalized);
+      return entry.originalPath;
+    }
+    return null;
+  }
+  /**
+   * Check if a DELETE event is actually a rename (CREATE came first).
+   *
+   * @param oldPath - The path of the deleted file
+   * @returns The new path if this is a rename, null otherwise
+   */
+  matchDeleteWithCreate(oldPath) {
+    const oldDirNormalized = this.normalizePath(import_node_path3.default.dirname(oldPath));
+    const oldPathNormalized = this.normalizePath(oldPath);
+    const now = Date.now();
+    for (const [newPathNormalized, entry] of this.pendingCreates.entries()) {
+      if (now - entry.timestamp > this.correlationWindow) {
+        continue;
+      }
+      const newDirNormalized = this.normalizePath(
+        import_node_path3.default.dirname(entry.originalPath)
+      );
+      if (newDirNormalized !== oldDirNormalized) {
+        continue;
+      }
+      if (oldPathNormalized === newPathNormalized) {
+        continue;
+      }
+      this.pendingCreates.delete(newPathNormalized);
+      return entry.originalPath;
+    }
+    return null;
+  }
+  /**
+   * Clear all pending events.
+   */
+  clear() {
+    this.pendingDeletes.clear();
+    this.pendingCreates.clear();
+  }
+};
+var ParcelFileWatcher = class {
+  /** The directory being watched */
+  path;
+  /** Resolved real path (handles symlinks) */
+  realPath;
+  /** Ignore patterns */
+  ignored;
+  /** The @parcel/watcher subscription */
+  subscription = null;
+  /** Whether currently watching */
+  watching = false;
+  /** Rename detection helper */
+  renameDetector = new RenameDetector();
+  /** Debounce timers */
+  debounceTimers = /* @__PURE__ */ new Map();
+  // -------------------------------------------------------------------------
+  // Event Emitters
+  // -------------------------------------------------------------------------
+  _onCreated = new EventEmitter2();
+  _onModified = new EventEmitter2();
+  _onDeleted = new EventEmitter2();
+  _onRenamed = new EventEmitter2();
+  /** Fired when a file or directory is created */
+  onCreated = this._onCreated.event;
+  /** Fired when a file's content is modified */
+  onModified = this._onModified.event;
+  /** Fired when a file or directory is deleted */
+  onDeleted = this._onDeleted.event;
+  /** Fired when a file or directory is renamed */
+  onRenamed = this._onRenamed.event;
+  // -------------------------------------------------------------------------
+  // Constructor
+  // -------------------------------------------------------------------------
+  /**
+   * Create a new file watcher.
+   *
+   * @param watchPath - Directory to watch
+   * @param options - Watcher configuration
+   */
+  constructor(watchPath, options = {}) {
+    this.path = watchPath;
+    this.ignored = options.ignored ?? DEFAULT_IGNORED_PATTERNS;
+    try {
+      this.realPath = import_node_fs2.default.realpathSync(watchPath);
+    } catch {
+      this.realPath = import_node_path3.default.resolve(watchPath);
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Public Methods
+  // -------------------------------------------------------------------------
+  /**
+   * Start watching for file changes.
+   *
+   * @throws If watching fails to start
+   */
+  async watch() {
+    if (this.watching) {
+      return;
+    }
+    const backend = this.getBackend();
+    this.subscription = await import_watcher.default.subscribe(
+      this.path,
+      (err, events) => {
+        if (err) {
+          console.error("[ParcelFileWatcher] Error:", err);
+          return;
+        }
+        this.handleEvents(events);
+      },
+      {
+        backend,
+        ignore: this.ignored
+      }
+    );
+    this.watching = true;
+  }
+  /**
+   * Stop watching for file changes.
+   */
+  async unwatch() {
+    if (!this.watching || !this.subscription) {
+      return;
+    }
+    await this.subscription.unsubscribe();
+    this.subscription = null;
+    this.watching = false;
+    this.clearDebounceTimers();
+    this.renameDetector.clear();
+  }
+  /**
+   * Check if currently watching.
+   */
+  isWatching() {
+    return this.watching;
+  }
+  /**
+   * Clean up all resources.
+   *
+   * Stops watching and disposes all event emitters.
+   */
+  async dispose() {
+    await this.unwatch();
+    this._onCreated.dispose();
+    this._onModified.dispose();
+    this._onDeleted.dispose();
+    this._onRenamed.dispose();
+  }
+  // -------------------------------------------------------------------------
+  // Private Methods
+  // -------------------------------------------------------------------------
+  /**
+   * Get the appropriate watcher backend for the current platform.
+   */
+  getBackend() {
+    switch (process.platform) {
+      case "darwin":
+        return "fs-events";
+      case "linux":
+        return "inotify";
+      default:
+        return "windows";
+    }
+  }
+  /**
+   * Handle a batch of events from @parcel/watcher.
+   */
+  handleEvents(events) {
+    for (const event of events) {
+      if (this.shouldIgnore(event.path)) {
+        continue;
+      }
+      switch (event.type) {
+        case "create":
+          this.handleCreate(event.path);
+          break;
+        case "update":
+          this.handleUpdate(event.path);
+          break;
+        case "delete":
+          this.handleDelete(event.path);
+          break;
+      }
+    }
+  }
+  /**
+   * Check if a path matches any ignore pattern.
+   *
+   * Uses simple pattern matching for common glob patterns.
+   */
+  shouldIgnore(filePath) {
+    const normalizedPath = filePath.replace(/\\/g, "/");
+    for (const pattern of this.ignored) {
+      if (this.matchPattern(normalizedPath, pattern)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
+   * Match a path against a glob-like pattern.
+   *
+   * Supports common patterns:
+   * - Double-star/name/double-star: contains /name/ anywhere
+   * - Double-star/*.ext: ends with .ext
+   * - Double-star/name: ends with /name or equals name
+   *
+   * On case-insensitive filesystems (macOS/Windows), matching is case-insensitive.
+   */
+  matchPattern(filePath, pattern) {
+    const normalizedPath = isCaseInsensitiveFS ? filePath.toLowerCase() : filePath;
+    const normalizedPattern = isCaseInsensitiveFS ? pattern.toLowerCase() : pattern;
+    const dirMatch = normalizedPattern.match(/^\*\*\/(.+)\/\*\*$/);
+    if (dirMatch) {
+      const dirName = dirMatch[1];
+      return normalizedPath.includes(`/${dirName}/`) || normalizedPath.startsWith(`${dirName}/`) || normalizedPath.endsWith(`/${dirName}`);
+    }
+    const extMatch = normalizedPattern.match(/^\*\*\/\*(\.[^/]+)$/);
+    if (extMatch) {
+      return normalizedPath.endsWith(extMatch[1]);
+    }
+    const nameMatch = normalizedPattern.match(/^\*\*\/(.+)$/);
+    if (nameMatch) {
+      const name = nameMatch[1];
+      return normalizedPath.endsWith(`/${name}`) || normalizedPath === name;
+    }
+    return normalizedPath.includes(normalizedPattern);
+  }
+  /**
+   * Handle a CREATE event.
+   */
+  handleCreate(filePath) {
+    const oldPath = this.renameDetector.matchCreateWithDelete(filePath);
+    if (oldPath) {
+      this.cancelDebounce(`delete:${oldPath}`);
+      this.emitRename(oldPath, filePath);
+    } else {
+      this.renameDetector.recordCreate(filePath);
+      this.debounce(`create:${filePath}`, 200, () => {
+        const matchedOldPath = this.renameDetector.matchCreateWithDelete(filePath);
+        if (matchedOldPath) {
+          this.cancelDebounce(`delete:${matchedOldPath}`);
+          this.emitRename(matchedOldPath, filePath);
+        } else {
+          const isDirectory = this.isDirectory(filePath);
+          this._onCreated.fire({ path: filePath, isDirectory });
+        }
+      });
+    }
+  }
+  /**
+   * Handle an UPDATE event.
+   */
+  handleUpdate(filePath) {
+    this.debounce(`update:${filePath}`, 50, () => {
+      this._onModified.fire({ path: filePath });
+    });
+  }
+  /**
+   * Handle a DELETE event.
+   */
+  handleDelete(filePath) {
+    const newPath = this.renameDetector.matchDeleteWithCreate(filePath);
+    if (newPath) {
+      this.cancelDebounce(`create:${newPath}`);
+      this.emitRename(filePath, newPath);
+    } else {
+      this.renameDetector.recordDelete(filePath);
+      this.debounce(`delete:${filePath}`, 200, () => {
+        const matchedNewPath = this.renameDetector.matchDeleteWithCreate(filePath);
+        if (matchedNewPath) {
+          this.cancelDebounce(`create:${matchedNewPath}`);
+          this.emitRename(filePath, matchedNewPath);
+        } else {
+          this._onDeleted.fire({
+            path: filePath,
+            isDirectory: false
+            // Can't determine for deleted files
+          });
+        }
+      });
+    }
+  }
+  /**
+   * Emit a rename event.
+   */
+  emitRename(oldPath, newPath) {
+    const isDirectory = this.isDirectory(newPath);
+    this._onRenamed.fire({ oldPath, newPath, isDirectory });
+  }
+  /**
+   * Check if a path is a directory.
+   */
+  isDirectory(filePath) {
+    try {
+      return import_node_fs2.default.statSync(filePath).isDirectory();
+    } catch {
+      return false;
+    }
+  }
+  /**
+   * Debounce a callback with the given key and delay.
+   */
+  debounce(key, delay2, callback2) {
+    const existingTimer = this.debounceTimers.get(key);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+    const timer = setTimeout(() => {
+      this.debounceTimers.delete(key);
+      callback2();
+    }, delay2);
+    this.debounceTimers.set(key, timer);
+  }
+  /**
+   * Cancel a pending debounced callback.
+   */
+  cancelDebounce(key) {
+    const timer = this.debounceTimers.get(key);
+    if (timer) {
+      clearTimeout(timer);
+      this.debounceTimers.delete(key);
+    }
+  }
+  /**
+   * Clear all debounce timers.
+   */
+  clearDebounceTimers() {
+    for (const timer of this.debounceTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.debounceTimers.clear();
+  }
+};
+
+// src/fs/types.ts
+var ALWAYS_HIDDEN = /* @__PURE__ */ new Set([".git", "node_modules"]);
+
+// src/fs/disk-fs-provider.ts
+var REFRESH_DEBOUNCE_MS = 50;
+var MAX_CONCURRENT_PREFETCH = 10;
+var VERIFY_CACHE_COOLDOWN_MS = 2e3;
+var DiskFileSystemProvider = class {
+  cwd;
+  // -------------------------------------------------------------------------
+  // Internal Components
+  // -------------------------------------------------------------------------
+  watcher;
+  disposed = false;
+  /** Pending directory refresh timers (debouncing) */
+  refreshTimers = /* @__PURE__ */ new Map();
+  /** Currently running prefetch operations */
+  activePrefetches = /* @__PURE__ */ new Set();
+  /** Last verification time per directory (for cooldown) */
+  lastVerifyTime = /* @__PURE__ */ new Map();
+  /** Cached git root for this cwd (null if not in repo, undefined if not yet checked) */
+  gitRoot = void 0;
+  // -------------------------------------------------------------------------
+  // Event Emitters
+  // -------------------------------------------------------------------------
+  _onDirectoryListingChanged = new EventEmitter2();
+  _onFileContentChanged = new EventEmitter2();
+  _onFileRenamed = new EventEmitter2();
+  _onFileDeleted = new EventEmitter2();
+  onDirectoryListingChanged = this._onDirectoryListingChanged.event;
+  onFileContentChanged = this._onFileContentChanged.event;
+  onFileRenamed = this._onFileRenamed.event;
+  onFileDeleted = this._onFileDeleted.event;
+  // -------------------------------------------------------------------------
+  // Constructor
+  // -------------------------------------------------------------------------
+  /**
+   * Create a new disk filesystem provider.
+   *
+   * @param cwd - The working directory to scope this provider to
+   * @param watcherOptions - Optional configuration for the file watcher
+   */
+  constructor(cwd, watcherOptions) {
+    this.cwd = nodePath.resolve(cwd);
+    this.watcher = new ParcelFileWatcher(this.cwd, watcherOptions);
+    this.setupWatcherEvents();
+    this.initializeGitRoot();
+  }
+  /**
+   * Initialize git root asynchronously.
+   * Called from constructor to ensure gitRoot is available for watcher filtering.
+   */
+  initializeGitRoot() {
+    GitIgnoreCache.getGitRoot(this.cwd).then((root) => {
+      this.gitRoot = root;
+    });
+  }
+  // -------------------------------------------------------------------------
+  // File Operations
+  // -------------------------------------------------------------------------
+  /**
+   * Get metadata for a file or directory.
+   */
+  async stat(path8) {
+    const stats = await fs4.stat(path8);
+    return {
+      type: stats.isDirectory() ? "directory" : "file",
+      size: stats.size,
+      mtime: stats.mtimeMs,
+      ctime: stats.ctimeMs,
+      readonly: this.isReadonly(stats)
+    };
+  }
+  /**
+   * List contents of a directory.
+   *
+   * Uses cache-first strategy:
+   * 1. Return cached entries immediately if available
+   * 2. Fetch from disk in background and update cache
+   * 3. Emit event if entries changed
+   */
+  async readDirectory(dirPath) {
+    const normalizedPath = nodePath.resolve(dirPath);
+    const cached = DirectoryCache.get(normalizedPath);
+    if (cached) {
+      this.scheduleVerifyCache(normalizedPath);
+      return cached.entries;
+    }
+    const entries = await this.readDirectoryFromDisk(normalizedPath);
+    DirectoryCache.set(normalizedPath, entries);
+    this.prefetchChildren(normalizedPath, entries);
+    return entries;
+  }
+  /**
+   * Read complete file contents as binary.
+   */
+  async readFile(filePath) {
+    const buffer = await fs4.readFile(filePath);
+    return new Uint8Array(buffer);
+  }
+  /**
+   * Read complete file contents as text (UTF-8).
+   *
+   * Convenience method that returns a string directly, avoiding the need
+   * for TextDecoder on the caller side.
+   *
+   * Note: Binary files will have invalid UTF-8 bytes replaced with U+FFFD.
+   */
+  async readTextFile(filePath) {
+    return fs4.readFile(filePath, "utf-8");
+  }
+  /**
+   * Write content to a file.
+   *
+   * Creates parent directories if they don't exist.
+   * Updates the directory cache in-place for immediate consistency.
+   */
+  async writeFile(filePath, content) {
+    const parentDir = nodePath.dirname(filePath);
+    await fs4.mkdir(parentDir, { recursive: true });
+    await fs4.writeFile(filePath, content);
+    const fileName = nodePath.basename(filePath);
+    DirectoryCache.addEntry(
+      parentDir,
+      this.buildCacheEntry(fileName, "file", filePath)
+    );
+  }
+  /**
+   * Delete a file or directory.
+   *
+   * Updates the directory cache in-place for immediate consistency.
+   */
+  async delete(path8, options) {
+    let isDirectory = false;
+    try {
+      const stats = await fs4.stat(path8);
+      isDirectory = stats.isDirectory();
+    } catch {
+    }
+    await fs4.rm(path8, {
+      recursive: options?.recursive ?? false,
+      force: false
+    });
+    const parentDir = nodePath.dirname(path8);
+    const fileName = nodePath.basename(path8);
+    DirectoryCache.removeEntry(parentDir, fileName);
+    if (isDirectory) {
+      DirectoryCache.delete(path8);
+    }
+  }
+  /**
+   * Rename or move a file/directory.
+   *
+   * Updates the directory cache in-place for immediate consistency.
+   */
+  async rename(oldPath, newPath) {
+    const stats = await fs4.lstat(oldPath);
+    const entryType = stats.isDirectory() ? "directory" : "file";
+    const isSymlink = stats.isSymbolicLink();
+    const newParentDir = nodePath.dirname(newPath);
+    await fs4.mkdir(newParentDir, { recursive: true });
+    await fs4.rename(oldPath, newPath);
+    const oldParentDir = nodePath.dirname(oldPath);
+    const oldName = nodePath.basename(oldPath);
+    const newName = nodePath.basename(newPath);
+    DirectoryCache.removeEntry(oldParentDir, oldName);
+    DirectoryCache.addEntry(
+      newParentDir,
+      this.buildCacheEntry(newName, entryType, newPath, isSymlink)
+    );
+    if (entryType === "directory") {
+      const oldCache = DirectoryCache.get(oldPath);
+      if (oldCache) {
+        DirectoryCache.set(newPath, oldCache.entries);
+        DirectoryCache.delete(oldPath);
+      }
+    }
+  }
+  /**
+   * Create a directory.
+   *
+   * Creates parent directories if they don't exist (like `mkdir -p`).
+   * Updates the directory cache in-place for immediate consistency.
+   */
+  async createDirectory(dirPath) {
+    await fs4.mkdir(dirPath, { recursive: true });
+    const parentDir = nodePath.dirname(dirPath);
+    const dirName = nodePath.basename(dirPath);
+    DirectoryCache.addEntry(
+      parentDir,
+      this.buildCacheEntry(dirName, "directory", dirPath)
+    );
+    DirectoryCache.set(dirPath, []);
+  }
+  /**
+   * Check if a path exists.
+   */
+  async exists(path8) {
+    try {
+      await fs4.access(path8);
+      return true;
+    } catch {
+      return false;
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Lifecycle
+  // -------------------------------------------------------------------------
+  /**
+   * Start watching for file changes.
+   *
+   * Call this after setting up event listeners.
+   */
+  async startWatching() {
+    if (!this.disposed) {
+      await this.watcher.watch();
+    }
+  }
+  /**
+   * Check if currently watching for changes.
+   */
+  isWatching() {
+    return this.watcher.isWatching();
+  }
+  /**
+   * Clean up all resources.
+   */
+  async dispose() {
+    if (this.disposed) {
+      return;
+    }
+    this.disposed = true;
+    for (const timer of this.refreshTimers.values()) {
+      clearTimeout(timer);
+    }
+    this.refreshTimers.clear();
+    await this.watcher.dispose();
+    this._onDirectoryListingChanged.dispose();
+    this._onFileContentChanged.dispose();
+    this._onFileRenamed.dispose();
+    this._onFileDeleted.dispose();
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Watcher Event Handling
+  // -------------------------------------------------------------------------
+  /**
+   * Check if a path should be ignored (gitignored).
+   * Returns false if git root is not yet known (conservative - don't filter).
+   */
+  isPathIgnored(filePath) {
+    if (nodePath.basename(filePath) === ".gitignore") {
+      return false;
+    }
+    if (!this.gitRoot) {
+      return false;
+    }
+    return GitIgnoreCache.isIgnored(this.gitRoot, filePath);
+  }
+  /**
+   * Build a DirectoryEntry for cache updates.
+   *
+   * Uses cached git root (if available) to set isGitignored synchronously.
+   * If git root isn't cached yet, isGitignored is omitted and will be set
+   * correctly when the watcher triggers a full directory refresh.
+   */
+  buildCacheEntry(name, type, fullPath, isSymlink = false) {
+    const entry = { name, type, isSymlink };
+    if (this.gitRoot) {
+      entry.isGitignored = GitIgnoreCache.isIgnored(this.gitRoot, fullPath);
+    }
+    return entry;
+  }
+  /**
+   * Refresh isGitignored status for all cached directories under the git root.
+   *
+   * Called when .gitignore changes. This is efficient because:
+   * 1. Only processes directories already in cache (no disk I/O)
+   * 2. Only fires events for directories where status actually changed
+   * 3. Recalculates in-place without re-reading directory contents
+   */
+  async refreshGitignoreAffectedDirectories() {
+    const gitRoot = await this.getGitRoot();
+    if (!gitRoot) {
+      return;
+    }
+    const cachedPaths = DirectoryCache.getPathsUnder(gitRoot);
+    if (cachedPaths.length === 0) {
+      return;
+    }
+    for (const dirPath of cachedPaths) {
+      const cached = DirectoryCache.get(dirPath);
+      if (!cached || cached.entries.length === 0) {
+        continue;
+      }
+      const gitIgnored = await GitIgnoreCache.getIgnoredEntries(
+        dirPath,
+        cached.entries.map((e) => ({
+          name: e.name,
+          isDirectory: e.type === "directory"
+        })),
+        gitRoot
+      );
+      let hasChanges = false;
+      const updatedEntries = cached.entries.map((entry) => {
+        const newIsGitignored = gitIgnored.has(entry.name);
+        if (entry.isGitignored !== newIsGitignored) {
+          hasChanges = true;
+          return { ...entry, isGitignored: newIsGitignored };
+        }
+        return entry;
+      });
+      if (hasChanges) {
+        DirectoryCache.set(dirPath, updatedEntries);
+        this._onDirectoryListingChanged.fire({
+          path: dirPath,
+          entries: updatedEntries
+        });
+      }
+    }
+  }
+  /**
+   * Wire up watcher events to provider events.
+   */
+  setupWatcherEvents() {
+    this.watcher.onCreated((event) => {
+      if (nodePath.basename(event.path) === ".gitignore") {
+        GitIgnoreCache.invalidateForGitignore(event.path);
+        this.refreshGitignoreAffectedDirectories();
+      }
+      const parentDir = nodePath.dirname(event.path);
+      this.scheduleRefresh(parentDir);
+      if (!event.isDirectory) {
+        this._onFileContentChanged.fire({ path: event.path });
+      }
+    });
+    this.watcher.onModified((event) => {
+      if (nodePath.basename(event.path) === ".gitignore") {
+        GitIgnoreCache.invalidateForGitignore(event.path);
+        this.refreshGitignoreAffectedDirectories();
+      }
+      this._onFileContentChanged.fire({ path: event.path });
+    });
+    this.watcher.onDeleted((event) => {
+      if (nodePath.basename(event.path) === ".gitignore") {
+        GitIgnoreCache.invalidateForGitignore(event.path);
+        this.refreshGitignoreAffectedDirectories();
+      }
+      const parentDir = nodePath.dirname(event.path);
+      this.scheduleRefresh(parentDir);
+      this._onFileDeleted.fire(event);
+      DirectoryCache.delete(event.path);
+      this._onFileContentChanged.fire({ path: event.path });
+    });
+    this.watcher.onRenamed((event) => {
+      const oldParentDir = nodePath.dirname(event.oldPath);
+      const newParentDir = nodePath.dirname(event.newPath);
+      this.scheduleRefresh(oldParentDir);
+      if (oldParentDir !== newParentDir) {
+        this.scheduleRefresh(newParentDir);
+      }
+      this._onFileRenamed.fire(event);
+      if (event.isDirectory) {
+        DirectoryCache.delete(event.oldPath);
+      }
+      this._onFileContentChanged.fire({ path: event.newPath });
+    });
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Directory Reading
+  // -------------------------------------------------------------------------
+  /**
+   * Get the git root for this provider's cwd (lazy initialization).
+   * Cached after first lookup - only one git process spawn per provider lifetime.
+   */
+  async getGitRoot() {
+    if (this.gitRoot === void 0) {
+      this.gitRoot = await GitIgnoreCache.getGitRoot(this.cwd);
+    }
+    return this.gitRoot;
+  }
+  /**
+   * Read directory contents from disk.
+   *
+   * Filters out:
+   * - Always-hidden entries (.git, node_modules)
+   *
+   * Marks with isGitignored:
+   * - Gitignored files (via .gitignore)
+   */
+  async readDirectoryFromDisk(dirPath) {
+    const dirents = await fs4.readdir(dirPath, { withFileTypes: true });
+    let entries = dirents.filter((dirent) => !ALWAYS_HIDDEN.has(dirent.name)).map((dirent) => ({
+      name: dirent.name,
+      type: dirent.isDirectory() ? "directory" : "file",
+      isSymlink: dirent.isSymbolicLink()
+    }));
+    const gitRoot = await this.getGitRoot();
+    const gitIgnored = await GitIgnoreCache.getIgnoredEntries(
+      dirPath,
+      entries.map((e) => ({
+        name: e.name,
+        isDirectory: e.type === "directory"
+      })),
+      gitRoot
+    );
+    if (gitIgnored.size > 0) {
+      entries = entries.map((e) => ({
+        ...e,
+        isGitignored: gitIgnored.has(e.name)
+      }));
+    }
+    return this.sortEntries(entries);
+  }
+  /**
+   * Sort directory entries: directories first, then files, alphabetically.
+   */
+  sortEntries(entries) {
+    return entries.sort((a, b) => {
+      if (a.type !== b.type) {
+        return a.type === "directory" ? -1 : 1;
+      }
+      return a.name.localeCompare(b.name, void 0, { sensitivity: "base" });
+    });
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Refresh Scheduling
+  // -------------------------------------------------------------------------
+  /**
+   * Schedule a directory refresh with debouncing.
+   *
+   * Multiple changes to the same directory within REFRESH_DEBOUNCE_MS
+   * are coalesced into a single refresh.
+   */
+  scheduleRefresh(dirPath) {
+    if (this.disposed) {
+      return;
+    }
+    const existingTimer = this.refreshTimers.get(dirPath);
+    if (existingTimer) {
+      clearTimeout(existingTimer);
+    }
+    const timer = setTimeout(() => {
+      this.refreshTimers.delete(dirPath);
+      this.refreshDirectory(dirPath);
+    }, REFRESH_DEBOUNCE_MS);
+    this.refreshTimers.set(dirPath, timer);
+  }
+  /**
+   * Actually refresh a directory and emit event if changed.
+   */
+  async refreshDirectory(dirPath) {
+    if (this.disposed) {
+      return;
+    }
+    const normalizedPath = nodePath.resolve(dirPath);
+    try {
+      const exists2 = await this.exists(normalizedPath);
+      if (!exists2) {
+        DirectoryCache.delete(normalizedPath);
+        return;
+      }
+      const entries = await this.readDirectoryFromDisk(normalizedPath);
+      DirectoryCache.set(normalizedPath, entries);
+      this._onDirectoryListingChanged.fire({
+        path: normalizedPath,
+        entries
+      });
+    } catch (error) {
+      const code = error.code;
+      if (code === "EPERM" || code === "EACCES") {
+        return;
+      }
+      console.error(
+        `[DiskFileSystemProvider] Failed to refresh directory ${normalizedPath}:`,
+        error
+      );
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Cache Verification
+  // -------------------------------------------------------------------------
+  /**
+   * Schedule cache verification with cooldown.
+   *
+   * This ensures we don't hammer the disk when rapidly reading
+   * the same directory.
+   */
+  scheduleVerifyCache(dirPath) {
+    const now = Date.now();
+    const lastVerify = this.lastVerifyTime.get(dirPath) ?? 0;
+    if (now - lastVerify < VERIFY_CACHE_COOLDOWN_MS) {
+      return;
+    }
+    this.lastVerifyTime.set(dirPath, now);
+    this.verifyCache(dirPath).catch((error) => {
+      const code = error.code;
+      if (code === "EPERM" || code === "EACCES") {
+        return;
+      }
+      console.error(
+        `[DiskFileSystemProvider] Cache verification failed for ${dirPath}:`,
+        error
+      );
+    });
+  }
+  /**
+   * Verify cache matches disk and update if stale.
+   */
+  async verifyCache(dirPath) {
+    if (this.disposed) {
+      return;
+    }
+    try {
+      const cached = DirectoryCache.get(dirPath);
+      if (!cached) {
+        return;
+      }
+      const freshEntries = await this.readDirectoryFromDisk(dirPath);
+      const hasChanged = cached.entries.length !== freshEntries.length || cached.entries.some(
+        (entry, i) => entry.name !== freshEntries[i].name || entry.type !== freshEntries[i].type
+      );
+      if (hasChanged) {
+        DirectoryCache.set(dirPath, freshEntries);
+        this._onDirectoryListingChanged.fire({
+          path: dirPath,
+          entries: freshEntries
+        });
+      }
+    } catch {
+      DirectoryCache.delete(dirPath);
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Prefetching
+  // -------------------------------------------------------------------------
+  /**
+   * Prefetch child directories in the background.
+   *
+   * This makes expanding folders in the UI instant because
+   * the data is already cached.
+   */
+  prefetchChildren(parentPath, entries) {
+    if (this.disposed) {
+      return;
+    }
+    const directories = entries.filter((e) => e.type === "directory").map((e) => nodePath.join(parentPath, e.name)).filter((p) => !DirectoryCache.has(p));
+    const available = MAX_CONCURRENT_PREFETCH - this.activePrefetches.size;
+    const toPrefetch = directories.slice(0, available);
+    for (const dirPath of toPrefetch) {
+      this.prefetchDirectory(dirPath);
+    }
+  }
+  /**
+   * Prefetch a single directory.
+   */
+  async prefetchDirectory(dirPath) {
+    if (this.disposed || this.activePrefetches.has(dirPath)) {
+      return;
+    }
+    this.activePrefetches.add(dirPath);
+    try {
+      const entries = await this.readDirectoryFromDisk(dirPath);
+      DirectoryCache.set(dirPath, entries);
+    } catch {
+    } finally {
+      this.activePrefetches.delete(dirPath);
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Helpers
+  // -------------------------------------------------------------------------
+  /**
+   * Check if a file is readonly based on its stats.
+   */
+  isReadonly(stats) {
+    return (stats.mode & 128) === 0;
+  }
+};
+
+// src/fs/fs-provider-service.ts
+var fs7 = __toESM(require("fs"), 1);
+var path7 = __toESM(require("path"), 1);
+
+// src/git/git-provider-service.ts
+var fs6 = __toESM(require("fs"), 1);
+var path6 = __toESM(require("path"), 1);
+
+// ../../node_modules/simple-git/dist/esm/index.js
+var import_node_buffer = require("buffer");
+var import_file_exists = __toESM(require_dist(), 1);
+var import_debug = __toESM(require_src(), 1);
+var import_child_process = require("child_process");
+var import_promise_deferred = __toESM(require_dist2(), 1);
+var import_node_path4 = require("path");
+var import_promise_deferred2 = __toESM(require_dist2(), 1);
+var import_node_events2 = require("events");
+var __defProp2 = Object.defineProperty;
+var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames2 = Object.getOwnPropertyNames;
+var __hasOwnProp2 = Object.prototype.hasOwnProperty;
+var __esm = (fn, res) => function __init() {
+  return fn && (res = (0, fn[__getOwnPropNames2(fn)[0]])(fn = 0)), res;
+};
+var __commonJS2 = (cb, mod) => function __require2() {
+  return mod || (0, cb[__getOwnPropNames2(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+};
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp2(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps2 = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames2(from))
+      if (!__hasOwnProp2.call(to, key) && key !== except)
+        __defProp2(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc2(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps2(__defProp2({}, "__esModule", { value: true }), mod);
+function pathspec(...paths) {
+  const key = new String(paths);
+  cache.set(key, paths);
+  return key;
+}
+function isPathSpec(path8) {
+  return path8 instanceof String && cache.has(path8);
+}
+function toPaths(pathSpec) {
+  return cache.get(pathSpec) || [];
+}
+var cache;
+var init_pathspec = __esm({
+  "src/lib/args/pathspec.ts"() {
+    "use strict";
+    cache = /* @__PURE__ */ new WeakMap();
+  }
+});
+var GitError;
+var init_git_error = __esm({
+  "src/lib/errors/git-error.ts"() {
+    "use strict";
+    GitError = class extends Error {
+      constructor(task, message) {
+        super(message);
+        this.task = task;
+        Object.setPrototypeOf(this, new.target.prototype);
+      }
+    };
+  }
+});
+var GitResponseError;
+var init_git_response_error = __esm({
+  "src/lib/errors/git-response-error.ts"() {
+    "use strict";
+    init_git_error();
+    GitResponseError = class extends GitError {
+      constructor(git, message) {
+        super(void 0, message || String(git));
+        this.git = git;
+      }
+    };
+  }
+});
+var TaskConfigurationError;
+var init_task_configuration_error = __esm({
+  "src/lib/errors/task-configuration-error.ts"() {
+    "use strict";
+    init_git_error();
+    TaskConfigurationError = class extends GitError {
+      constructor(message) {
+        super(void 0, message);
+      }
+    };
+  }
+});
+function asFunction(source) {
+  if (typeof source !== "function") {
+    return NOOP;
+  }
+  return source;
+}
+function isUserFunction(source) {
+  return typeof source === "function" && source !== NOOP;
+}
+function splitOn(input, char) {
+  const index = input.indexOf(char);
+  if (index <= 0) {
+    return [input, ""];
+  }
+  return [input.substr(0, index), input.substr(index + 1)];
+}
+function first(input, offset = 0) {
+  return isArrayLike(input) && input.length > offset ? input[offset] : void 0;
+}
+function last(input, offset = 0) {
+  if (isArrayLike(input) && input.length > offset) {
+    return input[input.length - 1 - offset];
+  }
+}
+function isArrayLike(input) {
+  return filterHasLength(input);
+}
+function toLinesWithContent(input = "", trimmed2 = true, separator = "\n") {
+  return input.split(separator).reduce((output, line) => {
+    const lineContent = trimmed2 ? line.trim() : line;
+    if (lineContent) {
+      output.push(lineContent);
+    }
+    return output;
+  }, []);
+}
+function forEachLineWithContent(input, callback2) {
+  return toLinesWithContent(input, true).map((line) => callback2(line));
+}
+function folderExists(path8) {
+  return (0, import_file_exists.exists)(path8, import_file_exists.FOLDER);
+}
+function append(target, item) {
+  if (Array.isArray(target)) {
+    if (!target.includes(item)) {
+      target.push(item);
+    }
+  } else {
+    target.add(item);
+  }
+  return item;
+}
+function including(target, item) {
+  if (Array.isArray(target) && !target.includes(item)) {
+    target.push(item);
+  }
+  return target;
+}
+function remove(target, item) {
+  if (Array.isArray(target)) {
+    const index = target.indexOf(item);
+    if (index >= 0) {
+      target.splice(index, 1);
+    }
+  } else {
+    target.delete(item);
+  }
+  return item;
+}
+function asArray(source) {
+  return Array.isArray(source) ? source : [source];
+}
+function asCamelCase(str) {
+  return str.replace(/[\s-]+(.)/g, (_all, chr) => {
+    return chr.toUpperCase();
+  });
+}
+function asStringArray(source) {
+  return asArray(source).map((item) => {
+    return item instanceof String ? item : String(item);
+  });
+}
+function asNumber(source, onNaN = 0) {
+  if (source == null) {
+    return onNaN;
+  }
+  const num = parseInt(source, 10);
+  return Number.isNaN(num) ? onNaN : num;
+}
+function prefixedArray(input, prefix) {
+  const output = [];
+  for (let i = 0, max = input.length; i < max; i++) {
+    output.push(prefix, input[i]);
+  }
+  return output;
+}
+function bufferToString(input) {
+  return (Array.isArray(input) ? import_node_buffer.Buffer.concat(input) : input).toString("utf-8");
+}
+function pick(source, properties) {
+  const out = {};
+  properties.forEach((key) => {
+    if (source[key] !== void 0) {
+      out[key] = source[key];
+    }
+  });
+  return out;
+}
+function delay(duration = 0) {
+  return new Promise((done) => setTimeout(done, duration));
+}
+function orVoid(input) {
+  if (input === false) {
+    return void 0;
+  }
+  return input;
+}
+var NULL;
+var NOOP;
+var objectToString;
+var init_util = __esm({
+  "src/lib/utils/util.ts"() {
+    "use strict";
+    init_argument_filters();
+    NULL = "\0";
+    NOOP = () => {
+    };
+    objectToString = Object.prototype.toString.call.bind(Object.prototype.toString);
+  }
+});
+function filterType(input, filter, def) {
+  if (filter(input)) {
+    return input;
+  }
+  return arguments.length > 2 ? def : void 0;
+}
+function filterPrimitives(input, omit) {
+  const type = isPathSpec(input) ? "string" : typeof input;
+  return /number|string|boolean/.test(type) && (!omit || !omit.includes(type));
+}
+function filterPlainObject(input) {
+  return !!input && objectToString(input) === "[object Object]";
+}
+function filterFunction(input) {
+  return typeof input === "function";
+}
+var filterArray;
+var filterNumber;
+var filterString;
+var filterStringOrStringArray;
+var filterHasLength;
+var init_argument_filters = __esm({
+  "src/lib/utils/argument-filters.ts"() {
+    "use strict";
+    init_pathspec();
+    init_util();
+    filterArray = (input) => {
+      return Array.isArray(input);
+    };
+    filterNumber = (input) => {
+      return typeof input === "number";
+    };
+    filterString = (input) => {
+      return typeof input === "string";
+    };
+    filterStringOrStringArray = (input) => {
+      return filterString(input) || Array.isArray(input) && input.every(filterString);
+    };
+    filterHasLength = (input) => {
+      if (input == null || "number|boolean|function".includes(typeof input)) {
+        return false;
+      }
+      return typeof input.length === "number";
+    };
+  }
+});
+var ExitCodes;
+var init_exit_codes = __esm({
+  "src/lib/utils/exit-codes.ts"() {
+    "use strict";
+    ExitCodes = /* @__PURE__ */ ((ExitCodes2) => {
+      ExitCodes2[ExitCodes2["SUCCESS"] = 0] = "SUCCESS";
+      ExitCodes2[ExitCodes2["ERROR"] = 1] = "ERROR";
+      ExitCodes2[ExitCodes2["NOT_FOUND"] = -2] = "NOT_FOUND";
+      ExitCodes2[ExitCodes2["UNCLEAN"] = 128] = "UNCLEAN";
+      return ExitCodes2;
+    })(ExitCodes || {});
+  }
+});
+var GitOutputStreams;
+var init_git_output_streams = __esm({
+  "src/lib/utils/git-output-streams.ts"() {
+    "use strict";
+    GitOutputStreams = class _GitOutputStreams {
+      constructor(stdOut, stdErr) {
+        this.stdOut = stdOut;
+        this.stdErr = stdErr;
+      }
+      asStrings() {
+        return new _GitOutputStreams(this.stdOut.toString("utf8"), this.stdErr.toString("utf8"));
+      }
+    };
+  }
+});
+function useMatchesDefault() {
+  throw new Error(`LineParser:useMatches not implemented`);
+}
+var LineParser;
+var RemoteLineParser;
+var init_line_parser = __esm({
+  "src/lib/utils/line-parser.ts"() {
+    "use strict";
+    LineParser = class {
+      constructor(regExp, useMatches) {
+        this.matches = [];
+        this.useMatches = useMatchesDefault;
+        this.parse = (line, target) => {
+          this.resetMatches();
+          if (!this._regExp.every((reg, index) => this.addMatch(reg, index, line(index)))) {
+            return false;
+          }
+          return this.useMatches(target, this.prepareMatches()) !== false;
+        };
+        this._regExp = Array.isArray(regExp) ? regExp : [regExp];
+        if (useMatches) {
+          this.useMatches = useMatches;
+        }
+      }
+      resetMatches() {
+        this.matches.length = 0;
+      }
+      prepareMatches() {
+        return this.matches;
+      }
+      addMatch(reg, index, line) {
+        const matched = line && reg.exec(line);
+        if (matched) {
+          this.pushMatch(index, matched);
+        }
+        return !!matched;
+      }
+      pushMatch(_index, matched) {
+        this.matches.push(...matched.slice(1));
+      }
+    };
+    RemoteLineParser = class extends LineParser {
+      addMatch(reg, index, line) {
+        return /^remote:\s/.test(String(line)) && super.addMatch(reg, index, line);
+      }
+      pushMatch(index, matched) {
+        if (index > 0 || matched.length > 1) {
+          super.pushMatch(index, matched);
+        }
+      }
+    };
+  }
+});
+function createInstanceConfig(...options) {
+  const baseDir = process.cwd();
+  const config = Object.assign(
+    { baseDir, ...defaultOptions },
+    ...options.filter((o) => typeof o === "object" && o)
+  );
+  config.baseDir = config.baseDir || baseDir;
+  config.trimmed = config.trimmed === true;
+  return config;
+}
+var defaultOptions;
+var init_simple_git_options = __esm({
+  "src/lib/utils/simple-git-options.ts"() {
+    "use strict";
+    defaultOptions = {
+      binary: "git",
+      maxConcurrentProcesses: 5,
+      config: [],
+      trimmed: false
+    };
+  }
+});
+function appendTaskOptions(options, commands = []) {
+  if (!filterPlainObject(options)) {
+    return commands;
+  }
+  return Object.keys(options).reduce((commands2, key) => {
+    const value = options[key];
+    if (isPathSpec(value)) {
+      commands2.push(value);
+    } else if (filterPrimitives(value, ["boolean"])) {
+      commands2.push(key + "=" + value);
+    } else if (Array.isArray(value)) {
+      for (const v of value) {
+        if (!filterPrimitives(v, ["string", "number"])) {
+          commands2.push(key + "=" + v);
+        }
+      }
+    } else {
+      commands2.push(key);
+    }
+    return commands2;
+  }, commands);
+}
+function getTrailingOptions(args, initialPrimitive = 0, objectOnly = false) {
+  const command = [];
+  for (let i = 0, max = initialPrimitive < 0 ? args.length : initialPrimitive; i < max; i++) {
+    if ("string|number".includes(typeof args[i])) {
+      command.push(String(args[i]));
+    }
+  }
+  appendTaskOptions(trailingOptionsArgument(args), command);
+  if (!objectOnly) {
+    command.push(...trailingArrayArgument(args));
+  }
+  return command;
+}
+function trailingArrayArgument(args) {
+  const hasTrailingCallback = typeof last(args) === "function";
+  return asStringArray(filterType(last(args, hasTrailingCallback ? 1 : 0), filterArray, []));
+}
+function trailingOptionsArgument(args) {
+  const hasTrailingCallback = filterFunction(last(args));
+  return filterType(last(args, hasTrailingCallback ? 1 : 0), filterPlainObject);
+}
+function trailingFunctionArgument(args, includeNoop = true) {
+  const callback2 = asFunction(last(args));
+  return includeNoop || isUserFunction(callback2) ? callback2 : void 0;
+}
+var init_task_options = __esm({
+  "src/lib/utils/task-options.ts"() {
+    "use strict";
+    init_argument_filters();
+    init_util();
+    init_pathspec();
+  }
+});
+function callTaskParser(parser4, streams) {
+  return parser4(streams.stdOut, streams.stdErr);
+}
+function parseStringResponse(result, parsers12, texts, trim = true) {
+  asArray(texts).forEach((text) => {
+    for (let lines = toLinesWithContent(text, trim), i = 0, max = lines.length; i < max; i++) {
+      const line = (offset = 0) => {
+        if (i + offset >= max) {
+          return;
+        }
+        return lines[i + offset];
+      };
+      parsers12.some(({ parse: parse2 }) => parse2(line, result));
+    }
+  });
+  return result;
+}
+var init_task_parser = __esm({
+  "src/lib/utils/task-parser.ts"() {
+    "use strict";
+    init_util();
+  }
+});
+var utils_exports = {};
+__export(utils_exports, {
+  ExitCodes: () => ExitCodes,
+  GitOutputStreams: () => GitOutputStreams,
+  LineParser: () => LineParser,
+  NOOP: () => NOOP,
+  NULL: () => NULL,
+  RemoteLineParser: () => RemoteLineParser,
+  append: () => append,
+  appendTaskOptions: () => appendTaskOptions,
+  asArray: () => asArray,
+  asCamelCase: () => asCamelCase,
+  asFunction: () => asFunction,
+  asNumber: () => asNumber,
+  asStringArray: () => asStringArray,
+  bufferToString: () => bufferToString,
+  callTaskParser: () => callTaskParser,
+  createInstanceConfig: () => createInstanceConfig,
+  delay: () => delay,
+  filterArray: () => filterArray,
+  filterFunction: () => filterFunction,
+  filterHasLength: () => filterHasLength,
+  filterNumber: () => filterNumber,
+  filterPlainObject: () => filterPlainObject,
+  filterPrimitives: () => filterPrimitives,
+  filterString: () => filterString,
+  filterStringOrStringArray: () => filterStringOrStringArray,
+  filterType: () => filterType,
+  first: () => first,
+  folderExists: () => folderExists,
+  forEachLineWithContent: () => forEachLineWithContent,
+  getTrailingOptions: () => getTrailingOptions,
+  including: () => including,
+  isUserFunction: () => isUserFunction,
+  last: () => last,
+  objectToString: () => objectToString,
+  orVoid: () => orVoid,
+  parseStringResponse: () => parseStringResponse,
+  pick: () => pick,
+  prefixedArray: () => prefixedArray,
+  remove: () => remove,
+  splitOn: () => splitOn,
+  toLinesWithContent: () => toLinesWithContent,
+  trailingFunctionArgument: () => trailingFunctionArgument,
+  trailingOptionsArgument: () => trailingOptionsArgument
+});
+var init_utils = __esm({
+  "src/lib/utils/index.ts"() {
+    "use strict";
+    init_argument_filters();
+    init_exit_codes();
+    init_git_output_streams();
+    init_line_parser();
+    init_simple_git_options();
+    init_task_options();
+    init_task_parser();
+    init_util();
+  }
+});
+var check_is_repo_exports = {};
+__export(check_is_repo_exports, {
+  CheckRepoActions: () => CheckRepoActions,
+  checkIsBareRepoTask: () => checkIsBareRepoTask,
+  checkIsRepoRootTask: () => checkIsRepoRootTask,
+  checkIsRepoTask: () => checkIsRepoTask
+});
+function checkIsRepoTask(action) {
+  switch (action) {
+    case "bare":
+      return checkIsBareRepoTask();
+    case "root":
+      return checkIsRepoRootTask();
+  }
+  const commands = ["rev-parse", "--is-inside-work-tree"];
+  return {
+    commands,
+    format: "utf-8",
+    onError,
+    parser
+  };
+}
+function checkIsRepoRootTask() {
+  const commands = ["rev-parse", "--git-dir"];
+  return {
+    commands,
+    format: "utf-8",
+    onError,
+    parser(path8) {
+      return /^\.(git)?$/.test(path8.trim());
+    }
+  };
+}
+function checkIsBareRepoTask() {
+  const commands = ["rev-parse", "--is-bare-repository"];
+  return {
+    commands,
+    format: "utf-8",
+    onError,
+    parser
+  };
+}
+function isNotRepoMessage(error) {
+  return /(Not a git repository|Kein Git-Repository)/i.test(String(error));
+}
+var CheckRepoActions;
+var onError;
+var parser;
+var init_check_is_repo = __esm({
+  "src/lib/tasks/check-is-repo.ts"() {
+    "use strict";
+    init_utils();
+    CheckRepoActions = /* @__PURE__ */ ((CheckRepoActions2) => {
+      CheckRepoActions2["BARE"] = "bare";
+      CheckRepoActions2["IN_TREE"] = "tree";
+      CheckRepoActions2["IS_REPO_ROOT"] = "root";
+      return CheckRepoActions2;
+    })(CheckRepoActions || {});
+    onError = ({ exitCode }, error, done, fail) => {
+      if (exitCode === 128 && isNotRepoMessage(error)) {
+        return done(Buffer.from("false"));
+      }
+      fail(error);
+    };
+    parser = (text) => {
+      return text.trim() === "true";
+    };
+  }
+});
+function cleanSummaryParser(dryRun, text) {
+  const summary = new CleanResponse(dryRun);
+  const regexp = dryRun ? dryRunRemovalRegexp : removalRegexp;
+  toLinesWithContent(text).forEach((line) => {
+    const removed = line.replace(regexp, "");
+    summary.paths.push(removed);
+    (isFolderRegexp.test(removed) ? summary.folders : summary.files).push(removed);
+  });
+  return summary;
+}
+var CleanResponse;
+var removalRegexp;
+var dryRunRemovalRegexp;
+var isFolderRegexp;
+var init_CleanSummary = __esm({
+  "src/lib/responses/CleanSummary.ts"() {
+    "use strict";
+    init_utils();
+    CleanResponse = class {
+      constructor(dryRun) {
+        this.dryRun = dryRun;
+        this.paths = [];
+        this.files = [];
+        this.folders = [];
+      }
+    };
+    removalRegexp = /^[a-z]+\s*/i;
+    dryRunRemovalRegexp = /^[a-z]+\s+[a-z]+\s*/i;
+    isFolderRegexp = /\/$/;
+  }
+});
+var task_exports = {};
+__export(task_exports, {
+  EMPTY_COMMANDS: () => EMPTY_COMMANDS,
+  adhocExecTask: () => adhocExecTask,
+  configurationErrorTask: () => configurationErrorTask,
+  isBufferTask: () => isBufferTask,
+  isEmptyTask: () => isEmptyTask,
+  straightThroughBufferTask: () => straightThroughBufferTask,
+  straightThroughStringTask: () => straightThroughStringTask
+});
+function adhocExecTask(parser4) {
+  return {
+    commands: EMPTY_COMMANDS,
+    format: "empty",
+    parser: parser4
+  };
+}
+function configurationErrorTask(error) {
+  return {
+    commands: EMPTY_COMMANDS,
+    format: "empty",
+    parser() {
+      throw typeof error === "string" ? new TaskConfigurationError(error) : error;
+    }
+  };
+}
+function straightThroughStringTask(commands, trimmed2 = false) {
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return trimmed2 ? String(text).trim() : text;
+    }
+  };
+}
+function straightThroughBufferTask(commands) {
+  return {
+    commands,
+    format: "buffer",
+    parser(buffer) {
+      return buffer;
+    }
+  };
+}
+function isBufferTask(task) {
+  return task.format === "buffer";
+}
+function isEmptyTask(task) {
+  return task.format === "empty" || !task.commands.length;
+}
+var EMPTY_COMMANDS;
+var init_task = __esm({
+  "src/lib/tasks/task.ts"() {
+    "use strict";
+    init_task_configuration_error();
+    EMPTY_COMMANDS = [];
+  }
+});
+var clean_exports = {};
+__export(clean_exports, {
+  CONFIG_ERROR_INTERACTIVE_MODE: () => CONFIG_ERROR_INTERACTIVE_MODE,
+  CONFIG_ERROR_MODE_REQUIRED: () => CONFIG_ERROR_MODE_REQUIRED,
+  CONFIG_ERROR_UNKNOWN_OPTION: () => CONFIG_ERROR_UNKNOWN_OPTION,
+  CleanOptions: () => CleanOptions,
+  cleanTask: () => cleanTask,
+  cleanWithOptionsTask: () => cleanWithOptionsTask,
+  isCleanOptionsArray: () => isCleanOptionsArray
+});
+function cleanWithOptionsTask(mode, customArgs) {
+  const { cleanMode, options, valid } = getCleanOptions(mode);
+  if (!cleanMode) {
+    return configurationErrorTask(CONFIG_ERROR_MODE_REQUIRED);
+  }
+  if (!valid.options) {
+    return configurationErrorTask(CONFIG_ERROR_UNKNOWN_OPTION + JSON.stringify(mode));
+  }
+  options.push(...customArgs);
+  if (options.some(isInteractiveMode)) {
+    return configurationErrorTask(CONFIG_ERROR_INTERACTIVE_MODE);
+  }
+  return cleanTask(cleanMode, options);
+}
+function cleanTask(mode, customArgs) {
+  const commands = ["clean", `-${mode}`, ...customArgs];
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return cleanSummaryParser(mode === "n", text);
+    }
+  };
+}
+function isCleanOptionsArray(input) {
+  return Array.isArray(input) && input.every((test) => CleanOptionValues.has(test));
+}
+function getCleanOptions(input) {
+  let cleanMode;
+  let options = [];
+  let valid = { cleanMode: false, options: true };
+  input.replace(/[^a-z]i/g, "").split("").forEach((char) => {
+    if (isCleanMode(char)) {
+      cleanMode = char;
+      valid.cleanMode = true;
+    } else {
+      valid.options = valid.options && isKnownOption(options[options.length] = `-${char}`);
+    }
+  });
+  return {
+    cleanMode,
+    options,
+    valid
+  };
+}
+function isCleanMode(cleanMode) {
+  return cleanMode === "f" || cleanMode === "n";
+}
+function isKnownOption(option) {
+  return /^-[a-z]$/i.test(option) && CleanOptionValues.has(option.charAt(1));
+}
+function isInteractiveMode(option) {
+  if (/^-[^\-]/.test(option)) {
+    return option.indexOf("i") > 0;
+  }
+  return option === "--interactive";
+}
+var CONFIG_ERROR_INTERACTIVE_MODE;
+var CONFIG_ERROR_MODE_REQUIRED;
+var CONFIG_ERROR_UNKNOWN_OPTION;
+var CleanOptions;
+var CleanOptionValues;
+var init_clean = __esm({
+  "src/lib/tasks/clean.ts"() {
+    "use strict";
+    init_CleanSummary();
+    init_utils();
+    init_task();
+    CONFIG_ERROR_INTERACTIVE_MODE = "Git clean interactive mode is not supported";
+    CONFIG_ERROR_MODE_REQUIRED = 'Git clean mode parameter ("n" or "f") is required';
+    CONFIG_ERROR_UNKNOWN_OPTION = "Git clean unknown option found in: ";
+    CleanOptions = /* @__PURE__ */ ((CleanOptions2) => {
+      CleanOptions2["DRY_RUN"] = "n";
+      CleanOptions2["FORCE"] = "f";
+      CleanOptions2["IGNORED_INCLUDED"] = "x";
+      CleanOptions2["IGNORED_ONLY"] = "X";
+      CleanOptions2["EXCLUDING"] = "e";
+      CleanOptions2["QUIET"] = "q";
+      CleanOptions2["RECURSIVE"] = "d";
+      return CleanOptions2;
+    })(CleanOptions || {});
+    CleanOptionValues = /* @__PURE__ */ new Set([
+      "i",
+      ...asStringArray(Object.values(CleanOptions))
+    ]);
+  }
+});
+function configListParser(text) {
+  const config = new ConfigList();
+  for (const item of configParser(text)) {
+    config.addValue(item.file, String(item.key), item.value);
+  }
+  return config;
+}
+function configGetParser(text, key) {
+  let value = null;
+  const values = [];
+  const scopes = /* @__PURE__ */ new Map();
+  for (const item of configParser(text, key)) {
+    if (item.key !== key) {
+      continue;
+    }
+    values.push(value = item.value);
+    if (!scopes.has(item.file)) {
+      scopes.set(item.file, []);
+    }
+    scopes.get(item.file).push(value);
+  }
+  return {
+    key,
+    paths: Array.from(scopes.keys()),
+    scopes,
+    value,
+    values
+  };
+}
+function configFilePath(filePath) {
+  return filePath.replace(/^(file):/, "");
+}
+function* configParser(text, requestedKey = null) {
+  const lines = text.split("\0");
+  for (let i = 0, max = lines.length - 1; i < max; ) {
+    const file = configFilePath(lines[i++]);
+    let value = lines[i++];
+    let key = requestedKey;
+    if (value.includes("\n")) {
+      const line = splitOn(value, "\n");
+      key = line[0];
+      value = line[1];
+    }
+    yield { file, key, value };
+  }
+}
+var ConfigList;
+var init_ConfigList = __esm({
+  "src/lib/responses/ConfigList.ts"() {
+    "use strict";
+    init_utils();
+    ConfigList = class {
+      constructor() {
+        this.files = [];
+        this.values = /* @__PURE__ */ Object.create(null);
+      }
+      get all() {
+        if (!this._all) {
+          this._all = this.files.reduce((all, file) => {
+            return Object.assign(all, this.values[file]);
+          }, {});
+        }
+        return this._all;
+      }
+      addFile(file) {
+        if (!(file in this.values)) {
+          const latest = last(this.files);
+          this.values[file] = latest ? Object.create(this.values[latest]) : {};
+          this.files.push(file);
+        }
+        return this.values[file];
+      }
+      addValue(file, key, value) {
+        const values = this.addFile(file);
+        if (!Object.hasOwn(values, key)) {
+          values[key] = value;
+        } else if (Array.isArray(values[key])) {
+          values[key].push(value);
+        } else {
+          values[key] = [values[key], value];
+        }
+        this._all = void 0;
+      }
+    };
+  }
+});
+function asConfigScope(scope, fallback) {
+  if (typeof scope === "string" && Object.hasOwn(GitConfigScope, scope)) {
+    return scope;
+  }
+  return fallback;
+}
+function addConfigTask(key, value, append2, scope) {
+  const commands = ["config", `--${scope}`];
+  if (append2) {
+    commands.push("--add");
+  }
+  commands.push(key, value);
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return text;
+    }
+  };
+}
+function getConfigTask(key, scope) {
+  const commands = ["config", "--null", "--show-origin", "--get-all", key];
+  if (scope) {
+    commands.splice(1, 0, `--${scope}`);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return configGetParser(text, key);
+    }
+  };
+}
+function listConfigTask(scope) {
+  const commands = ["config", "--list", "--show-origin", "--null"];
+  if (scope) {
+    commands.push(`--${scope}`);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return configListParser(text);
+    }
+  };
+}
+function config_default() {
+  return {
+    addConfig(key, value, ...rest) {
+      return this._runTask(
+        addConfigTask(
+          key,
+          value,
+          rest[0] === true,
+          asConfigScope(
+            rest[1],
+            "local"
+            /* local */
+          )
+        ),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    getConfig(key, scope) {
+      return this._runTask(
+        getConfigTask(key, asConfigScope(scope, void 0)),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    listConfig(...rest) {
+      return this._runTask(
+        listConfigTask(asConfigScope(rest[0], void 0)),
+        trailingFunctionArgument(arguments)
+      );
+    }
+  };
+}
+var GitConfigScope;
+var init_config = __esm({
+  "src/lib/tasks/config.ts"() {
+    "use strict";
+    init_ConfigList();
+    init_utils();
+    GitConfigScope = /* @__PURE__ */ ((GitConfigScope2) => {
+      GitConfigScope2["system"] = "system";
+      GitConfigScope2["global"] = "global";
+      GitConfigScope2["local"] = "local";
+      GitConfigScope2["worktree"] = "worktree";
+      return GitConfigScope2;
+    })(GitConfigScope || {});
+  }
+});
+function isDiffNameStatus(input) {
+  return diffNameStatus.has(input);
+}
+var DiffNameStatus;
+var diffNameStatus;
+var init_diff_name_status = __esm({
+  "src/lib/tasks/diff-name-status.ts"() {
+    "use strict";
+    DiffNameStatus = /* @__PURE__ */ ((DiffNameStatus2) => {
+      DiffNameStatus2["ADDED"] = "A";
+      DiffNameStatus2["COPIED"] = "C";
+      DiffNameStatus2["DELETED"] = "D";
+      DiffNameStatus2["MODIFIED"] = "M";
+      DiffNameStatus2["RENAMED"] = "R";
+      DiffNameStatus2["CHANGED"] = "T";
+      DiffNameStatus2["UNMERGED"] = "U";
+      DiffNameStatus2["UNKNOWN"] = "X";
+      DiffNameStatus2["BROKEN"] = "B";
+      return DiffNameStatus2;
+    })(DiffNameStatus || {});
+    diffNameStatus = new Set(Object.values(DiffNameStatus));
+  }
+});
+function grepQueryBuilder(...params) {
+  return new GrepQuery().param(...params);
+}
+function parseGrep(grep) {
+  const paths = /* @__PURE__ */ new Set();
+  const results = {};
+  forEachLineWithContent(grep, (input) => {
+    const [path8, line, preview] = input.split(NULL);
+    paths.add(path8);
+    (results[path8] = results[path8] || []).push({
+      line: asNumber(line),
+      path: path8,
+      preview
+    });
+  });
+  return {
+    paths,
+    results
+  };
+}
+function grep_default() {
+  return {
+    grep(searchTerm) {
+      const then = trailingFunctionArgument(arguments);
+      const options = getTrailingOptions(arguments);
+      for (const option of disallowedOptions) {
+        if (options.includes(option)) {
+          return this._runTask(
+            configurationErrorTask(`git.grep: use of "${option}" is not supported.`),
+            then
+          );
+        }
+      }
+      if (typeof searchTerm === "string") {
+        searchTerm = grepQueryBuilder().param(searchTerm);
+      }
+      const commands = ["grep", "--null", "-n", "--full-name", ...options, ...searchTerm];
+      return this._runTask(
+        {
+          commands,
+          format: "utf-8",
+          parser(stdOut) {
+            return parseGrep(stdOut);
+          }
+        },
+        then
+      );
+    }
+  };
+}
+var disallowedOptions;
+var Query;
+var _a;
+var GrepQuery;
+var init_grep = __esm({
+  "src/lib/tasks/grep.ts"() {
+    "use strict";
+    init_utils();
+    init_task();
+    disallowedOptions = ["-h"];
+    Query = /* @__PURE__ */ Symbol("grepQuery");
+    GrepQuery = class {
+      constructor() {
+        this[_a] = [];
+      }
+      *[(_a = Query, Symbol.iterator)]() {
+        for (const query of this[Query]) {
+          yield query;
+        }
+      }
+      and(...and) {
+        and.length && this[Query].push("--and", "(", ...prefixedArray(and, "-e"), ")");
+        return this;
+      }
+      param(...param) {
+        this[Query].push(...prefixedArray(param, "-e"));
+        return this;
+      }
+    };
+  }
+});
+var reset_exports = {};
+__export(reset_exports, {
+  ResetMode: () => ResetMode,
+  getResetMode: () => getResetMode,
+  resetTask: () => resetTask
+});
+function resetTask(mode, customArgs) {
+  const commands = ["reset"];
+  if (isValidResetMode(mode)) {
+    commands.push(`--${mode}`);
+  }
+  commands.push(...customArgs);
+  return straightThroughStringTask(commands);
+}
+function getResetMode(mode) {
+  if (isValidResetMode(mode)) {
+    return mode;
+  }
+  switch (typeof mode) {
+    case "string":
+    case "undefined":
+      return "soft";
+  }
+  return;
+}
+function isValidResetMode(mode) {
+  return typeof mode === "string" && validResetModes.includes(mode);
+}
+var ResetMode;
+var validResetModes;
+var init_reset = __esm({
+  "src/lib/tasks/reset.ts"() {
+    "use strict";
+    init_utils();
+    init_task();
+    ResetMode = /* @__PURE__ */ ((ResetMode2) => {
+      ResetMode2["MIXED"] = "mixed";
+      ResetMode2["SOFT"] = "soft";
+      ResetMode2["HARD"] = "hard";
+      ResetMode2["MERGE"] = "merge";
+      ResetMode2["KEEP"] = "keep";
+      return ResetMode2;
+    })(ResetMode || {});
+    validResetModes = asStringArray(Object.values(ResetMode));
+  }
+});
+function createLog() {
+  return (0, import_debug.default)("simple-git");
+}
+function prefixedLogger(to, prefix, forward) {
+  if (!prefix || !String(prefix).replace(/\s*/, "")) {
+    return !forward ? to : (message, ...args) => {
+      to(message, ...args);
+      forward(message, ...args);
+    };
+  }
+  return (message, ...args) => {
+    to(`%s ${message}`, prefix, ...args);
+    if (forward) {
+      forward(message, ...args);
+    }
+  };
+}
+function childLoggerName(name, childDebugger, { namespace: parentNamespace }) {
+  if (typeof name === "string") {
+    return name;
+  }
+  const childNamespace = childDebugger && childDebugger.namespace || "";
+  if (childNamespace.startsWith(parentNamespace)) {
+    return childNamespace.substr(parentNamespace.length + 1);
+  }
+  return childNamespace || parentNamespace;
+}
+function createLogger(label, verbose, initialStep, infoDebugger = createLog()) {
+  const labelPrefix = label && `[${label}]` || "";
+  const spawned = [];
+  const debugDebugger = typeof verbose === "string" ? infoDebugger.extend(verbose) : verbose;
+  const key = childLoggerName(filterType(verbose, filterString), debugDebugger, infoDebugger);
+  return step(initialStep);
+  function sibling(name, initial) {
+    return append(
+      spawned,
+      createLogger(label, key.replace(/^[^:]+/, name), initial, infoDebugger)
+    );
+  }
+  function step(phase) {
+    const stepPrefix = phase && `[${phase}]` || "";
+    const debug2 = debugDebugger && prefixedLogger(debugDebugger, stepPrefix) || NOOP;
+    const info = prefixedLogger(infoDebugger, `${labelPrefix} ${stepPrefix}`, debug2);
+    return Object.assign(debugDebugger ? debug2 : info, {
+      label,
+      sibling,
+      info,
+      step
+    });
+  }
+}
+var init_git_logger = __esm({
+  "src/lib/git-logger.ts"() {
+    "use strict";
+    init_utils();
+    import_debug.default.formatters.L = (value) => String(filterHasLength(value) ? value.length : "-");
+    import_debug.default.formatters.B = (value) => {
+      if (Buffer.isBuffer(value)) {
+        return value.toString("utf8");
+      }
+      return objectToString(value);
+    };
+  }
+});
+var TasksPendingQueue;
+var init_tasks_pending_queue = __esm({
+  "src/lib/runners/tasks-pending-queue.ts"() {
+    "use strict";
+    init_git_error();
+    init_git_logger();
+    TasksPendingQueue = class _TasksPendingQueue {
+      constructor(logLabel = "GitExecutor") {
+        this.logLabel = logLabel;
+        this._queue = /* @__PURE__ */ new Map();
+      }
+      withProgress(task) {
+        return this._queue.get(task);
+      }
+      createProgress(task) {
+        const name = _TasksPendingQueue.getName(task.commands[0]);
+        const logger = createLogger(this.logLabel, name);
+        return {
+          task,
+          logger,
+          name
+        };
+      }
+      push(task) {
+        const progress = this.createProgress(task);
+        progress.logger("Adding task to the queue, commands = %o", task.commands);
+        this._queue.set(task, progress);
+        return progress;
+      }
+      fatal(err) {
+        for (const [task, { logger }] of Array.from(this._queue.entries())) {
+          if (task === err.task) {
+            logger.info(`Failed %o`, err);
+            logger(
+              `Fatal exception, any as-yet un-started tasks run through this executor will not be attempted`
+            );
+          } else {
+            logger.info(
+              `A fatal exception occurred in a previous task, the queue has been purged: %o`,
+              err.message
+            );
+          }
+          this.complete(task);
+        }
+        if (this._queue.size !== 0) {
+          throw new Error(`Queue size should be zero after fatal: ${this._queue.size}`);
+        }
+      }
+      complete(task) {
+        const progress = this.withProgress(task);
+        if (progress) {
+          this._queue.delete(task);
+        }
+      }
+      attempt(task) {
+        const progress = this.withProgress(task);
+        if (!progress) {
+          throw new GitError(void 0, "TasksPendingQueue: attempt called for an unknown task");
+        }
+        progress.logger("Starting task");
+        return progress;
+      }
+      static getName(name = "empty") {
+        return `task:${name}:${++_TasksPendingQueue.counter}`;
+      }
+      static {
+        this.counter = 0;
+      }
+    };
+  }
+});
+function pluginContext(task, commands) {
+  return {
+    method: first(task.commands) || "",
+    commands
+  };
+}
+function onErrorReceived(target, logger) {
+  return (err) => {
+    logger(`[ERROR] child process exception %o`, err);
+    target.push(Buffer.from(String(err.stack), "ascii"));
+  };
+}
+function onDataReceived(target, name, logger, output) {
+  return (buffer) => {
+    logger(`%s received %L bytes`, name, buffer);
+    output(`%B`, buffer);
+    target.push(buffer);
+  };
+}
+var GitExecutorChain;
+var init_git_executor_chain = __esm({
+  "src/lib/runners/git-executor-chain.ts"() {
+    "use strict";
+    init_git_error();
+    init_task();
+    init_utils();
+    init_tasks_pending_queue();
+    GitExecutorChain = class {
+      constructor(_executor, _scheduler, _plugins) {
+        this._executor = _executor;
+        this._scheduler = _scheduler;
+        this._plugins = _plugins;
+        this._chain = Promise.resolve();
+        this._queue = new TasksPendingQueue();
+      }
+      get cwd() {
+        return this._cwd || this._executor.cwd;
+      }
+      set cwd(cwd) {
+        this._cwd = cwd;
+      }
+      get env() {
+        return this._executor.env;
+      }
+      get outputHandler() {
+        return this._executor.outputHandler;
+      }
+      chain() {
+        return this;
+      }
+      push(task) {
+        this._queue.push(task);
+        return this._chain = this._chain.then(() => this.attemptTask(task));
+      }
+      async attemptTask(task) {
+        const onScheduleComplete = await this._scheduler.next();
+        const onQueueComplete = () => this._queue.complete(task);
+        try {
+          const { logger } = this._queue.attempt(task);
+          return await (isEmptyTask(task) ? this.attemptEmptyTask(task, logger) : this.attemptRemoteTask(task, logger));
+        } catch (e) {
+          throw this.onFatalException(task, e);
+        } finally {
+          onQueueComplete();
+          onScheduleComplete();
+        }
+      }
+      onFatalException(task, e) {
+        const gitError = e instanceof GitError ? Object.assign(e, { task }) : new GitError(task, e && String(e));
+        this._chain = Promise.resolve();
+        this._queue.fatal(gitError);
+        return gitError;
+      }
+      async attemptRemoteTask(task, logger) {
+        const binary = this._plugins.exec("spawn.binary", "", pluginContext(task, task.commands));
+        const args = this._plugins.exec(
+          "spawn.args",
+          [...task.commands],
+          pluginContext(task, task.commands)
+        );
+        const raw = await this.gitResponse(
+          task,
+          binary,
+          args,
+          this.outputHandler,
+          logger.step("SPAWN")
+        );
+        const outputStreams = await this.handleTaskData(task, args, raw, logger.step("HANDLE"));
+        logger(`passing response to task's parser as a %s`, task.format);
+        if (isBufferTask(task)) {
+          return callTaskParser(task.parser, outputStreams);
+        }
+        return callTaskParser(task.parser, outputStreams.asStrings());
+      }
+      async attemptEmptyTask(task, logger) {
+        logger(`empty task bypassing child process to call to task's parser`);
+        return task.parser(this);
+      }
+      handleTaskData(task, args, result, logger) {
+        const { exitCode, rejection, stdOut, stdErr } = result;
+        return new Promise((done, fail) => {
+          logger(`Preparing to handle process response exitCode=%d stdOut=`, exitCode);
+          const { error } = this._plugins.exec(
+            "task.error",
+            { error: rejection },
+            {
+              ...pluginContext(task, args),
+              ...result
+            }
+          );
+          if (error && task.onError) {
+            logger.info(`exitCode=%s handling with custom error handler`);
+            return task.onError(
+              result,
+              error,
+              (newStdOut) => {
+                logger.info(`custom error handler treated as success`);
+                logger(`custom error returned a %s`, objectToString(newStdOut));
+                done(
+                  new GitOutputStreams(
+                    Array.isArray(newStdOut) ? Buffer.concat(newStdOut) : newStdOut,
+                    Buffer.concat(stdErr)
+                  )
+                );
+              },
+              fail
+            );
+          }
+          if (error) {
+            logger.info(
+              `handling as error: exitCode=%s stdErr=%s rejection=%o`,
+              exitCode,
+              stdErr.length,
+              rejection
+            );
+            return fail(error);
+          }
+          logger.info(`retrieving task output complete`);
+          done(new GitOutputStreams(Buffer.concat(stdOut), Buffer.concat(stdErr)));
+        });
+      }
+      async gitResponse(task, command, args, outputHandler, logger) {
+        const outputLogger = logger.sibling("output");
+        const spawnOptions = this._plugins.exec(
+          "spawn.options",
+          {
+            cwd: this.cwd,
+            env: this.env,
+            windowsHide: true
+          },
+          pluginContext(task, task.commands)
+        );
+        return new Promise((done) => {
+          const stdOut = [];
+          const stdErr = [];
+          logger.info(`%s %o`, command, args);
+          logger("%O", spawnOptions);
+          let rejection = this._beforeSpawn(task, args);
+          if (rejection) {
+            return done({
+              stdOut,
+              stdErr,
+              exitCode: 9901,
+              rejection
+            });
+          }
+          this._plugins.exec("spawn.before", void 0, {
+            ...pluginContext(task, args),
+            kill(reason) {
+              rejection = reason || rejection;
+            }
+          });
+          const spawned = (0, import_child_process.spawn)(command, args, spawnOptions);
+          spawned.stdout.on(
+            "data",
+            onDataReceived(stdOut, "stdOut", logger, outputLogger.step("stdOut"))
+          );
+          spawned.stderr.on(
+            "data",
+            onDataReceived(stdErr, "stdErr", logger, outputLogger.step("stdErr"))
+          );
+          spawned.on("error", onErrorReceived(stdErr, logger));
+          if (outputHandler) {
+            logger(`Passing child process stdOut/stdErr to custom outputHandler`);
+            outputHandler(command, spawned.stdout, spawned.stderr, [...args]);
+          }
+          this._plugins.exec("spawn.after", void 0, {
+            ...pluginContext(task, args),
+            spawned,
+            close(exitCode, reason) {
+              done({
+                stdOut,
+                stdErr,
+                exitCode,
+                rejection: rejection || reason
+              });
+            },
+            kill(reason) {
+              if (spawned.killed) {
+                return;
+              }
+              rejection = reason;
+              spawned.kill("SIGINT");
+            }
+          });
+        });
+      }
+      _beforeSpawn(task, args) {
+        let rejection;
+        this._plugins.exec("spawn.before", void 0, {
+          ...pluginContext(task, args),
+          kill(reason) {
+            rejection = reason || rejection;
+          }
+        });
+        return rejection;
+      }
+    };
+  }
+});
+var git_executor_exports = {};
+__export(git_executor_exports, {
+  GitExecutor: () => GitExecutor
+});
+var GitExecutor;
+var init_git_executor = __esm({
+  "src/lib/runners/git-executor.ts"() {
+    "use strict";
+    init_git_executor_chain();
+    GitExecutor = class {
+      constructor(cwd, _scheduler, _plugins) {
+        this.cwd = cwd;
+        this._scheduler = _scheduler;
+        this._plugins = _plugins;
+        this._chain = new GitExecutorChain(this, this._scheduler, this._plugins);
+      }
+      chain() {
+        return new GitExecutorChain(this, this._scheduler, this._plugins);
+      }
+      push(task) {
+        return this._chain.push(task);
+      }
+    };
+  }
+});
+function taskCallback(task, response, callback2 = NOOP) {
+  const onSuccess = (data) => {
+    callback2(null, data);
+  };
+  const onError2 = (err) => {
+    if (err?.task === task) {
+      callback2(
+        err instanceof GitResponseError ? addDeprecationNoticeToError(err) : err,
+        void 0
+      );
+    }
+  };
+  response.then(onSuccess, onError2);
+}
+function addDeprecationNoticeToError(err) {
+  let log = (name) => {
+    console.warn(
+      `simple-git deprecation notice: accessing GitResponseError.${name} should be GitResponseError.git.${name}, this will no longer be available in version 3`
+    );
+    log = NOOP;
+  };
+  return Object.create(err, Object.getOwnPropertyNames(err.git).reduce(descriptorReducer, {}));
+  function descriptorReducer(all, name) {
+    if (name in err) {
+      return all;
+    }
+    all[name] = {
+      enumerable: false,
+      configurable: false,
+      get() {
+        log(name);
+        return err.git[name];
+      }
+    };
+    return all;
+  }
+}
+var init_task_callback = __esm({
+  "src/lib/task-callback.ts"() {
+    "use strict";
+    init_git_response_error();
+    init_utils();
+  }
+});
+function changeWorkingDirectoryTask(directory, root) {
+  return adhocExecTask((instance) => {
+    if (!folderExists(directory)) {
+      throw new Error(`Git.cwd: cannot change to non-directory "${directory}"`);
+    }
+    return (root || instance).cwd = directory;
+  });
+}
+var init_change_working_directory = __esm({
+  "src/lib/tasks/change-working-directory.ts"() {
+    "use strict";
+    init_utils();
+    init_task();
+  }
+});
+function checkoutTask(args) {
+  const commands = ["checkout", ...args];
+  if (commands[1] === "-b" && commands.includes("-B")) {
+    commands[1] = remove(commands, "-B");
+  }
+  return straightThroughStringTask(commands);
+}
+function checkout_default() {
+  return {
+    checkout() {
+      return this._runTask(
+        checkoutTask(getTrailingOptions(arguments, 1)),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    checkoutBranch(branchName, startPoint) {
+      return this._runTask(
+        checkoutTask(["-b", branchName, startPoint, ...getTrailingOptions(arguments)]),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    checkoutLocalBranch(branchName) {
+      return this._runTask(
+        checkoutTask(["-b", branchName, ...getTrailingOptions(arguments)]),
+        trailingFunctionArgument(arguments)
+      );
+    }
+  };
+}
+var init_checkout = __esm({
+  "src/lib/tasks/checkout.ts"() {
+    "use strict";
+    init_utils();
+    init_task();
+  }
+});
+function countObjectsResponse() {
+  return {
+    count: 0,
+    garbage: 0,
+    inPack: 0,
+    packs: 0,
+    prunePackable: 0,
+    size: 0,
+    sizeGarbage: 0,
+    sizePack: 0
+  };
+}
+function count_objects_default() {
+  return {
+    countObjects() {
+      return this._runTask({
+        commands: ["count-objects", "--verbose"],
+        format: "utf-8",
+        parser(stdOut) {
+          return parseStringResponse(countObjectsResponse(), [parser2], stdOut);
+        }
+      });
+    }
+  };
+}
+var parser2;
+var init_count_objects = __esm({
+  "src/lib/tasks/count-objects.ts"() {
+    "use strict";
+    init_utils();
+    parser2 = new LineParser(
+      /([a-z-]+): (\d+)$/,
+      (result, [key, value]) => {
+        const property = asCamelCase(key);
+        if (Object.hasOwn(result, property)) {
+          result[property] = asNumber(value);
+        }
+      }
+    );
+  }
+});
+function parseCommitResult(stdOut) {
+  const result = {
+    author: null,
+    branch: "",
+    commit: "",
+    root: false,
+    summary: {
+      changes: 0,
+      insertions: 0,
+      deletions: 0
+    }
+  };
+  return parseStringResponse(result, parsers, stdOut);
+}
+var parsers;
+var init_parse_commit = __esm({
+  "src/lib/parsers/parse-commit.ts"() {
+    "use strict";
+    init_utils();
+    parsers = [
+      new LineParser(/^\[([^\s]+)( \([^)]+\))? ([^\]]+)/, (result, [branch, root, commit]) => {
+        result.branch = branch;
+        result.commit = commit;
+        result.root = !!root;
+      }),
+      new LineParser(/\s*Author:\s(.+)/i, (result, [author]) => {
+        const parts = author.split("<");
+        const email = parts.pop();
+        if (!email || !email.includes("@")) {
+          return;
+        }
+        result.author = {
+          email: email.substr(0, email.length - 1),
+          name: parts.join("<").trim()
+        };
+      }),
+      new LineParser(
+        /(\d+)[^,]*(?:,\s*(\d+)[^,]*)(?:,\s*(\d+))/g,
+        (result, [changes, insertions, deletions]) => {
+          result.summary.changes = parseInt(changes, 10) || 0;
+          result.summary.insertions = parseInt(insertions, 10) || 0;
+          result.summary.deletions = parseInt(deletions, 10) || 0;
+        }
+      ),
+      new LineParser(
+        /^(\d+)[^,]*(?:,\s*(\d+)[^(]+\(([+-]))?/,
+        (result, [changes, lines, direction]) => {
+          result.summary.changes = parseInt(changes, 10) || 0;
+          const count = parseInt(lines, 10) || 0;
+          if (direction === "-") {
+            result.summary.deletions = count;
+          } else if (direction === "+") {
+            result.summary.insertions = count;
+          }
+        }
+      )
+    ];
+  }
+});
+function commitTask(message, files, customArgs) {
+  const commands = [
+    "-c",
+    "core.abbrev=40",
+    "commit",
+    ...prefixedArray(message, "-m"),
+    ...files,
+    ...customArgs
+  ];
+  return {
+    commands,
+    format: "utf-8",
+    parser: parseCommitResult
+  };
+}
+function commit_default() {
+  return {
+    commit(message, ...rest) {
+      const next = trailingFunctionArgument(arguments);
+      const task = rejectDeprecatedSignatures(message) || commitTask(
+        asArray(message),
+        asArray(filterType(rest[0], filterStringOrStringArray, [])),
+        [
+          ...asStringArray(filterType(rest[1], filterArray, [])),
+          ...getTrailingOptions(arguments, 0, true)
+        ]
+      );
+      return this._runTask(task, next);
+    }
+  };
+  function rejectDeprecatedSignatures(message) {
+    return !filterStringOrStringArray(message) && configurationErrorTask(
+      `git.commit: requires the commit message to be supplied as a string/string[]`
+    );
+  }
+}
+var init_commit = __esm({
+  "src/lib/tasks/commit.ts"() {
+    "use strict";
+    init_parse_commit();
+    init_utils();
+    init_task();
+  }
+});
+function first_commit_default() {
+  return {
+    firstCommit() {
+      return this._runTask(
+        straightThroughStringTask(["rev-list", "--max-parents=0", "HEAD"], true),
+        trailingFunctionArgument(arguments)
+      );
+    }
+  };
+}
+var init_first_commit = __esm({
+  "src/lib/tasks/first-commit.ts"() {
+    "use strict";
+    init_utils();
+    init_task();
+  }
+});
+function hashObjectTask(filePath, write) {
+  const commands = ["hash-object", filePath];
+  if (write) {
+    commands.push("-w");
+  }
+  return straightThroughStringTask(commands, true);
+}
+var init_hash_object = __esm({
+  "src/lib/tasks/hash-object.ts"() {
+    "use strict";
+    init_task();
+  }
+});
+function parseInit(bare, path8, text) {
+  const response = String(text).trim();
+  let result;
+  if (result = initResponseRegex.exec(response)) {
+    return new InitSummary(bare, path8, false, result[1]);
+  }
+  if (result = reInitResponseRegex.exec(response)) {
+    return new InitSummary(bare, path8, true, result[1]);
+  }
+  let gitDir = "";
+  const tokens = response.split(" ");
+  while (tokens.length) {
+    const token = tokens.shift();
+    if (token === "in") {
+      gitDir = tokens.join(" ");
+      break;
+    }
+  }
+  return new InitSummary(bare, path8, /^re/i.test(response), gitDir);
+}
+var InitSummary;
+var initResponseRegex;
+var reInitResponseRegex;
+var init_InitSummary = __esm({
+  "src/lib/responses/InitSummary.ts"() {
+    "use strict";
+    InitSummary = class {
+      constructor(bare, path8, existing, gitDir) {
+        this.bare = bare;
+        this.path = path8;
+        this.existing = existing;
+        this.gitDir = gitDir;
+      }
+    };
+    initResponseRegex = /^Init.+ repository in (.+)$/;
+    reInitResponseRegex = /^Rein.+ in (.+)$/;
+  }
+});
+function hasBareCommand(command) {
+  return command.includes(bareCommand);
+}
+function initTask(bare = false, path8, customArgs) {
+  const commands = ["init", ...customArgs];
+  if (bare && !hasBareCommand(commands)) {
+    commands.splice(1, 0, bareCommand);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser(text) {
+      return parseInit(commands.includes("--bare"), path8, text);
+    }
+  };
+}
+var bareCommand;
+var init_init = __esm({
+  "src/lib/tasks/init.ts"() {
+    "use strict";
+    init_InitSummary();
+    bareCommand = "--bare";
+  }
+});
+function logFormatFromCommand(customArgs) {
+  for (let i = 0; i < customArgs.length; i++) {
+    const format = logFormatRegex.exec(customArgs[i]);
+    if (format) {
+      return `--${format[1]}`;
+    }
+  }
+  return "";
+}
+function isLogFormat(customArg) {
+  return logFormatRegex.test(customArg);
+}
+var logFormatRegex;
+var init_log_format = __esm({
+  "src/lib/args/log-format.ts"() {
+    "use strict";
+    logFormatRegex = /^--(stat|numstat|name-only|name-status)(=|$)/;
+  }
+});
+var DiffSummary;
+var init_DiffSummary = __esm({
+  "src/lib/responses/DiffSummary.ts"() {
+    "use strict";
+    DiffSummary = class {
+      constructor() {
+        this.changed = 0;
+        this.deletions = 0;
+        this.insertions = 0;
+        this.files = [];
+      }
+    };
+  }
+});
+function getDiffParser(format = "") {
+  const parser4 = diffSummaryParsers[format];
+  return (stdOut) => parseStringResponse(new DiffSummary(), parser4, stdOut, false);
+}
+var statParser;
+var numStatParser;
+var nameOnlyParser;
+var nameStatusParser;
+var diffSummaryParsers;
+var init_parse_diff_summary = __esm({
+  "src/lib/parsers/parse-diff-summary.ts"() {
+    "use strict";
+    init_log_format();
+    init_DiffSummary();
+    init_diff_name_status();
+    init_utils();
+    statParser = [
+      new LineParser(
+        /^(.+)\s+\|\s+(\d+)(\s+[+\-]+)?$/,
+        (result, [file, changes, alterations = ""]) => {
+          result.files.push({
+            file: file.trim(),
+            changes: asNumber(changes),
+            insertions: alterations.replace(/[^+]/g, "").length,
+            deletions: alterations.replace(/[^-]/g, "").length,
+            binary: false
+          });
+        }
+      ),
+      new LineParser(
+        /^(.+) \|\s+Bin ([0-9.]+) -> ([0-9.]+) ([a-z]+)/,
+        (result, [file, before, after]) => {
+          result.files.push({
+            file: file.trim(),
+            before: asNumber(before),
+            after: asNumber(after),
+            binary: true
+          });
+        }
+      ),
+      new LineParser(
+        /(\d+) files? changed\s*((?:, \d+ [^,]+){0,2})/,
+        (result, [changed, summary]) => {
+          const inserted = /(\d+) i/.exec(summary);
+          const deleted = /(\d+) d/.exec(summary);
+          result.changed = asNumber(changed);
+          result.insertions = asNumber(inserted?.[1]);
+          result.deletions = asNumber(deleted?.[1]);
+        }
+      )
+    ];
+    numStatParser = [
+      new LineParser(
+        /(\d+)\t(\d+)\t(.+)$/,
+        (result, [changesInsert, changesDelete, file]) => {
+          const insertions = asNumber(changesInsert);
+          const deletions = asNumber(changesDelete);
+          result.changed++;
+          result.insertions += insertions;
+          result.deletions += deletions;
+          result.files.push({
+            file,
+            changes: insertions + deletions,
+            insertions,
+            deletions,
+            binary: false
+          });
+        }
+      ),
+      new LineParser(/-\t-\t(.+)$/, (result, [file]) => {
+        result.changed++;
+        result.files.push({
+          file,
+          after: 0,
+          before: 0,
+          binary: true
+        });
+      })
+    ];
+    nameOnlyParser = [
+      new LineParser(/(.+)$/, (result, [file]) => {
+        result.changed++;
+        result.files.push({
+          file,
+          changes: 0,
+          insertions: 0,
+          deletions: 0,
+          binary: false
+        });
+      })
+    ];
+    nameStatusParser = [
+      new LineParser(
+        /([ACDMRTUXB])([0-9]{0,3})\t(.[^\t]*)(\t(.[^\t]*))?$/,
+        (result, [status, similarity, from, _to, to]) => {
+          result.changed++;
+          result.files.push({
+            file: to ?? from,
+            changes: 0,
+            insertions: 0,
+            deletions: 0,
+            binary: false,
+            status: orVoid(isDiffNameStatus(status) && status),
+            from: orVoid(!!to && from !== to && from),
+            similarity: asNumber(similarity)
+          });
+        }
+      )
+    ];
+    diffSummaryParsers = {
+      [
+        ""
+        /* NONE */
+      ]: statParser,
+      [
+        "--stat"
+        /* STAT */
+      ]: statParser,
+      [
+        "--numstat"
+        /* NUM_STAT */
+      ]: numStatParser,
+      [
+        "--name-status"
+        /* NAME_STATUS */
+      ]: nameStatusParser,
+      [
+        "--name-only"
+        /* NAME_ONLY */
+      ]: nameOnlyParser
+    };
+  }
+});
+function lineBuilder(tokens, fields) {
+  return fields.reduce(
+    (line, field, index) => {
+      line[field] = tokens[index] || "";
+      return line;
+    },
+    /* @__PURE__ */ Object.create({ diff: null })
+  );
+}
+function createListLogSummaryParser(splitter = SPLITTER, fields = defaultFieldNames, logFormat = "") {
+  const parseDiffResult = getDiffParser(logFormat);
+  return function(stdOut) {
+    const all = toLinesWithContent(
+      stdOut.trim(),
+      false,
+      START_BOUNDARY
+    ).map(function(item) {
+      const lineDetail = item.split(COMMIT_BOUNDARY);
+      const listLogLine = lineBuilder(lineDetail[0].split(splitter), fields);
+      if (lineDetail.length > 1 && !!lineDetail[1].trim()) {
+        listLogLine.diff = parseDiffResult(lineDetail[1]);
+      }
+      return listLogLine;
+    });
+    return {
+      all,
+      latest: all.length && all[0] || null,
+      total: all.length
+    };
+  };
+}
+var START_BOUNDARY;
+var COMMIT_BOUNDARY;
+var SPLITTER;
+var defaultFieldNames;
+var init_parse_list_log_summary = __esm({
+  "src/lib/parsers/parse-list-log-summary.ts"() {
+    "use strict";
+    init_utils();
+    init_parse_diff_summary();
+    init_log_format();
+    START_BOUNDARY = "\xF2\xF2\xF2\xF2\xF2\xF2 ";
+    COMMIT_BOUNDARY = " \xF2\xF2";
+    SPLITTER = " \xF2 ";
+    defaultFieldNames = ["hash", "date", "message", "refs", "author_name", "author_email"];
+  }
+});
+var diff_exports = {};
+__export(diff_exports, {
+  diffSummaryTask: () => diffSummaryTask,
+  validateLogFormatConfig: () => validateLogFormatConfig
+});
+function diffSummaryTask(customArgs) {
+  let logFormat = logFormatFromCommand(customArgs);
+  const commands = ["diff"];
+  if (logFormat === "") {
+    logFormat = "--stat";
+    commands.push("--stat=4096");
+  }
+  commands.push(...customArgs);
+  return validateLogFormatConfig(commands) || {
+    commands,
+    format: "utf-8",
+    parser: getDiffParser(logFormat)
+  };
+}
+function validateLogFormatConfig(customArgs) {
+  const flags = customArgs.filter(isLogFormat);
+  if (flags.length > 1) {
+    return configurationErrorTask(
+      `Summary flags are mutually exclusive - pick one of ${flags.join(",")}`
+    );
+  }
+  if (flags.length && customArgs.includes("-z")) {
+    return configurationErrorTask(
+      `Summary flag ${flags} parsing is not compatible with null termination option '-z'`
+    );
+  }
+}
+var init_diff = __esm({
+  "src/lib/tasks/diff.ts"() {
+    "use strict";
+    init_log_format();
+    init_parse_diff_summary();
+    init_task();
+  }
+});
+function prettyFormat(format, splitter) {
+  const fields = [];
+  const formatStr = [];
+  Object.keys(format).forEach((field) => {
+    fields.push(field);
+    formatStr.push(String(format[field]));
+  });
+  return [fields, formatStr.join(splitter)];
+}
+function userOptions(input) {
+  return Object.keys(input).reduce((out, key) => {
+    if (!(key in excludeOptions)) {
+      out[key] = input[key];
+    }
+    return out;
+  }, {});
+}
+function parseLogOptions(opt = {}, customArgs = []) {
+  const splitter = filterType(opt.splitter, filterString, SPLITTER);
+  const format = filterPlainObject(opt.format) ? opt.format : {
+    hash: "%H",
+    date: opt.strictDate === false ? "%ai" : "%aI",
+    message: "%s",
+    refs: "%D",
+    body: opt.multiLine ? "%B" : "%b",
+    author_name: opt.mailMap !== false ? "%aN" : "%an",
+    author_email: opt.mailMap !== false ? "%aE" : "%ae"
+  };
+  const [fields, formatStr] = prettyFormat(format, splitter);
+  const suffix = [];
+  const command = [
+    `--pretty=format:${START_BOUNDARY}${formatStr}${COMMIT_BOUNDARY}`,
+    ...customArgs
+  ];
+  const maxCount = opt.n || opt["max-count"] || opt.maxCount;
+  if (maxCount) {
+    command.push(`--max-count=${maxCount}`);
+  }
+  if (opt.from || opt.to) {
+    const rangeOperator = opt.symmetric !== false ? "..." : "..";
+    suffix.push(`${opt.from || ""}${rangeOperator}${opt.to || ""}`);
+  }
+  if (filterString(opt.file)) {
+    command.push("--follow", pathspec(opt.file));
+  }
+  appendTaskOptions(userOptions(opt), command);
+  return {
+    fields,
+    splitter,
+    commands: [...command, ...suffix]
+  };
+}
+function logTask(splitter, fields, customArgs) {
+  const parser4 = createListLogSummaryParser(splitter, fields, logFormatFromCommand(customArgs));
+  return {
+    commands: ["log", ...customArgs],
+    format: "utf-8",
+    parser: parser4
+  };
+}
+function log_default() {
+  return {
+    log(...rest) {
+      const next = trailingFunctionArgument(arguments);
+      const options = parseLogOptions(
+        trailingOptionsArgument(arguments),
+        asStringArray(filterType(arguments[0], filterArray, []))
+      );
+      const task = rejectDeprecatedSignatures(...rest) || validateLogFormatConfig(options.commands) || createLogTask(options);
+      return this._runTask(task, next);
+    }
+  };
+  function createLogTask(options) {
+    return logTask(options.splitter, options.fields, options.commands);
+  }
+  function rejectDeprecatedSignatures(from, to) {
+    return filterString(from) && filterString(to) && configurationErrorTask(
+      `git.log(string, string) should be replaced with git.log({ from: string, to: string })`
+    );
+  }
+}
+var excludeOptions;
+var init_log = __esm({
+  "src/lib/tasks/log.ts"() {
+    "use strict";
+    init_log_format();
+    init_pathspec();
+    init_parse_list_log_summary();
+    init_utils();
+    init_task();
+    init_diff();
+    excludeOptions = /* @__PURE__ */ ((excludeOptions2) => {
+      excludeOptions2[excludeOptions2["--pretty"] = 0] = "--pretty";
+      excludeOptions2[excludeOptions2["max-count"] = 1] = "max-count";
+      excludeOptions2[excludeOptions2["maxCount"] = 2] = "maxCount";
+      excludeOptions2[excludeOptions2["n"] = 3] = "n";
+      excludeOptions2[excludeOptions2["file"] = 4] = "file";
+      excludeOptions2[excludeOptions2["format"] = 5] = "format";
+      excludeOptions2[excludeOptions2["from"] = 6] = "from";
+      excludeOptions2[excludeOptions2["to"] = 7] = "to";
+      excludeOptions2[excludeOptions2["splitter"] = 8] = "splitter";
+      excludeOptions2[excludeOptions2["symmetric"] = 9] = "symmetric";
+      excludeOptions2[excludeOptions2["mailMap"] = 10] = "mailMap";
+      excludeOptions2[excludeOptions2["multiLine"] = 11] = "multiLine";
+      excludeOptions2[excludeOptions2["strictDate"] = 12] = "strictDate";
+      return excludeOptions2;
+    })(excludeOptions || {});
+  }
+});
+var MergeSummaryConflict;
+var MergeSummaryDetail;
+var init_MergeSummary = __esm({
+  "src/lib/responses/MergeSummary.ts"() {
+    "use strict";
+    MergeSummaryConflict = class {
+      constructor(reason, file = null, meta) {
+        this.reason = reason;
+        this.file = file;
+        this.meta = meta;
+      }
+      toString() {
+        return `${this.file}:${this.reason}`;
+      }
+    };
+    MergeSummaryDetail = class {
+      constructor() {
+        this.conflicts = [];
+        this.merges = [];
+        this.result = "success";
+      }
+      get failed() {
+        return this.conflicts.length > 0;
+      }
+      get reason() {
+        return this.result;
+      }
+      toString() {
+        if (this.conflicts.length) {
+          return `CONFLICTS: ${this.conflicts.join(", ")}`;
+        }
+        return "OK";
+      }
+    };
+  }
+});
+var PullSummary;
+var PullFailedSummary;
+var init_PullSummary = __esm({
+  "src/lib/responses/PullSummary.ts"() {
+    "use strict";
+    PullSummary = class {
+      constructor() {
+        this.remoteMessages = {
+          all: []
+        };
+        this.created = [];
+        this.deleted = [];
+        this.files = [];
+        this.deletions = {};
+        this.insertions = {};
+        this.summary = {
+          changes: 0,
+          deletions: 0,
+          insertions: 0
+        };
+      }
+    };
+    PullFailedSummary = class {
+      constructor() {
+        this.remote = "";
+        this.hash = {
+          local: "",
+          remote: ""
+        };
+        this.branch = {
+          local: "",
+          remote: ""
+        };
+        this.message = "";
+      }
+      toString() {
+        return this.message;
+      }
+    };
+  }
+});
+function objectEnumerationResult(remoteMessages) {
+  return remoteMessages.objects = remoteMessages.objects || {
+    compressing: 0,
+    counting: 0,
+    enumerating: 0,
+    packReused: 0,
+    reused: { count: 0, delta: 0 },
+    total: { count: 0, delta: 0 }
+  };
+}
+function asObjectCount(source) {
+  const count = /^\s*(\d+)/.exec(source);
+  const delta = /delta (\d+)/i.exec(source);
+  return {
+    count: asNumber(count && count[1] || "0"),
+    delta: asNumber(delta && delta[1] || "0")
+  };
+}
+var remoteMessagesObjectParsers;
+var init_parse_remote_objects = __esm({
+  "src/lib/parsers/parse-remote-objects.ts"() {
+    "use strict";
+    init_utils();
+    remoteMessagesObjectParsers = [
+      new RemoteLineParser(
+        /^remote:\s*(enumerating|counting|compressing) objects: (\d+),/i,
+        (result, [action, count]) => {
+          const key = action.toLowerCase();
+          const enumeration = objectEnumerationResult(result.remoteMessages);
+          Object.assign(enumeration, { [key]: asNumber(count) });
+        }
+      ),
+      new RemoteLineParser(
+        /^remote:\s*(enumerating|counting|compressing) objects: \d+% \(\d+\/(\d+)\),/i,
+        (result, [action, count]) => {
+          const key = action.toLowerCase();
+          const enumeration = objectEnumerationResult(result.remoteMessages);
+          Object.assign(enumeration, { [key]: asNumber(count) });
+        }
+      ),
+      new RemoteLineParser(
+        /total ([^,]+), reused ([^,]+), pack-reused (\d+)/i,
+        (result, [total, reused, packReused]) => {
+          const objects = objectEnumerationResult(result.remoteMessages);
+          objects.total = asObjectCount(total);
+          objects.reused = asObjectCount(reused);
+          objects.packReused = asNumber(packReused);
+        }
+      )
+    ];
+  }
+});
+function parseRemoteMessages(_stdOut, stdErr) {
+  return parseStringResponse({ remoteMessages: new RemoteMessageSummary() }, parsers2, stdErr);
+}
+var parsers2;
+var RemoteMessageSummary;
+var init_parse_remote_messages = __esm({
+  "src/lib/parsers/parse-remote-messages.ts"() {
+    "use strict";
+    init_utils();
+    init_parse_remote_objects();
+    parsers2 = [
+      new RemoteLineParser(/^remote:\s*(.+)$/, (result, [text]) => {
+        result.remoteMessages.all.push(text.trim());
+        return false;
+      }),
+      ...remoteMessagesObjectParsers,
+      new RemoteLineParser(
+        [/create a (?:pull|merge) request/i, /\s(https?:\/\/\S+)$/],
+        (result, [pullRequestUrl]) => {
+          result.remoteMessages.pullRequestUrl = pullRequestUrl;
+        }
+      ),
+      new RemoteLineParser(
+        [/found (\d+) vulnerabilities.+\(([^)]+)\)/i, /\s(https?:\/\/\S+)$/],
+        (result, [count, summary, url]) => {
+          result.remoteMessages.vulnerabilities = {
+            count: asNumber(count),
+            summary,
+            url
+          };
+        }
+      )
+    ];
+    RemoteMessageSummary = class {
+      constructor() {
+        this.all = [];
+      }
+    };
+  }
+});
+function parsePullErrorResult(stdOut, stdErr) {
+  const pullError = parseStringResponse(new PullFailedSummary(), errorParsers, [stdOut, stdErr]);
+  return pullError.message && pullError;
+}
+var FILE_UPDATE_REGEX;
+var SUMMARY_REGEX;
+var ACTION_REGEX;
+var parsers3;
+var errorParsers;
+var parsePullDetail;
+var parsePullResult;
+var init_parse_pull = __esm({
+  "src/lib/parsers/parse-pull.ts"() {
+    "use strict";
+    init_PullSummary();
+    init_utils();
+    init_parse_remote_messages();
+    FILE_UPDATE_REGEX = /^\s*(.+?)\s+\|\s+\d+\s*(\+*)(-*)/;
+    SUMMARY_REGEX = /(\d+)\D+((\d+)\D+\(\+\))?(\D+(\d+)\D+\(-\))?/;
+    ACTION_REGEX = /^(create|delete) mode \d+ (.+)/;
+    parsers3 = [
+      new LineParser(FILE_UPDATE_REGEX, (result, [file, insertions, deletions]) => {
+        result.files.push(file);
+        if (insertions) {
+          result.insertions[file] = insertions.length;
+        }
+        if (deletions) {
+          result.deletions[file] = deletions.length;
+        }
+      }),
+      new LineParser(SUMMARY_REGEX, (result, [changes, , insertions, , deletions]) => {
+        if (insertions !== void 0 || deletions !== void 0) {
+          result.summary.changes = +changes || 0;
+          result.summary.insertions = +insertions || 0;
+          result.summary.deletions = +deletions || 0;
+          return true;
+        }
+        return false;
+      }),
+      new LineParser(ACTION_REGEX, (result, [action, file]) => {
+        append(result.files, file);
+        append(action === "create" ? result.created : result.deleted, file);
+      })
+    ];
+    errorParsers = [
+      new LineParser(/^from\s(.+)$/i, (result, [remote]) => void (result.remote = remote)),
+      new LineParser(/^fatal:\s(.+)$/, (result, [message]) => void (result.message = message)),
+      new LineParser(
+        /([a-z0-9]+)\.\.([a-z0-9]+)\s+(\S+)\s+->\s+(\S+)$/,
+        (result, [hashLocal, hashRemote, branchLocal, branchRemote]) => {
+          result.branch.local = branchLocal;
+          result.hash.local = hashLocal;
+          result.branch.remote = branchRemote;
+          result.hash.remote = hashRemote;
+        }
+      )
+    ];
+    parsePullDetail = (stdOut, stdErr) => {
+      return parseStringResponse(new PullSummary(), parsers3, [stdOut, stdErr]);
+    };
+    parsePullResult = (stdOut, stdErr) => {
+      return Object.assign(
+        new PullSummary(),
+        parsePullDetail(stdOut, stdErr),
+        parseRemoteMessages(stdOut, stdErr)
+      );
+    };
+  }
+});
+var parsers4;
+var parseMergeResult;
+var parseMergeDetail;
+var init_parse_merge = __esm({
+  "src/lib/parsers/parse-merge.ts"() {
+    "use strict";
+    init_MergeSummary();
+    init_utils();
+    init_parse_pull();
+    parsers4 = [
+      new LineParser(/^Auto-merging\s+(.+)$/, (summary, [autoMerge]) => {
+        summary.merges.push(autoMerge);
+      }),
+      new LineParser(/^CONFLICT\s+\((.+)\): Merge conflict in (.+)$/, (summary, [reason, file]) => {
+        summary.conflicts.push(new MergeSummaryConflict(reason, file));
+      }),
+      new LineParser(
+        /^CONFLICT\s+\((.+\/delete)\): (.+) deleted in (.+) and/,
+        (summary, [reason, file, deleteRef]) => {
+          summary.conflicts.push(new MergeSummaryConflict(reason, file, { deleteRef }));
+        }
+      ),
+      new LineParser(/^CONFLICT\s+\((.+)\):/, (summary, [reason]) => {
+        summary.conflicts.push(new MergeSummaryConflict(reason, null));
+      }),
+      new LineParser(/^Automatic merge failed;\s+(.+)$/, (summary, [result]) => {
+        summary.result = result;
+      })
+    ];
+    parseMergeResult = (stdOut, stdErr) => {
+      return Object.assign(parseMergeDetail(stdOut, stdErr), parsePullResult(stdOut, stdErr));
+    };
+    parseMergeDetail = (stdOut) => {
+      return parseStringResponse(new MergeSummaryDetail(), parsers4, stdOut);
+    };
+  }
+});
+function mergeTask(customArgs) {
+  if (!customArgs.length) {
+    return configurationErrorTask("Git.merge requires at least one option");
+  }
+  return {
+    commands: ["merge", ...customArgs],
+    format: "utf-8",
+    parser(stdOut, stdErr) {
+      const merge = parseMergeResult(stdOut, stdErr);
+      if (merge.failed) {
+        throw new GitResponseError(merge);
+      }
+      return merge;
+    }
+  };
+}
+var init_merge = __esm({
+  "src/lib/tasks/merge.ts"() {
+    "use strict";
+    init_git_response_error();
+    init_parse_merge();
+    init_task();
+  }
+});
+function pushResultPushedItem(local, remote, status) {
+  const deleted = status.includes("deleted");
+  const tag = status.includes("tag") || /^refs\/tags/.test(local);
+  const alreadyUpdated = !status.includes("new");
+  return {
+    deleted,
+    tag,
+    branch: !tag,
+    new: !alreadyUpdated,
+    alreadyUpdated,
+    local,
+    remote
+  };
+}
+var parsers5;
+var parsePushResult;
+var parsePushDetail;
+var init_parse_push = __esm({
+  "src/lib/parsers/parse-push.ts"() {
+    "use strict";
+    init_utils();
+    init_parse_remote_messages();
+    parsers5 = [
+      new LineParser(/^Pushing to (.+)$/, (result, [repo]) => {
+        result.repo = repo;
+      }),
+      new LineParser(/^updating local tracking ref '(.+)'/, (result, [local]) => {
+        result.ref = {
+          ...result.ref || {},
+          local
+        };
+      }),
+      new LineParser(/^[=*-]\s+([^:]+):(\S+)\s+\[(.+)]$/, (result, [local, remote, type]) => {
+        result.pushed.push(pushResultPushedItem(local, remote, type));
+      }),
+      new LineParser(
+        /^Branch '([^']+)' set up to track remote branch '([^']+)' from '([^']+)'/,
+        (result, [local, remote, remoteName]) => {
+          result.branch = {
+            ...result.branch || {},
+            local,
+            remote,
+            remoteName
+          };
+        }
+      ),
+      new LineParser(
+        /^([^:]+):(\S+)\s+([a-z0-9]+)\.\.([a-z0-9]+)$/,
+        (result, [local, remote, from, to]) => {
+          result.update = {
+            head: {
+              local,
+              remote
+            },
+            hash: {
+              from,
+              to
+            }
+          };
+        }
+      )
+    ];
+    parsePushResult = (stdOut, stdErr) => {
+      const pushDetail = parsePushDetail(stdOut, stdErr);
+      const responseDetail = parseRemoteMessages(stdOut, stdErr);
+      return {
+        ...pushDetail,
+        ...responseDetail
+      };
+    };
+    parsePushDetail = (stdOut, stdErr) => {
+      return parseStringResponse({ pushed: [] }, parsers5, [stdOut, stdErr]);
+    };
+  }
+});
+var push_exports = {};
+__export(push_exports, {
+  pushTagsTask: () => pushTagsTask,
+  pushTask: () => pushTask
+});
+function pushTagsTask(ref = {}, customArgs) {
+  append(customArgs, "--tags");
+  return pushTask(ref, customArgs);
+}
+function pushTask(ref = {}, customArgs) {
+  const commands = ["push", ...customArgs];
+  if (ref.branch) {
+    commands.splice(1, 0, ref.branch);
+  }
+  if (ref.remote) {
+    commands.splice(1, 0, ref.remote);
+  }
+  remove(commands, "-v");
+  append(commands, "--verbose");
+  append(commands, "--porcelain");
+  return {
+    commands,
+    format: "utf-8",
+    parser: parsePushResult
+  };
+}
+var init_push = __esm({
+  "src/lib/tasks/push.ts"() {
+    "use strict";
+    init_parse_push();
+    init_utils();
+  }
+});
+function show_default() {
+  return {
+    showBuffer() {
+      const commands = ["show", ...getTrailingOptions(arguments, 1)];
+      if (!commands.includes("--binary")) {
+        commands.splice(1, 0, "--binary");
+      }
+      return this._runTask(
+        straightThroughBufferTask(commands),
+        trailingFunctionArgument(arguments)
+      );
+    },
+    show() {
+      const commands = ["show", ...getTrailingOptions(arguments, 1)];
+      return this._runTask(
+        straightThroughStringTask(commands),
+        trailingFunctionArgument(arguments)
+      );
+    }
+  };
+}
+var init_show = __esm({
+  "src/lib/tasks/show.ts"() {
+    "use strict";
+    init_utils();
+    init_task();
+  }
+});
+var fromPathRegex;
+var FileStatusSummary;
+var init_FileStatusSummary = __esm({
+  "src/lib/responses/FileStatusSummary.ts"() {
+    "use strict";
+    fromPathRegex = /^(.+)\0(.+)$/;
+    FileStatusSummary = class {
+      constructor(path8, index, working_dir) {
+        this.path = path8;
+        this.index = index;
+        this.working_dir = working_dir;
+        if (index === "R" || working_dir === "R") {
+          const detail = fromPathRegex.exec(path8) || [null, path8, path8];
+          this.from = detail[2] || "";
+          this.path = detail[1] || "";
+        }
+      }
+    };
+  }
+});
+function renamedFile(line) {
+  const [to, from] = line.split(NULL);
+  return {
+    from: from || to,
+    to
+  };
+}
+function parser3(indexX, indexY, handler) {
+  return [`${indexX}${indexY}`, handler];
+}
+function conflicts(indexX, ...indexY) {
+  return indexY.map((y) => parser3(indexX, y, (result, file) => append(result.conflicted, file)));
+}
+function splitLine(result, lineStr) {
+  const trimmed2 = lineStr.trim();
+  switch (" ") {
+    case trimmed2.charAt(2):
+      return data(trimmed2.charAt(0), trimmed2.charAt(1), trimmed2.substr(3));
+    case trimmed2.charAt(1):
+      return data(" ", trimmed2.charAt(0), trimmed2.substr(2));
+    default:
+      return;
+  }
+  function data(index, workingDir, path8) {
+    const raw = `${index}${workingDir}`;
+    const handler = parsers6.get(raw);
+    if (handler) {
+      handler(result, path8);
+    }
+    if (raw !== "##" && raw !== "!!") {
+      result.files.push(new FileStatusSummary(path8, index, workingDir));
+    }
+  }
+}
+var StatusSummary;
+var parsers6;
+var parseStatusSummary;
+var init_StatusSummary = __esm({
+  "src/lib/responses/StatusSummary.ts"() {
+    "use strict";
+    init_utils();
+    init_FileStatusSummary();
+    StatusSummary = class {
+      constructor() {
+        this.not_added = [];
+        this.conflicted = [];
+        this.created = [];
+        this.deleted = [];
+        this.ignored = void 0;
+        this.modified = [];
+        this.renamed = [];
+        this.files = [];
+        this.staged = [];
+        this.ahead = 0;
+        this.behind = 0;
+        this.current = null;
+        this.tracking = null;
+        this.detached = false;
+        this.isClean = () => {
+          return !this.files.length;
+        };
+      }
+    };
+    parsers6 = new Map([
+      parser3(
+        " ",
+        "A",
+        (result, file) => append(result.created, file)
+      ),
+      parser3(
+        " ",
+        "D",
+        (result, file) => append(result.deleted, file)
+      ),
+      parser3(
+        " ",
+        "M",
+        (result, file) => append(result.modified, file)
+      ),
+      parser3(
+        "A",
+        " ",
+        (result, file) => append(result.created, file) && append(result.staged, file)
+      ),
+      parser3(
+        "A",
+        "M",
+        (result, file) => append(result.created, file) && append(result.staged, file) && append(result.modified, file)
+      ),
+      parser3(
+        "D",
+        " ",
+        (result, file) => append(result.deleted, file) && append(result.staged, file)
+      ),
+      parser3(
+        "M",
+        " ",
+        (result, file) => append(result.modified, file) && append(result.staged, file)
+      ),
+      parser3(
+        "M",
+        "M",
+        (result, file) => append(result.modified, file) && append(result.staged, file)
+      ),
+      parser3("R", " ", (result, file) => {
+        append(result.renamed, renamedFile(file));
+      }),
+      parser3("R", "M", (result, file) => {
+        const renamed = renamedFile(file);
+        append(result.renamed, renamed);
+        append(result.modified, renamed.to);
+      }),
+      parser3("!", "!", (_result, _file) => {
+        append(_result.ignored = _result.ignored || [], _file);
+      }),
+      parser3(
+        "?",
+        "?",
+        (result, file) => append(result.not_added, file)
+      ),
+      ...conflicts(
+        "A",
+        "A",
+        "U"
+        /* UNMERGED */
+      ),
+      ...conflicts(
+        "D",
+        "D",
+        "U"
+        /* UNMERGED */
+      ),
+      ...conflicts(
+        "U",
+        "A",
+        "D",
+        "U"
+        /* UNMERGED */
+      ),
+      [
+        "##",
+        (result, line) => {
+          const aheadReg = /ahead (\d+)/;
+          const behindReg = /behind (\d+)/;
+          const currentReg = /^(.+?(?=(?:\.{3}|\s|$)))/;
+          const trackingReg = /\.{3}(\S*)/;
+          const onEmptyBranchReg = /\son\s(\S+?)(?=\.{3}|$)/;
+          let regexResult = aheadReg.exec(line);
+          result.ahead = regexResult && +regexResult[1] || 0;
+          regexResult = behindReg.exec(line);
+          result.behind = regexResult && +regexResult[1] || 0;
+          regexResult = currentReg.exec(line);
+          result.current = filterType(regexResult?.[1], filterString, null);
+          regexResult = trackingReg.exec(line);
+          result.tracking = filterType(regexResult?.[1], filterString, null);
+          regexResult = onEmptyBranchReg.exec(line);
+          if (regexResult) {
+            result.current = filterType(regexResult?.[1], filterString, result.current);
+          }
+          result.detached = /\(no branch\)/.test(line);
+        }
+      ]
+    ]);
+    parseStatusSummary = function(text) {
+      const lines = text.split(NULL);
+      const status = new StatusSummary();
+      for (let i = 0, l = lines.length; i < l; ) {
+        let line = lines[i++].trim();
+        if (!line) {
+          continue;
+        }
+        if (line.charAt(0) === "R") {
+          line += NULL + (lines[i++] || "");
+        }
+        splitLine(status, line);
+      }
+      return status;
+    };
+  }
+});
+function statusTask(customArgs) {
+  const commands = [
+    "status",
+    "--porcelain",
+    "-b",
+    "-u",
+    "--null",
+    ...customArgs.filter((arg) => !ignoredOptions.includes(arg))
+  ];
+  return {
+    format: "utf-8",
+    commands,
+    parser(text) {
+      return parseStatusSummary(text);
+    }
+  };
+}
+var ignoredOptions;
+var init_status = __esm({
+  "src/lib/tasks/status.ts"() {
+    "use strict";
+    init_StatusSummary();
+    ignoredOptions = ["--null", "-z"];
+  }
+});
+function versionResponse(major = 0, minor = 0, patch = 0, agent = "", installed = true) {
+  return Object.defineProperty(
+    {
+      major,
+      minor,
+      patch,
+      agent,
+      installed
+    },
+    "toString",
+    {
+      value() {
+        return `${this.major}.${this.minor}.${this.patch}`;
+      },
+      configurable: false,
+      enumerable: false
+    }
+  );
+}
+function notInstalledResponse() {
+  return versionResponse(0, 0, 0, "", false);
+}
+function version_default() {
+  return {
+    version() {
+      return this._runTask({
+        commands: ["--version"],
+        format: "utf-8",
+        parser: versionParser,
+        onError(result, error, done, fail) {
+          if (result.exitCode === -2) {
+            return done(Buffer.from(NOT_INSTALLED));
+          }
+          fail(error);
+        }
+      });
+    }
+  };
+}
+function versionParser(stdOut) {
+  if (stdOut === NOT_INSTALLED) {
+    return notInstalledResponse();
+  }
+  return parseStringResponse(versionResponse(0, 0, 0, stdOut), parsers7, stdOut);
+}
+var NOT_INSTALLED;
+var parsers7;
+var init_version = __esm({
+  "src/lib/tasks/version.ts"() {
+    "use strict";
+    init_utils();
+    NOT_INSTALLED = "installed=false";
+    parsers7 = [
+      new LineParser(
+        /version (\d+)\.(\d+)\.(\d+)(?:\s*\((.+)\))?/,
+        (result, [major, minor, patch, agent = ""]) => {
+          Object.assign(
+            result,
+            versionResponse(asNumber(major), asNumber(minor), asNumber(patch), agent)
+          );
+        }
+      ),
+      new LineParser(
+        /version (\d+)\.(\d+)\.(\D+)(.+)?$/,
+        (result, [major, minor, patch, agent = ""]) => {
+          Object.assign(result, versionResponse(asNumber(major), asNumber(minor), patch, agent));
+        }
+      )
+    ];
+  }
+});
+var simple_git_api_exports = {};
+__export(simple_git_api_exports, {
+  SimpleGitApi: () => SimpleGitApi
+});
+var SimpleGitApi;
+var init_simple_git_api = __esm({
+  "src/lib/simple-git-api.ts"() {
+    "use strict";
+    init_task_callback();
+    init_change_working_directory();
+    init_checkout();
+    init_count_objects();
+    init_commit();
+    init_config();
+    init_first_commit();
+    init_grep();
+    init_hash_object();
+    init_init();
+    init_log();
+    init_merge();
+    init_push();
+    init_show();
+    init_status();
+    init_task();
+    init_version();
+    init_utils();
+    SimpleGitApi = class {
+      constructor(_executor) {
+        this._executor = _executor;
+      }
+      _runTask(task, then) {
+        const chain = this._executor.chain();
+        const promise2 = chain.push(task);
+        if (then) {
+          taskCallback(task, promise2, then);
+        }
+        return Object.create(this, {
+          then: { value: promise2.then.bind(promise2) },
+          catch: { value: promise2.catch.bind(promise2) },
+          _executor: { value: chain }
+        });
+      }
+      add(files) {
+        return this._runTask(
+          straightThroughStringTask(["add", ...asArray(files)]),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      cwd(directory) {
+        const next = trailingFunctionArgument(arguments);
+        if (typeof directory === "string") {
+          return this._runTask(changeWorkingDirectoryTask(directory, this._executor), next);
+        }
+        if (typeof directory?.path === "string") {
+          return this._runTask(
+            changeWorkingDirectoryTask(
+              directory.path,
+              directory.root && this._executor || void 0
+            ),
+            next
+          );
+        }
+        return this._runTask(
+          configurationErrorTask("Git.cwd: workingDirectory must be supplied as a string"),
+          next
+        );
+      }
+      hashObject(path8, write) {
+        return this._runTask(
+          hashObjectTask(path8, write === true),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      init(bare) {
+        return this._runTask(
+          initTask(bare === true, this._executor.cwd, getTrailingOptions(arguments)),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      merge() {
+        return this._runTask(
+          mergeTask(getTrailingOptions(arguments)),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      mergeFromTo(remote, branch) {
+        if (!(filterString(remote) && filterString(branch))) {
+          return this._runTask(
+            configurationErrorTask(
+              `Git.mergeFromTo requires that the 'remote' and 'branch' arguments are supplied as strings`
+            )
+          );
+        }
+        return this._runTask(
+          mergeTask([remote, branch, ...getTrailingOptions(arguments)]),
+          trailingFunctionArgument(arguments, false)
+        );
+      }
+      outputHandler(handler) {
+        this._executor.outputHandler = handler;
+        return this;
+      }
+      push() {
+        const task = pushTask(
+          {
+            remote: filterType(arguments[0], filterString),
+            branch: filterType(arguments[1], filterString)
+          },
+          getTrailingOptions(arguments)
+        );
+        return this._runTask(task, trailingFunctionArgument(arguments));
+      }
+      stash() {
+        return this._runTask(
+          straightThroughStringTask(["stash", ...getTrailingOptions(arguments)]),
+          trailingFunctionArgument(arguments)
+        );
+      }
+      status() {
+        return this._runTask(
+          statusTask(getTrailingOptions(arguments)),
+          trailingFunctionArgument(arguments)
+        );
+      }
+    };
+    Object.assign(
+      SimpleGitApi.prototype,
+      checkout_default(),
+      commit_default(),
+      config_default(),
+      count_objects_default(),
+      first_commit_default(),
+      grep_default(),
+      log_default(),
+      show_default(),
+      version_default()
+    );
+  }
+});
+var scheduler_exports = {};
+__export(scheduler_exports, {
+  Scheduler: () => Scheduler
+});
+var createScheduledTask;
+var Scheduler;
+var init_scheduler = __esm({
+  "src/lib/runners/scheduler.ts"() {
+    "use strict";
+    init_utils();
+    init_git_logger();
+    createScheduledTask = /* @__PURE__ */ (() => {
+      let id = 0;
+      return () => {
+        id++;
+        const { promise: promise2, done } = (0, import_promise_deferred.createDeferred)();
+        return {
+          promise: promise2,
+          done,
+          id
+        };
+      };
+    })();
+    Scheduler = class {
+      constructor(concurrency = 2) {
+        this.concurrency = concurrency;
+        this.logger = createLogger("", "scheduler");
+        this.pending = [];
+        this.running = [];
+        this.logger(`Constructed, concurrency=%s`, concurrency);
+      }
+      schedule() {
+        if (!this.pending.length || this.running.length >= this.concurrency) {
+          this.logger(
+            `Schedule attempt ignored, pending=%s running=%s concurrency=%s`,
+            this.pending.length,
+            this.running.length,
+            this.concurrency
+          );
+          return;
+        }
+        const task = append(this.running, this.pending.shift());
+        this.logger(`Attempting id=%s`, task.id);
+        task.done(() => {
+          this.logger(`Completing id=`, task.id);
+          remove(this.running, task);
+          this.schedule();
+        });
+      }
+      next() {
+        const { promise: promise2, id } = append(this.pending, createScheduledTask());
+        this.logger(`Scheduling id=%s`, id);
+        this.schedule();
+        return promise2;
+      }
+    };
+  }
+});
+var apply_patch_exports = {};
+__export(apply_patch_exports, {
+  applyPatchTask: () => applyPatchTask
+});
+function applyPatchTask(patches, customArgs) {
+  return straightThroughStringTask(["apply", ...customArgs, ...patches]);
+}
+var init_apply_patch = __esm({
+  "src/lib/tasks/apply-patch.ts"() {
+    "use strict";
+    init_task();
+  }
+});
+function branchDeletionSuccess(branch, hash) {
+  return {
+    branch,
+    hash,
+    success: true
+  };
+}
+function branchDeletionFailure(branch) {
+  return {
+    branch,
+    hash: null,
+    success: false
+  };
+}
+var BranchDeletionBatch;
+var init_BranchDeleteSummary = __esm({
+  "src/lib/responses/BranchDeleteSummary.ts"() {
+    "use strict";
+    BranchDeletionBatch = class {
+      constructor() {
+        this.all = [];
+        this.branches = {};
+        this.errors = [];
+      }
+      get success() {
+        return !this.errors.length;
+      }
+    };
+  }
+});
+function hasBranchDeletionError(data, processExitCode) {
+  return processExitCode === 1 && deleteErrorRegex.test(data);
+}
+var deleteSuccessRegex;
+var deleteErrorRegex;
+var parsers8;
+var parseBranchDeletions;
+var init_parse_branch_delete = __esm({
+  "src/lib/parsers/parse-branch-delete.ts"() {
+    "use strict";
+    init_BranchDeleteSummary();
+    init_utils();
+    deleteSuccessRegex = /(\S+)\s+\(\S+\s([^)]+)\)/;
+    deleteErrorRegex = /^error[^']+'([^']+)'/m;
+    parsers8 = [
+      new LineParser(deleteSuccessRegex, (result, [branch, hash]) => {
+        const deletion = branchDeletionSuccess(branch, hash);
+        result.all.push(deletion);
+        result.branches[branch] = deletion;
+      }),
+      new LineParser(deleteErrorRegex, (result, [branch]) => {
+        const deletion = branchDeletionFailure(branch);
+        result.errors.push(deletion);
+        result.all.push(deletion);
+        result.branches[branch] = deletion;
+      })
+    ];
+    parseBranchDeletions = (stdOut, stdErr) => {
+      return parseStringResponse(new BranchDeletionBatch(), parsers8, [stdOut, stdErr]);
+    };
+  }
+});
+var BranchSummaryResult;
+var init_BranchSummary = __esm({
+  "src/lib/responses/BranchSummary.ts"() {
+    "use strict";
+    BranchSummaryResult = class {
+      constructor() {
+        this.all = [];
+        this.branches = {};
+        this.current = "";
+        this.detached = false;
+      }
+      push(status, detached, name, commit, label) {
+        if (status === "*") {
+          this.detached = detached;
+          this.current = name;
+        }
+        this.all.push(name);
+        this.branches[name] = {
+          current: status === "*",
+          linkedWorkTree: status === "+",
+          name,
+          commit,
+          label
+        };
+      }
+    };
+  }
+});
+function branchStatus(input) {
+  return input ? input.charAt(0) : "";
+}
+function parseBranchSummary(stdOut, currentOnly = false) {
+  return parseStringResponse(
+    new BranchSummaryResult(),
+    currentOnly ? [currentBranchParser] : parsers9,
+    stdOut
+  );
+}
+var parsers9;
+var currentBranchParser;
+var init_parse_branch = __esm({
+  "src/lib/parsers/parse-branch.ts"() {
+    "use strict";
+    init_BranchSummary();
+    init_utils();
+    parsers9 = [
+      new LineParser(
+        /^([*+]\s)?\((?:HEAD )?detached (?:from|at) (\S+)\)\s+([a-z0-9]+)\s(.*)$/,
+        (result, [current, name, commit, label]) => {
+          result.push(branchStatus(current), true, name, commit, label);
+        }
+      ),
+      new LineParser(
+        /^([*+]\s)?(\S+)\s+([a-z0-9]+)\s?(.*)$/s,
+        (result, [current, name, commit, label]) => {
+          result.push(branchStatus(current), false, name, commit, label);
+        }
+      )
+    ];
+    currentBranchParser = new LineParser(/^(\S+)$/s, (result, [name]) => {
+      result.push("*", false, name, "", "");
+    });
+  }
+});
+var branch_exports = {};
+__export(branch_exports, {
+  branchLocalTask: () => branchLocalTask,
+  branchTask: () => branchTask,
+  containsDeleteBranchCommand: () => containsDeleteBranchCommand,
+  deleteBranchTask: () => deleteBranchTask,
+  deleteBranchesTask: () => deleteBranchesTask
+});
+function containsDeleteBranchCommand(commands) {
+  const deleteCommands = ["-d", "-D", "--delete"];
+  return commands.some((command) => deleteCommands.includes(command));
+}
+function branchTask(customArgs) {
+  const isDelete = containsDeleteBranchCommand(customArgs);
+  const isCurrentOnly = customArgs.includes("--show-current");
+  const commands = ["branch", ...customArgs];
+  if (commands.length === 1) {
+    commands.push("-a");
+  }
+  if (!commands.includes("-v")) {
+    commands.splice(1, 0, "-v");
+  }
+  return {
+    format: "utf-8",
+    commands,
+    parser(stdOut, stdErr) {
+      if (isDelete) {
+        return parseBranchDeletions(stdOut, stdErr).all[0];
+      }
+      return parseBranchSummary(stdOut, isCurrentOnly);
+    }
+  };
+}
+function branchLocalTask() {
+  return {
+    format: "utf-8",
+    commands: ["branch", "-v"],
+    parser(stdOut) {
+      return parseBranchSummary(stdOut);
+    }
+  };
+}
+function deleteBranchesTask(branches, forceDelete = false) {
+  return {
+    format: "utf-8",
+    commands: ["branch", "-v", forceDelete ? "-D" : "-d", ...branches],
+    parser(stdOut, stdErr) {
+      return parseBranchDeletions(stdOut, stdErr);
+    },
+    onError({ exitCode, stdOut }, error, done, fail) {
+      if (!hasBranchDeletionError(String(error), exitCode)) {
+        return fail(error);
+      }
+      done(stdOut);
+    }
+  };
+}
+function deleteBranchTask(branch, forceDelete = false) {
+  const task = {
+    format: "utf-8",
+    commands: ["branch", "-v", forceDelete ? "-D" : "-d", branch],
+    parser(stdOut, stdErr) {
+      return parseBranchDeletions(stdOut, stdErr).branches[branch];
+    },
+    onError({ exitCode, stdErr, stdOut }, error, _, fail) {
+      if (!hasBranchDeletionError(String(error), exitCode)) {
+        return fail(error);
+      }
+      throw new GitResponseError(
+        task.parser(bufferToString(stdOut), bufferToString(stdErr)),
+        String(error)
+      );
+    }
+  };
+  return task;
+}
+var init_branch = __esm({
+  "src/lib/tasks/branch.ts"() {
+    "use strict";
+    init_git_response_error();
+    init_parse_branch_delete();
+    init_parse_branch();
+    init_utils();
+  }
+});
+function toPath(input) {
+  const path8 = input.trim().replace(/^["']|["']$/g, "");
+  return path8 && (0, import_node_path4.normalize)(path8);
+}
+var parseCheckIgnore;
+var init_CheckIgnore = __esm({
+  "src/lib/responses/CheckIgnore.ts"() {
+    "use strict";
+    parseCheckIgnore = (text) => {
+      return text.split(/\n/g).map(toPath).filter(Boolean);
+    };
+  }
+});
+var check_ignore_exports = {};
+__export(check_ignore_exports, {
+  checkIgnoreTask: () => checkIgnoreTask
+});
+function checkIgnoreTask(paths) {
+  return {
+    commands: ["check-ignore", ...paths],
+    format: "utf-8",
+    parser: parseCheckIgnore
+  };
+}
+var init_check_ignore = __esm({
+  "src/lib/tasks/check-ignore.ts"() {
+    "use strict";
+    init_CheckIgnore();
+  }
+});
+var clone_exports = {};
+__export(clone_exports, {
+  cloneMirrorTask: () => cloneMirrorTask,
+  cloneTask: () => cloneTask
+});
+function disallowedCommand(command) {
+  return /^--upload-pack(=|$)/.test(command);
+}
+function cloneTask(repo, directory, customArgs) {
+  const commands = ["clone", ...customArgs];
+  filterString(repo) && commands.push(repo);
+  filterString(directory) && commands.push(directory);
+  const banned = commands.find(disallowedCommand);
+  if (banned) {
+    return configurationErrorTask(`git.fetch: potential exploit argument blocked.`);
+  }
+  return straightThroughStringTask(commands);
+}
+function cloneMirrorTask(repo, directory, customArgs) {
+  append(customArgs, "--mirror");
+  return cloneTask(repo, directory, customArgs);
+}
+var init_clone = __esm({
+  "src/lib/tasks/clone.ts"() {
+    "use strict";
+    init_task();
+    init_utils();
+  }
+});
+function parseFetchResult(stdOut, stdErr) {
+  const result = {
+    raw: stdOut,
+    remote: null,
+    branches: [],
+    tags: [],
+    updated: [],
+    deleted: []
+  };
+  return parseStringResponse(result, parsers10, [stdOut, stdErr]);
+}
+var parsers10;
+var init_parse_fetch = __esm({
+  "src/lib/parsers/parse-fetch.ts"() {
+    "use strict";
+    init_utils();
+    parsers10 = [
+      new LineParser(/From (.+)$/, (result, [remote]) => {
+        result.remote = remote;
+      }),
+      new LineParser(/\* \[new branch]\s+(\S+)\s*-> (.+)$/, (result, [name, tracking]) => {
+        result.branches.push({
+          name,
+          tracking
+        });
+      }),
+      new LineParser(/\* \[new tag]\s+(\S+)\s*-> (.+)$/, (result, [name, tracking]) => {
+        result.tags.push({
+          name,
+          tracking
+        });
+      }),
+      new LineParser(/- \[deleted]\s+\S+\s*-> (.+)$/, (result, [tracking]) => {
+        result.deleted.push({
+          tracking
+        });
+      }),
+      new LineParser(
+        /\s*([^.]+)\.\.(\S+)\s+(\S+)\s*-> (.+)$/,
+        (result, [from, to, name, tracking]) => {
+          result.updated.push({
+            name,
+            tracking,
+            to,
+            from
+          });
+        }
+      )
+    ];
+  }
+});
+var fetch_exports = {};
+__export(fetch_exports, {
+  fetchTask: () => fetchTask
+});
+function disallowedCommand2(command) {
+  return /^--upload-pack(=|$)/.test(command);
+}
+function fetchTask(remote, branch, customArgs) {
+  const commands = ["fetch", ...customArgs];
+  if (remote && branch) {
+    commands.push(remote, branch);
+  }
+  const banned = commands.find(disallowedCommand2);
+  if (banned) {
+    return configurationErrorTask(`git.fetch: potential exploit argument blocked.`);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser: parseFetchResult
+  };
+}
+var init_fetch = __esm({
+  "src/lib/tasks/fetch.ts"() {
+    "use strict";
+    init_parse_fetch();
+    init_task();
+  }
+});
+function parseMoveResult(stdOut) {
+  return parseStringResponse({ moves: [] }, parsers11, stdOut);
+}
+var parsers11;
+var init_parse_move = __esm({
+  "src/lib/parsers/parse-move.ts"() {
+    "use strict";
+    init_utils();
+    parsers11 = [
+      new LineParser(/^Renaming (.+) to (.+)$/, (result, [from, to]) => {
+        result.moves.push({ from, to });
+      })
+    ];
+  }
+});
+var move_exports = {};
+__export(move_exports, {
+  moveTask: () => moveTask
+});
+function moveTask(from, to) {
+  return {
+    commands: ["mv", "-v", ...asArray(from), to],
+    format: "utf-8",
+    parser: parseMoveResult
+  };
+}
+var init_move = __esm({
+  "src/lib/tasks/move.ts"() {
+    "use strict";
+    init_parse_move();
+    init_utils();
+  }
+});
+var pull_exports = {};
+__export(pull_exports, {
+  pullTask: () => pullTask
+});
+function pullTask(remote, branch, customArgs) {
+  const commands = ["pull", ...customArgs];
+  if (remote && branch) {
+    commands.splice(1, 0, remote, branch);
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser(stdOut, stdErr) {
+      return parsePullResult(stdOut, stdErr);
+    },
+    onError(result, _error, _done, fail) {
+      const pullError = parsePullErrorResult(
+        bufferToString(result.stdOut),
+        bufferToString(result.stdErr)
+      );
+      if (pullError) {
+        return fail(new GitResponseError(pullError));
+      }
+      fail(_error);
+    }
+  };
+}
+var init_pull = __esm({
+  "src/lib/tasks/pull.ts"() {
+    "use strict";
+    init_git_response_error();
+    init_parse_pull();
+    init_utils();
+  }
+});
+function parseGetRemotes(text) {
+  const remotes = {};
+  forEach(text, ([name]) => remotes[name] = { name });
+  return Object.values(remotes);
+}
+function parseGetRemotesVerbose(text) {
+  const remotes = {};
+  forEach(text, ([name, url, purpose]) => {
+    if (!Object.hasOwn(remotes, name)) {
+      remotes[name] = {
+        name,
+        refs: { fetch: "", push: "" }
+      };
+    }
+    if (purpose && url) {
+      remotes[name].refs[purpose.replace(/[^a-z]/g, "")] = url;
+    }
+  });
+  return Object.values(remotes);
+}
+function forEach(text, handler) {
+  forEachLineWithContent(text, (line) => handler(line.split(/\s+/)));
+}
+var init_GetRemoteSummary = __esm({
+  "src/lib/responses/GetRemoteSummary.ts"() {
+    "use strict";
+    init_utils();
+  }
+});
+var remote_exports = {};
+__export(remote_exports, {
+  addRemoteTask: () => addRemoteTask,
+  getRemotesTask: () => getRemotesTask,
+  listRemotesTask: () => listRemotesTask,
+  remoteTask: () => remoteTask,
+  removeRemoteTask: () => removeRemoteTask
+});
+function addRemoteTask(remoteName, remoteRepo, customArgs) {
+  return straightThroughStringTask(["remote", "add", ...customArgs, remoteName, remoteRepo]);
+}
+function getRemotesTask(verbose) {
+  const commands = ["remote"];
+  if (verbose) {
+    commands.push("-v");
+  }
+  return {
+    commands,
+    format: "utf-8",
+    parser: verbose ? parseGetRemotesVerbose : parseGetRemotes
+  };
+}
+function listRemotesTask(customArgs) {
+  const commands = [...customArgs];
+  if (commands[0] !== "ls-remote") {
+    commands.unshift("ls-remote");
+  }
+  return straightThroughStringTask(commands);
+}
+function remoteTask(customArgs) {
+  const commands = [...customArgs];
+  if (commands[0] !== "remote") {
+    commands.unshift("remote");
+  }
+  return straightThroughStringTask(commands);
+}
+function removeRemoteTask(remoteName) {
+  return straightThroughStringTask(["remote", "remove", remoteName]);
+}
+var init_remote = __esm({
+  "src/lib/tasks/remote.ts"() {
+    "use strict";
+    init_GetRemoteSummary();
+    init_task();
+  }
+});
+var stash_list_exports = {};
+__export(stash_list_exports, {
+  stashListTask: () => stashListTask
+});
+function stashListTask(opt = {}, customArgs) {
+  const options = parseLogOptions(opt);
+  const commands = ["stash", "list", ...options.commands, ...customArgs];
+  const parser4 = createListLogSummaryParser(
+    options.splitter,
+    options.fields,
+    logFormatFromCommand(commands)
+  );
+  return validateLogFormatConfig(commands) || {
+    commands,
+    format: "utf-8",
+    parser: parser4
+  };
+}
+var init_stash_list = __esm({
+  "src/lib/tasks/stash-list.ts"() {
+    "use strict";
+    init_log_format();
+    init_parse_list_log_summary();
+    init_diff();
+    init_log();
+  }
+});
+var sub_module_exports = {};
+__export(sub_module_exports, {
+  addSubModuleTask: () => addSubModuleTask,
+  initSubModuleTask: () => initSubModuleTask,
+  subModuleTask: () => subModuleTask,
+  updateSubModuleTask: () => updateSubModuleTask
+});
+function addSubModuleTask(repo, path8) {
+  return subModuleTask(["add", repo, path8]);
+}
+function initSubModuleTask(customArgs) {
+  return subModuleTask(["init", ...customArgs]);
+}
+function subModuleTask(customArgs) {
+  const commands = [...customArgs];
+  if (commands[0] !== "submodule") {
+    commands.unshift("submodule");
+  }
+  return straightThroughStringTask(commands);
+}
+function updateSubModuleTask(customArgs) {
+  return subModuleTask(["update", ...customArgs]);
+}
+var init_sub_module = __esm({
+  "src/lib/tasks/sub-module.ts"() {
+    "use strict";
+    init_task();
+  }
+});
+function singleSorted(a, b) {
+  const aIsNum = Number.isNaN(a);
+  const bIsNum = Number.isNaN(b);
+  if (aIsNum !== bIsNum) {
+    return aIsNum ? 1 : -1;
+  }
+  return aIsNum ? sorted(a, b) : 0;
+}
+function sorted(a, b) {
+  return a === b ? 0 : a > b ? 1 : -1;
+}
+function trimmed(input) {
+  return input.trim();
+}
+function toNumber(input) {
+  if (typeof input === "string") {
+    return parseInt(input.replace(/^\D+/g, ""), 10) || 0;
+  }
+  return 0;
+}
+var TagList;
+var parseTagList;
+var init_TagList = __esm({
+  "src/lib/responses/TagList.ts"() {
+    "use strict";
+    TagList = class {
+      constructor(all, latest) {
+        this.all = all;
+        this.latest = latest;
+      }
+    };
+    parseTagList = function(data, customSort = false) {
+      const tags = data.split("\n").map(trimmed).filter(Boolean);
+      if (!customSort) {
+        tags.sort(function(tagA, tagB) {
+          const partsA = tagA.split(".");
+          const partsB = tagB.split(".");
+          if (partsA.length === 1 || partsB.length === 1) {
+            return singleSorted(toNumber(partsA[0]), toNumber(partsB[0]));
+          }
+          for (let i = 0, l = Math.max(partsA.length, partsB.length); i < l; i++) {
+            const diff = sorted(toNumber(partsA[i]), toNumber(partsB[i]));
+            if (diff) {
+              return diff;
+            }
+          }
+          return 0;
+        });
+      }
+      const latest = customSort ? tags[0] : [...tags].reverse().find((tag) => tag.indexOf(".") >= 0);
+      return new TagList(tags, latest);
+    };
+  }
+});
+var tag_exports = {};
+__export(tag_exports, {
+  addAnnotatedTagTask: () => addAnnotatedTagTask,
+  addTagTask: () => addTagTask,
+  tagListTask: () => tagListTask
+});
+function tagListTask(customArgs = []) {
+  const hasCustomSort = customArgs.some((option) => /^--sort=/.test(option));
+  return {
+    format: "utf-8",
+    commands: ["tag", "-l", ...customArgs],
+    parser(text) {
+      return parseTagList(text, hasCustomSort);
+    }
+  };
+}
+function addTagTask(name) {
+  return {
+    format: "utf-8",
+    commands: ["tag", name],
+    parser() {
+      return { name };
+    }
+  };
+}
+function addAnnotatedTagTask(name, tagMessage) {
+  return {
+    format: "utf-8",
+    commands: ["tag", "-a", "-m", tagMessage, name],
+    parser() {
+      return { name };
+    }
+  };
+}
+var init_tag = __esm({
+  "src/lib/tasks/tag.ts"() {
+    "use strict";
+    init_TagList();
+  }
+});
+var require_git = __commonJS2({
+  "src/git.js"(exports2, module2) {
+    "use strict";
+    var { GitExecutor: GitExecutor2 } = (init_git_executor(), __toCommonJS(git_executor_exports));
+    var { SimpleGitApi: SimpleGitApi2 } = (init_simple_git_api(), __toCommonJS(simple_git_api_exports));
+    var { Scheduler: Scheduler2 } = (init_scheduler(), __toCommonJS(scheduler_exports));
+    var { configurationErrorTask: configurationErrorTask2 } = (init_task(), __toCommonJS(task_exports));
+    var {
+      asArray: asArray2,
+      filterArray: filterArray2,
+      filterPrimitives: filterPrimitives2,
+      filterString: filterString2,
+      filterStringOrStringArray: filterStringOrStringArray2,
+      filterType: filterType2,
+      getTrailingOptions: getTrailingOptions2,
+      trailingFunctionArgument: trailingFunctionArgument2,
+      trailingOptionsArgument: trailingOptionsArgument2
+    } = (init_utils(), __toCommonJS(utils_exports));
+    var { applyPatchTask: applyPatchTask2 } = (init_apply_patch(), __toCommonJS(apply_patch_exports));
+    var {
+      branchTask: branchTask2,
+      branchLocalTask: branchLocalTask2,
+      deleteBranchesTask: deleteBranchesTask2,
+      deleteBranchTask: deleteBranchTask2
+    } = (init_branch(), __toCommonJS(branch_exports));
+    var { checkIgnoreTask: checkIgnoreTask2 } = (init_check_ignore(), __toCommonJS(check_ignore_exports));
+    var { checkIsRepoTask: checkIsRepoTask2 } = (init_check_is_repo(), __toCommonJS(check_is_repo_exports));
+    var { cloneTask: cloneTask2, cloneMirrorTask: cloneMirrorTask2 } = (init_clone(), __toCommonJS(clone_exports));
+    var { cleanWithOptionsTask: cleanWithOptionsTask2, isCleanOptionsArray: isCleanOptionsArray2 } = (init_clean(), __toCommonJS(clean_exports));
+    var { diffSummaryTask: diffSummaryTask2 } = (init_diff(), __toCommonJS(diff_exports));
+    var { fetchTask: fetchTask2 } = (init_fetch(), __toCommonJS(fetch_exports));
+    var { moveTask: moveTask2 } = (init_move(), __toCommonJS(move_exports));
+    var { pullTask: pullTask2 } = (init_pull(), __toCommonJS(pull_exports));
+    var { pushTagsTask: pushTagsTask2 } = (init_push(), __toCommonJS(push_exports));
+    var {
+      addRemoteTask: addRemoteTask2,
+      getRemotesTask: getRemotesTask2,
+      listRemotesTask: listRemotesTask2,
+      remoteTask: remoteTask2,
+      removeRemoteTask: removeRemoteTask2
+    } = (init_remote(), __toCommonJS(remote_exports));
+    var { getResetMode: getResetMode2, resetTask: resetTask2 } = (init_reset(), __toCommonJS(reset_exports));
+    var { stashListTask: stashListTask2 } = (init_stash_list(), __toCommonJS(stash_list_exports));
+    var {
+      addSubModuleTask: addSubModuleTask2,
+      initSubModuleTask: initSubModuleTask2,
+      subModuleTask: subModuleTask2,
+      updateSubModuleTask: updateSubModuleTask2
+    } = (init_sub_module(), __toCommonJS(sub_module_exports));
+    var { addAnnotatedTagTask: addAnnotatedTagTask2, addTagTask: addTagTask2, tagListTask: tagListTask2 } = (init_tag(), __toCommonJS(tag_exports));
+    var { straightThroughBufferTask: straightThroughBufferTask2, straightThroughStringTask: straightThroughStringTask2 } = (init_task(), __toCommonJS(task_exports));
+    function Git2(options, plugins) {
+      this._plugins = plugins;
+      this._executor = new GitExecutor2(
+        options.baseDir,
+        new Scheduler2(options.maxConcurrentProcesses),
+        plugins
+      );
+      this._trimmed = options.trimmed;
+    }
+    (Git2.prototype = Object.create(SimpleGitApi2.prototype)).constructor = Git2;
+    Git2.prototype.customBinary = function(command) {
+      this._plugins.reconfigure("binary", command);
+      return this;
+    };
+    Git2.prototype.env = function(name, value) {
+      if (arguments.length === 1 && typeof name === "object") {
+        this._executor.env = name;
+      } else {
+        (this._executor.env = this._executor.env || {})[name] = value;
+      }
+      return this;
+    };
+    Git2.prototype.stashList = function(options) {
+      return this._runTask(
+        stashListTask2(
+          trailingOptionsArgument2(arguments) || {},
+          filterArray2(options) && options || []
+        ),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    function createCloneTask(api, task, repoPath, localPath) {
+      if (typeof repoPath !== "string") {
+        return configurationErrorTask2(`git.${api}() requires a string 'repoPath'`);
+      }
+      return task(repoPath, filterType2(localPath, filterString2), getTrailingOptions2(arguments));
+    }
+    Git2.prototype.clone = function() {
+      return this._runTask(
+        createCloneTask("clone", cloneTask2, ...arguments),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.mirror = function() {
+      return this._runTask(
+        createCloneTask("mirror", cloneMirrorTask2, ...arguments),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.mv = function(from, to) {
+      return this._runTask(moveTask2(from, to), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.checkoutLatestTag = function(then) {
+      var git = this;
+      return this.pull(function() {
+        git.tags(function(err, tags) {
+          git.checkout(tags.latest, then);
+        });
+      });
+    };
+    Git2.prototype.pull = function(remote, branch, options, then) {
+      return this._runTask(
+        pullTask2(
+          filterType2(remote, filterString2),
+          filterType2(branch, filterString2),
+          getTrailingOptions2(arguments)
+        ),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.fetch = function(remote, branch) {
+      return this._runTask(
+        fetchTask2(
+          filterType2(remote, filterString2),
+          filterType2(branch, filterString2),
+          getTrailingOptions2(arguments)
+        ),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.silent = function(silence) {
+      console.warn(
+        "simple-git deprecation notice: git.silent: logging should be configured using the `debug` library / `DEBUG` environment variable, this will be an error in version 3"
+      );
+      return this;
+    };
+    Git2.prototype.tags = function(options, then) {
+      return this._runTask(
+        tagListTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.rebase = function() {
+      return this._runTask(
+        straightThroughStringTask2(["rebase", ...getTrailingOptions2(arguments)]),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.reset = function(mode) {
+      return this._runTask(
+        resetTask2(getResetMode2(mode), getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.revert = function(commit) {
+      const next = trailingFunctionArgument2(arguments);
+      if (typeof commit !== "string") {
+        return this._runTask(configurationErrorTask2("Commit must be a string"), next);
+      }
+      return this._runTask(
+        straightThroughStringTask2(["revert", ...getTrailingOptions2(arguments, 0, true), commit]),
+        next
+      );
+    };
+    Git2.prototype.addTag = function(name) {
+      const task = typeof name === "string" ? addTagTask2(name) : configurationErrorTask2("Git.addTag requires a tag name");
+      return this._runTask(task, trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.addAnnotatedTag = function(tagName, tagMessage) {
+      return this._runTask(
+        addAnnotatedTagTask2(tagName, tagMessage),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.deleteLocalBranch = function(branchName, forceDelete, then) {
+      return this._runTask(
+        deleteBranchTask2(branchName, typeof forceDelete === "boolean" ? forceDelete : false),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.deleteLocalBranches = function(branchNames, forceDelete, then) {
+      return this._runTask(
+        deleteBranchesTask2(branchNames, typeof forceDelete === "boolean" ? forceDelete : false),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.branch = function(options, then) {
+      return this._runTask(
+        branchTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.branchLocal = function(then) {
+      return this._runTask(branchLocalTask2(), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.raw = function(commands) {
+      const createRestCommands = !Array.isArray(commands);
+      const command = [].slice.call(createRestCommands ? arguments : commands, 0);
+      for (let i = 0; i < command.length && createRestCommands; i++) {
+        if (!filterPrimitives2(command[i])) {
+          command.splice(i, command.length - i);
+          break;
+        }
+      }
+      command.push(...getTrailingOptions2(arguments, 0, true));
+      var next = trailingFunctionArgument2(arguments);
+      if (!command.length) {
+        return this._runTask(
+          configurationErrorTask2("Raw: must supply one or more command to execute"),
+          next
+        );
+      }
+      return this._runTask(straightThroughStringTask2(command, this._trimmed), next);
+    };
+    Git2.prototype.submoduleAdd = function(repo, path8, then) {
+      return this._runTask(addSubModuleTask2(repo, path8), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.submoduleUpdate = function(args, then) {
+      return this._runTask(
+        updateSubModuleTask2(getTrailingOptions2(arguments, true)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.submoduleInit = function(args, then) {
+      return this._runTask(
+        initSubModuleTask2(getTrailingOptions2(arguments, true)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.subModule = function(options, then) {
+      return this._runTask(
+        subModuleTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.listRemote = function() {
+      return this._runTask(
+        listRemotesTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.addRemote = function(remoteName, remoteRepo, then) {
+      return this._runTask(
+        addRemoteTask2(remoteName, remoteRepo, getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.removeRemote = function(remoteName, then) {
+      return this._runTask(removeRemoteTask2(remoteName), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.getRemotes = function(verbose, then) {
+      return this._runTask(getRemotesTask2(verbose === true), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.remote = function(options, then) {
+      return this._runTask(
+        remoteTask2(getTrailingOptions2(arguments)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.tag = function(options, then) {
+      const command = getTrailingOptions2(arguments);
+      if (command[0] !== "tag") {
+        command.unshift("tag");
+      }
+      return this._runTask(straightThroughStringTask2(command), trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.updateServerInfo = function(then) {
+      return this._runTask(
+        straightThroughStringTask2(["update-server-info"]),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.pushTags = function(remote, then) {
+      const task = pushTagsTask2(
+        { remote: filterType2(remote, filterString2) },
+        getTrailingOptions2(arguments)
+      );
+      return this._runTask(task, trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.rm = function(files) {
+      return this._runTask(
+        straightThroughStringTask2(["rm", "-f", ...asArray2(files)]),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.rmKeepLocal = function(files) {
+      return this._runTask(
+        straightThroughStringTask2(["rm", "--cached", ...asArray2(files)]),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.catFile = function(options, then) {
+      return this._catFile("utf-8", arguments);
+    };
+    Git2.prototype.binaryCatFile = function() {
+      return this._catFile("buffer", arguments);
+    };
+    Git2.prototype._catFile = function(format, args) {
+      var handler = trailingFunctionArgument2(args);
+      var command = ["cat-file"];
+      var options = args[0];
+      if (typeof options === "string") {
+        return this._runTask(
+          configurationErrorTask2("Git.catFile: options must be supplied as an array of strings"),
+          handler
+        );
+      }
+      if (Array.isArray(options)) {
+        command.push.apply(command, options);
+      }
+      const task = format === "buffer" ? straightThroughBufferTask2(command) : straightThroughStringTask2(command);
+      return this._runTask(task, handler);
+    };
+    Git2.prototype.diff = function(options, then) {
+      const task = filterString2(options) ? configurationErrorTask2(
+        "git.diff: supplying options as a single string is no longer supported, switch to an array of strings"
+      ) : straightThroughStringTask2(["diff", ...getTrailingOptions2(arguments)]);
+      return this._runTask(task, trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.diffSummary = function() {
+      return this._runTask(
+        diffSummaryTask2(getTrailingOptions2(arguments, 1)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.applyPatch = function(patches) {
+      const task = !filterStringOrStringArray2(patches) ? configurationErrorTask2(
+        `git.applyPatch requires one or more string patches as the first argument`
+      ) : applyPatchTask2(asArray2(patches), getTrailingOptions2([].slice.call(arguments, 1)));
+      return this._runTask(task, trailingFunctionArgument2(arguments));
+    };
+    Git2.prototype.revparse = function() {
+      const commands = ["rev-parse", ...getTrailingOptions2(arguments, true)];
+      return this._runTask(
+        straightThroughStringTask2(commands, true),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.clean = function(mode, options, then) {
+      const usingCleanOptionsArray = isCleanOptionsArray2(mode);
+      const cleanMode = usingCleanOptionsArray && mode.join("") || filterType2(mode, filterString2) || "";
+      const customArgs = getTrailingOptions2([].slice.call(arguments, usingCleanOptionsArray ? 1 : 0));
+      return this._runTask(
+        cleanWithOptionsTask2(cleanMode, customArgs),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.exec = function(then) {
+      const task = {
+        commands: [],
+        format: "utf-8",
+        parser() {
+          if (typeof then === "function") {
+            then();
+          }
+        }
+      };
+      return this._runTask(task);
+    };
+    Git2.prototype.clearQueue = function() {
+      return this;
+    };
+    Git2.prototype.checkIgnore = function(pathnames, then) {
+      return this._runTask(
+        checkIgnoreTask2(asArray2(filterType2(pathnames, filterStringOrStringArray2, []))),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    Git2.prototype.checkIsRepo = function(checkType, then) {
+      return this._runTask(
+        checkIsRepoTask2(filterType2(checkType, filterString2)),
+        trailingFunctionArgument2(arguments)
+      );
+    };
+    module2.exports = Git2;
+  }
+});
+init_pathspec();
+init_git_error();
+var GitConstructError = class extends GitError {
+  constructor(config, message) {
+    super(void 0, message);
+    this.config = config;
+  }
+};
+init_git_error();
+init_git_error();
+var GitPluginError = class extends GitError {
+  constructor(task, plugin, message) {
+    super(task, message);
+    this.task = task;
+    this.plugin = plugin;
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+};
+init_git_response_error();
+init_task_configuration_error();
+init_check_is_repo();
+init_clean();
+init_config();
+init_diff_name_status();
+init_grep();
+init_reset();
+function abortPlugin(signal) {
+  if (!signal) {
+    return;
+  }
+  const onSpawnAfter = {
+    type: "spawn.after",
+    action(_data, context) {
+      function kill() {
+        context.kill(new GitPluginError(void 0, "abort", "Abort signal received"));
+      }
+      signal.addEventListener("abort", kill);
+      context.spawned.on("close", () => signal.removeEventListener("abort", kill));
+    }
+  };
+  const onSpawnBefore = {
+    type: "spawn.before",
+    action(_data, context) {
+      if (signal.aborted) {
+        context.kill(new GitPluginError(void 0, "abort", "Abort already signaled"));
+      }
+    }
+  };
+  return [onSpawnBefore, onSpawnAfter];
+}
+function isConfigSwitch(arg) {
+  return typeof arg === "string" && arg.trim().toLowerCase() === "-c";
+}
+function preventProtocolOverride(arg, next) {
+  if (!isConfigSwitch(arg)) {
+    return;
+  }
+  if (!/^\s*protocol(.[a-z]+)?.allow/.test(next)) {
+    return;
+  }
+  throw new GitPluginError(
+    void 0,
+    "unsafe",
+    "Configuring protocol.allow is not permitted without enabling allowUnsafeExtProtocol"
+  );
+}
+function preventUploadPack(arg, method) {
+  if (/^\s*--(upload|receive)-pack/.test(arg)) {
+    throw new GitPluginError(
+      void 0,
+      "unsafe",
+      `Use of --upload-pack or --receive-pack is not permitted without enabling allowUnsafePack`
+    );
+  }
+  if (method === "clone" && /^\s*-u\b/.test(arg)) {
+    throw new GitPluginError(
+      void 0,
+      "unsafe",
+      `Use of clone with option -u is not permitted without enabling allowUnsafePack`
+    );
+  }
+  if (method === "push" && /^\s*--exec\b/.test(arg)) {
+    throw new GitPluginError(
+      void 0,
+      "unsafe",
+      `Use of push with option --exec is not permitted without enabling allowUnsafePack`
+    );
+  }
+}
+function blockUnsafeOperationsPlugin({
+  allowUnsafeProtocolOverride = false,
+  allowUnsafePack = false
+} = {}) {
+  return {
+    type: "spawn.args",
+    action(args, context) {
+      args.forEach((current, index) => {
+        const next = index < args.length ? args[index + 1] : "";
+        allowUnsafeProtocolOverride || preventProtocolOverride(current, next);
+        allowUnsafePack || preventUploadPack(current, context.method);
+      });
+      return args;
+    }
+  };
+}
+init_utils();
+function commandConfigPrefixingPlugin(configuration) {
+  const prefix = prefixedArray(configuration, "-c");
+  return {
+    type: "spawn.args",
+    action(data) {
+      return [...prefix, ...data];
+    }
+  };
+}
+init_utils();
+var never = (0, import_promise_deferred2.deferred)().promise;
+function completionDetectionPlugin({
+  onClose = true,
+  onExit = 50
+} = {}) {
+  function createEvents() {
+    let exitCode = -1;
+    const events = {
+      close: (0, import_promise_deferred2.deferred)(),
+      closeTimeout: (0, import_promise_deferred2.deferred)(),
+      exit: (0, import_promise_deferred2.deferred)(),
+      exitTimeout: (0, import_promise_deferred2.deferred)()
+    };
+    const result = Promise.race([
+      onClose === false ? never : events.closeTimeout.promise,
+      onExit === false ? never : events.exitTimeout.promise
+    ]);
+    configureTimeout(onClose, events.close, events.closeTimeout);
+    configureTimeout(onExit, events.exit, events.exitTimeout);
+    return {
+      close(code) {
+        exitCode = code;
+        events.close.done();
+      },
+      exit(code) {
+        exitCode = code;
+        events.exit.done();
+      },
+      get exitCode() {
+        return exitCode;
+      },
+      result
+    };
+  }
+  function configureTimeout(flag, event, timeout) {
+    if (flag === false) {
+      return;
+    }
+    (flag === true ? event.promise : event.promise.then(() => delay(flag))).then(timeout.done);
+  }
+  return {
+    type: "spawn.after",
+    async action(_data, { spawned, close }) {
+      const events = createEvents();
+      let deferClose = true;
+      let quickClose = () => void (deferClose = false);
+      spawned.stdout?.on("data", quickClose);
+      spawned.stderr?.on("data", quickClose);
+      spawned.on("error", quickClose);
+      spawned.on("close", (code) => events.close(code));
+      spawned.on("exit", (code) => events.exit(code));
+      try {
+        await events.result;
+        if (deferClose) {
+          await delay(50);
+        }
+        close(events.exitCode);
+      } catch (err) {
+        close(events.exitCode, err);
+      }
+    }
+  };
+}
+init_utils();
+var WRONG_NUMBER_ERR = `Invalid value supplied for custom binary, requires a single string or an array containing either one or two strings`;
+var WRONG_CHARS_ERR = `Invalid value supplied for custom binary, restricted characters must be removed or supply the unsafe.allowUnsafeCustomBinary option`;
+function isBadArgument(arg) {
+  return !arg || !/^([a-z]:)?([a-z0-9/.\\_-]+)$/i.test(arg);
+}
+function toBinaryConfig(input, allowUnsafe) {
+  if (input.length < 1 || input.length > 2) {
+    throw new GitPluginError(void 0, "binary", WRONG_NUMBER_ERR);
+  }
+  const isBad = input.some(isBadArgument);
+  if (isBad) {
+    if (allowUnsafe) {
+      console.warn(WRONG_CHARS_ERR);
+    } else {
+      throw new GitPluginError(void 0, "binary", WRONG_CHARS_ERR);
+    }
+  }
+  const [binary, prefix] = input;
+  return {
+    binary,
+    prefix
+  };
+}
+function customBinaryPlugin(plugins, input = ["git"], allowUnsafe = false) {
+  let config = toBinaryConfig(asArray(input), allowUnsafe);
+  plugins.on("binary", (input2) => {
+    config = toBinaryConfig(asArray(input2), allowUnsafe);
+  });
+  plugins.append("spawn.binary", () => {
+    return config.binary;
+  });
+  plugins.append("spawn.args", (data) => {
+    return config.prefix ? [config.prefix, ...data] : data;
+  });
+}
+init_git_error();
+function isTaskError(result) {
+  return !!(result.exitCode && result.stdErr.length);
+}
+function getErrorMessage(result) {
+  return Buffer.concat([...result.stdOut, ...result.stdErr]);
+}
+function errorDetectionHandler(overwrite = false, isError = isTaskError, errorMessage = getErrorMessage) {
+  return (error, result) => {
+    if (!overwrite && error || !isError(result)) {
+      return error;
+    }
+    return errorMessage(result);
+  };
+}
+function errorDetectionPlugin(config) {
+  return {
+    type: "task.error",
+    action(data, context) {
+      const error = config(data.error, {
+        stdErr: context.stdErr,
+        stdOut: context.stdOut,
+        exitCode: context.exitCode
+      });
+      if (Buffer.isBuffer(error)) {
+        return { error: new GitError(void 0, error.toString("utf-8")) };
+      }
+      return {
+        error
+      };
+    }
+  };
+}
+init_utils();
+var PluginStore = class {
+  constructor() {
+    this.plugins = /* @__PURE__ */ new Set();
+    this.events = new import_node_events2.EventEmitter();
+  }
+  on(type, listener) {
+    this.events.on(type, listener);
+  }
+  reconfigure(type, data) {
+    this.events.emit(type, data);
+  }
+  append(type, action) {
+    const plugin = append(this.plugins, { type, action });
+    return () => this.plugins.delete(plugin);
+  }
+  add(plugin) {
+    const plugins = [];
+    asArray(plugin).forEach((plugin2) => plugin2 && this.plugins.add(append(plugins, plugin2)));
+    return () => {
+      plugins.forEach((plugin2) => this.plugins.delete(plugin2));
+    };
+  }
+  exec(type, data, context) {
+    let output = data;
+    const contextual = Object.freeze(Object.create(context));
+    for (const plugin of this.plugins) {
+      if (plugin.type === type) {
+        output = plugin.action(output, contextual);
+      }
+    }
+    return output;
+  }
+};
+init_utils();
+function progressMonitorPlugin(progress) {
+  const progressCommand = "--progress";
+  const progressMethods = ["checkout", "clone", "fetch", "pull", "push"];
+  const onProgress = {
+    type: "spawn.after",
+    action(_data, context) {
+      if (!context.commands.includes(progressCommand)) {
+        return;
+      }
+      context.spawned.stderr?.on("data", (chunk) => {
+        const message = /^([\s\S]+?):\s*(\d+)% \((\d+)\/(\d+)\)/.exec(chunk.toString("utf8"));
+        if (!message) {
+          return;
+        }
+        progress({
+          method: context.method,
+          stage: progressEventStage(message[1]),
+          progress: asNumber(message[2]),
+          processed: asNumber(message[3]),
+          total: asNumber(message[4])
+        });
+      });
+    }
+  };
+  const onArgs = {
+    type: "spawn.args",
+    action(args, context) {
+      if (!progressMethods.includes(context.method)) {
+        return args;
+      }
+      return including(args, progressCommand);
+    }
+  };
+  return [onArgs, onProgress];
+}
+function progressEventStage(input) {
+  return String(input.toLowerCase().split(" ", 1)) || "unknown";
+}
+init_utils();
+function spawnOptionsPlugin(spawnOptions) {
+  const options = pick(spawnOptions, ["uid", "gid"]);
+  return {
+    type: "spawn.options",
+    action(data) {
+      return { ...options, ...data };
+    }
+  };
+}
+function timeoutPlugin({
+  block,
+  stdErr = true,
+  stdOut = true
+}) {
+  if (block > 0) {
+    return {
+      type: "spawn.after",
+      action(_data, context) {
+        let timeout;
+        function wait() {
+          timeout && clearTimeout(timeout);
+          timeout = setTimeout(kill, block);
+        }
+        function stop() {
+          context.spawned.stdout?.off("data", wait);
+          context.spawned.stderr?.off("data", wait);
+          context.spawned.off("exit", stop);
+          context.spawned.off("close", stop);
+          timeout && clearTimeout(timeout);
+        }
+        function kill() {
+          stop();
+          context.kill(new GitPluginError(void 0, "timeout", `block timeout reached`));
+        }
+        stdOut && context.spawned.stdout?.on("data", wait);
+        stdErr && context.spawned.stderr?.on("data", wait);
+        context.spawned.on("exit", stop);
+        context.spawned.on("close", stop);
+        wait();
+      }
+    };
+  }
+}
+init_pathspec();
+function suffixPathsPlugin() {
+  return {
+    type: "spawn.args",
+    action(data) {
+      const prefix = [];
+      let suffix;
+      function append2(args) {
+        (suffix = suffix || []).push(...args);
+      }
+      for (let i = 0; i < data.length; i++) {
+        const param = data[i];
+        if (isPathSpec(param)) {
+          append2(toPaths(param));
+          continue;
+        }
+        if (param === "--") {
+          append2(
+            data.slice(i + 1).flatMap((item) => isPathSpec(item) && toPaths(item) || item)
+          );
+          break;
+        }
+        prefix.push(param);
+      }
+      return !suffix ? prefix : [...prefix, "--", ...suffix.map(String)];
+    }
+  };
+}
+init_utils();
+var Git = require_git();
+function gitInstanceFactory(baseDir, options) {
+  const plugins = new PluginStore();
+  const config = createInstanceConfig(
+    baseDir && (typeof baseDir === "string" ? { baseDir } : baseDir) || {},
+    options
+  );
+  if (!folderExists(config.baseDir)) {
+    throw new GitConstructError(
+      config,
+      `Cannot use simple-git on a directory that does not exist`
+    );
+  }
+  if (Array.isArray(config.config)) {
+    plugins.add(commandConfigPrefixingPlugin(config.config));
+  }
+  plugins.add(blockUnsafeOperationsPlugin(config.unsafe));
+  plugins.add(suffixPathsPlugin());
+  plugins.add(completionDetectionPlugin(config.completion));
+  config.abort && plugins.add(abortPlugin(config.abort));
+  config.progress && plugins.add(progressMonitorPlugin(config.progress));
+  config.timeout && plugins.add(timeoutPlugin(config.timeout));
+  config.spawnOptions && plugins.add(spawnOptionsPlugin(config.spawnOptions));
+  plugins.add(errorDetectionPlugin(errorDetectionHandler(true)));
+  config.errors && plugins.add(errorDetectionPlugin(config.errors));
+  customBinaryPlugin(plugins, config.binary, config.unsafe?.allowUnsafeCustomBinary);
+  return new Git(config, plugins);
+}
+init_git_response_error();
+var simpleGit = gitInstanceFactory;
+
+// src/git/disk-git-provider.ts
+var fs5 = __toESM(require("fs"), 1);
+var fsPromises = __toESM(require("fs/promises"), 1);
+var path5 = __toESM(require("path"), 1);
+var import_node_events3 = require("events");
+var STATUS_REFRESH_DEBOUNCE_MS = 100;
+var UNSTAGED_KEY_SUFFIX = "\0unstaged";
+var IGNORED_GIT_PATHS = [
+  // High-frequency noise
+  "**/objects/**",
+  "**/logs/**",
+  "**/*.lock",
+  // Temp files created during operations
+  "**/COMMIT_EDITMSG",
+  "**/FETCH_HEAD",
+  "**/ORIG_HEAD",
+  "**/MERGE_MSG",
+  "**/SQUASH_MSG",
+  "**/AUTO_MERGE",
+  // Static/config files that don't affect status
+  "**/hooks/**",
+  "**/info/**",
+  "**/description",
+  "**/config",
+  // NOTE: packed-refs is NOT ignored - it updates on push/fetch and affects commit graph
+  "**/shallow",
+  "**/commondir",
+  "**/gitdir"
+];
+var DiskGitProvider = class _DiskGitProvider {
+  gitRoot;
+  cwd;
+  // -------------------------------------------------------------------------
+  // Internal Components
+  // -------------------------------------------------------------------------
+  git;
+  watcher = null;
+  watcherSubscriptions = [];
+  disposed = false;
+  /** Count of active git operations (don't refresh while > 0) */
+  activeOperations = 0;
+  /** Pending status refresh timer (debouncing) */
+  refreshTimer = null;
+  /** Last known status (for delta calculation) */
+  lastStatus = null;
+  /** Last known branch (for branch change detection) */
+  lastBranch = null;
+  /** Last known HEAD commit (for head change detection) */
+  lastHead = null;
+  /** Cached per-file diff stats (single source of truth for all diff stat queries) */
+  perFileDiffStatsCache = null;
+  /** Cache TTL for diff stats (ms) - short window to deduplicate concurrent calls */
+  static DIFF_STATS_CACHE_TTL_MS = 100;
+  // -------------------------------------------------------------------------
+  // Event Emitters
+  // -------------------------------------------------------------------------
+  _onStatusChanged = new EventEmitter2();
+  _onBranchChanged = new EventEmitter2();
+  _onCommitCreated = new EventEmitter2();
+  _onHeadChanged = new EventEmitter2();
+  onStatusChanged = this._onStatusChanged.event;
+  onBranchChanged = this._onBranchChanged.event;
+  onCommitCreated = this._onCommitCreated.event;
+  onHeadChanged = this._onHeadChanged.event;
+  // -------------------------------------------------------------------------
+  // Node.js-style Event Emitter (for jsonrpc-proxy compatibility)
+  // -------------------------------------------------------------------------
+  /**
+   * Generic event emitter for all git events.
+   * Used by jsonrpc-proxy to subscribe to all events via .on('event', handler).
+   */
+  _nodeEventEmitter = new import_node_events3.EventEmitter();
+  /** Internal subscriptions to forward events to the generic emitter */
+  _eventForwarders = [];
+  // -------------------------------------------------------------------------
+  // Constructor
+  // -------------------------------------------------------------------------
+  /**
+   * Create a new git provider.
+   *
+   * @param gitRoot - The git repository root directory (contains .git/)
+   * @param cwd - The working directory for relative path resolution
+   */
+  constructor(gitRoot, cwd) {
+    this.gitRoot = path5.resolve(gitRoot);
+    this.cwd = path5.resolve(cwd);
+    this.git = simpleGit(this.gitRoot);
+  }
+  // -------------------------------------------------------------------------
+  // Lifecycle
+  // -------------------------------------------------------------------------
+  /**
+   * Start watching the .git directory for changes.
+   *
+   * This should be called after setting up event listeners.
+   */
+  async startWatching() {
+    if (this.disposed || this.watcher) {
+      return;
+    }
+    const gitDir = path5.join(this.gitRoot, ".git");
+    let watchPath;
+    try {
+      const gitStat = fs5.statSync(gitDir);
+      watchPath = gitStat.isFile() ? this.resolveGitDir(gitDir) : gitDir;
+    } catch {
+      return;
+    }
+    this.watcher = new ParcelFileWatcher(watchPath, {
+      ignored: IGNORED_GIT_PATHS
+    });
+    this.watcherSubscriptions.push(
+      this.watcher.onCreated(() => {
+        this.scheduleStatusRefresh();
+      }),
+      this.watcher.onModified(() => {
+        this.scheduleStatusRefresh();
+      }),
+      this.watcher.onDeleted(() => {
+        this.scheduleStatusRefresh();
+      }),
+      this.watcher.onRenamed(() => {
+        this.scheduleStatusRefresh();
+      })
+    );
+    await this.watcher.watch();
+    await this.initializeState();
+  }
+  /**
+   * Check if currently watching for changes.
+   */
+  isWatching() {
+    return this.watcher !== null && !this.disposed;
+  }
+  /**
+   * Trigger a status refresh.
+   *
+   * This is called when working directory files change (detected by FileSystemV2).
+   * Uses the same debouncing as internal .git directory changes.
+   */
+  triggerStatusRefresh() {
+    this.scheduleStatusRefresh();
+  }
+  /**
+   * Clean up all resources.
+   */
+  dispose() {
+    if (this.disposed) {
+      return;
+    }
+    this.disposed = true;
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+      this.refreshTimer = null;
+    }
+    for (const subscription of this.watcherSubscriptions) {
+      subscription.dispose();
+    }
+    this.watcherSubscriptions = [];
+    if (this.watcher) {
+      this.watcher.dispose().catch((error) => {
+        console.error("[DiskGitProvider] Error disposing watcher:", error);
+      });
+      this.watcher = null;
+    }
+    this._onStatusChanged.dispose();
+    this._onBranchChanged.dispose();
+    this._onCommitCreated.dispose();
+    this._onHeadChanged.dispose();
+  }
+  // -------------------------------------------------------------------------
+  // State Queries
+  // -------------------------------------------------------------------------
+  /**
+   * Get complete repository status.
+   */
+  async getStatus() {
+    const [statusResult, branchSummary] = await Promise.all([
+      this.git.status(),
+      this.git.branch()
+    ]);
+    return this.parseStatus(statusResult, branchSummary.current);
+  }
+  /**
+   * Get status for a specific file.
+   */
+  async getFileStatus(filePath) {
+    const status = await this.getStatus();
+    const relativePath = this.toRelativePath(filePath);
+    const exactMatch = status.files.get(relativePath);
+    if (exactMatch) {
+      return exactMatch;
+    }
+    if (isCaseInsensitiveFS) {
+      const normalizedLookup = relativePath.toLowerCase();
+      for (const [key, value] of status.files) {
+        if (key.toLowerCase() === normalizedLookup) {
+          return value;
+        }
+      }
+    }
+    return null;
+  }
+  /**
+   * Get current branch name.
+   *
+   * Note: Uses raw git command instead of simple-git's branch() method
+   * because rev-parse is ~35% faster (benchmarked at 40ms vs 65ms avg).
+   */
+  async getCurrentBranch() {
+    const result = await this.git.raw(["rev-parse", "--abbrev-ref", "HEAD"]);
+    return result.trim() || "HEAD";
+  }
+  /**
+   * Get all branches (local and remote).
+   */
+  async getBranches() {
+    const result = await this.git.raw([
+      "for-each-ref",
+      "--sort=-committerdate",
+      "--format=%(refname:short)|%(refname)|%(committerdate:iso8601)|%(objectname:short)|%(subject)|%(HEAD)",
+      "refs/heads/",
+      "refs/remotes/"
+    ]);
+    const branches = [];
+    const lines = result.split("\n").filter(Boolean);
+    for (const line of lines) {
+      const parts = line.split("|");
+      if (parts.length < 5) continue;
+      const name = parts[0]?.trim() || "";
+      const fullRefname = parts[1]?.trim() || "";
+      const dateStr = parts[2]?.trim() || "";
+      const commit = parts[3]?.trim() || "";
+      const message = parts[4]?.trim() || "";
+      const isCurrentMarker = parts[5]?.trim() || "";
+      if (!name) continue;
+      if (name === "HEAD" || name.includes("HEAD")) {
+        continue;
+      }
+      const isRemote = fullRefname.startsWith("refs/remotes/");
+      const isCurrent = isCurrentMarker === "*";
+      branches.push({
+        name,
+        isRemote,
+        isCurrent,
+        commit,
+        upstream: void 0,
+        lastCommitDate: dateStr ? new Date(dateStr) : void 0,
+        lastCommitMessage: message || void 0
+      });
+    }
+    return branches;
+  }
+  /**
+   * Get diff for a specific file.
+   */
+  async getFileDiff(filePath, staged = false) {
+    const relativePath = this.toRelativePath(filePath);
+    if (staged) {
+      return this.git.diff(["--cached", "--", relativePath]);
+    }
+    return this.git.diff(["--", relativePath]);
+  }
+  /**
+   * Get file content at a specific ref.
+   */
+  async getFileAtRef(filePath, ref) {
+    const relativePath = this.toRelativePath(filePath);
+    return this.git.show([`${ref}:${relativePath}`]);
+  }
+  /**
+   * Check if there are uncommitted changes.
+   */
+  async hasUncommittedChanges() {
+    const status = await this.git.status();
+    return !status.isClean();
+  }
+  /**
+   * Check if there are commits not pushed to upstream.
+   */
+  async hasUnpushedCommits() {
+    const status = await this.git.status();
+    return status.ahead > 0;
+  }
+  /**
+   * Get files changed between current HEAD and a base branch.
+   *
+   * Returns files that have been added, modified, or deleted
+   * in the current branch compared to the base branch.
+   */
+  async getChangedFilesFromBranch(baseBranch) {
+    try {
+      const mergeBase = await this.git.raw(["merge-base", "HEAD", baseBranch]);
+      const result = await this.git.diff([
+        "--name-only",
+        mergeBase.trim(),
+        "HEAD"
+      ]);
+      return result.split("\n").map((line) => line.trim()).filter(Boolean);
+    } catch (error) {
+      console.error(
+        "[DiskGitProvider] Failed to get files changed since branch:",
+        error
+      );
+      return [];
+    }
+  }
+  /**
+   * Get git status relative to a base branch.
+   *
+   * Compares the base branch tip directly to the working directory.
+   * This shows ALL files that differ between the base branch and your
+   * current working state (both committed and uncommitted changes).
+   *
+   * For example, comparing to "main" shows what a PR would contain:
+   * all differences between the tip of main and your working directory.
+   */
+  async getStatusFromBranch(baseBranch) {
+    const statusMap = /* @__PURE__ */ new Map();
+    try {
+      const result = await this.git.diff(["--name-status", baseBranch]);
+      const lines = result.split("\n");
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        const parts = line.split("	");
+        if (parts.length < 2) continue;
+        const statusCode = parts[0]?.trim();
+        const filePath = parts.length >= 3 ? parts[2]?.trim() : parts[1]?.trim();
+        if (!statusCode || !filePath) continue;
+        let status = "modified";
+        if (statusCode.startsWith("A")) {
+          status = "added";
+        } else if (statusCode.startsWith("D")) {
+          status = "deleted";
+        } else if (statusCode.startsWith("M")) {
+          status = "modified";
+        } else if (statusCode.startsWith("R")) {
+          status = "renamed";
+        } else if (statusCode.startsWith("C")) {
+          status = "copied";
+        }
+        statusMap.set(filePath, {
+          status,
+          staged: false,
+          // These are differences vs the branch, not staged
+          path: filePath
+        });
+      }
+    } catch (error) {
+      console.error(
+        "[DiskGitProvider] Failed to get status from branch:",
+        error
+      );
+    }
+    return statusMap;
+  }
+  /**
+   * Get diff statistics for uncommitted changes (lines added/removed).
+   *
+   * Derives aggregated stats from the cached per-file diff stats.
+   * This ensures a single source of truth and avoids redundant git operations.
+   */
+  async getUncommittedDiffStats() {
+    try {
+      const perFile = await this.getPerFileDiffStats();
+      let totalAdded = 0;
+      let totalRemoved = 0;
+      const allFiles = /* @__PURE__ */ new Set();
+      for (const [filePath, stat3] of perFile.staged) {
+        totalAdded += stat3.added;
+        totalRemoved += stat3.removed;
+        allFiles.add(filePath);
+      }
+      for (const [filePath, stat3] of perFile.unstaged) {
+        totalAdded += stat3.added;
+        totalRemoved += stat3.removed;
+        allFiles.add(filePath);
+      }
+      return {
+        added: totalAdded,
+        removed: totalRemoved,
+        files: allFiles.size
+      };
+    } catch (error) {
+      console.error("[DiskGitProvider] Failed to get diff stats:", error);
+      return { added: 0, removed: 0, files: 0 };
+    }
+  }
+  /**
+   * Get per-file diff statistics for uncommitted changes.
+   *
+   * Returns lines added/removed for each changed file, split by staged/unstaged.
+   * - Staged: `git diff --numstat --cached` (index vs HEAD)
+   * - Unstaged: `git diff --numstat` (working tree vs index)
+   *
+   * Results are cached for a short window (100ms) to deduplicate concurrent calls.
+   * This is the single source of truth for all diff stat queries.
+   */
+  async getPerFileDiffStats() {
+    const now = Date.now();
+    if (this.perFileDiffStatsCache && now - this.perFileDiffStatsCache.timestamp < _DiskGitProvider.DIFF_STATS_CACHE_TTL_MS) {
+      return this.perFileDiffStatsCache.result;
+    }
+    const staged = /* @__PURE__ */ new Map();
+    const unstaged = /* @__PURE__ */ new Map();
+    const parseDiffOutput = (output, targetMap) => {
+      const lines = output.trim().split("\n").filter(Boolean);
+      for (const line of lines) {
+        const [addedStr, removedStr, ...filenameParts] = line.split("	");
+        const filename = filenameParts.join("	");
+        if (!filename) continue;
+        const added = addedStr === "-" ? 0 : parseInt(addedStr, 10) || 0;
+        const removed = removedStr === "-" ? 0 : parseInt(removedStr, 10) || 0;
+        targetMap.set(filename, { added, removed });
+      }
+    };
+    try {
+      const stagedOutput = await this.git.diff(["--numstat", "--cached"]);
+      parseDiffOutput(stagedOutput, staged);
+      const unstagedOutput = await this.git.diff(["--numstat"]);
+      parseDiffOutput(unstagedOutput, unstaged);
+      const status = await this.getStatus();
+      const untrackedFiles = Array.from(status.files.entries()).filter(
+        ([, fileStatus]) => fileStatus.status === "untracked"
+      );
+      const untrackedStats = await Promise.all(
+        untrackedFiles.map(async ([filePath]) => {
+          try {
+            const fullPath = path5.join(this.gitRoot, filePath);
+            const content = await fsPromises.readFile(fullPath, "utf-8");
+            const lines = content.split("\n");
+            const added = lines.length > 0 && lines[lines.length - 1] === "" ? lines.length - 1 : lines.length;
+            return { filePath, added };
+          } catch {
+            return null;
+          }
+        })
+      );
+      for (const stat3 of untrackedStats) {
+        if (stat3) {
+          unstaged.set(stat3.filePath, { added: stat3.added, removed: 0 });
+        }
+      }
+      const result = { staged, unstaged };
+      this.perFileDiffStatsCache = { result, timestamp: now };
+      return result;
+    } catch (error) {
+      console.error(
+        "[DiskGitProvider] Failed to get per-file diff stats:",
+        error
+      );
+      return { staged, unstaged };
+    }
+  }
+  /**
+   * Get the most recently modified dirty file.
+   *
+   * Uses file modification times to find the file the user
+   * was most likely working on.
+   */
+  async getMostRecentDirtyFile() {
+    try {
+      const status = await this.git.status();
+      if (status.files.length === 0) {
+        return null;
+      }
+      const dirtyFiles = status.files.map((f) => f.path);
+      let mostRecent = null;
+      for (const filePath of dirtyFiles) {
+        const absolutePath = path5.join(this.gitRoot, filePath);
+        try {
+          const stats = await fsPromises.stat(absolutePath);
+          if (!mostRecent || stats.mtimeMs > mostRecent.mtime) {
+            mostRecent = { path: filePath, mtime: stats.mtimeMs };
+          }
+        } catch {
+        }
+      }
+      return mostRecent?.path ?? null;
+    } catch (error) {
+      console.error(
+        "[DiskGitProvider] Failed to get most recent dirty file:",
+        error
+      );
+      return null;
+    }
+  }
+  /**
+   * Get all dirty files with their modification timestamps.
+   *
+   * Returns files sorted by modification time (most recent first).
+   */
+  async getDirtyFilesWithTimes() {
+    try {
+      const status = await this.git.status();
+      if (status.files.length === 0) {
+        return [];
+      }
+      const filesWithTimes = [];
+      for (const file of status.files) {
+        const absolutePath = path5.join(this.gitRoot, file.path);
+        try {
+          const stats = await fsPromises.stat(absolutePath);
+          filesWithTimes.push({
+            path: file.path,
+            mtime: stats.mtimeMs
+          });
+        } catch {
+        }
+      }
+      filesWithTimes.sort((a, b) => b.mtime - a.mtime);
+      return filesWithTimes;
+    } catch (error) {
+      console.error(
+        "[DiskGitProvider] Failed to get dirty files with times:",
+        error
+      );
+      return [];
+    }
+  }
+  /**
+   * Get the most recently modified file from recent commits.
+   *
+   * Fallback when there are no dirty files.
+   */
+  async getMostRecentCommittedFile(commitLimit = 10) {
+    try {
+      const log = await this.git.log({
+        maxCount: commitLimit,
+        "--name-only": null
+      });
+      const filesSet = /* @__PURE__ */ new Set();
+      for (const commit of log.all) {
+        const diff = commit.diff;
+        if (diff?.files && Array.isArray(diff.files)) {
+          for (const fileEntry of diff.files) {
+            if (fileEntry.file) {
+              filesSet.add(fileEntry.file);
+            }
+          }
+        }
+      }
+      if (filesSet.size === 0) {
+        return null;
+      }
+      let mostRecent = null;
+      for (const filePath of filesSet) {
+        const absolutePath = path5.join(this.gitRoot, filePath);
+        try {
+          const stats = await fsPromises.stat(absolutePath);
+          if (!mostRecent || stats.mtimeMs > mostRecent.mtime) {
+            mostRecent = { path: filePath, mtime: stats.mtimeMs };
+          }
+        } catch {
+        }
+      }
+      return mostRecent?.path ?? null;
+    } catch (error) {
+      console.error(
+        "[DiskGitProvider] Failed to get most recent committed file:",
+        error
+      );
+      return null;
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Commit History
+  // -------------------------------------------------------------------------
+  /**
+   * Get commit history with pagination support.
+   *
+   * Returns commits in topological order (newest first) for correct
+   * swimlane graph computation.
+   */
+  async getCommitHistory(options = {}) {
+    const { limit = 50, skip = 0, ref } = options;
+    try {
+      const requestLimit = limit + 1;
+      const format = "%H|%h|%s|%an|%ae|%at|%P|%D";
+      const args = [
+        "log",
+        `--format=${format}`,
+        "--topo-order",
+        // Topological ordering for swimlane algorithm
+        `-n`,
+        String(requestLimit),
+        `--skip=${skip}`
+      ];
+      if (ref) {
+        args.push(ref);
+      }
+      const result = await this.git.raw(args);
+      const lines = result.trim().split("\n").filter(Boolean);
+      const hasMore = lines.length > limit;
+      const commitLines = hasMore ? lines.slice(0, limit) : lines;
+      const commits = commitLines.map((line) => {
+        const parts = line.split("|");
+        const [
+          hash,
+          shortHash,
+          subject,
+          author,
+          email,
+          timestamp,
+          parents,
+          refs
+        ] = parts;
+        return {
+          id: hash || "",
+          shortId: shortHash || "",
+          subject: subject || "",
+          message: subject || "",
+          // Just subject for now, full message requires separate call
+          author: author || "",
+          authorEmail: email || "",
+          timestamp: parseInt(timestamp || "0", 10) * 1e3,
+          // Convert to milliseconds
+          parentIds: parents ? parents.split(" ").filter(Boolean) : [],
+          refs: refs ? refs.split(", ").filter(Boolean) : void 0
+        };
+      });
+      return {
+        commits,
+        hasMore
+      };
+    } catch (error) {
+      console.error("[DiskGitProvider] Failed to get commit history:", error);
+      return {
+        commits: [],
+        hasMore: false
+      };
+    }
+  }
+  /**
+   * Get a single commit by its hash.
+   */
+  async getCommit(commitId) {
+    try {
+      const format = "%H%x00%h%x00%s%x00%b%x00%an%x00%ae%x00%at%x00%P%x00%D";
+      const result = await this.git.raw([
+        "log",
+        `-1`,
+        `--format=${format}`,
+        commitId
+      ]);
+      if (!result.trim()) {
+        return null;
+      }
+      const parts = result.split("\0");
+      if (parts.length < 8) {
+        return null;
+      }
+      const [
+        hash,
+        shortHash,
+        subject,
+        body,
+        author,
+        email,
+        timestamp,
+        parents,
+        refs
+      ] = parts;
+      const cleanBody = body?.trim() || "";
+      const fullMessage = cleanBody ? `${subject}
+
+${cleanBody}` : subject || "";
+      return {
+        id: hash || "",
+        shortId: shortHash || "",
+        subject: subject || "",
+        message: fullMessage,
+        author: author || "",
+        authorEmail: email || "",
+        timestamp: parseInt(timestamp || "0", 10) * 1e3,
+        parentIds: parents ? parents.split(" ").filter(Boolean) : [],
+        refs: refs ? refs.split(", ").filter(Boolean) : void 0
+      };
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * Get files changed in a specific commit.
+   *
+   * For merge commits, git diff-tree with a single commit shows a "combined diff"
+   * (files differing from ALL parents), which is usually empty for clean merges.
+   * To get the actual changes, we explicitly compare to the first parent using
+   * `commit^1 commit` syntax. This works for both regular and merge commits.
+   *
+   * For root commits (no parent), we fall back to the single-commit syntax which
+   * compares against an empty tree.
+   */
+  async getCommitFiles(commitId) {
+    try {
+      let result;
+      let numstatResult;
+      try {
+        result = await this.git.raw([
+          "diff-tree",
+          "--no-commit-id",
+          "--name-status",
+          "-r",
+          "--find-renames",
+          "-M",
+          `${commitId}^1`,
+          commitId
+        ]);
+        numstatResult = await this.git.raw([
+          "diff-tree",
+          "--no-commit-id",
+          "--numstat",
+          "-r",
+          "--find-renames",
+          "-M",
+          `${commitId}^1`,
+          commitId
+        ]);
+      } catch {
+        result = await this.git.raw([
+          "diff-tree",
+          "--no-commit-id",
+          "--name-status",
+          "-r",
+          "--find-renames",
+          "-M",
+          commitId
+        ]);
+        numstatResult = await this.git.raw([
+          "diff-tree",
+          "--no-commit-id",
+          "--numstat",
+          "-r",
+          "--find-renames",
+          "-M",
+          commitId
+        ]);
+      }
+      const statsMap = /* @__PURE__ */ new Map();
+      const numstatLines = numstatResult.trim().split("\n").filter(Boolean);
+      for (const line of numstatLines) {
+        const [additions, deletions, ...pathParts] = line.split("	");
+        const filePath = pathParts.join("	");
+        const isBinary = additions === "-" || deletions === "-";
+        statsMap.set(filePath, {
+          additions: isBinary ? 0 : parseInt(additions || "0", 10),
+          deletions: isBinary ? 0 : parseInt(deletions || "0", 10),
+          isBinary
+        });
+      }
+      const files = [];
+      const statusLines = result.trim().split("\n").filter(Boolean);
+      for (const line of statusLines) {
+        const parts = line.split("	");
+        if (parts.length < 2) continue;
+        const statusCode = parts[0]?.charAt(0) || "M";
+        let filePath;
+        let originalPath;
+        if (statusCode === "R" || statusCode === "C") {
+          originalPath = parts[1];
+          filePath = parts[2] || parts[1] || "";
+        } else {
+          filePath = parts[1] || "";
+        }
+        const stats = statsMap.get(filePath) || {
+          additions: 0,
+          deletions: 0,
+          isBinary: false
+        };
+        files.push({
+          path: filePath,
+          status: this.statusCodeToFileStatus(statusCode),
+          originalPath,
+          additions: stats.additions,
+          deletions: stats.deletions,
+          isBinary: stats.isBinary
+        });
+      }
+      return files;
+    } catch (error) {
+      console.error("[DiskGitProvider] Failed to get commit files:", error);
+      return [];
+    }
+  }
+  /**
+   * Get file content at a specific commit.
+   */
+  async getFileAtCommit(commitId, filePath) {
+    try {
+      const relativePath = this.toRelativePath(filePath);
+      const result = await this.git.show([`${commitId}:${relativePath}`]);
+      return result;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * Get tracked branch information for VS Code-style graph coloring.
+   *
+   * Returns information about three special branches:
+   * 1. Current branch - where HEAD points (blue segment)
+   * 2. Upstream - remote tracking branch (purple segment)
+   * 3. Base - branch from which feature was created (orange segment)
+   */
+  async getTrackedBranches() {
+    try {
+      const currentBranchName = await this.getCurrentBranch();
+      if (currentBranchName === "HEAD") {
+        return { current: null, upstream: null, base: null };
+      }
+      const [currentCommitId, upstreamInfo, baseInfo] = await Promise.all([
+        this.resolveRef("HEAD"),
+        this.getUpstreamInfo(currentBranchName),
+        this.getBaseBranchInfo(currentBranchName)
+      ]);
+      const current = currentCommitId ? {
+        name: currentBranchName,
+        displayName: currentBranchName,
+        type: "current",
+        commitId: currentCommitId
+      } : null;
+      return {
+        current,
+        upstream: upstreamInfo,
+        base: baseInfo
+      };
+    } catch (error) {
+      console.error("[DiskGitProvider] Failed to get tracked branches:", error);
+      return { current: null, upstream: null, base: null };
+    }
+  }
+  /**
+   * Resolve a ref to its commit ID.
+   */
+  async resolveRef(ref) {
+    try {
+      const result = await this.git.revparse([ref]);
+      return result.trim();
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * Get upstream tracking branch info.
+   */
+  async getUpstreamInfo(branchName) {
+    try {
+      const upstreamRef = await this.git.revparse([
+        "--abbrev-ref",
+        `${branchName}@{upstream}`
+      ]);
+      const upstreamName = upstreamRef.trim();
+      if (!upstreamName) {
+        return null;
+      }
+      const commitId = await this.resolveRef(upstreamName);
+      if (!commitId) {
+        return null;
+      }
+      const slashIndex = upstreamName.indexOf("/");
+      const remote = slashIndex > 0 ? upstreamName.slice(0, slashIndex) : void 0;
+      return {
+        name: upstreamName,
+        displayName: upstreamName,
+        type: "upstream",
+        commitId,
+        remote
+      };
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * Get base branch info (where the feature branch was created from).
+   *
+   * Strategy:
+   * 1. Check git config for cached vscode-merge-base
+   * 2. Parse reflog to find "Created from" entry
+   * 3. Fall back to default branch (origin/main or origin/master)
+   */
+  async getBaseBranchInfo(branchName) {
+    try {
+      const configKey = `branch.${branchName}.vscode-merge-base`;
+      try {
+        const cachedBase = await this.git.raw(["config", "--get", configKey]);
+        const baseName = cachedBase.trim();
+        if (baseName) {
+          const commitId = await this.resolveRef(baseName);
+          if (commitId) {
+            const slashIndex = baseName.indexOf("/");
+            return {
+              name: baseName,
+              displayName: baseName,
+              type: "base",
+              commitId,
+              remote: slashIndex > 0 ? baseName.slice(0, slashIndex) : void 0
+            };
+          }
+        }
+      } catch {
+      }
+      const baseBranch = await this.getBaseBranchFromReflog(branchName);
+      if (baseBranch) {
+        try {
+          await this.git.raw(["config", configKey, baseBranch.name]);
+        } catch {
+        }
+        return baseBranch;
+      }
+      const defaultBranch = await this.getDefaultBranch();
+      if (defaultBranch) {
+        try {
+          await this.git.raw(["config", configKey, defaultBranch.name]);
+        } catch {
+        }
+        return defaultBranch;
+      }
+      return null;
+    } catch (error) {
+      console.error("[DiskGitProvider] Failed to get base branch:", error);
+      return null;
+    }
+  }
+  /**
+   * Try to determine base branch from reflog.
+   */
+  async getBaseBranchFromReflog(branchName) {
+    try {
+      const reflog = await this.git.raw([
+        "reflog",
+        "show",
+        branchName,
+        "--format=%gs"
+      ]);
+      const lines = reflog.trim().split("\n");
+      for (const line of lines) {
+        const match = line.match(/branch: Created from (.+)$/);
+        if (match && match[1] && match[1] !== "HEAD") {
+          const sourceBranch = match[1];
+          try {
+            const upstreamRef = await this.git.revparse([
+              "--abbrev-ref",
+              `${sourceBranch}@{upstream}`
+            ]);
+            const upstreamName = upstreamRef.trim();
+            if (upstreamName) {
+              const commitId = await this.resolveRef(upstreamName);
+              if (commitId) {
+                const slashIndex = upstreamName.indexOf("/");
+                return {
+                  name: upstreamName,
+                  displayName: upstreamName,
+                  type: "base",
+                  commitId,
+                  remote: slashIndex > 0 ? upstreamName.slice(0, slashIndex) : void 0
+                };
+              }
+            }
+          } catch {
+            if (sourceBranch.includes("/")) {
+              const commitId = await this.resolveRef(sourceBranch);
+              if (commitId) {
+                const slashIndex = sourceBranch.indexOf("/");
+                return {
+                  name: sourceBranch,
+                  displayName: sourceBranch,
+                  type: "base",
+                  commitId,
+                  remote: slashIndex > 0 ? sourceBranch.slice(0, slashIndex) : void 0
+                };
+              }
+            }
+          }
+        }
+      }
+      return null;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * Get the default branch (origin/main or origin/master).
+   */
+  async getDefaultBranch() {
+    for (const branchName of ["origin/main", "origin/master"]) {
+      try {
+        const commitId = await this.resolveRef(branchName);
+        if (commitId) {
+          return {
+            name: branchName,
+            displayName: branchName,
+            type: "base",
+            commitId,
+            remote: "origin"
+          };
+        }
+      } catch {
+      }
+    }
+    return null;
+  }
+  /**
+   * Convert git status code to GitFileStatusCode.
+   */
+  statusCodeToFileStatus(code) {
+    switch (code) {
+      case "A":
+        return "added";
+      case "D":
+        return "deleted";
+      case "M":
+        return "modified";
+      case "R":
+        return "renamed";
+      case "C":
+        return "copied";
+      case "U":
+        return "unmerged";
+      default:
+        return "modified";
+    }
+  }
+  /**
+   * Revert changes to files (discard working tree modifications).
+   *
+   * This discards ONLY working tree changes, preserving any staged changes.
+   * Mirrors VS Code's "Discard Changes" behavior.
+   *
+   * Handles different file types:
+   * - Untracked files: Delete from filesystem
+   * - All other files: Restore from index via `git checkout -- file`
+   *   - If file has staged changes, reverts to staged version
+   *   - If file has no staged changes, reverts to HEAD
+   *
+   * Note: Does NOT unstage files. Use unstage() separately if needed.
+   */
+  async revert(files) {
+    await this.withOperationTracking(async () => {
+      const relativePaths = files.map((f) => this.toRelativePath(f));
+      const status = await this.getStatus();
+      const filesToCheckout = [];
+      const filesToDelete = [];
+      for (const relPath of relativePaths) {
+        const fileStatus = status.files.get(relPath);
+        if (fileStatus?.status === "untracked") {
+          filesToDelete.push(relPath);
+        } else {
+          filesToCheckout.push(relPath);
+        }
+      }
+      await Promise.all(
+        filesToDelete.map(async (relPath) => {
+          const fullPath = path5.join(this.gitRoot, relPath);
+          try {
+            await fsPromises.unlink(fullPath);
+          } catch {
+          }
+        })
+      );
+      if (filesToCheckout.length > 0) {
+        await this.git.checkout(["--", ...filesToCheckout]);
+      }
+    });
+  }
+  // -------------------------------------------------------------------------
+  // Operations
+  // -------------------------------------------------------------------------
+  /**
+   * Stage files for commit.
+   */
+  async stage(files) {
+    await this.withOperationTracking(async () => {
+      const relativePaths = files.map((f) => this.toRelativePath(f));
+      await this.git.add(relativePaths);
+    });
+  }
+  /**
+   * Unstage files (remove from index).
+   */
+  async unstage(files) {
+    await this.withOperationTracking(async () => {
+      const relativePaths = files.map((f) => this.toRelativePath(f));
+      await this.git.reset(["HEAD", "--", ...relativePaths]);
+    });
+  }
+  /**
+   * Create a commit.
+   */
+  async commit(message, options) {
+    return this.withOperationTracking(async () => {
+      const commitOpts = {};
+      if (options?.amend) {
+        commitOpts["--amend"] = null;
+      }
+      if (options?.signoff) {
+        commitOpts["--signoff"] = null;
+      }
+      if (options?.files && options.files.length > 0) {
+        const relativePaths = options.files.map((f) => this.toRelativePath(f));
+        await this.git.commit(message, relativePaths, commitOpts);
+      } else {
+        await this.git.commit(message, commitOpts);
+      }
+      const log = await this.git.log({ maxCount: 1 });
+      const latestCommit = log.latest;
+      if (!latestCommit) {
+        throw new Error("Failed to get commit after creation");
+      }
+      const commit = {
+        hash: latestCommit.hash,
+        shortHash: latestCommit.hash.substring(0, 7),
+        author: latestCommit.author_name,
+        email: latestCommit.author_email,
+        date: new Date(latestCommit.date),
+        message: latestCommit.message,
+        parents: latestCommit.refs ? latestCommit.refs.split(", ") : []
+      };
+      this._onCommitCreated.fire({ commit });
+      return commit;
+    });
+  }
+  /**
+   * Checkout a branch or ref.
+   *
+   * @param ref - Branch name, tag, or commit hash
+   * @param options - Checkout options (force)
+   */
+  async checkout(ref, options) {
+    const previousBranch = await this.getCurrentBranch();
+    const previousHead = await this.getHeadCommit();
+    await this.withOperationTracking(async () => {
+      const checkoutOptions = [];
+      if (options?.force) {
+        checkoutOptions.push("--force");
+      }
+      if (checkoutOptions.length > 0) {
+        await this.git.checkout([...checkoutOptions, ref]);
+      } else {
+        await this.git.checkout(ref);
+      }
+    });
+    const currentBranch = await this.getCurrentBranch();
+    const currentHead = await this.getHeadCommit();
+    if (previousBranch !== currentBranch) {
+      this._onBranchChanged.fire({
+        previousBranch,
+        currentBranch
+      });
+    }
+    if (previousHead !== currentHead) {
+      this._onHeadChanged.fire({
+        previousHead,
+        currentHead,
+        isBranchSwitch: previousBranch !== currentBranch
+      });
+    }
+  }
+  /**
+   * Create a new branch and optionally switch to it.
+   *
+   * @param branchName - Name for the new branch
+   * @param checkout - Whether to switch to the new branch (default: true)
+   * @param startPoint - Optional ref to start the branch from (default: HEAD)
+   */
+  async createBranch(branchName, checkout = true, startPoint) {
+    const previousBranch = await this.getCurrentBranch();
+    await this.withOperationTracking(async () => {
+      if (checkout) {
+        const args = ["-b", branchName];
+        if (startPoint) {
+          args.push(startPoint);
+        }
+        await this.git.checkout(args);
+      } else {
+        const args = [branchName];
+        if (startPoint) {
+          args.push(startPoint);
+        }
+        await this.git.branch(args);
+      }
+    });
+    if (checkout) {
+      const currentBranch = await this.getCurrentBranch();
+      if (previousBranch !== currentBranch) {
+        this._onBranchChanged.fire({
+          previousBranch,
+          currentBranch
+        });
+      }
+    }
+  }
+  /**
+   * Stash current uncommitted changes.
+   *
+   * Saves both staged and unstaged changes to the stash.
+   *
+   * @param message - Optional message for the stash entry
+   */
+  async stash(message) {
+    await this.withOperationTracking(async () => {
+      if (message) {
+        await this.git.stash(["push", "-m", message]);
+      } else {
+        await this.git.stash(["push"]);
+      }
+    });
+  }
+  /**
+   * Apply and remove the most recent stash entry.
+   *
+   * Restores the previously stashed changes to the working directory.
+   */
+  async stashPop() {
+    await this.withOperationTracking(async () => {
+      await this.git.stash(["pop"]);
+    });
+  }
+  /**
+   * Push commits to remote.
+   *
+   * @param force - If true, use --force-with-lease for safer force push
+   * @param setUpstream - If true, set upstream tracking (for new branches)
+   */
+  async push(force = false, setUpstream = false) {
+    await this.withOperationTracking(async () => {
+      const options = [];
+      if (force) {
+        options.push("--force-with-lease");
+      }
+      if (setUpstream) {
+        options.push("--set-upstream", "origin", "HEAD");
+      }
+      await this.git.push(options);
+    });
+  }
+  /**
+   * Pull changes from remote.
+   *
+   * @param rebase - If true, use rebase instead of merge
+   */
+  async pull(rebase = false) {
+    await this.withOperationTracking(async () => {
+      if (rebase) {
+        await this.git.pull(["--rebase"]);
+      } else {
+        await this.git.pull();
+      }
+    });
+  }
+  /**
+   * Check if the current branch has an upstream (tracking) branch configured.
+   *
+   * @returns true if an upstream is configured, false otherwise
+   */
+  async hasUpstream() {
+    try {
+      const result = await this.git.raw([
+        "rev-parse",
+        "--abbrev-ref",
+        "--symbolic-full-name",
+        "@{u}"
+      ]);
+      return result.trim().length > 0;
+    } catch {
+      return false;
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal: State Management
+  // -------------------------------------------------------------------------
+  /**
+   * Initialize last known state for change detection.
+   */
+  async initializeState() {
+    try {
+      this.lastStatus = await this.getStatus();
+      this.lastBranch = await this.getCurrentBranch();
+      this.lastHead = await this.getHeadCommit();
+    } catch (error) {
+      console.error("[DiskGitProvider] Failed to initialize state:", error);
+    }
+  }
+  /**
+   * Get the current HEAD commit hash.
+   */
+  async getHeadCommit() {
+    try {
+      const result = await this.git.revparse(["HEAD"]);
+      return result.trim();
+    } catch {
+      return "";
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Status Parsing
+  // -------------------------------------------------------------------------
+  /**
+   * Parse git status result into our GitStatus type.
+   */
+  parseStatus(statusResult, branch) {
+    const files = /* @__PURE__ */ new Map();
+    for (const file of statusResult.files) {
+      const entries = this.parseFileStatuses(file);
+      for (const entry of entries) {
+        const key = entry.staged || !entry.hasIndexChanges ? entry.path : entry.path + UNSTAGED_KEY_SUFFIX;
+        files.set(key, entry);
+      }
+    }
+    return {
+      branch: branch || "HEAD",
+      upstream: statusResult.tracking || void 0,
+      ahead: statusResult.ahead,
+      behind: statusResult.behind,
+      files
+    };
+  }
+  /**
+   * Parse a single file from simple-git into one or two GitFileStatus entries.
+   *
+   * For most files, returns a single entry. For partially staged files
+   * (e.g., "MM" - modified in both index and working directory), returns
+   * two entries: one for staged changes and one for unstaged changes.
+   */
+  parseFileStatuses(file) {
+    const { path: filePath, index, working_dir } = file;
+    const entries = [];
+    if (index === "?" && working_dir === "?") {
+      entries.push({
+        path: filePath,
+        status: "untracked",
+        staged: false
+      });
+      return entries;
+    }
+    if (index === "!" && working_dir === "!") {
+      entries.push({
+        path: filePath,
+        status: "ignored",
+        staged: false
+      });
+      return entries;
+    }
+    if (index === "U" || working_dir === "U" || index === "A" && working_dir === "A" || index === "D" && working_dir === "D") {
+      entries.push({
+        path: filePath,
+        status: "unmerged",
+        staged: false
+      });
+      return entries;
+    }
+    const hasIndexChange = index !== " " && index !== "?";
+    const hasWorkingDirChange = working_dir !== " " && working_dir !== "?";
+    if (hasIndexChange) {
+      entries.push({
+        path: filePath,
+        status: this.codeToStatus(index),
+        staged: true,
+        hasIndexChanges: true
+      });
+    }
+    if (hasWorkingDirChange) {
+      entries.push({
+        path: filePath,
+        status: this.codeToStatus(working_dir),
+        staged: false,
+        // hasIndexChanges indicates the diff should be Index → Working Dir
+        // instead of HEAD → Working Dir
+        hasIndexChanges: hasIndexChange
+      });
+    }
+    return entries;
+  }
+  /**
+   * Convert a single git status code to our status type.
+   */
+  codeToStatus(code) {
+    switch (code) {
+      case "M":
+        return "modified";
+      case "A":
+        return "added";
+      case "D":
+        return "deleted";
+      case "R":
+        return "renamed";
+      case "C":
+        return "copied";
+      default:
+        return "modified";
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Refresh Scheduling
+  // -------------------------------------------------------------------------
+  /**
+   * Schedule a status refresh with debouncing.
+   */
+  scheduleStatusRefresh() {
+    if (this.disposed) {
+      return;
+    }
+    if (this.activeOperations > 0) {
+      return;
+    }
+    if (this.refreshTimer) {
+      clearTimeout(this.refreshTimer);
+    }
+    this.refreshTimer = setTimeout(() => {
+      this.refreshTimer = null;
+      this.refreshStatus();
+    }, STATUS_REFRESH_DEBOUNCE_MS);
+  }
+  /**
+   * Actually refresh status and emit events if changed.
+   */
+  async refreshStatus() {
+    if (this.disposed) {
+      return;
+    }
+    this.perFileDiffStatsCache = null;
+    try {
+      const currentStatus = await this.getStatus();
+      const currentBranch = currentStatus.branch;
+      const currentHead = await this.getHeadCommit();
+      if (this.lastStatus) {
+        const delta = this.calculateStatusDelta(this.lastStatus, currentStatus);
+        const aheadBehindChanged = this.lastStatus.ahead !== currentStatus.ahead || this.lastStatus.behind !== currentStatus.behind;
+        const headChanged = this.lastHead !== currentHead;
+        const upstreamChanged = this.lastStatus.upstream !== currentStatus.upstream;
+        if (delta.added.length > 0 || delta.modified.length > 0 || delta.removed.length > 0 || aheadBehindChanged || headChanged || upstreamChanged) {
+          this._onStatusChanged.fire({
+            status: currentStatus,
+            ...delta
+          });
+        }
+      }
+      if (this.lastBranch && this.lastBranch !== currentBranch) {
+        this._onBranchChanged.fire({
+          previousBranch: this.lastBranch,
+          currentBranch
+        });
+      }
+      if (this.lastHead && this.lastHead !== currentHead) {
+        this._onHeadChanged.fire({
+          previousHead: this.lastHead,
+          currentHead,
+          isBranchSwitch: this.lastBranch !== currentBranch
+        });
+      }
+      this.lastStatus = currentStatus;
+      this.lastBranch = currentBranch;
+      this.lastHead = currentHead;
+    } catch (error) {
+      console.error("[DiskGitProvider] Failed to refresh status:", error);
+    }
+  }
+  /**
+   * Calculate the delta between two status snapshots.
+   */
+  calculateStatusDelta(previous, current) {
+    const added = [];
+    const modified = [];
+    const removed = [];
+    for (const [filePath, currentFile] of current.files) {
+      const previousFile = previous.files.get(filePath);
+      if (!previousFile) {
+        added.push(filePath);
+      } else if (previousFile.status !== currentFile.status || previousFile.staged !== currentFile.staged) {
+        modified.push(filePath);
+      }
+    }
+    for (const filePath of previous.files.keys()) {
+      if (!current.files.has(filePath)) {
+        removed.push(filePath);
+      }
+    }
+    return { added, modified, removed };
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Operation Tracking
+  // -------------------------------------------------------------------------
+  /**
+   * Execute a git operation with tracking.
+   *
+   * While operations are active, status refresh is suppressed
+   * to avoid thrashing.
+   */
+  async withOperationTracking(operation) {
+    this.activeOperations++;
+    try {
+      return await operation();
+    } finally {
+      this.activeOperations--;
+      if (this.activeOperations === 0) {
+        this.scheduleStatusRefresh();
+      }
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal: Path Utilities
+  // -------------------------------------------------------------------------
+  /**
+   * Convert a path to be relative to the git root.
+   *
+   * On case-insensitive filesystems (macOS, Windows), handles the case where
+   * the file path and git root have different casings but refer to the same location.
+   *
+   * Always returns paths with forward slashes for Git compatibility.
+   */
+  toRelativePath(filePath) {
+    const absolutePath = path5.isAbsolute(filePath) ? filePath : path5.resolve(this.cwd, filePath);
+    let relativePath = path5.relative(this.gitRoot, absolutePath);
+    if (relativePath.startsWith("..") && (process.platform === "darwin" || process.platform === "win32")) {
+      const gitRootLower = this.gitRoot.toLowerCase();
+      const absolutePathLower = absolutePath.toLowerCase();
+      if (absolutePathLower.startsWith(gitRootLower)) {
+        const relativePortion = absolutePath.slice(this.gitRoot.length);
+        relativePath = relativePortion.replace(/^[/\\]/, "");
+      }
+    }
+    return relativePath.split(path5.sep).join("/");
+  }
+  /**
+   * Resolve the actual .git directory for worktrees.
+   *
+   * When using git worktrees, .git is a file containing:
+   * "gitdir: /path/to/actual/.git/worktrees/name"
+   */
+  resolveGitDir(gitFile) {
+    try {
+      const content = fs5.readFileSync(gitFile, "utf8");
+      const match = content.match(/gitdir:\s*(.+)/);
+      if (match) {
+        const gitDir = match[1].trim();
+        return path5.isAbsolute(gitDir) ? gitDir : path5.resolve(path5.dirname(gitFile), gitDir);
+      }
+    } catch {
+    }
+    return gitFile;
+  }
+};
+async function findGitRoot(cwd) {
+  try {
+    const git = simpleGit(cwd);
+    const root = await git.revparse(["--show-toplevel"]);
+    return root.trim() || null;
+  } catch {
+    return null;
+  }
+}
+async function isGitAvailable() {
+  try {
+    const git = simpleGit();
+    await git.version();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// src/git/git-provider-service.ts
+var DISPOSE_GRACE_PERIOD_MS = 5e3;
+var GitProviderService = class _GitProviderService {
+  // -------------------------------------------------------------------------
+  // Singleton
+  // -------------------------------------------------------------------------
+  static instance = null;
+  /**
+   * Get the singleton instance of the service.
+   */
+  static getInstance() {
+    if (!_GitProviderService.instance) {
+      _GitProviderService.instance = new _GitProviderService();
+    }
+    return _GitProviderService.instance;
+  }
+  /**
+   * Reset the singleton instance (for testing only).
+   *
+   * This disposes all providers and clears the singleton.
+   * Should only be used in test cleanup.
+   */
+  static resetInstance() {
+    if (_GitProviderService.instance) {
+      _GitProviderService.instance.disposeAll();
+      _GitProviderService.instance = null;
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal State
+  // -------------------------------------------------------------------------
+  /** Map of git roots to provider entries */
+  providers = /* @__PURE__ */ new Map();
+  /** Map of pending provider creation promises to prevent race conditions */
+  pendingCreations = /* @__PURE__ */ new Map();
+  /** Cached result of git availability check */
+  gitAvailableCache = void 0;
+  /** Optional logging function */
+  log;
+  /**
+   * Create a new GitProviderService.
+   *
+   * Can be instantiated directly with options, or accessed via getInstance()
+   * for singleton usage.
+   *
+   * @param options - Configuration options
+   */
+  constructor(options = {}) {
+    this.log = options.log;
+  }
+  // -------------------------------------------------------------------------
+  // Public Methods
+  // -------------------------------------------------------------------------
+  /**
+   * Get a git provider for the specified directory.
+   *
+   * Automatically finds the git repository root containing the directory.
+   * If a provider already exists for this repository, the reference count
+   * is incremented and the existing provider is returned.
+   *
+   * @param cwd - The working directory (any directory within a git repo)
+   * @returns The git provider instance and the git root path
+   * @throws If the directory is not within a git repository
+   */
+  async getProvider(cwd) {
+    const gitRoot = await this.findGitRoot(cwd);
+    if (!gitRoot) {
+      throw new Error(`Not a git repository: ${cwd}`);
+    }
+    const normalizedRoot = this.normalizePath(gitRoot);
+    const existing = this.providers.get(normalizedRoot);
+    if (existing) {
+      if (existing.disposeTimer) {
+        clearTimeout(existing.disposeTimer);
+        existing.disposeTimer = void 0;
+      }
+      existing.refCount++;
+      return { provider: existing.provider, gitRoot: normalizedRoot };
+    }
+    const pendingCreation = this.pendingCreations.get(normalizedRoot);
+    if (pendingCreation) {
+      const result = await pendingCreation;
+      const entry = this.providers.get(normalizedRoot);
+      if (entry) {
+        entry.refCount++;
+      }
+      return result;
+    }
+    const creationPromise = this.createProvider(normalizedRoot, cwd);
+    this.pendingCreations.set(normalizedRoot, creationPromise);
+    try {
+      const result = await creationPromise;
+      return result;
+    } finally {
+      this.pendingCreations.delete(normalizedRoot);
+    }
+  }
+  /**
+   * Internal method to create a new provider.
+   * Separated to support the pending creations pattern.
+   */
+  async createProvider(normalizedRoot, cwd) {
+    const provider = new DiskGitProvider(normalizedRoot, cwd);
+    await provider.startWatching();
+    this.providers.set(normalizedRoot, {
+      provider,
+      refCount: 1
+    });
+    return { provider, gitRoot: normalizedRoot };
+  }
+  /**
+   * Release a reference to a git provider.
+   *
+   * Decrements the reference count for the provider at the specified git root.
+   * When the count reaches zero, a grace period timer is started. If no new
+   * references are acquired within the grace period, the provider is disposed.
+   *
+   * @param gitRoot - The git repository root path
+   */
+  releaseProvider(gitRoot) {
+    const normalizedRoot = this.normalizePath(gitRoot);
+    const entry = this.providers.get(normalizedRoot);
+    if (!entry) {
+      console.warn(
+        `[GitProviderService] Attempted to release unknown provider: ${normalizedRoot}`
+      );
+      return;
+    }
+    entry.refCount--;
+    if (entry.refCount <= 0) {
+      entry.disposeTimer = setTimeout(() => {
+        this.disposeProvider(normalizedRoot);
+      }, DISPOSE_GRACE_PERIOD_MS);
+    }
+  }
+  /**
+   * Immediately dispose a provider without waiting for grace period.
+   *
+   * This is primarily useful for testing or forced cleanup scenarios.
+   *
+   * @param gitRoot - The git repository root path
+   */
+  async forceDispose(gitRoot) {
+    const normalizedRoot = this.normalizePath(gitRoot);
+    await this.disposeProvider(normalizedRoot);
+  }
+  /**
+   * Find the git repository root for a given path.
+   *
+   * Walks up the directory tree looking for a .git directory or file.
+   *
+   * @param startPath - The starting directory path
+   * @returns The git root path, or null if not in a git repository
+   */
+  async findGitRoot(startPath) {
+    let currentPath = path6.resolve(startPath);
+    const root = path6.parse(currentPath).root;
+    while (currentPath !== root) {
+      const gitPath = path6.join(currentPath, ".git");
+      try {
+        await fs6.promises.access(gitPath);
+        return currentPath;
+      } catch {
+        currentPath = path6.dirname(currentPath);
+      }
+    }
+    const rootGitPath = path6.join(root, ".git");
+    try {
+      await fs6.promises.access(rootGitPath);
+      return root;
+    } catch {
+      return null;
+    }
+  }
+  /**
+   * Get the current reference count for a provider.
+   *
+   * Returns 0 if no provider exists for the path.
+   *
+   * @param gitRoot - The git repository root path
+   * @returns The current reference count
+   */
+  getRefCount(gitRoot) {
+    const normalizedRoot = this.normalizePath(gitRoot);
+    const entry = this.providers.get(normalizedRoot);
+    return entry?.refCount ?? 0;
+  }
+  /**
+   * Check if a provider exists for the given git root.
+   *
+   * @param gitRoot - The git repository root path
+   * @returns True if a provider exists (regardless of refCount)
+   */
+  hasProvider(gitRoot) {
+    const normalizedRoot = this.normalizePath(gitRoot);
+    return this.providers.has(normalizedRoot);
+  }
+  /**
+   * Get an existing provider without incrementing reference count.
+   *
+   * Use this for operations that rely on an active subscription holding
+   * the provider reference. Returns null if no provider exists.
+   *
+   * @param gitRoot - The git repository root path
+   * @returns The provider if it exists, null otherwise
+   */
+  getExistingProvider(gitRoot) {
+    const normalizedRoot = this.normalizePath(gitRoot);
+    return this.providers.get(normalizedRoot)?.provider ?? null;
+  }
+  /**
+   * Get an existing provider by cwd without incrementing reference count.
+   *
+   * Finds the git root for the cwd and returns the provider if one exists.
+   * Use this for operations that rely on an active subscription holding
+   * the provider reference.
+   *
+   * @param cwd - The working directory (any directory within a git repo)
+   * @returns The provider and git root if they exist, null otherwise
+   */
+  async getExistingProviderByCwd(cwd) {
+    const gitRoot = await this.findGitRoot(cwd);
+    if (!gitRoot) {
+      return null;
+    }
+    const normalizedRoot = this.normalizePath(gitRoot);
+    const entry = this.providers.get(normalizedRoot);
+    if (!entry) {
+      return null;
+    }
+    return { provider: entry.provider, gitRoot: normalizedRoot };
+  }
+  /**
+   * Get the number of active providers.
+   *
+   * @returns The count of providers currently managed by this service
+   */
+  get providerCount() {
+    return this.providers.size;
+  }
+  /**
+   * Force dispose all providers immediately.
+   *
+   * This is primarily useful for testing or forced cleanup scenarios
+   * such as application shutdown.
+   */
+  forceDisposeAll() {
+    this.disposeAll();
+  }
+  // -------------------------------------------------------------------------
+  // Compatibility Methods (for jsonrpc-proxy)
+  // -------------------------------------------------------------------------
+  /**
+   * Acquire a provider reference for the specified directory.
+   *
+   * Alias for getProvider() - used by jsonrpc-proxy.
+   *
+   * @param cwd - The working directory path
+   * @returns The git provider instance
+   */
+  async retain(cwd) {
+    const result = await this.getProvider(cwd);
+    return result.provider;
+  }
+  /**
+   * Release a provider reference.
+   *
+   * Alias for releaseProvider() - used by jsonrpc-proxy.
+   *
+   * @param gitRoot - The git repository root path
+   */
+  release(gitRoot) {
+    this.releaseProvider(gitRoot);
+  }
+  /**
+   * Dispose the service and all providers.
+   *
+   * Used by jsonrpc-proxy during shutdown.
+   */
+  async dispose() {
+    this.disposeAll();
+  }
+  /**
+   * Get statistics about active providers.
+   *
+   * Useful for debugging and monitoring.
+   *
+   * @returns Object containing provider statistics
+   */
+  getStats() {
+    const stats = /* @__PURE__ */ new Map();
+    for (const [gitRoot, entry] of this.providers) {
+      stats.set(gitRoot, {
+        refCount: entry.refCount,
+        hasPendingDispose: entry.disposeTimer !== null
+      });
+    }
+    return { providers: stats };
+  }
+  /**
+   * Notify that a file has changed in the working directory.
+   *
+   * This is called by FileSystemProviderService when files are modified.
+   * If the file is within a git repository with an active provider,
+   * it will trigger a status refresh.
+   *
+   * @param filePath - The absolute path to the changed file
+   */
+  async notifyFileChanged(filePath) {
+    const gitRoot = await this.findGitRoot(filePath);
+    if (!gitRoot) {
+      return;
+    }
+    const normalizedRoot = this.normalizePath(gitRoot);
+    const entry = this.providers.get(normalizedRoot);
+    if (entry) {
+      entry.provider.triggerStatusRefresh();
+    }
+  }
+  /**
+   * Check if git is available on the system.
+   *
+   * Tests by running `git --version`. Result is cached for performance.
+   *
+   * @returns True if git is installed and accessible
+   */
+  async isGitAvailable() {
+    if (this.gitAvailableCache !== void 0) {
+      return this.gitAvailableCache;
+    }
+    try {
+      const git = simpleGit();
+      await git.version();
+      this.gitAvailableCache = true;
+      return true;
+    } catch {
+      this.gitAvailableCache = false;
+      return false;
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal Methods
+  // -------------------------------------------------------------------------
+  /**
+   * Normalize a path for consistent lookup.
+   * Resolves to absolute path and handles case-insensitivity on macOS/Windows.
+   */
+  normalizePath(filePath) {
+    const resolved = path6.resolve(filePath);
+    return normalizePathForComparison(resolved);
+  }
+  /**
+   * Dispose a provider and remove it from the map.
+   */
+  async disposeProvider(normalizedRoot) {
+    const entry = this.providers.get(normalizedRoot);
+    if (!entry) {
+      return;
+    }
+    if (entry.disposeTimer) {
+      clearTimeout(entry.disposeTimer);
+    }
+    this.providers.delete(normalizedRoot);
+    entry.provider.dispose();
+  }
+  /**
+   * Dispose all providers (used during service shutdown/reset).
+   */
+  disposeAll() {
+    for (const [normalizedRoot, entry] of this.providers) {
+      if (entry.disposeTimer) {
+        clearTimeout(entry.disposeTimer);
+      }
+      try {
+        entry.provider.dispose();
+      } catch (error) {
+        console.error(
+          `[GitProviderService] Error disposing provider ${normalizedRoot}:`,
+          error
+        );
+      }
+    }
+    this.providers.clear();
+  }
+};
+
+// src/fs/fs-provider-service.ts
+var DISPOSE_GRACE_PERIOD_MS2 = 5e3;
+var FileSystemProviderService = class _FileSystemProviderService {
+  // -------------------------------------------------------------------------
+  // Singleton
+  // -------------------------------------------------------------------------
+  static instance = null;
+  /**
+   * Get the singleton instance of the service.
+   */
+  static getInstance() {
+    if (!_FileSystemProviderService.instance) {
+      _FileSystemProviderService.instance = new _FileSystemProviderService();
+    }
+    return _FileSystemProviderService.instance;
+  }
+  /**
+   * Reset the singleton instance (for testing only).
+   *
+   * This disposes all providers and clears the singleton.
+   * Should only be used in test cleanup.
+   */
+  static resetInstance() {
+    if (_FileSystemProviderService.instance) {
+      _FileSystemProviderService.instance.disposeAll();
+      _FileSystemProviderService.instance = null;
+    }
+  }
+  // -------------------------------------------------------------------------
+  // Internal State
+  // -------------------------------------------------------------------------
+  /** Map of normalized paths to provider entries */
+  providers = /* @__PURE__ */ new Map();
+  /**
+   * Map of pending provider creation promises to prevent race conditions.
+   *
+   * Even with simplified lifecycle (only subscriptions create providers),
+   * concurrent subscriptions for the same cwd can still occur (multiple
+   * windows, fast component remounts). This ensures only one provider
+   * is created per cwd.
+   */
+  pendingCreations = /* @__PURE__ */ new Map();
+  /** Optional logging function */
+  log;
+  /**
+   * Create a new FileSystemProviderService.
+   *
+   * Can be instantiated directly with options, or accessed via getInstance()
+   * for singleton usage.
+   *
+   * @param options - Configuration options
+   */
+  constructor(options = {}) {
+    this.log = options.log;
+  }
+  // -------------------------------------------------------------------------
+  // Public Methods
+  // -------------------------------------------------------------------------
+  /**
+   * Get a filesystem provider for the specified directory.
+   *
+   * This method is used by subscriptions to acquire provider references.
+   * Operations use `getExistingProvider()` instead since they rely on
+   * an active subscription holding the provider reference.
+   *
+   * If a provider already exists for this path, the reference count is
+   * incremented and the existing provider is returned. If a provider is
+   * in the grace period awaiting disposal, the timer is cancelled and
+   * the provider is reused.
+   *
+   * @param cwd - The working directory path
+   * @returns The filesystem provider instance
+   */
+  async getProvider(cwd) {
+    const normalizedPath = this.normalizePath(cwd);
+    const existing = this.providers.get(normalizedPath);
+    if (existing) {
+      if (existing.disposeTimer) {
+        clearTimeout(existing.disposeTimer);
+        existing.disposeTimer = void 0;
+        if (!existing.fileChangeDisposable) {
+          existing.fileChangeDisposable = existing.provider.onFileContentChanged((event) => {
+            GitProviderService.getInstance().notifyFileChanged(event.path).catch(() => {
+            });
+          });
+        }
+        if (!existing.gitRoot) {
+          GitProviderService.getInstance().getProvider(normalizedPath).then((result) => {
+            existing.gitRoot = result.gitRoot;
+          }).catch(() => {
+          });
+        }
+      }
+      existing.refCount++;
+      return existing.provider;
+    }
+    const pendingCreation = this.pendingCreations.get(normalizedPath);
+    if (pendingCreation) {
+      const provider = await pendingCreation;
+      const entry = this.providers.get(normalizedPath);
+      if (entry) {
+        entry.refCount++;
+      }
+      return provider;
+    }
+    const creationPromise = this.createProvider(normalizedPath);
+    this.pendingCreations.set(normalizedPath, creationPromise);
+    try {
+      const provider = await creationPromise;
+      return provider;
+    } finally {
+      this.pendingCreations.delete(normalizedPath);
+    }
+  }
+  /**
+   * Internal method to create a new provider.
+   * Separated to support the pending creations pattern.
+   */
+  async createProvider(normalizedPath) {
+    if (!fs7.existsSync(normalizedPath)) {
+      throw new Error(
+        `Cannot create local filesystem provider for non-existent path: ${normalizedPath}. If this is a remote/VM path, ensure sandboxId is passed through the component hierarchy.`
+      );
+    }
+    const provider = new DiskFileSystemProvider(normalizedPath);
+    await provider.startWatching();
+    const fileChangeDisposable = provider.onFileContentChanged((event) => {
+      GitProviderService.getInstance().notifyFileChanged(event.path).catch(() => {
+      });
+    });
+    let gitRoot;
+    try {
+      const gitService = GitProviderService.getInstance();
+      const gitResult = await gitService.getProvider(normalizedPath);
+      gitRoot = gitResult.gitRoot;
+    } catch {
+    }
+    this.providers.set(normalizedPath, {
+      provider,
+      refCount: 1,
+      fileChangeDisposable,
+      gitRoot
+    });
+    return provider;
+  }
+  /**
+   * Release a reference to a filesystem provider.
+   *
+   * Decrements the reference count for the provider at the specified path.
+   * When the count reaches zero, a grace period timer is started. If no
+   * new references are acquired within the grace period, the provider
+   * is disposed.
+   *
+   * @param cwd - The working directory path
+   */
+  releaseProvider(cwd) {
+    const normalizedPath = this.normalizePath(cwd);
+    const entry = this.providers.get(normalizedPath);
+    if (!entry) {
+      console.warn(
+        `[FileSystemProviderService] Attempted to release unknown provider: ${normalizedPath}`
+      );
+      return;
+    }
+    entry.refCount--;
+    if (entry.refCount <= 0) {
+      if (entry.fileChangeDisposable) {
+        entry.fileChangeDisposable.dispose();
+        entry.fileChangeDisposable = void 0;
+      }
+      if (entry.gitRoot) {
+        GitProviderService.getInstance().releaseProvider(entry.gitRoot);
+        entry.gitRoot = void 0;
+      }
+      entry.disposeTimer = setTimeout(() => {
+        this.disposeProvider(normalizedPath);
+      }, DISPOSE_GRACE_PERIOD_MS2);
+    }
+  }
+  /**
+   * Immediately dispose a provider without waiting for grace period.
+   *
+   * This is primarily useful for testing or forced cleanup scenarios.
+   *
+   * @param cwd - The working directory path
+   */
+  async forceDispose(cwd) {
+    const normalizedPath = this.normalizePath(cwd);
+    await this.disposeProvider(normalizedPath);
+  }
+  /**
+   * Get the current reference count for a provider.
+   *
+   * Returns 0 if no provider exists for the path.
+   *
+   * @param cwd - The working directory path
+   * @returns The current reference count
+   */
+  getRefCount(cwd) {
+    const normalizedPath = this.normalizePath(cwd);
+    const entry = this.providers.get(normalizedPath);
+    return entry?.refCount ?? 0;
+  }
+  /**
+   * Check if a provider exists for the given path.
+   *
+   * @param cwd - The working directory path
+   * @returns True if a provider exists (regardless of refCount)
+   */
+  hasProvider(cwd) {
+    const normalizedPath = this.normalizePath(cwd);
+    return this.providers.has(normalizedPath);
+  }
+  /**
+   * Get an existing provider without incrementing reference count.
+   *
+   * Use this for operations that rely on an active subscription holding
+   * the provider reference. Returns null if no provider exists.
+   *
+   * @param cwd - The working directory path
+   * @returns The provider if it exists, null otherwise
+   */
+  getExistingProvider(cwd) {
+    const normalizedPath = this.normalizePath(cwd);
+    return this.providers.get(normalizedPath)?.provider ?? null;
+  }
+  /**
+   * Get the number of active providers.
+   *
+   * @returns The count of providers currently managed by this service
+   */
+  get providerCount() {
+    return this.providers.size;
+  }
+  /**
+   * Force dispose all providers immediately.
+   *
+   * This is primarily useful for testing or forced cleanup scenarios
+   * such as application shutdown.
+   */
+  forceDisposeAll() {
+    this.disposeAll();
+  }
+  // -------------------------------------------------------------------------
+  // Compatibility Methods (for jsonrpc-proxy)
+  // -------------------------------------------------------------------------
+  /**
+   * Acquire a provider reference for the specified directory.
+   *
+   * Alias for getProvider() - used by jsonrpc-proxy.
+   *
+   * @param cwd - The working directory path
+   * @returns The filesystem provider instance
+   */
+  async retain(cwd) {
+    return this.getProvider(cwd);
+  }
+  /**
+   * Release a provider reference.
+   *
+   * Alias for releaseProvider() - used by jsonrpc-proxy.
+   *
+   * @param cwd - The working directory path
+   */
+  release(cwd) {
+    this.releaseProvider(cwd);
+  }
+  /**
+   * Dispose the service and all providers.
+   *
+   * Used by jsonrpc-proxy during shutdown.
+   */
+  async dispose() {
+    this.disposeAll();
+  }
+  /**
+   * Get statistics about active providers.
+   *
+   * Useful for debugging and monitoring.
+   *
+   * @returns Object containing provider statistics
+   */
+  getStats() {
+    const stats = /* @__PURE__ */ new Map();
+    for (const [path8, entry] of this.providers) {
+      stats.set(path8, {
+        refCount: entry.refCount,
+        hasPendingDispose: entry.disposeTimer !== null
+      });
+    }
+    return { providers: stats };
+  }
+  // -------------------------------------------------------------------------
+  // Internal Methods
+  // -------------------------------------------------------------------------
+  /**
+   * Normalize a path for consistent lookup.
+   *
+   * Resolves to absolute path and handles platform-specific normalization.
+   * On case-insensitive filesystems (macOS, Windows), also lowercases the path
+   * to ensure consistent Map key lookups regardless of casing.
+   */
+  normalizePath(filePath) {
+    const resolved = path7.resolve(filePath);
+    if (process.platform === "darwin" || process.platform === "win32") {
+      return resolved.toLowerCase();
+    }
+    return resolved;
+  }
+  /**
+   * Dispose a provider and remove it from the map.
+   */
+  async disposeProvider(normalizedPath) {
+    const entry = this.providers.get(normalizedPath);
+    if (!entry) {
+      return;
+    }
+    if (entry.disposeTimer) {
+      clearTimeout(entry.disposeTimer);
+    }
+    if (entry.fileChangeDisposable) {
+      entry.fileChangeDisposable.dispose();
+    }
+    if (entry.gitRoot) {
+      GitProviderService.getInstance().releaseProvider(entry.gitRoot);
+    }
+    this.providers.delete(normalizedPath);
+    entry.provider.dispose();
+  }
+  /**
+   * Dispose all providers (used during service shutdown/reset).
+   */
+  disposeAll() {
+    for (const [normalizedPath, entry] of this.providers) {
+      if (entry.disposeTimer) {
+        clearTimeout(entry.disposeTimer);
+      }
+      if (entry.fileChangeDisposable) {
+        entry.fileChangeDisposable.dispose();
+      }
+      if (entry.gitRoot) {
+        GitProviderService.getInstance().releaseProvider(entry.gitRoot);
+      }
+      try {
+        entry.provider.dispose();
+      } catch (error) {
+        console.error(
+          `[FileSystemProviderService] Error disposing provider ${normalizedPath}:`,
+          error
+        );
+      }
+    }
+    this.providers.clear();
+  }
+};
+
+// src/git/types.ts
+function serializeGitStatus(status) {
+  const files = {};
+  for (const [path8, fileStatus] of status.files) {
+    files[path8] = fileStatus;
+  }
+  return {
+    branch: status.branch,
+    upstream: status.upstream,
+    ahead: status.ahead,
+    behind: status.behind,
+    files
+  };
+}
+
 // src/version-check.ts
-var CURRENT_VERSION = "0.2.0";
+var CURRENT_VERSION = "0.3.0";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";
@@ -43179,13 +52330,13 @@ async function checkForUpdates() {
 }
 
 // src/jsonrpc-proxy.ts
-var import_node_child_process2 = require("child_process");
+var import_node_child_process3 = require("child_process");
 var import_promises2 = require("fs/promises");
 var import_node_os2 = require("os");
-var import_node_path3 = require("path");
+var import_node_path5 = require("path");
 function getGhCliToken() {
   try {
-    const token = (0, import_node_child_process2.execSync)("gh auth token", {
+    const token = (0, import_node_child_process3.execSync)("gh auth token", {
       encoding: "utf-8",
       stdio: ["pipe", "pipe", "pipe"]
       // Suppress stderr
@@ -43196,9 +52347,9 @@ function getGhCliToken() {
   }
 }
 async function discoverSessionCwd(sessionId) {
-  const sessionDir = (0, import_node_path3.join)((0, import_node_os2.homedir)(), ".copilot", "session-state", sessionId);
+  const sessionDir = (0, import_node_path5.join)((0, import_node_os2.homedir)(), ".copilot", "session-state", sessionId);
   try {
-    const yaml = await (0, import_promises2.readFile)((0, import_node_path3.join)(sessionDir, "workspace.yaml"), "utf-8");
+    const yaml = await (0, import_promises2.readFile)((0, import_node_path5.join)(sessionDir, "workspace.yaml"), "utf-8");
     const match = yaml.match(/^cwd:\s*(.+)$/m);
     if (match) {
       return match[1].trim();
@@ -43206,7 +52357,7 @@ async function discoverSessionCwd(sessionId) {
   } catch {
   }
   try {
-    const content = await (0, import_promises2.readFile)((0, import_node_path3.join)(sessionDir, "events.jsonl"), "utf-8");
+    const content = await (0, import_promises2.readFile)((0, import_node_path5.join)(sessionDir, "events.jsonl"), "utf-8");
     const firstLine = content.slice(0, content.indexOf("\n"));
     if (firstLine.startsWith('{"type":"session.start"')) {
       const cwdMatch = firstLine.match(/"cwd":"([^"]+)"/);
@@ -43285,12 +52436,12 @@ var CliPoolManager = class {
         entry = void 0;
       }
     }
-    this.log("info", `[CliPool] Creating CLI process for cwd: ${cwd}`);
     const cli = new CliProcess({
       cwd,
       cliPath: this.cliPath,
       logLevel: this.cliLogLevel,
-      env: this.cliEnv
+      env: this.cliEnv,
+      log: (level, message) => this.log(level, message)
     });
     await cli.spawn();
     try {
@@ -43395,10 +52546,12 @@ var CliPoolManager = class {
   }
 };
 var ClientConnection = class {
-  constructor(clientStream, clientId, cliPoolManager, options = {}) {
+  constructor(clientStream, clientId, cliPoolManager, fsService, gitService, options = {}) {
     this.clientStream = clientStream;
     this.clientId = clientId;
     this.cliPoolManager = cliPoolManager;
+    this.fsService = fsService;
+    this.gitService = gitService;
     this.defaultCwd = options.cwd ?? process.cwd();
     this.logLevel = options.logLevel ?? "info";
     this.onLogCallback = options.onLog ?? (() => {
@@ -43421,10 +52574,21 @@ var ClientConnection = class {
   retainedCwds = /* @__PURE__ */ new Set();
   // File search service for @-mention file picking
   fileSearchService = new FileSearchService();
+  // Filesystem provider service (shared across connections)
+  fsService;
+  // Git provider service (shared across connections)
+  gitService;
   // Pending callback requests from SDK -> client
   pendingToolCallRequests = /* @__PURE__ */ new Map();
   pendingPermissionRequests = /* @__PURE__ */ new Map();
   nextCallbackId = 1;
+  // Subscription tracking
+  nextSubscriptionId = 1;
+  fsSubscriptions = /* @__PURE__ */ new Map();
+  gitSubscriptions = /* @__PURE__ */ new Map();
+  // Track which cwds have fs subscriptions (for provider retain/release)
+  fsSubscriptionCwds = /* @__PURE__ */ new Map();
+  // cwd -> subscription count
   // Guard against double cleanup
   isCleanedUp = false;
   log(level, message) {
@@ -43560,6 +52724,27 @@ var ClientConnection = class {
     this.sessionCwds.clear();
     this.sessionClis.clear();
     this.sessionTools.clear();
+    if (this.fsSubscriptions.size > 0) {
+      this.log("debug", `[${this.clientId}] Cleaning up ${this.fsSubscriptions.size} fs subscription(s)`);
+      for (const subscription of this.fsSubscriptions.values()) {
+        try {
+          subscription.cleanup();
+        } catch {
+        }
+      }
+      this.fsSubscriptions.clear();
+      this.fsSubscriptionCwds.clear();
+    }
+    if (this.gitSubscriptions.size > 0) {
+      this.log("debug", `[${this.clientId}] Cleaning up ${this.gitSubscriptions.size} git subscription(s)`);
+      for (const subscription of this.gitSubscriptions.values()) {
+        try {
+          subscription.cleanup();
+        } catch {
+        }
+      }
+      this.gitSubscriptions.clear();
+    }
     if (!disposing) {
       this.releaseClis();
     } else {
@@ -43689,6 +52874,117 @@ var ClientConnection = class {
             break;
           case "session.destroy":
             await this.handleSessionDestroy(request);
+            break;
+          // Filesystem methods
+          case "fs.readDirectory":
+            await this.handleFsReadDirectory(request);
+            break;
+          case "fs.readFile":
+            await this.handleFsReadFile(request);
+            break;
+          case "fs.readTextFile":
+            await this.handleFsReadTextFile(request);
+            break;
+          case "fs.stat":
+            await this.handleFsStat(request);
+            break;
+          case "fs.exists":
+            await this.handleFsExists(request);
+            break;
+          // Filesystem write methods
+          case "fs.writeFile":
+            await this.handleFsWriteFile(request);
+            break;
+          case "fs.writeTextFile":
+            await this.handleFsWriteTextFile(request);
+            break;
+          case "fs.delete":
+            await this.handleFsDelete(request);
+            break;
+          case "fs.rename":
+            await this.handleFsRename(request);
+            break;
+          case "fs.createDirectory":
+            await this.handleFsCreateDirectory(request);
+            break;
+          // Git methods
+          case "git.status":
+            await this.handleGitStatus(request);
+            break;
+          case "git.fileStatus":
+            await this.handleGitFileStatus(request);
+            break;
+          case "git.branch":
+            await this.handleGitBranch(request);
+            break;
+          case "git.branches":
+            await this.handleGitBranches(request);
+            break;
+          case "git.fileDiff":
+            await this.handleGitFileDiff(request);
+            break;
+          case "git.fileAtRef":
+            await this.handleGitFileAtRef(request);
+            break;
+          case "git.hasUncommittedChanges":
+            await this.handleGitHasUncommittedChanges(request);
+            break;
+          case "git.hasUnpushedCommits":
+            await this.handleGitHasUnpushedCommits(request);
+            break;
+          case "git.uncommittedDiffStats":
+            await this.handleGitUncommittedDiffStats(request);
+            break;
+          case "git.findRoot":
+            await this.handleGitFindRoot(request);
+            break;
+          case "git.isAvailable":
+            await this.handleGitIsAvailable(request);
+            break;
+          // Filesystem subscription methods
+          case "fs.subscribe":
+            await this.handleFsSubscribe(request);
+            break;
+          case "fs.unsubscribe":
+            await this.handleFsUnsubscribe(request);
+            break;
+          // Git subscription methods
+          case "git.subscribe":
+            await this.handleGitSubscribe(request);
+            break;
+          case "git.unsubscribe":
+            await this.handleGitUnsubscribe(request);
+            break;
+          // Git write methods
+          case "git.stage":
+            await this.handleGitStage(request);
+            break;
+          case "git.unstage":
+            await this.handleGitUnstage(request);
+            break;
+          case "git.revert":
+            await this.handleGitRevert(request);
+            break;
+          case "git.commit":
+            await this.handleGitCommit(request);
+            break;
+          case "git.checkout":
+            await this.handleGitCheckout(request);
+            break;
+          case "git.createBranch":
+            await this.handleGitCreateBranch(request);
+            break;
+          case "git.push":
+            await this.handleGitPush(request);
+            break;
+          case "git.pull":
+            await this.handleGitPull(request);
+            break;
+          case "git.stash":
+            await this.handleGitStash(request);
+            break;
+          case "git.stashPop":
+            await this.handleGitStashPop(request);
             break;
           default:
             this.sendErrorResponse(request.id, -32601, `Method not found: ${request.method}`);
@@ -43859,12 +53155,12 @@ var ClientConnection = class {
     this.log("debug", `[${this.clientId}] RPC -> getLastSessionId (via session.list)`);
     const result = await cli.sendRequest("session.list", {});
     const sessions = result.sessions || [];
-    const sorted = [...sessions].sort((a, b) => {
+    const sorted2 = [...sessions].sort((a, b) => {
       const timeA = new Date(a.modifiedTime).getTime();
       const timeB = new Date(b.modifiedTime).getTime();
       return timeB - timeA;
     });
-    const lastSessionId = sorted.length > 0 ? sorted[0].sessionId : void 0;
+    const lastSessionId = sorted2.length > 0 ? sorted2[0].sessionId : void 0;
     this.sendToClient({
       jsonrpc: "2.0",
       id: request.id,
@@ -43913,8 +53209,8 @@ var ClientConnection = class {
       return;
     }
     this.log("info", `[${this.clientId}] RPC -> executeSlashCommand: ${command}`);
-    const trimmed = command.trim();
-    const parts = trimmed.split(/\s+/);
+    const trimmed2 = command.trim();
+    const parts = trimmed2.split(/\s+/);
     const commandName = parts[0].toLowerCase();
     const args = parts.slice(1);
     const result = await this.executeSlashCommandInternal(commandName, args, sessionId);
@@ -43980,6 +53276,1064 @@ var ClientConnection = class {
     } catch (err) {
       this.log("error", `[${this.clientId}] File search failed: ${err}`);
       this.sendErrorResponse(request.id, -32603, `File search failed: ${err}`);
+    }
+  }
+  // ==========================================================================
+  // Filesystem Methods
+  // ==========================================================================
+  async handleFsReadDirectory(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.dirPath) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or dirPath parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.readDirectory: ${params.dirPath}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        const entries = await provider.readDirectory(params.dirPath);
+        this.log("debug", `[${this.clientId}] RPC <- fs.readDirectory: ${entries.length} entries`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { entries }
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.readDirectory failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.readDirectory failed: ${err}`);
+    }
+  }
+  async handleFsReadFile(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.filePath) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or filePath parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.readFile: ${params.filePath}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        const content = await provider.readFile(params.filePath);
+        const base64Content = Buffer.from(content).toString("base64");
+        this.log("debug", `[${this.clientId}] RPC <- fs.readFile: ${content.length} bytes`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { content: base64Content }
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.readFile failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.readFile failed: ${err}`);
+    }
+  }
+  async handleFsReadTextFile(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.filePath) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or filePath parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.readTextFile: ${params.filePath}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        const content = await provider.readTextFile(params.filePath);
+        this.log("debug", `[${this.clientId}] RPC <- fs.readTextFile: ${content.length} chars`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { content }
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.readTextFile failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.readTextFile failed: ${err}`);
+    }
+  }
+  async handleFsStat(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.path) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or path parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.stat: ${params.path}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        const stat3 = await provider.stat(params.path);
+        this.log("debug", `[${this.clientId}] RPC <- fs.stat: ${stat3.type}, ${stat3.size} bytes`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { stat: stat3 }
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.stat failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.stat failed: ${err}`);
+    }
+  }
+  async handleFsExists(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.path) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or path parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.exists: ${params.path}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        const exists2 = await provider.exists(params.path);
+        this.log("debug", `[${this.clientId}] RPC <- fs.exists: ${exists2}`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { exists: exists2 }
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.exists failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.exists failed: ${err}`);
+    }
+  }
+  // ==========================================================================
+  // Filesystem Write Methods
+  // ==========================================================================
+  async handleFsWriteFile(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.filePath || params?.content === void 0) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd, filePath, or content parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.writeFile: ${params.filePath}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        const content = new Uint8Array(Buffer.from(params.content, "base64"));
+        await provider.writeFile(params.filePath, content);
+        this.log("debug", `[${this.clientId}] RPC <- fs.writeFile: ${content.length} bytes written`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.writeFile failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.writeFile failed: ${err}`);
+    }
+  }
+  async handleFsWriteTextFile(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.filePath || params?.content === void 0) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd, filePath, or content parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.writeTextFile: ${params.filePath}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        const content = new TextEncoder().encode(params.content);
+        await provider.writeFile(params.filePath, content);
+        this.log("debug", `[${this.clientId}] RPC <- fs.writeTextFile: ${params.content.length} chars written`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.writeTextFile failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.writeTextFile failed: ${err}`);
+    }
+  }
+  async handleFsDelete(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.path) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or path parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.delete: ${params.path} (recursive: ${params.recursive ?? false})`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        await provider.delete(params.path, { recursive: params.recursive ?? false });
+        this.log("debug", `[${this.clientId}] RPC <- fs.delete: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.delete failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.delete failed: ${err}`);
+    }
+  }
+  async handleFsRename(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.oldPath || !params?.newPath) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd, oldPath, or newPath parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.rename: ${params.oldPath} -> ${params.newPath}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        await provider.rename(params.oldPath, params.newPath);
+        this.log("debug", `[${this.clientId}] RPC <- fs.rename: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.rename failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.rename failed: ${err}`);
+    }
+  }
+  async handleFsCreateDirectory(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.dirPath) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or dirPath parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> fs.createDirectory: ${params.dirPath}`);
+    try {
+      const provider = await this.fsService.retain(params.cwd);
+      try {
+        await provider.createDirectory(params.dirPath);
+        this.log("debug", `[${this.clientId}] RPC <- fs.createDirectory: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.fsService.release(params.cwd);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.createDirectory failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.createDirectory failed: ${err}`);
+    }
+  }
+  // ==========================================================================
+  // Git Methods
+  // ==========================================================================
+  async handleGitStatus(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.status: ${params.cwd}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { status: null }
+        });
+        return;
+      }
+      try {
+        const status = await provider.getStatus();
+        const serialized = serializeGitStatus(status);
+        this.log("debug", `[${this.clientId}] RPC <- git.status: ${status.branch}, ${status.files.size} files`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { status: serialized }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.status failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.status failed: ${err}`);
+    }
+  }
+  async handleGitFileStatus(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.filePath) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or filePath parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.fileStatus: ${params.filePath}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { status: null }
+        });
+        return;
+      }
+      try {
+        const status = await provider.getFileStatus(params.filePath);
+        this.log("debug", `[${this.clientId}] RPC <- git.fileStatus: ${status?.status ?? "not found"}`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { status }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.fileStatus failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.fileStatus failed: ${err}`);
+    }
+  }
+  async handleGitBranch(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.branch: ${params.cwd}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { branch: null }
+        });
+        return;
+      }
+      try {
+        const branch = await provider.getCurrentBranch();
+        this.log("debug", `[${this.clientId}] RPC <- git.branch: ${branch}`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { branch }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.branch failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.branch failed: ${err}`);
+    }
+  }
+  async handleGitBranches(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.branches: ${params.cwd}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { branches: [] }
+        });
+        return;
+      }
+      try {
+        const branches = await provider.getBranches();
+        this.log("debug", `[${this.clientId}] RPC <- git.branches: ${branches.length} branches`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { branches }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.branches failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.branches failed: ${err}`);
+    }
+  }
+  async handleGitFileDiff(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.filePath) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or filePath parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.fileDiff: ${params.filePath} (staged: ${params.staged ?? false})`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { diff: null }
+        });
+        return;
+      }
+      try {
+        const diff = await provider.getFileDiff(params.filePath, params.staged);
+        this.log("debug", `[${this.clientId}] RPC <- git.fileDiff: ${diff.length} chars`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { diff }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.fileDiff failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.fileDiff failed: ${err}`);
+    }
+  }
+  async handleGitFileAtRef(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.filePath || !params?.ref) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd, filePath, or ref parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.fileAtRef: ${params.filePath} at ${params.ref}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { content: null }
+        });
+        return;
+      }
+      try {
+        const content = await provider.getFileAtRef(params.filePath, params.ref);
+        this.log("debug", `[${this.clientId}] RPC <- git.fileAtRef: ${content.length} chars`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { content }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.fileAtRef failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.fileAtRef failed: ${err}`);
+    }
+  }
+  async handleGitHasUncommittedChanges(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.hasUncommittedChanges: ${params.cwd}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { hasChanges: false }
+        });
+        return;
+      }
+      try {
+        const hasChanges = await provider.hasUncommittedChanges();
+        this.log("debug", `[${this.clientId}] RPC <- git.hasUncommittedChanges: ${hasChanges}`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { hasChanges }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.hasUncommittedChanges failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.hasUncommittedChanges failed: ${err}`);
+    }
+  }
+  async handleGitHasUnpushedCommits(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.hasUnpushedCommits: ${params.cwd}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { hasUnpushed: false }
+        });
+        return;
+      }
+      try {
+        const hasUnpushed = await provider.hasUnpushedCommits();
+        this.log("debug", `[${this.clientId}] RPC <- git.hasUnpushedCommits: ${hasUnpushed}`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { hasUnpushed }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.hasUnpushedCommits failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.hasUnpushedCommits failed: ${err}`);
+    }
+  }
+  async handleGitUncommittedDiffStats(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.uncommittedDiffStats: ${params.cwd}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { stats: null }
+        });
+        return;
+      }
+      try {
+        const stats = await provider.getUncommittedDiffStats();
+        this.log("debug", `[${this.clientId}] RPC <- git.uncommittedDiffStats: +${stats.added} -${stats.removed}`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { stats }
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.uncommittedDiffStats failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.uncommittedDiffStats failed: ${err}`);
+    }
+  }
+  async handleGitFindRoot(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.findRoot: ${params.cwd}`);
+    try {
+      const gitRoot = await findGitRoot(params.cwd);
+      this.log("debug", `[${this.clientId}] RPC <- git.findRoot: ${gitRoot ?? "not found"}`);
+      this.sendToClient({
+        jsonrpc: "2.0",
+        id: request.id,
+        result: { gitRoot }
+      });
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.findRoot failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.findRoot failed: ${err}`);
+    }
+  }
+  async handleGitIsAvailable(request) {
+    this.log("debug", `[${this.clientId}] RPC -> git.isAvailable`);
+    try {
+      const available = await isGitAvailable();
+      this.log("debug", `[${this.clientId}] RPC <- git.isAvailable: ${available}`);
+      this.sendToClient({
+        jsonrpc: "2.0",
+        id: request.id,
+        result: { available }
+      });
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.isAvailable failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.isAvailable failed: ${err}`);
+    }
+  }
+  // ==========================================================================
+  // Filesystem Subscription Handlers
+  // ==========================================================================
+  async handleFsSubscribe(request) {
+    const params = request.params;
+    const cwd = params?.cwd ?? this.defaultCwd;
+    const type = params?.type ?? "all";
+    const filterPath = params?.path;
+    this.log("debug", `[${this.clientId}] RPC -> fs.subscribe (cwd: ${cwd}, type: ${type}, path: ${filterPath ?? "all"})`);
+    try {
+      const provider = await this.fsService.retain(cwd);
+      const currentCount = this.fsSubscriptionCwds.get(cwd) ?? 0;
+      this.fsSubscriptionCwds.set(cwd, currentCount + 1);
+      const subscriptionId = `fs-${this.clientId}-${this.nextSubscriptionId++}`;
+      const forwardEvent = (eventType, event) => {
+        if (type === "directory" && eventType !== "directoryChanged") return;
+        if (type === "file" && eventType === "directoryChanged") return;
+        if (filterPath) {
+          const eventPath = event.path ?? event.oldPath ?? event.newPath ?? "";
+          if (!eventPath.startsWith(filterPath) && eventPath !== filterPath) return;
+        }
+        this.sendToClient({
+          jsonrpc: "2.0",
+          method: `fs.${eventType}`,
+          params: {
+            subscriptionId,
+            type: eventType,
+            ...event
+          }
+        });
+      };
+      const disposables = [
+        provider.onDirectoryListingChanged((e) => forwardEvent("directoryChanged", e)),
+        provider.onFileContentChanged((e) => forwardEvent("fileChanged", e)),
+        provider.onFileRenamed((e) => forwardEvent("fileRenamed", e)),
+        provider.onFileDeleted((e) => forwardEvent("fileDeleted", e))
+      ];
+      const cleanup = () => {
+        disposables.forEach((d) => d.dispose());
+        const count = this.fsSubscriptionCwds.get(cwd) ?? 0;
+        if (count <= 1) {
+          this.fsSubscriptionCwds.delete(cwd);
+          this.fsService.release(cwd);
+        } else {
+          this.fsSubscriptionCwds.set(cwd, count - 1);
+        }
+      };
+      this.fsSubscriptions.set(subscriptionId, {
+        cwd,
+        type,
+        path: filterPath,
+        cleanup
+      });
+      this.log("debug", `[${this.clientId}] RPC <- fs.subscribe: ${subscriptionId}`);
+      this.sendToClient({
+        jsonrpc: "2.0",
+        id: request.id,
+        result: { subscriptionId }
+      });
+    } catch (err) {
+      this.log("error", `[${this.clientId}] fs.subscribe failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `fs.subscribe failed: ${err}`);
+    }
+  }
+  async handleFsUnsubscribe(request) {
+    const params = request.params;
+    const subscriptionId = params?.subscriptionId;
+    this.log("debug", `[${this.clientId}] RPC -> fs.unsubscribe (${subscriptionId})`);
+    if (!subscriptionId) {
+      this.sendErrorResponse(request.id, -32602, "Missing subscriptionId parameter");
+      return;
+    }
+    const subscription = this.fsSubscriptions.get(subscriptionId);
+    if (!subscription) {
+      this.sendErrorResponse(request.id, -32602, `Unknown subscription: ${subscriptionId}`);
+      return;
+    }
+    subscription.cleanup();
+    this.fsSubscriptions.delete(subscriptionId);
+    this.log("debug", `[${this.clientId}] RPC <- fs.unsubscribe: success`);
+    this.sendToClient({
+      jsonrpc: "2.0",
+      id: request.id,
+      result: null
+    });
+  }
+  // ==========================================================================
+  // Git Subscription Handlers
+  // ==========================================================================
+  async handleGitSubscribe(request) {
+    const params = request.params;
+    const cwd = params?.cwd ?? this.defaultCwd;
+    this.log("debug", `[${this.clientId}] RPC -> git.subscribe (cwd: ${cwd})`);
+    try {
+      const provider = await this.gitService.retain(cwd);
+      if (!provider) {
+        this.log("debug", `[${this.clientId}] RPC <- git.subscribe: not a git repo`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: { subscriptionId: null, gitRoot: null }
+        });
+        return;
+      }
+      const gitRoot = provider.gitRoot;
+      const subscriptionId = `git-${this.clientId}-${this.nextSubscriptionId++}`;
+      const forwardEvent = (eventType, event) => {
+        this.sendToClient({
+          jsonrpc: "2.0",
+          method: `git.${eventType}`,
+          params: {
+            subscriptionId,
+            type: eventType,
+            gitRoot,
+            ...event
+          }
+        });
+      };
+      const disposables = [
+        provider.onStatusChanged((e) => forwardEvent("statusChanged", {
+          ...e,
+          status: serializeGitStatus(e.status)
+        })),
+        provider.onBranchChanged((e) => forwardEvent("branchChanged", e)),
+        provider.onCommitCreated((e) => forwardEvent("commitCreated", e)),
+        provider.onHeadChanged((e) => forwardEvent("headChanged", e))
+      ];
+      const cleanup = () => {
+        disposables.forEach((d) => d.dispose());
+        this.gitService.release(gitRoot);
+      };
+      this.gitSubscriptions.set(subscriptionId, {
+        gitRoot,
+        cleanup
+      });
+      this.log("debug", `[${this.clientId}] RPC <- git.subscribe: ${subscriptionId} (gitRoot: ${gitRoot})`);
+      this.sendToClient({
+        jsonrpc: "2.0",
+        id: request.id,
+        result: { subscriptionId, gitRoot }
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      const logLevel = message.includes("Not a git repository") ? "debug" : "error";
+      this.log(logLevel, `[${this.clientId}] git.subscribe failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.subscribe failed: ${err}`);
+    }
+  }
+  async handleGitUnsubscribe(request) {
+    const params = request.params;
+    const subscriptionId = params?.subscriptionId;
+    this.log("debug", `[${this.clientId}] RPC -> git.unsubscribe (${subscriptionId})`);
+    if (!subscriptionId) {
+      this.sendErrorResponse(request.id, -32602, "Missing subscriptionId parameter");
+      return;
+    }
+    const subscription = this.gitSubscriptions.get(subscriptionId);
+    if (!subscription) {
+      this.sendErrorResponse(request.id, -32602, `Unknown subscription: ${subscriptionId}`);
+      return;
+    }
+    subscription.cleanup();
+    this.gitSubscriptions.delete(subscriptionId);
+    this.log("debug", `[${this.clientId}] RPC <- git.unsubscribe: success`);
+    this.sendToClient({
+      jsonrpc: "2.0",
+      id: request.id,
+      result: null
+    });
+  }
+  // ==========================================================================
+  // Git Write Methods
+  // ==========================================================================
+  async handleGitStage(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.files || !Array.isArray(params.files)) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or files parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.stage: ${params.files.length} files`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.stage(params.files);
+        this.log("debug", `[${this.clientId}] RPC <- git.stage: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.stage failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.stage failed: ${err}`);
+    }
+  }
+  async handleGitUnstage(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.files || !Array.isArray(params.files)) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or files parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.unstage: ${params.files.length} files`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.unstage(params.files);
+        this.log("debug", `[${this.clientId}] RPC <- git.unstage: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.unstage failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.unstage failed: ${err}`);
+    }
+  }
+  async handleGitRevert(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.files || !Array.isArray(params.files)) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or files parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.revert: ${params.files.length} files`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.revert(params.files);
+        this.log("debug", `[${this.clientId}] RPC <- git.revert: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.revert failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.revert failed: ${err}`);
+    }
+  }
+  async handleGitCommit(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.message) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or message parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.commit: "${params.message.substring(0, 50)}..."`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        const result = await provider.commit(params.message, params.options);
+        this.log("debug", `[${this.clientId}] RPC <- git.commit: ${result.hash}`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.commit failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.commit failed: ${err}`);
+    }
+  }
+  async handleGitCheckout(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.ref) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or ref parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.checkout: ${params.ref}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.checkout(params.ref, { force: params.force ?? false });
+        this.log("debug", `[${this.clientId}] RPC <- git.checkout: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.checkout failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.checkout failed: ${err}`);
+    }
+  }
+  async handleGitCreateBranch(request) {
+    const params = request.params;
+    if (!params?.cwd || !params?.branchName) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd or branchName parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.createBranch: ${params.branchName}`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.createBranch(params.branchName, params.checkout ?? false, params.startPoint);
+        this.log("debug", `[${this.clientId}] RPC <- git.createBranch: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.createBranch failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.createBranch failed: ${err}`);
+    }
+  }
+  async handleGitPush(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.push (force: ${params.force ?? false})`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.push(params.force ?? false, params.setUpstream ?? false);
+        this.log("debug", `[${this.clientId}] RPC <- git.push: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.push failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.push failed: ${err}`);
+    }
+  }
+  async handleGitPull(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.pull (rebase: ${params.rebase ?? false})`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.pull(params.rebase ?? false);
+        this.log("debug", `[${this.clientId}] RPC <- git.pull: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.pull failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.pull failed: ${err}`);
+    }
+  }
+  async handleGitStash(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.stash`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.stash(params.message);
+        this.log("debug", `[${this.clientId}] RPC <- git.stash: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.stash failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.stash failed: ${err}`);
+    }
+  }
+  async handleGitStashPop(request) {
+    const params = request.params;
+    if (!params?.cwd) {
+      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
+      return;
+    }
+    this.log("debug", `[${this.clientId}] RPC -> git.stashPop`);
+    try {
+      const provider = await this.gitService.retain(params.cwd);
+      if (!provider) {
+        this.sendErrorResponse(request.id, -32603, "Not a git repository");
+        return;
+      }
+      try {
+        await provider.stashPop();
+        this.log("debug", `[${this.clientId}] RPC <- git.stashPop: success`);
+        this.sendToClient({
+          jsonrpc: "2.0",
+          id: request.id,
+          result: null
+        });
+      } finally {
+        this.gitService.release(provider.gitRoot);
+      }
+    } catch (err) {
+      this.log("error", `[${this.clientId}] git.stashPop failed: ${err}`);
+      this.sendErrorResponse(request.id, -32603, `git.stashPop failed: ${err}`);
     }
   }
   // ==========================================================================
@@ -44052,7 +54406,7 @@ var ClientConnection = class {
     this.log("info", `Prompt received (sendAndWait): "${truncatedPrompt}" (cwd: ${this.sessionCwds.get(sessionId) ?? this.defaultCwd})`);
     const timeout = params?.timeout ?? 3e5;
     const events = [];
-    const waitForIdle = new Promise((resolve3, reject) => {
+    const waitForIdle = new Promise((resolve8, reject) => {
       const timeoutId = setTimeout(() => {
         cleanup();
         reject(new Error("session.sendAndWait timeout"));
@@ -44064,7 +54418,7 @@ var ClientConnection = class {
             events.push(eventParams.event);
             if (eventParams.event.type === "session.idle") {
               cleanup();
-              resolve3(events);
+              resolve8(events);
             }
           }
         }
@@ -44187,7 +54541,7 @@ var ClientConnection = class {
         arguments: args
       }
     });
-    return new Promise((resolve3, reject) => {
+    return new Promise((resolve8, reject) => {
       const timeout = setTimeout(() => {
         this.pendingToolCallRequests.delete(callbackId);
         reject(new Error("Tool call request timeout"));
@@ -44195,7 +54549,7 @@ var ClientConnection = class {
       this.pendingToolCallRequests.set(callbackId, {
         resolve: (result) => {
           clearTimeout(timeout);
-          resolve3(result);
+          resolve8(result);
         },
         reject: (error) => {
           clearTimeout(timeout);
@@ -44216,7 +54570,7 @@ var ClientConnection = class {
         permissionRequest: request
       }
     });
-    return new Promise((resolve3, reject) => {
+    return new Promise((resolve8, reject) => {
       const timeout = setTimeout(() => {
         this.pendingPermissionRequests.delete(callbackId);
         reject(new Error("Permission request timeout"));
@@ -44224,7 +54578,7 @@ var ClientConnection = class {
       this.pendingPermissionRequests.set(callbackId, {
         resolve: (result) => {
           clearTimeout(timeout);
-          resolve3(result);
+          resolve8(result);
         },
         reject: (error) => {
           clearTimeout(timeout);
@@ -44253,6 +54607,8 @@ var JsonRpcProxyHost = class {
   clients = /* @__PURE__ */ new Map();
   options;
   cliPoolManager;
+  fsService;
+  gitService;
   constructor(options = {}) {
     this.options = options;
     this.cliPoolManager = new CliPoolManager({
@@ -44262,12 +54618,18 @@ var JsonRpcProxyHost = class {
       copilotToken: options.copilotToken,
       log: options.onLog
     });
+    this.fsService = new FileSystemProviderService({
+      log: options.onLog
+    });
+    this.gitService = new GitProviderService({
+      log: options.onLog
+    });
   }
   /**
    * Handle a new client connection from the tunnel.
    */
   async handleClient(stream, clientId) {
-    const connection = new ClientConnection(stream, clientId, this.cliPoolManager, this.options);
+    const connection = new ClientConnection(stream, clientId, this.cliPoolManager, this.fsService, this.gitService, this.options);
     this.clients.set(clientId, connection);
     await connection.start();
   }
@@ -44286,6 +54648,8 @@ var JsonRpcProxyHost = class {
    */
   async stop() {
     await this.cliPoolManager.dispose();
+    await this.fsService.dispose();
+    await this.gitService.dispose();
     for (const connection of this.clients.values()) {
       connection.stop(true);
     }
@@ -44316,7 +54680,7 @@ function formatTimestamp() {
 function formatLevel(level) {
   return level.toUpperCase().padEnd(5);
 }
-function createLogger(options) {
+function createLogger2(options) {
   const minLevel = options.level;
   const minPriority = LOG_LEVEL_PRIORITY[minLevel];
   function shouldLog(level) {
@@ -44394,7 +54758,7 @@ async function runHost(options) {
   });
   const logLevel = options.debug ? "debug" : "info";
   const port = parseInt(options.port || "0", 10);
-  const logger = createLogger({ level: logLevel });
+  const logger = createLogger2({ level: logLevel });
   const logCallback = createLogCallback(logger);
   const proxyHost = new JsonRpcProxyHost({
     cliPath: "copilot",

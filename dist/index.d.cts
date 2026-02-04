@@ -292,6 +292,8 @@ declare class JsonRpcProxyHost {
     private clients;
     private readonly options;
     private readonly cliPoolManager;
+    private readonly fsService;
+    private readonly gitService;
     constructor(options?: JsonRpcProxyOptions);
     /**
      * Handle a new client connection from the tunnel.
