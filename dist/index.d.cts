@@ -63,6 +63,7 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
     private disconnectedClients;
     private isDisposed;
     private username;
+    private currentToken;
     private hasEverConnected;
     private lastDisconnectReason;
     private disconnectedAt;
@@ -142,6 +143,27 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
      * The SDK only configures keepAlive for client→host sessions, not host→relay sessions.
      */
     private setupHostKeepAlive;
+    /**
+     * Create (or recreate) the tunnel management client.
+     * The token callback reads from this.currentToken so it always uses
+     * the latest token without closure issues.
+     */
+    private createManagementClient;
+    /**
+     * Check if an error indicates a 401 Unauthorized response from the tunnel service.
+     */
+    private isUnauthorizedError;
+    /**
+     * Execute a management client operation with automatic 401 retry.
+     *
+     * If the operation fails with 401:
+     * 1. Try refreshing the access token using the stored refresh token
+     * 2. If refresh succeeds, save new tokens, recreate management client, retry
+     * 3. If refresh fails or no refresh token, clear tokens, run device flow, retry
+     *
+     * Only retries ONCE to prevent infinite loops.
+     */
+    private withAuthRetry;
     start(): Promise<TunnelInfo>;
     stop(): Promise<void>;
     onClientConnected(handler: (stream: Duplex, clientId: string) => void): () => void;
@@ -149,20 +171,17 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
     private createServer;
     private connectWithTimeout;
     /**
-     * Get a valid GitHub token, either from cache, refresh, or device flow.
-     * Checks token expiration before use and refreshes if needed.
+     * Get a GitHub token for tunnel management.
+     * Returns the stored access token if one exists (no expiry check — if it's
+     * invalid, withAuthRetry() will handle the 401 and refresh/re-auth).
+     * If no stored token exists, runs device flow to authenticate.
      * Also sets this.username for display purposes.
      */
-    private getOrRefreshToken;
+    private getStoredOrNewToken;
     /**
      * Refresh an access token using a refresh token.
      */
     private refreshAccessToken;
-    /**
-     * Validate a GitHub token by making a test API call.
-     * Returns true if the token is valid, false otherwise.
-     */
-    private validateToken;
     /**
      * Fetch the GitHub username for the given token.
      * Returns undefined if the fetch fails.

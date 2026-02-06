@@ -49074,6 +49074,7 @@ var DevTunnelHostAdapter = class {
   // Track already-disconnected clients to avoid duplicate notifications
   isDisposed = false;
   username;
+  currentToken = null;
   hasEverConnected = false;
   // Track initial connection for logging
   // Disconnect tracking for reconnection context
@@ -49386,6 +49387,90 @@ var DevTunnelHostAdapter = class {
     sshSession.startKeepAliveTimer();
     this.log("debug", `Host keepAlive configured (interval: ${DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS}s)`);
   }
+  // ===========================================================================
+  // Auth Retry Infrastructure
+  // ===========================================================================
+  /**
+   * Create (or recreate) the tunnel management client.
+   * The token callback reads from this.currentToken so it always uses
+   * the latest token without closure issues.
+   */
+  createManagementClient() {
+    this.log("debug", "Creating tunnel management client...");
+    this.managementClient = new import_dev_tunnels_management.TunnelManagementHttpClient(
+      "RemoteSdkBridge/1.0",
+      import_dev_tunnels_management.ManagementApiVersions.Version20230927preview,
+      () => Promise.resolve(this.currentToken ? `github ${this.currentToken}` : null)
+    );
+  }
+  /**
+   * Check if an error indicates a 401 Unauthorized response from the tunnel service.
+   */
+  isUnauthorizedError(error) {
+    if (error instanceof Error) {
+      const axiosError = error;
+      if (axiosError.isAxiosError && axiosError.response?.status === 401) {
+        return true;
+      }
+      const message = error.message.toLowerCase();
+      if (message.includes("401") || message.includes("unauthorized")) {
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
+   * Execute a management client operation with automatic 401 retry.
+   *
+   * If the operation fails with 401:
+   * 1. Try refreshing the access token using the stored refresh token
+   * 2. If refresh succeeds, save new tokens, recreate management client, retry
+   * 3. If refresh fails or no refresh token, clear tokens, run device flow, retry
+   *
+   * Only retries ONCE to prevent infinite loops.
+   */
+  async withAuthRetry(operation) {
+    try {
+      return await operation();
+    } catch (error) {
+      if (!this.isUnauthorizedError(error)) {
+        throw error;
+      }
+      this.log("info", "Received 401 from tunnel service, attempting token refresh...");
+      const tokenData = await loadTokenData();
+      if (tokenData?.refreshToken) {
+        const now = Date.now();
+        const refreshExpired = tokenData.refreshExpiresAt < now + 5 * 60 * 1e3;
+        if (!refreshExpired) {
+          try {
+            const oldUsername = tokenData.username;
+            const newTokenData2 = await this.refreshAccessToken(tokenData.refreshToken);
+            newTokenData2.username = oldUsername;
+            await saveTokenData(newTokenData2);
+            this.currentToken = newTokenData2.accessToken;
+            this.username = oldUsername;
+            this.createManagementClient();
+            this.log("info", "Token refreshed successfully, retrying operation...");
+            return await operation();
+          } catch (refreshErr) {
+            this.log("warn", `Token refresh failed: ${refreshErr}`);
+          }
+        } else {
+          this.log("debug", "Refresh token is expired, skipping refresh attempt");
+        }
+      }
+      this.log("info", "Clearing credentials and starting device flow...");
+      await clearTokenData();
+      const newTokenData = await this.authenticateWithDeviceFlow();
+      this.username = await this.fetchGitHubUsername(newTokenData.accessToken);
+      newTokenData.username = this.username;
+      await saveTokenData(newTokenData);
+      this.currentToken = newTokenData.accessToken;
+      this.createManagementClient();
+      this.log("info", `Re-authenticated as: ${this.username ?? "unknown"}, retrying operation...`);
+      return await operation();
+    }
+  }
   async start() {
     if (this.server) {
       throw new Error("Tunnel adapter already started");
@@ -49394,13 +49479,8 @@ var DevTunnelHostAdapter = class {
     this.server = await this.createServer();
     const rpcPort = this.server.address().port;
     this.log("debug", `Local JSON-RPC server listening on port ${rpcPort}`);
-    const githubToken = await this.getOrRefreshToken();
-    this.log("debug", "Creating tunnel management client...");
-    this.managementClient = new import_dev_tunnels_management.TunnelManagementHttpClient(
-      "RemoteSdkBridge/1.0",
-      import_dev_tunnels_management.ManagementApiVersions.Version20230927preview,
-      () => Promise.resolve(`github ${githubToken}`)
-    );
+    this.currentToken = await this.getStoredOrNewToken();
+    this.createManagementClient();
     const storedConfig = await loadTunnelConfig();
     if (storedConfig) {
       this.log("info", `Found stored tunnel: ${storedConfig.tunnelId}`);
@@ -49409,31 +49489,39 @@ var DevTunnelHostAdapter = class {
           tunnelId: storedConfig.tunnelId,
           clusterId: storedConfig.clusterId
         };
-        this.tunnel = await this.managementClient.getTunnel(tunnelRequest, {
-          tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
-          includePorts: true
-        });
+        this.tunnel = await this.withAuthRetry(
+          () => this.managementClient.getTunnel(tunnelRequest, {
+            tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
+            includePorts: true
+          })
+        );
         if (this.tunnel) {
           if (this.tunnel.ports && this.tunnel.ports.length > 0) {
             for (const port of this.tunnel.ports) {
               if (port.portNumber) {
                 this.log("debug", `Removing old port ${port.portNumber} from tunnel`);
                 try {
-                  await this.managementClient.deleteTunnelPort(this.tunnel, port.portNumber);
+                  await this.withAuthRetry(
+                    () => this.managementClient.deleteTunnelPort(this.tunnel, port.portNumber)
+                  );
                 } catch {
                 }
               }
             }
           }
           this.log("debug", `Adding port ${rpcPort} to tunnel`);
-          await this.managementClient.createTunnelPort(this.tunnel, {
-            portNumber: rpcPort,
-            protocol: "auto"
-          });
-          this.tunnel = await this.managementClient.getTunnel(this.tunnel, {
-            tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
-            includePorts: true
-          });
+          await this.withAuthRetry(
+            () => this.managementClient.createTunnelPort(this.tunnel, {
+              portNumber: rpcPort,
+              protocol: "auto"
+            })
+          );
+          this.tunnel = await this.withAuthRetry(
+            () => this.managementClient.getTunnel(this.tunnel, {
+              tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
+              includePorts: true
+            })
+          );
           this.log("debug", "Connecting to existing tunnel...");
           await this.connectToTunnel(rpcPort);
           this.log("info", "Connected to existing tunnel");
@@ -49454,12 +49542,14 @@ var DevTunnelHostAdapter = class {
       }
     }
     this.log("info", "Searching for existing tunnel by label...");
-    const labeledTunnels = await this.managementClient.listTunnels(
-      void 0,
-      // global search (no cluster filter)
-      void 0,
-      // default domain
-      { labels: [TUNNEL_LABEL] }
+    const labeledTunnels = await this.withAuthRetry(
+      () => this.managementClient.listTunnels(
+        void 0,
+        // global search (no cluster filter)
+        void 0,
+        // default domain
+        { labels: [TUNNEL_LABEL] }
+      )
     );
     if (labeledTunnels.length > 0) {
       labeledTunnels.sort(
@@ -49467,9 +49557,11 @@ var DevTunnelHostAdapter = class {
       );
       const foundTunnel = labeledTunnels[0];
       this.log("info", `Found existing tunnel via label: ${foundTunnel.tunnelId}`);
-      this.tunnel = await this.managementClient.getTunnel(
-        { tunnelId: foundTunnel.tunnelId, clusterId: foundTunnel.clusterId },
-        { tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect], includePorts: true }
+      this.tunnel = await this.withAuthRetry(
+        () => this.managementClient.getTunnel(
+          { tunnelId: foundTunnel.tunnelId, clusterId: foundTunnel.clusterId },
+          { tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect], includePorts: true }
+        )
       );
       if (!this.tunnel) {
         throw new Error("Failed to fetch tunnel details");
@@ -49479,21 +49571,27 @@ var DevTunnelHostAdapter = class {
           if (port.portNumber) {
             this.log("debug", `Removing old port ${port.portNumber} from tunnel`);
             try {
-              await this.managementClient.deleteTunnelPort(this.tunnel, port.portNumber);
+              await this.withAuthRetry(
+                () => this.managementClient.deleteTunnelPort(this.tunnel, port.portNumber)
+              );
             } catch {
             }
           }
         }
       }
       this.log("debug", `Adding port ${rpcPort} to tunnel`);
-      await this.managementClient.createTunnelPort(this.tunnel, {
-        portNumber: rpcPort,
-        protocol: "auto"
-      });
-      this.tunnel = await this.managementClient.getTunnel(this.tunnel, {
-        tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
-        includePorts: true
-      });
+      await this.withAuthRetry(
+        () => this.managementClient.createTunnelPort(this.tunnel, {
+          portNumber: rpcPort,
+          protocol: "auto"
+        })
+      );
+      this.tunnel = await this.withAuthRetry(
+        () => this.managementClient.getTunnel(this.tunnel, {
+          tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
+          includePorts: true
+        })
+      );
       if (!this.tunnel) {
         throw new Error("Failed to refresh tunnel details");
       }
@@ -49520,10 +49618,12 @@ var DevTunnelHostAdapter = class {
         { portNumber: rpcPort, protocol: "auto" }
       ]
     };
-    this.tunnel = await this.managementClient.createTunnel(tunnelConfig, {
-      tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
-      includePorts: true
-    });
+    this.tunnel = await this.withAuthRetry(
+      () => this.managementClient.createTunnel(tunnelConfig, {
+        tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
+        includePorts: true
+      })
+    );
     this.log("info", `Tunnel created: ${this.tunnel.tunnelId} (cluster: ${this.tunnel.clusterId})`);
     await saveTunnelConfig({
       tunnelId: this.tunnel.tunnelId,
@@ -49640,61 +49740,37 @@ var DevTunnelHostAdapter = class {
     await Promise.race([this.host.connect(this.tunnel, options), timeoutPromise]);
   }
   /**
-   * Get a valid GitHub token, either from cache, refresh, or device flow.
-   * Checks token expiration before use and refreshes if needed.
+   * Get a GitHub token for tunnel management.
+   * Returns the stored access token if one exists (no expiry check — if it's
+   * invalid, withAuthRetry() will handle the 401 and refresh/re-auth).
+   * If no stored token exists, runs device flow to authenticate.
    * Also sets this.username for display purposes.
    */
-  async getOrRefreshToken() {
+  async getStoredOrNewToken() {
     this.log("debug", "Checking for cached GitHub token...");
-    let tokenData = await loadTokenData();
-    const now = Date.now();
-    if (tokenData) {
-      const accessTokenExpired = tokenData.expiresAt < now + 5 * 60 * 1e3;
-      const refreshTokenExpired = tokenData.refreshExpiresAt < now + 5 * 60 * 1e3;
-      this.log("debug", `Access token expired: ${accessTokenExpired}, refresh token expired: ${refreshTokenExpired}`);
-      if (!accessTokenExpired) {
-        if (tokenData.username) {
-          this.username = tokenData.username;
-        } else {
-          this.log("debug", "Fetching username for stored token...");
-          this.username = await this.fetchGitHubUsername(tokenData.accessToken);
-          if (this.username) {
-            tokenData.username = this.username;
-            await saveTokenData(tokenData);
-          }
-        }
-        this.log("debug", "Cached access token is still valid");
-        return tokenData.accessToken;
-      }
-      if (accessTokenExpired && !refreshTokenExpired && tokenData.refreshToken) {
-        this.log("debug", "Access token expired, attempting refresh...");
-        try {
-          const oldUsername = tokenData.username;
-          tokenData = await this.refreshAccessToken(tokenData.refreshToken);
-          tokenData.username = oldUsername;
-          await saveTokenData(tokenData);
-          this.username = oldUsername;
-          this.log("debug", "Token refreshed successfully");
-          return tokenData.accessToken;
-        } catch (refreshErr) {
-          this.log("warn", `Token refresh failed: ${refreshErr}`);
-          await clearTokenData();
-          tokenData = null;
-        }
+    const tokenData = await loadTokenData();
+    if (tokenData?.accessToken) {
+      if (tokenData.username) {
+        this.username = tokenData.username;
       } else {
-        this.log("debug", "Both tokens expired, clearing and re-authenticating...");
-        await clearTokenData();
-        tokenData = null;
+        this.log("debug", "Fetching username for stored token...");
+        this.username = await this.fetchGitHubUsername(tokenData.accessToken);
+        if (this.username) {
+          tokenData.username = this.username;
+          await saveTokenData(tokenData);
+        }
       }
+      this.log("debug", "Using stored access token");
+      return tokenData.accessToken;
     }
     this.log("info", "No stored credentials found");
-    tokenData = await this.authenticateWithDeviceFlow();
-    this.username = await this.fetchGitHubUsername(tokenData.accessToken);
-    tokenData.username = this.username;
+    const newTokenData = await this.authenticateWithDeviceFlow();
+    this.username = await this.fetchGitHubUsername(newTokenData.accessToken);
+    newTokenData.username = this.username;
     this.log("debug", "Saving token data to secure storage...");
-    await saveTokenData(tokenData);
+    await saveTokenData(newTokenData);
     this.log("info", `Authenticated as: ${this.username ?? "unknown"}`);
-    return tokenData.accessToken;
+    return newTokenData.accessToken;
   }
   /**
    * Refresh an access token using a refresh token.
@@ -49730,32 +49806,6 @@ var DevTunnelHostAdapter = class {
       expiresAt: now + (token.expires_in || 28800) * 1e3,
       refreshExpiresAt: now + (token.refresh_token_expires_in || 15638400) * 1e3
     };
-  }
-  /**
-   * Validate a GitHub token by making a test API call.
-   * Returns true if the token is valid, false otherwise.
-   */
-  async validateToken(token) {
-    try {
-      const response = await fetch("https://api.github.com/user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/vnd.github.v3+json",
-          "User-Agent": "AgentTunnels/1.0"
-        }
-      });
-      if (response.ok) {
-        return true;
-      }
-      if (response.status === 401) {
-        return false;
-      }
-      this.log("warn", `Token validation returned ${response.status}, assuming valid`);
-      return true;
-    } catch (error) {
-      this.log("warn", `Token validation failed with network error, assuming valid`);
-      return true;
-    }
   }
   /**
    * Fetch the GitHub username for the given token.
@@ -59569,7 +59619,7 @@ function serializeGitStatus(status) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.4.0";
+var CURRENT_VERSION = "0.4.1";
 var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
 var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
 var RED = "\x1B[31m";
