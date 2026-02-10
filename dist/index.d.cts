@@ -61,6 +61,7 @@ declare class DevTunnelHostAdapter implements TunnelHostAdapter {
     private clientCounter;
     private clients;
     private disconnectedClients;
+    private relayConnected;
     private isDisposed;
     private username;
     private currentToken;

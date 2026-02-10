@@ -45981,29 +45981,46 @@ var import_dev_tunnels_management = __toESM(require_dev_tunnels_management(), 1)
 var import_keytar = __toESM(require("keytar"), 1);
 var SERVICE_NAME = "agent-tunnels";
 var ACCOUNT_NAME = "github-token-data";
+function formatTokenForLog(label, data) {
+  const now = Date.now();
+  const fmtExp = (ts) => {
+    if (!ts) return "N/A";
+    const remaining = Math.round((ts - now) / 6e4);
+    return `${new Date(ts).toISOString()} (${remaining}min remaining)`;
+  };
+  return `[Auth Debug] ${label}: access=${data.accessToken?.slice(0, 8) ?? "none"}... refresh=${data.refreshToken?.slice(0, 8) ?? "none"}... accessExp=${fmtExp(data.expiresAt)} refreshExp=${fmtExp(data.refreshExpiresAt)}`;
+}
 async function loadTokenData() {
   try {
     const data = await import_keytar.default.getPassword(SERVICE_NAME, ACCOUNT_NAME);
-    if (!data) return null;
-    return JSON.parse(data);
+    if (!data) {
+      console.log("[Auth Debug] loadTokenData: no token data in keychain");
+      return null;
+    }
+    const parsed = JSON.parse(data);
+    console.log(formatTokenForLog("loadTokenData", parsed));
+    return parsed;
   } catch (error) {
-    console.warn("Failed to load token data from keychain:", error);
+    console.warn("[Auth Debug] loadTokenData: keychain error:", error);
     return null;
   }
 }
 async function saveTokenData(tokenData) {
+  console.log(formatTokenForLog("saveTokenData", tokenData));
   try {
     await import_keytar.default.setPassword(SERVICE_NAME, ACCOUNT_NAME, JSON.stringify(tokenData));
   } catch (error) {
-    console.warn("Failed to save token data to keychain:", error);
+    console.warn("[Auth Debug] saveTokenData: keychain error:", error);
     throw error;
   }
 }
 async function clearTokenData() {
+  const caller = new Error().stack?.split("\n")[2]?.trim() ?? "unknown";
+  console.log(`[Auth Debug] clearTokenData called from: ${caller}`);
   try {
     await import_keytar.default.deletePassword(SERVICE_NAME, ACCOUNT_NAME);
   } catch (error) {
-    console.warn("Failed to clear token data from keychain:", error);
+    console.warn("[Auth Debug] clearTokenData: keychain error:", error);
   }
 }
 
@@ -46053,6 +46070,24 @@ var GITHUB_SCOPES = "read:user,read:org";
 var GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code";
 var GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token";
 var DEVICE_CODE_POLL_INTERVAL_MS = 5e3;
+var RefreshTokenInvalidError = class extends Error {
+  constructor(message = "Refresh token is invalid or expired") {
+    super(message);
+    this.name = "RefreshTokenInvalidError";
+  }
+};
+function maskTokenResponse(resp) {
+  return {
+    access_token: resp.access_token ? `${resp.access_token.slice(0, 8)}...` : void 0,
+    refresh_token: resp.refresh_token ? `${resp.refresh_token.slice(0, 8)}...` : void 0,
+    expires_in: resp.expires_in,
+    refresh_token_expires_in: resp.refresh_token_expires_in,
+    token_type: resp.token_type,
+    scope: resp.scope,
+    error: resp.error,
+    error_description: resp.error_description
+  };
+}
 var DevTunnelHostAdapter = class {
   config;
   server = null;
@@ -46065,6 +46100,8 @@ var DevTunnelHostAdapter = class {
   clients = /* @__PURE__ */ new Map();
   disconnectedClients = /* @__PURE__ */ new Set();
   // Track already-disconnected clients to avoid duplicate notifications
+  relayConnected = false;
+  // Track relay status — reject new TCP clients when relay is down
   isDisposed = false;
   username;
   currentToken = null;
@@ -46251,6 +46288,7 @@ var DevTunnelHostAdapter = class {
    */
   handleConnectionStatusChange(status, reason) {
     if (status === "disconnected") {
+      this.relayConnected = false;
       this.log("info", "Tunnel disconnected" + (reason ? ` (${reason})` : ""));
       this.log("info", "Reconnecting...");
       this.lastDisconnectReason = reason;
@@ -46265,6 +46303,7 @@ var DevTunnelHostAdapter = class {
         }
       }
     } else if (status === "connected") {
+      this.relayConnected = true;
       if (this.hasEverConnected) {
         const parts = ["Tunnel reconnected"];
         if (this.disconnectedAt) {
@@ -46289,6 +46328,7 @@ var DevTunnelHostAdapter = class {
       }
       this.stopNetworkMonitoring();
       this.startSleepDetection();
+      this.disconnectedClients.clear();
       this.retryCount = 0;
       this.isNetworkAvailable = true;
     } else {
@@ -46335,6 +46375,9 @@ var DevTunnelHostAdapter = class {
     });
     this.host.refreshingTunnelAccessToken((e) => {
       this.log("debug", `Token refresh requested (scope: ${e.tunnelAccessScope})`);
+      if (this.currentToken) {
+        e.tunnelAccessToken = Promise.resolve(`github ${this.currentToken}`);
+      }
     });
     this.host.retryingTunnelConnection((e) => {
       this.handleRetryEvent(e);
@@ -46345,6 +46388,7 @@ var DevTunnelHostAdapter = class {
       enableReconnect: true
     };
     await this.connectWithTimeout(connectionOptions, DEFAULT_CONNECTION_TIMEOUT_MS);
+    this.relayConnected = true;
     this.setupHostKeepAlive();
   }
   /**
@@ -46403,12 +46447,15 @@ var DevTunnelHostAdapter = class {
     if (error instanceof Error) {
       const axiosError = error;
       if (axiosError.isAxiosError && axiosError.response?.status === 401) {
+        this.log("info", `[Auth Debug] isUnauthorizedError: matched AxiosError 401, message="${error.message}", responseData=${JSON.stringify(axiosError.response.data ?? {})}`);
         return true;
       }
       const message = error.message.toLowerCase();
       if (message.includes("401") || message.includes("unauthorized")) {
+        this.log("info", `[Auth Debug] isUnauthorizedError: matched message pattern, message="${error.message}"`);
         return true;
       }
+      this.log("debug", `[Auth Debug] isUnauthorizedError: NOT a 401, message="${error.message}"`);
     }
     return false;
   }
@@ -46429,30 +46476,44 @@ var DevTunnelHostAdapter = class {
       if (!this.isUnauthorizedError(error)) {
         throw error;
       }
-      this.log("info", "Received 401 from tunnel service, attempting token refresh...");
+      this.log("info", "[Auth Debug] Received 401 from tunnel service, attempting token refresh...");
+      this.log("info", `[Auth Debug] 401 original error: ${error instanceof Error ? error.message : String(error)}`);
       const tokenData = await loadTokenData();
+      const now = Date.now();
       if (tokenData?.refreshToken) {
-        const now = Date.now();
         const refreshExpired = tokenData.refreshExpiresAt < now + 5 * 60 * 1e3;
+        const refreshRemaining = Math.round((tokenData.refreshExpiresAt - now) / 6e4);
+        const accessRemaining = Math.round((tokenData.expiresAt - now) / 6e4);
+        this.log("info", `[Auth Debug] withAuthRetry token state: access=${tokenData.accessToken.slice(0, 8)}... (${accessRemaining}min remaining) refresh=${tokenData.refreshToken.slice(0, 8)}... (${refreshRemaining}min remaining) refreshExpired=${refreshExpired} (buffer=5min)`);
         if (!refreshExpired) {
           try {
             const oldUsername = tokenData.username;
+            this.log("info", `[Auth Debug] Attempting token refresh with refresh_token=${tokenData.refreshToken.slice(0, 8)}...`);
             const newTokenData2 = await this.refreshAccessToken(tokenData.refreshToken);
             newTokenData2.username = oldUsername;
             await saveTokenData(newTokenData2);
             this.currentToken = newTokenData2.accessToken;
             this.username = oldUsername;
             this.createManagementClient();
-            this.log("info", "Token refreshed successfully, retrying operation...");
+            const newAccessRemaining = Math.round((newTokenData2.expiresAt - Date.now()) / 6e4);
+            const newRefreshRemaining = Math.round((newTokenData2.refreshExpiresAt - Date.now()) / 6e4);
+            this.log("info", `[Auth Debug] Token refreshed successfully! newAccess=${newTokenData2.accessToken.slice(0, 8)}... (${newAccessRemaining}min) newRefresh=${newTokenData2.refreshToken.slice(0, 8)}... (${newRefreshRemaining}min) refreshTokenRotated=${newTokenData2.refreshToken !== tokenData.refreshToken}`);
             return await operation();
           } catch (refreshErr) {
-            this.log("warn", `Token refresh failed: ${refreshErr}`);
+            if (refreshErr instanceof RefreshTokenInvalidError) {
+              this.log("warn", `[Auth Debug] Refresh token INVALID (definitive): ${refreshErr.message} \u2014 falling through to device flow`);
+            } else {
+              this.log("warn", `[Auth Debug] Token refresh failed (TRANSIENT, preserving credentials): ${refreshErr instanceof Error ? refreshErr.message : String(refreshErr)}`);
+              throw refreshErr;
+            }
           }
         } else {
-          this.log("debug", "Refresh token is expired, skipping refresh attempt");
+          this.log("info", `[Auth Debug] Refresh token expired (${refreshRemaining}min remaining, need >5min), skipping refresh \u2192 device flow`);
         }
+      } else {
+        this.log("info", `[Auth Debug] No refresh token available (tokenData=${tokenData ? "exists but no refreshToken" : "null"}) \u2192 device flow`);
       }
-      this.log("info", "Clearing credentials and starting device flow...");
+      this.log("info", "[Auth Debug] Clearing credentials and starting device flow...");
       await clearTokenData();
       const newTokenData = await this.authenticateWithDeviceFlow();
       this.username = await this.fetchGitHubUsername(newTokenData.accessToken);
@@ -46684,6 +46745,11 @@ var DevTunnelHostAdapter = class {
           socket.destroy();
           return;
         }
+        if (!this.relayConnected) {
+          this.log("warn", "Rejecting client connection: relay is not connected");
+          socket.destroy();
+          return;
+        }
         const clientId = `client-${++this.clientCounter}`;
         this.clients.set(clientId, socket);
         this.log("debug", `Client ${clientId} connected (total clients: ${this.clients.size})`);
@@ -46743,6 +46809,10 @@ var DevTunnelHostAdapter = class {
     this.log("debug", "Checking for cached GitHub token...");
     const tokenData = await loadTokenData();
     if (tokenData?.accessToken) {
+      const now = Date.now();
+      const accessRemaining = Math.round((tokenData.expiresAt - now) / 6e4);
+      const refreshRemaining = Math.round((tokenData.refreshExpiresAt - now) / 6e4);
+      this.log("info", `[Auth Debug] getStoredOrNewToken: found stored token access=${tokenData.accessToken.slice(0, 8)}... (${accessRemaining}min remaining, expires=${new Date(tokenData.expiresAt).toISOString()}) refresh=${tokenData.refreshToken?.slice(0, 8) ?? "none"}... (${refreshRemaining}min remaining, expires=${new Date(tokenData.refreshExpiresAt).toISOString()}) accessExpired=${tokenData.expiresAt < now} refreshExpired=${tokenData.refreshExpiresAt < now}`);
       if (tokenData.username) {
         this.username = tokenData.username;
       } else {
@@ -46753,10 +46823,10 @@ var DevTunnelHostAdapter = class {
           await saveTokenData(tokenData);
         }
       }
-      this.log("debug", "Using stored access token");
+      this.log("debug", "Using stored access token (optimistic, 401 will trigger refresh if needed)");
       return tokenData.accessToken;
     }
-    this.log("info", "No stored credentials found");
+    this.log("info", "[Auth Debug] getStoredOrNewToken: no stored credentials found, starting device flow");
     const newTokenData = await this.authenticateWithDeviceFlow();
     this.username = await this.fetchGitHubUsername(newTokenData.accessToken);
     newTokenData.username = this.username;
@@ -46769,36 +46839,64 @@ var DevTunnelHostAdapter = class {
    * Refresh an access token using a refresh token.
    */
   async refreshAccessToken(refreshToken) {
-    const response = await fetch(GITHUB_TOKEN_URL, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        client_id: GITHUB_CLIENT_ID,
-        refresh_token: refreshToken,
-        grant_type: "refresh_token"
-      })
-    });
+    this.log("info", `[Auth Debug] refreshAccessToken: sending refresh request to GitHub, refresh_token=${refreshToken.slice(0, 8)}...`);
+    let response;
+    try {
+      response = await fetch(GITHUB_TOKEN_URL, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          client_id: GITHUB_CLIENT_ID,
+          refresh_token: refreshToken,
+          grant_type: "refresh_token"
+        })
+      });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      this.log("warn", `[Auth Debug] refreshAccessToken: NETWORK ERROR (transient): ${message}`);
+      throw new Error(`Network error during token refresh: ${message}`);
+    }
+    this.log("info", `[Auth Debug] refreshAccessToken: GitHub response status=${response.status} ${response.statusText}`);
     if (!response.ok) {
+      this.log("warn", `[Auth Debug] refreshAccessToken: non-OK response ${response.status}, treating as transient`);
       throw new Error(`Failed to refresh token: ${response.statusText}`);
     }
-    const token = await response.json();
+    let token;
+    try {
+      token = await response.json();
+    } catch {
+      this.log("warn", "[Auth Debug] refreshAccessToken: failed to parse JSON response");
+      throw new Error("Token refresh failed: invalid response from server");
+    }
+    this.log("info", `[Auth Debug] refreshAccessToken: parsed response: ${JSON.stringify(maskTokenResponse(token))}`);
     if (token.error) {
-      throw new Error(`Token refresh error: ${token.error_description || token.error}`);
+      const errorCode = token.error;
+      const errorDesc = token.error_description || errorCode;
+      const errorDescLower = errorDesc.toLowerCase();
+      const isDefinitiveAuthFailure = errorCode === "bad_refresh_token" || errorCode === "invalid_grant" || errorCode === "incorrect_client_credentials" || errorDescLower.includes("client_id") || errorDescLower.includes("client_secret");
+      this.log("warn", `[Auth Debug] refreshAccessToken: GitHub returned error="${errorCode}" desc="${errorDesc}" isDefinitive=${isDefinitiveAuthFailure}`);
+      if (isDefinitiveAuthFailure) {
+        throw new RefreshTokenInvalidError(errorDesc);
+      }
+      throw new Error(`Token refresh failed: ${errorDesc}`);
     }
     if (!token.access_token) {
+      this.log("warn", "[Auth Debug] refreshAccessToken: no access_token in success response");
       throw new Error("Token refresh failed: no access token in response");
     }
     const now = Date.now();
-    return {
+    const newRefreshToken = token.refresh_token || refreshToken;
+    const result = {
       accessToken: token.access_token,
-      refreshToken: token.refresh_token || refreshToken,
-      // May or may not return new refresh token
+      refreshToken: newRefreshToken,
       expiresAt: now + (token.expires_in || 28800) * 1e3,
       refreshExpiresAt: now + (token.refresh_token_expires_in || 15638400) * 1e3
     };
+    this.log("info", `[Auth Debug] refreshAccessToken: SUCCESS newAccess=${result.accessToken.slice(0, 8)}... newRefresh=${result.refreshToken.slice(0, 8)}... refreshTokenRotated=${newRefreshToken !== refreshToken} accessExpiresIn=${token.expires_in ?? "28800(default)"}s refreshExpiresIn=${token.refresh_token_expires_in ?? "15638400(default)"}s`);
+    return result;
   }
   /**
    * Fetch the GitHub username for the given token.
@@ -56612,7 +56710,7 @@ function serializeGitStatus(status) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.4.1";
+var CURRENT_VERSION = "0.4.2";
 
 // src/skills/loader.ts
 var import_fs2 = require("fs");
