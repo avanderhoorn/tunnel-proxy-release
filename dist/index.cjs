@@ -31076,7 +31076,7 @@ var require_axios = __commonJS({
       forcedJSONParsing: true,
       clarifyTimeoutError: false
     };
-    var URLSearchParams = url__default["default"].URLSearchParams;
+    var URLSearchParams2 = url__default["default"].URLSearchParams;
     var ALPHA = "abcdefghijklmnopqrstuvwxyz";
     var DIGIT = "0123456789";
     var ALPHABET = {
@@ -31097,7 +31097,7 @@ var require_axios = __commonJS({
     var platform$1 = {
       isNode: true,
       classes: {
-        URLSearchParams,
+        URLSearchParams: URLSearchParams2,
         FormData: FormData__default["default"],
         Blob: typeof Blob !== "undefined" && Blob || null
       },
@@ -46842,17 +46842,17 @@ var DevTunnelHostAdapter = class {
     this.log("info", `[Auth Debug] refreshAccessToken: sending refresh request to GitHub, refresh_token=${refreshToken.slice(0, 8)}...`);
     let response;
     try {
+      const params = new URLSearchParams();
+      params.append("client_id", GITHUB_CLIENT_ID);
+      params.append("refresh_token", refreshToken);
+      params.append("grant_type", "refresh_token");
       response = await fetch(GITHUB_TOKEN_URL, {
         method: "POST",
         headers: {
           Accept: "application/json",
-          "Content-Type": "application/json"
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({
-          client_id: GITHUB_CLIENT_ID,
-          refresh_token: refreshToken,
-          grant_type: "refresh_token"
-        })
+        body: params.toString()
       });
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
@@ -46933,16 +46933,16 @@ var DevTunnelHostAdapter = class {
    */
   async authenticateWithDeviceFlow() {
     this.log("debug", "Requesting device code from GitHub...");
+    const deviceCodeParams = new URLSearchParams();
+    deviceCodeParams.append("client_id", GITHUB_CLIENT_ID);
+    deviceCodeParams.append("scope", GITHUB_SCOPES);
     const deviceCodeResponse = await fetch(GITHUB_DEVICE_CODE_URL, {
       method: "POST",
       headers: {
         Accept: "application/json",
-        "Content-Type": "application/json"
+        "Content-Type": "application/x-www-form-urlencoded"
       },
-      body: JSON.stringify({
-        client_id: GITHUB_CLIENT_ID,
-        scope: GITHUB_SCOPES
-      })
+      body: deviceCodeParams.toString()
     });
     if (!deviceCodeResponse.ok) {
       throw new Error(`Failed to get device code: ${deviceCodeResponse.statusText}`);
@@ -46959,17 +46959,17 @@ var DevTunnelHostAdapter = class {
     const pollExpiresAt = Date.now() + deviceCode.expires_in * 1e3;
     while (Date.now() < pollExpiresAt) {
       await this.sleep(pollInterval);
+      const tokenParams = new URLSearchParams();
+      tokenParams.append("client_id", GITHUB_CLIENT_ID);
+      tokenParams.append("device_code", deviceCode.device_code);
+      tokenParams.append("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
       const tokenResponse = await fetch(GITHUB_TOKEN_URL, {
         method: "POST",
         headers: {
           Accept: "application/json",
-          "Content-Type": "application/json"
+          "Content-Type": "application/x-www-form-urlencoded"
         },
-        body: JSON.stringify({
-          client_id: GITHUB_CLIENT_ID,
-          device_code: deviceCode.device_code,
-          grant_type: "urn:ietf:params:oauth:grant-type:device_code"
-        })
+        body: tokenParams.toString()
       });
       if (!tokenResponse.ok) {
         throw new Error(`Failed to poll for token: ${tokenResponse.statusText}`);
@@ -56710,7 +56710,7 @@ function serializeGitStatus(status) {
 }
 
 // src/version-check.ts
-var CURRENT_VERSION = "0.4.2";
+var CURRENT_VERSION = "0.4.3";
 
 // src/skills/loader.ts
 var import_fs2 = require("fs");
