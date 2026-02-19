@@ -1,4 +1,4 @@
-import { TokenStorage, TokenData, AuthGateway, DeviceCodeResponse, TokenResponse, TunnelGateway, Tunnel, TunnelConfigStore, TunnelConfig, ConnectivityMonitor, Disposable, ByteStream, ConnectionStatus, RequestHandler, NotificationHandler, TokenManager, TunnelResolver } from 'remote-sdk-common';
+import { TokenStorage, TokenData, AuthGateway, DeviceCodeResponse, TokenResponse, TunnelGateway, TunnelLookupResult, Tunnel, TunnelConfigStore, TunnelConfig, ConnectivityMonitor, Disposable, ByteStream, ConnectionStatus, RequestHandler, NotificationHandler, TokenManager, TunnelResolver } from 'remote-sdk-common';
 export { ConnectionStatus, Disposable } from 'remote-sdk-common';
 import { Socket } from 'node:net';
 import { Command } from 'commander';
@@ -41,7 +41,7 @@ declare class MgmtApiTunnelGateway implements TunnelGateway {
     private readonly client;
     private currentToken;
     constructor();
-    getTunnel(tunnelId: string, clusterId: string, token: string): Promise<Tunnel | null>;
+    getTunnel(tunnelId: string, clusterId: string, token: string): Promise<TunnelLookupResult | null>;
     listByLabel(label: string, token: string): Promise<Tunnel[]>;
     createTunnel(label: string, token: string): Promise<Tunnel>;
     addPort(tunnel: Tunnel, port: number, token: string): Promise<Tunnel>;

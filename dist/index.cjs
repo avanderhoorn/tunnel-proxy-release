@@ -52395,7 +52395,7 @@ var MgmtApiTunnelGateway = class {
         { tunnelId, clusterId },
         { tokenScopes: TOKEN_SCOPES, includePorts: true }
       );
-      return result ? toTunnel(result) : null;
+      return result ? { tunnel: toTunnel(result) } : null;
     } catch (err) {
       if (is404(err)) return null;
       throw err;
@@ -53054,15 +53054,16 @@ var TunnelResolver = class {
    * @throws {NoHostConnectedError} if tunnel exists but no host is connected
    */
   async findTunnel(token) {
-    const tunnel = await this.resolve(token);
-    if (!tunnel) {
+    const result = await this.resolve(token);
+    if (!result) {
       throw new TunnelNotFoundError();
     }
-    this.validateHostConnected(tunnel);
-    this.saveConfig(tunnel);
+    this.validateHostConnected(result.tunnel);
+    this.saveConfig(result.tunnel);
     return {
-      tunnel,
-      port: tunnel.ports[0].portNumber
+      tunnel: result.tunnel,
+      port: result.tunnel.ports[0].portNumber,
+      relayData: result.relayData
     };
   }
   /**
@@ -53074,10 +53075,10 @@ var TunnelResolver = class {
    * @returns The tunnel (may have no ports yet — call registerPort() next)
    */
   async findOrCreateTunnel(token) {
-    const tunnel = await this.resolve(token);
-    if (tunnel) {
-      this.saveConfig(tunnel);
-      return tunnel;
+    const result = await this.resolve(token);
+    if (result) {
+      this.saveConfig(result.tunnel);
+      return result.tunnel;
     }
     const created = await this.gateway.createTunnel(this.label, token);
     this.saveConfig(created);
@@ -53103,17 +53104,17 @@ var TunnelResolver = class {
   async resolve(token) {
     const config = this.configStore.load();
     if (config) {
-      const tunnel = await this.gateway.getTunnel(
+      const result = await this.gateway.getTunnel(
         config.tunnelId,
         config.clusterId,
         token
       );
-      if (tunnel) return tunnel;
+      if (result) return result;
       this.configStore.clear();
     }
     const tunnels = await this.gateway.listByLabel(this.label, token);
     if (tunnels.length === 0) return null;
-    return pickNewest(tunnels);
+    return { tunnel: pickNewest(tunnels) };
   }
   validateHostConnected(tunnel) {
     if (tunnel.hostConnectionCount === 0) {
@@ -62881,7 +62882,7 @@ var gitHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.5.0";
+var CURRENT_VERSION = "0.5.1";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
