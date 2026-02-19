@@ -55773,7 +55773,7 @@ var gitHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.5.2";
+var CURRENT_VERSION = "0.5.3";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
