@@ -7,6 +7,7 @@
   },
   "dependencies": {
     "keytar": "^7.9.0",
-    "@parcel/watcher": "^2.5.1"
+    "@parcel/watcher": "^2.5.1",
+    "@github/copilot": "^0.0.411"
   }
 }
