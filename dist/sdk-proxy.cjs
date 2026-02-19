@@ -1,6 +1,28 @@
 #!/usr/bin/env node
 
 const __bundled_import_meta_url = require('url').pathToFileURL(__filename).href;
+const __bundled_import_meta_resolve = (specifier) => {
+  const {join,dirname} = require('path'), {pathToFileURL} = require('url'), {statSync,readFileSync,existsSync} = require('fs');
+  try { return pathToFileURL(require.resolve(specifier)).href; } catch {}
+  // require.resolve enforces CJS "exports" conditions. import.meta.resolve matches
+  // the "import" condition. Walk node_modules, read package.json exports to match.
+  const m = specifier.match(/^(@[^/]+\/[^/]+|[^/]+)(\/(.*))?$/);
+  if (!m) throw new Error('Cannot resolve ' + specifier);
+  const [,pkg,,sub] = m;
+  let d = __dirname;
+  for (;;) {
+    const pkgDir = join(d, 'node_modules', pkg);
+    try { statSync(pkgDir); } catch { const p = dirname(d); if (p === d) break; d = p; continue; }
+    if (!sub) return pathToFileURL(pkgDir).href;
+    try { const pj = JSON.parse(readFileSync(join(pkgDir,'package.json'),'utf8')); const ex = pj.exports?.['./' + sub]; if (ex) { const ip = typeof ex === 'string' ? ex : ex.import ?? ex.default; if (ip) return pathToFileURL(join(pkgDir, ip)).href; } } catch {}
+    const fp = join(pkgDir, sub);
+    if (existsSync(fp + '.js')) return pathToFileURL(fp + '.js').href;
+    if (existsSync(join(fp,'index.js'))) return pathToFileURL(join(fp,'index.js')).href;
+    if (existsSync(fp)) return pathToFileURL(fp).href;
+    throw new Error('Cannot resolve ' + sub + ' in ' + pkg);
+  }
+  throw new Error('Cannot resolve ' + specifier);
+};
 
 "use strict";
 var __create = Object.create;
@@ -970,9 +992,9 @@ var require_suggestSimilar = __commonJS({
 var require_command = __commonJS({
   "node_modules/commander/lib/command.js"(exports2) {
     "use strict";
-    var EventEmitter4 = require("events").EventEmitter;
+    var EventEmitter3 = require("events").EventEmitter;
     var childProcess = require("child_process");
-    var path11 = require("path");
+    var path14 = require("path");
     var fs10 = require("fs");
     var process2 = require("process");
     var { Argument: Argument2, humanReadableArgName } = require_argument();
@@ -980,7 +1002,7 @@ var require_command = __commonJS({
     var { Help: Help2 } = require_help();
     var { Option: Option2, DualOptions } = require_option();
     var { suggestSimilar } = require_suggestSimilar();
-    var Command2 = class _Command extends EventEmitter4 {
+    var Command2 = class _Command extends EventEmitter3 {
       /**
        * Initialize a new `Command`.
        *
@@ -1905,9 +1927,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
         let launchWithNode = false;
         const sourceExt = [".js", ".ts", ".tsx", ".mjs", ".cjs"];
         function findFile(baseDir, baseName) {
-          const localBin = path11.resolve(baseDir, baseName);
+          const localBin = path14.resolve(baseDir, baseName);
           if (fs10.existsSync(localBin)) return localBin;
-          if (sourceExt.includes(path11.extname(baseName))) return void 0;
+          if (sourceExt.includes(path14.extname(baseName))) return void 0;
           const foundExt = sourceExt.find(
             (ext) => fs10.existsSync(`${localBin}${ext}`)
           );
@@ -1925,17 +1947,17 @@ Expecting one of '${allowedValues.join("', '")}'`);
           } catch (err) {
             resolvedScriptPath = this._scriptPath;
           }
-          executableDir = path11.resolve(
-            path11.dirname(resolvedScriptPath),
+          executableDir = path14.resolve(
+            path14.dirname(resolvedScriptPath),
             executableDir
           );
         }
         if (executableDir) {
           let localFile = findFile(executableDir, executableFile);
           if (!localFile && !subcommand._executableFile && this._scriptPath) {
-            const legacyName = path11.basename(
+            const legacyName = path14.basename(
               this._scriptPath,
-              path11.extname(this._scriptPath)
+              path14.extname(this._scriptPath)
             );
             if (legacyName !== this._name) {
               localFile = findFile(
@@ -1946,7 +1968,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
           }
           executableFile = localFile || executableFile;
         }
-        launchWithNode = sourceExt.includes(path11.extname(executableFile));
+        launchWithNode = sourceExt.includes(path14.extname(executableFile));
         let proc;
         if (process2.platform !== "win32") {
           if (launchWithNode) {
@@ -2786,7 +2808,7 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @return {Command}
        */
       nameFromFilename(filename) {
-        this._name = path11.basename(filename, path11.extname(filename));
+        this._name = path14.basename(filename, path14.extname(filename));
         return this;
       }
       /**
@@ -2800,9 +2822,9 @@ Expecting one of '${allowedValues.join("', '")}'`);
        * @param {string} [path]
        * @return {(string|null|Command)}
        */
-      executableDir(path12) {
-        if (path12 === void 0) return this._executableDir;
-        this._executableDir = path12;
+      executableDir(path15) {
+        if (path15 === void 0) return this._executableDir;
+        this._executableDir = path15;
         return this;
       }
       /**
@@ -3547,7 +3569,7 @@ var require_messageReader = __commonJS({
       }
     };
     exports2.AbstractMessageReader = AbstractMessageReader;
-    var StreamMessageReader = class extends AbstractMessageReader {
+    var StreamMessageReader2 = class extends AbstractMessageReader {
       constructor(readable, encoding = "utf8") {
         super();
         this.readable = readable;
@@ -3621,7 +3643,7 @@ var require_messageReader = __commonJS({
         }, this._partialMessageTimeout, this.messageToken, this._partialMessageTimeout);
       }
     };
-    exports2.StreamMessageReader = StreamMessageReader;
+    exports2.StreamMessageReader = StreamMessageReader2;
     var IPCMessageReader = class extends AbstractMessageReader {
       constructor(process2) {
         super();
@@ -3635,7 +3657,7 @@ var require_messageReader = __commonJS({
       }
     };
     exports2.IPCMessageReader = IPCMessageReader;
-    var SocketMessageReader = class extends StreamMessageReader {
+    var SocketMessageReader = class extends StreamMessageReader2 {
       constructor(socket, encoding = "utf-8") {
         super(socket, encoding);
       }
@@ -3691,7 +3713,7 @@ var require_messageWriter = __commonJS({
       }
     };
     exports2.AbstractMessageWriter = AbstractMessageWriter;
-    var StreamMessageWriter = class extends AbstractMessageWriter {
+    var StreamMessageWriter2 = class extends AbstractMessageWriter {
       constructor(writable, encoding = "utf8") {
         super();
         this.writable = writable;
@@ -3719,7 +3741,7 @@ var require_messageWriter = __commonJS({
         }
       }
     };
-    exports2.StreamMessageWriter = StreamMessageWriter;
+    exports2.StreamMessageWriter = StreamMessageWriter2;
     var IPCMessageWriter = class extends AbstractMessageWriter {
       constructor(process2) {
         super();
@@ -4180,10 +4202,10 @@ var require_pipeSupport = __commonJS({
     exports2.generateRandomPipeName = generateRandomPipeName;
     function createClientPipeTransport(pipeName, encoding = "utf-8") {
       let connectResolve;
-      let connected = new Promise((resolve8, _reject) => {
-        connectResolve = resolve8;
+      let connected = new Promise((resolve10, _reject) => {
+        connectResolve = resolve10;
       });
-      return new Promise((resolve8, reject) => {
+      return new Promise((resolve10, reject) => {
         let server = net_1.createServer((socket) => {
           server.close();
           connectResolve([
@@ -4194,7 +4216,7 @@ var require_pipeSupport = __commonJS({
         server.on("error", reject);
         server.listen(pipeName, () => {
           server.removeListener("error", reject);
-          resolve8({
+          resolve10({
             onConnected: () => {
               return connected;
             }
@@ -4224,10 +4246,10 @@ var require_socketSupport = __commonJS({
     var messageWriter_1 = require_messageWriter();
     function createClientSocketTransport(port, encoding = "utf-8") {
       let connectResolve;
-      let connected = new Promise((resolve8, _reject) => {
-        connectResolve = resolve8;
+      let connected = new Promise((resolve10, _reject) => {
+        connectResolve = resolve10;
       });
-      return new Promise((resolve8, reject) => {
+      return new Promise((resolve10, reject) => {
         let server = net_1.createServer((socket) => {
           server.close();
           connectResolve([
@@ -4238,7 +4260,7 @@ var require_socketSupport = __commonJS({
         server.on("error", reject);
         server.listen(port, "127.0.0.1", () => {
           server.removeListener("error", reject);
-          resolve8({
+          resolve10({
             onConnected: () => {
               return connected;
             }
@@ -4998,14 +5020,14 @@ ${JSON.stringify(message, null, 4)}`);
             token = cancellation_1.CancellationToken.is(params[numberOfParams]) ? params[numberOfParams] : void 0;
           }
           let id = sequenceNumber++;
-          let result = new Promise((resolve8, reject) => {
+          let result = new Promise((resolve10, reject) => {
             let requestMessage = {
               jsonrpc: version,
               id,
               method,
               params: messageParams
             };
-            let responsePromise = { method, timerStart: Date.now(), resolve: resolve8, reject };
+            let responsePromise = { method, timerStart: Date.now(), resolve: resolve10, reject };
             traceSendingRequest(requestMessage);
             try {
               messageWriter.write(requestMessage);
@@ -5106,7 +5128,7 @@ ${JSON.stringify(message, null, 4)}`);
     function isMessageWriter(value) {
       return value.write !== void 0 && value.end === void 0;
     }
-    function createMessageConnection(input, output, logger, strategy) {
+    function createMessageConnection2(input, output, logger, strategy) {
       if (!logger) {
         logger = exports2.NullLogger;
       }
@@ -5114,7 +5136,7 @@ ${JSON.stringify(message, null, 4)}`);
       let writer = isMessageWriter(output) ? output : new messageWriter_1.StreamMessageWriter(output);
       return _createMessageConnection(reader, writer, logger, strategy);
     }
-    exports2.createMessageConnection = createMessageConnection;
+    exports2.createMessageConnection = createMessageConnection2;
   }
 });
 
@@ -7304,7 +7326,7 @@ var require_nodeRsa = __commonJS({
         }
       }
       async generateNodeKeyPairObjects(keySizeInBits) {
-        [this.publicKey, this.privateKey] = await new Promise((resolve8, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve10, reject) => {
           const keyGenParams = {
             modulusLength: keySizeInBits
           };
@@ -7313,7 +7335,7 @@ var require_nodeRsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve8([publicKey, privateKey]);
+                resolve10([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -7322,7 +7344,7 @@ var require_nodeRsa = __commonJS({
         });
       }
       async generateNodeKeyPairBuffers(keySizeInBits) {
-        [this.publicKey, this.privateKey] = await new Promise((resolve8, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve10, reject) => {
           const keyGenParams = {
             modulusLength: keySizeInBits,
             publicKeyEncoding: { type: "pkcs1", format: "pem" },
@@ -7338,7 +7360,7 @@ var require_nodeRsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve8([publicKey, privateKey]);
+                resolve10([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -7572,7 +7594,7 @@ var require_nodeECDsa = __commonJS({
         }
       }
       async generateNodeKeyPairObjects() {
-        [this.publicKey, this.privateKey] = await new Promise((resolve8, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve10, reject) => {
           const keyGenParams = {
             namedCurve: this.curve.shortName
           };
@@ -7581,7 +7603,7 @@ var require_nodeECDsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve8([publicKey, privateKey]);
+                resolve10([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -7590,7 +7612,7 @@ var require_nodeECDsa = __commonJS({
         });
       }
       async generateNodeKeyPairBuffers() {
-        [this.publicKey, this.privateKey] = await new Promise((resolve8, reject) => {
+        [this.publicKey, this.privateKey] = await new Promise((resolve10, reject) => {
           const keyGenParams = {
             namedCurve: this.curve.shortName,
             publicKeyEncoding: { type: "spki", format: "pem" },
@@ -7606,7 +7628,7 @@ var require_nodeECDsa = __commonJS({
               if (err) {
                 reject(err);
               } else {
-                resolve8([publicKey, privateKey]);
+                resolve10([publicKey, privateKey]);
               }
             });
           } catch (err) {
@@ -8956,8 +8978,8 @@ var require_promiseCompletionSource = __commonJS({
     exports2.PromiseCompletionSource = void 0;
     var PromiseCompletionSource = class {
       constructor() {
-        this.promise = new Promise((resolve8, reject) => {
-          this.resolve = resolve8;
+        this.promise = new Promise((resolve10, reject) => {
+          this.resolve = resolve10;
           this.reject = reject;
         });
       }
@@ -9096,7 +9118,7 @@ var require_cancellation2 = __commonJS({
       }
       return Promise.race([
         promise2,
-        new Promise((resolve8, reject) => {
+        new Promise((resolve10, reject) => {
           if (cancellation.isCancellationRequested) {
             reject(new CancellationError());
           } else {
@@ -9186,7 +9208,7 @@ var require_semaphore = __commonJS({
           this.completions.push(completion);
           const promises2 = [completion.promise];
           if (millisecondsTimeout) {
-            promises2.push(new Promise((resolve8) => setTimeout(() => resolve8(false), millisecondsTimeout)));
+            promises2.push(new Promise((resolve10) => setTimeout(() => resolve10(false), millisecondsTimeout)));
           }
           if (cancellation) {
             const cancellationCompletion = new promiseCompletionSource_1.PromiseCompletionSource();
@@ -13644,11 +13666,11 @@ var require_sshClientSession = __commonJS({
         if (typeof callbackOrCancellation === "function") {
           return this.authenticateClientWithCompletion(credentials, callbackOrCancellation, cancellation);
         } else {
-          return new Promise((resolve8, reject) => this.authenticateClientWithCompletion(credentials, (err, result) => {
+          return new Promise((resolve10, reject) => this.authenticateClientWithCompletion(credentials, (err, result) => {
             if (err)
               reject(err);
             else
-              resolve8(result);
+              resolve10(result);
           }, callbackOrCancellation));
         }
       }
@@ -13957,7 +13979,7 @@ var require_sshServerSession = __commonJS({
           reconnectSession.reconnecting = true;
           (_c = reconnectSession.protocol) === null || _c === void 0 ? void 0 : _c.dispose();
           while (reconnectSession.isConnected) {
-            await new Promise((resolve8) => setTimeout(() => resolve8(), 5));
+            await new Promise((resolve10) => setTimeout(() => resolve10(), 5));
           }
           reconnectSession.protocol = this.protocol;
           reconnectSession.protocol.kexService = reconnectSession.kexService;
@@ -14185,7 +14207,7 @@ var require_streams = __commonJS({
         } else if (this.error) {
           throw this.error;
         } else {
-          return await new Promise((resolve8, reject) => {
+          return await new Promise((resolve10, reject) => {
             if (cancellation) {
               if (cancellation.isCancellationRequested) {
                 reject(new cancellation_1.CancellationError());
@@ -14200,7 +14222,7 @@ var require_streams = __commonJS({
                 }
               });
             }
-            this.pendingReads.push({ count, resolve: resolve8, reject, cancellation });
+            this.pendingReads.push({ count, resolve: resolve10, reject, cancellation });
           });
         }
       }
@@ -14240,11 +14262,11 @@ var require_streams = __commonJS({
           throw new TypeError("Data is required.");
         if (this.disposed)
           throw new errors_1.ObjectDisposedError(this);
-        return new Promise((resolve8, reject) => {
+        return new Promise((resolve10, reject) => {
           handleCancellation(reject, cancellation);
           this.writeStream.write(data, (err) => {
             if (!err) {
-              resolve8();
+              resolve10();
             } else {
               reject(err);
             }
@@ -14254,9 +14276,9 @@ var require_streams = __commonJS({
       async close(error, cancellation) {
         if (this.disposed)
           throw new errors_1.ObjectDisposedError(this);
-        await new Promise((resolve8, reject) => {
+        await new Promise((resolve10, reject) => {
           handleCancellation(reject, cancellation);
-          this.writeStream.end(resolve8);
+          this.writeStream.end(resolve10);
         });
         this.disposed = true;
         this.onError(error || new errors_1.ObjectDisposedError(this));
@@ -14898,9 +14920,9 @@ var require_multiChannelStream = __commonJS({
        */
       async connectAndRunUntilClosed(cancellation) {
         const disposables = [];
-        const sessionClosedPromise = new Promise((resolve8, reject) => {
+        const sessionClosedPromise = new Promise((resolve10, reject) => {
           cancellation === null || cancellation === void 0 ? void 0 : cancellation.onCancellationRequested(reject, null, disposables);
-          this.session.onClosed(resolve8, null, disposables);
+          this.session.onClosed(resolve10, null, disposables);
         });
         try {
           await this.connect(cancellation);
@@ -15180,8 +15202,8 @@ var require_secureStream = __commonJS({
           this.session.dispose();
           this.unsubscribe();
           if (this.transportStream instanceof stream_1.Duplex) {
-            await new Promise((resolve8) => {
-              this.transportStream.end(resolve8);
+            await new Promise((resolve10) => {
+              this.transportStream.end(resolve10);
             });
           } else {
             await this.transportStream.close();
@@ -15504,15 +15526,15 @@ var require_tunnelAccessScopes = __commonJS({
     "use strict";
     Object.defineProperty(exports2, "__esModule", { value: true });
     exports2.TunnelAccessScopes = void 0;
-    var TunnelAccessScopes2;
-    (function(TunnelAccessScopes3) {
-      TunnelAccessScopes3["Create"] = "create";
-      TunnelAccessScopes3["Manage"] = "manage";
-      TunnelAccessScopes3["ManagePorts"] = "manage:ports";
-      TunnelAccessScopes3["Host"] = "host";
-      TunnelAccessScopes3["Inspect"] = "inspect";
-      TunnelAccessScopes3["Connect"] = "connect";
-    })(TunnelAccessScopes2 = exports2.TunnelAccessScopes || (exports2.TunnelAccessScopes = {}));
+    var TunnelAccessScopes3;
+    (function(TunnelAccessScopes4) {
+      TunnelAccessScopes4["Create"] = "create";
+      TunnelAccessScopes4["Manage"] = "manage";
+      TunnelAccessScopes4["ManagePorts"] = "manage:ports";
+      TunnelAccessScopes4["Host"] = "host";
+      TunnelAccessScopes4["Inspect"] = "inspect";
+      TunnelAccessScopes4["Connect"] = "connect";
+    })(TunnelAccessScopes3 = exports2.TunnelAccessScopes || (exports2.TunnelAccessScopes = {}));
   }
 });
 
@@ -24981,11 +25003,11 @@ var require_mime_types = __commonJS({
       }
       return exts[0];
     }
-    function lookup(path11) {
-      if (!path11 || typeof path11 !== "string") {
+    function lookup(path14) {
+      if (!path14 || typeof path14 !== "string") {
         return false;
       }
-      var extension2 = extname("x." + path11).toLowerCase().substr(1);
+      var extension2 = extname("x." + path14).toLowerCase().substr(1);
       if (!extension2) {
         return false;
       }
@@ -26100,7 +26122,7 @@ var require_form_data = __commonJS({
     "use strict";
     var CombinedStream = require_combined_stream();
     var util2 = require("util");
-    var path11 = require("path");
+    var path14 = require("path");
     var http = require("http");
     var https = require("https");
     var parseUrl = require("url").parse;
@@ -26228,11 +26250,11 @@ var require_form_data = __commonJS({
     FormData2.prototype._getContentDisposition = function(value, options) {
       var filename;
       if (typeof options.filepath === "string") {
-        filename = path11.normalize(options.filepath).replace(/\\/g, "/");
+        filename = path14.normalize(options.filepath).replace(/\\/g, "/");
       } else if (options.filename || value && (value.name || value.path)) {
-        filename = path11.basename(options.filename || value && (value.name || value.path));
+        filename = path14.basename(options.filename || value && (value.name || value.path));
       } else if (value && value.readable && hasOwn(value, "httpVersion")) {
-        filename = path11.basename(value.client._httpMessage.path || "");
+        filename = path14.basename(value.client._httpMessage.path || "");
       }
       if (filename) {
         return 'filename="' + filename + '"';
@@ -28154,9 +28176,9 @@ var require_axios = __commonJS({
     function removeBrackets(key) {
       return utils$1.endsWith(key, "[]") ? key.slice(0, -2) : key;
     }
-    function renderKey(path11, key, dots) {
-      if (!path11) return key;
-      return path11.concat(key).map(function each(token, i) {
+    function renderKey(path14, key, dots) {
+      if (!path14) return key;
+      return path14.concat(key).map(function each(token, i) {
         token = removeBrackets(token);
         return !dots && i ? "[" + token + "]" : token;
       }).join(dots ? "." : "");
@@ -28204,9 +28226,9 @@ var require_axios = __commonJS({
         }
         return value;
       }
-      function defaultVisitor(value, key, path11) {
+      function defaultVisitor(value, key, path14) {
         let arr = value;
-        if (value && !path11 && typeof value === "object") {
+        if (value && !path14 && typeof value === "object") {
           if (utils$1.endsWith(key, "{}")) {
             key = metaTokens ? key : key.slice(0, -2);
             value = JSON.stringify(value);
@@ -28225,7 +28247,7 @@ var require_axios = __commonJS({
         if (isVisitable(value)) {
           return true;
         }
-        formData.append(renderKey(path11, key, dots), convertValue(value));
+        formData.append(renderKey(path14, key, dots), convertValue(value));
         return false;
       }
       const stack = [];
@@ -28234,10 +28256,10 @@ var require_axios = __commonJS({
         convertValue,
         isVisitable
       });
-      function build2(value, path11) {
+      function build2(value, path14) {
         if (utils$1.isUndefined(value)) return;
         if (stack.indexOf(value) !== -1) {
-          throw Error("Circular reference detected in " + path11.join("."));
+          throw Error("Circular reference detected in " + path14.join("."));
         }
         stack.push(value);
         utils$1.forEach(value, function each(el, key) {
@@ -28245,11 +28267,11 @@ var require_axios = __commonJS({
             formData,
             el,
             utils$1.isString(key) ? key.trim() : key,
-            path11,
+            path14,
             exposedHelpers
           );
           if (result === true) {
-            build2(el, path11 ? path11.concat(key) : [key]);
+            build2(el, path14 ? path14.concat(key) : [key]);
           }
         });
         stack.pop();
@@ -28437,7 +28459,7 @@ var require_axios = __commonJS({
     };
     function toURLEncodedForm(data, options) {
       return toFormData(data, new platform.classes.URLSearchParams(), {
-        visitor: function(value, key, path11, helpers) {
+        visitor: function(value, key, path14, helpers) {
           if (platform.isNode && utils$1.isBuffer(value)) {
             this.append(key, value.toString("base64"));
             return false;
@@ -28465,11 +28487,11 @@ var require_axios = __commonJS({
       return obj;
     }
     function formDataToJSON(formData) {
-      function buildPath(path11, value, target, index) {
-        let name = path11[index++];
+      function buildPath(path14, value, target, index) {
+        let name = path14[index++];
         if (name === "__proto__") return true;
         const isNumericKey = Number.isFinite(+name);
-        const isLast = index >= path11.length;
+        const isLast = index >= path14.length;
         name = !name && utils$1.isArray(target) ? target.length : name;
         if (isLast) {
           if (utils$1.hasOwnProp(target, name)) {
@@ -28482,7 +28504,7 @@ var require_axios = __commonJS({
         if (!target[name] || !utils$1.isObject(target[name])) {
           target[name] = [];
         }
-        const result = buildPath(path11, value, target[name], index);
+        const result = buildPath(path14, value, target[name], index);
         if (result && utils$1.isArray(target[name])) {
           target[name] = arrayToObject(target[name]);
         }
@@ -28895,10 +28917,10 @@ var require_axios = __commonJS({
     utils$1.inherits(CanceledError, AxiosError, {
       __CANCEL__: true
     });
-    function settle(resolve8, reject, response) {
+    function settle(resolve10, reject, response) {
       const validateStatus = response.config.validateStatus;
       if (!response.status || !validateStatus || validateStatus(response.status)) {
-        resolve8(response);
+        resolve10(response);
       } else {
         reject(new AxiosError(
           "Request failed with status code " + response.status,
@@ -29080,9 +29102,9 @@ var require_axios = __commonJS({
     };
     var readBlob$1 = readBlob;
     var BOUNDARY_ALPHABET = platform.ALPHABET.ALPHA_DIGIT + "-_";
-    var textEncoder = typeof TextEncoder === "function" ? new TextEncoder() : new util__default["default"].TextEncoder();
+    var textEncoder2 = typeof TextEncoder === "function" ? new TextEncoder() : new util__default["default"].TextEncoder();
     var CRLF = "\r\n";
-    var CRLF_BYTES = textEncoder.encode(CRLF);
+    var CRLF_BYTES = textEncoder2.encode(CRLF);
     var CRLF_BYTES_COUNT = 2;
     var FormDataPart = class {
       constructor(name, value) {
@@ -29090,11 +29112,11 @@ var require_axios = __commonJS({
         const isStringValue = utils$1.isString(value);
         let headers = `Content-Disposition: form-data; name="${escapeName(name)}"${!isStringValue && value.name ? `; filename="${escapeName(value.name)}"` : ""}${CRLF}`;
         if (isStringValue) {
-          value = textEncoder.encode(String(value).replace(/\r?\n|\r\n?/g, CRLF));
+          value = textEncoder2.encode(String(value).replace(/\r?\n|\r\n?/g, CRLF));
         } else {
           headers += `Content-Type: ${value.type || "application/octet-stream"}${CRLF}`;
         }
-        this.headers = textEncoder.encode(headers + CRLF);
+        this.headers = textEncoder2.encode(headers + CRLF);
         this.contentLength = isStringValue ? value.byteLength : value.size;
         this.size = this.headers.byteLength + this.contentLength + CRLF_BYTES_COUNT;
         this.name = name;
@@ -29130,8 +29152,8 @@ var require_axios = __commonJS({
       if (boundary.length < 1 || boundary.length > 70) {
         throw Error("boundary must be 10-70 characters long");
       }
-      const boundaryBytes = textEncoder.encode("--" + boundary + CRLF);
-      const footerBytes = textEncoder.encode("--" + boundary + "--" + CRLF);
+      const boundaryBytes = textEncoder2.encode("--" + boundary + CRLF);
+      const footerBytes = textEncoder2.encode("--" + boundary + "--" + CRLF);
       let contentLength = footerBytes.byteLength;
       const parts = Array.from(form.entries()).map(([name, value]) => {
         const part = new FormDataPart(name, value);
@@ -29466,7 +29488,7 @@ var require_axios = __commonJS({
     }
     var isHttpAdapterSupported = typeof process !== "undefined" && utils$1.kindOf(process) === "process";
     var wrapAsync = (asyncExecutor) => {
-      return new Promise((resolve8, reject) => {
+      return new Promise((resolve10, reject) => {
         let onDone;
         let isDone;
         const done = (value, isRejected) => {
@@ -29476,7 +29498,7 @@ var require_axios = __commonJS({
         };
         const _resolve = (value) => {
           done(value);
-          resolve8(value);
+          resolve10(value);
         };
         const _reject = (reason) => {
           done(reason, true);
@@ -29528,7 +29550,7 @@ var require_axios = __commonJS({
       }
     };
     var httpAdapter = isHttpAdapterSupported && function httpAdapter2(config) {
-      return wrapAsync(async function dispatchHttpRequest(resolve8, reject, onDone) {
+      return wrapAsync(async function dispatchHttpRequest(resolve10, reject, onDone) {
         let { data, lookup, family, httpVersion = 1, http2Options } = config;
         const { responseType, responseEncoding } = config;
         const method = config.method.toUpperCase();
@@ -29613,7 +29635,7 @@ var require_axios = __commonJS({
           }
           let convertedData;
           if (method !== "GET") {
-            return settle(resolve8, reject, {
+            return settle(resolve10, reject, {
               status: 405,
               statusText: "method not allowed",
               headers: {},
@@ -29635,7 +29657,7 @@ var require_axios = __commonJS({
           } else if (responseType === "stream") {
             convertedData = stream__default["default"].Readable.from(convertedData);
           }
-          return settle(resolve8, reject, {
+          return settle(resolve10, reject, {
             data: convertedData,
             status: 200,
             statusText: "OK",
@@ -29733,9 +29755,9 @@ var require_axios = __commonJS({
           auth = urlUsername + ":" + urlPassword;
         }
         auth && headers.delete("authorization");
-        let path11;
+        let path14;
         try {
-          path11 = buildURL(
+          path14 = buildURL(
             parsed.pathname + parsed.search,
             config.params,
             config.paramsSerializer
@@ -29753,7 +29775,7 @@ var require_axios = __commonJS({
           false
         );
         const options = {
-          path: path11,
+          path: path14,
           method,
           headers: headers.toJSON(),
           agents: { http: config.httpAgent, https: config.httpsAgent },
@@ -29854,7 +29876,7 @@ var require_axios = __commonJS({
           };
           if (responseType === "stream") {
             response.data = responseStream;
-            settle(resolve8, reject, response);
+            settle(resolve10, reject, response);
           } else {
             const responseBuffer = [];
             let totalResponseBytes = 0;
@@ -29902,7 +29924,7 @@ var require_axios = __commonJS({
               } catch (err) {
                 return reject(AxiosError.from(err, null, config, response.request, response));
               }
-              settle(resolve8, reject, response);
+              settle(resolve10, reject, response);
             });
           }
           abortEmitter.once("abort", (err) => {
@@ -29985,14 +30007,14 @@ var require_axios = __commonJS({
     var cookies = platform.hasStandardBrowserEnv ? (
       // Standard browser envs support document.cookie
       {
-        write(name, value, expires, path11, domain, secure, sameSite) {
+        write(name, value, expires, path14, domain, secure, sameSite) {
           if (typeof document === "undefined") return;
           const cookie = [`${name}=${encodeURIComponent(value)}`];
           if (utils$1.isNumber(expires)) {
             cookie.push(`expires=${new Date(expires).toUTCString()}`);
           }
-          if (utils$1.isString(path11)) {
-            cookie.push(`path=${path11}`);
+          if (utils$1.isString(path14)) {
+            cookie.push(`path=${path14}`);
           }
           if (utils$1.isString(domain)) {
             cookie.push(`domain=${domain}`);
@@ -30141,7 +30163,7 @@ var require_axios = __commonJS({
     };
     var isXHRAdapterSupported = typeof XMLHttpRequest !== "undefined";
     var xhrAdapter = isXHRAdapterSupported && function(config) {
-      return new Promise(function dispatchXhrRequest(resolve8, reject) {
+      return new Promise(function dispatchXhrRequest(resolve10, reject) {
         const _config = resolveConfig(config);
         let requestData = _config.data;
         const requestHeaders = AxiosHeaders$1.from(_config.headers).normalize();
@@ -30175,7 +30197,7 @@ var require_axios = __commonJS({
             request
           };
           settle(function _resolve(value) {
-            resolve8(value);
+            resolve10(value);
             done();
           }, function _reject(err) {
             reject(err);
@@ -30540,8 +30562,8 @@ var require_axios = __commonJS({
           responseType = responseType || "text";
           let responseData = await resolvers[utils$1.findKey(resolvers, responseType) || "text"](response, config);
           !isStreamResponse && unsubscribe && unsubscribe();
-          return await new Promise((resolve8, reject) => {
-            settle(resolve8, reject, {
+          return await new Promise((resolve10, reject) => {
+            settle(resolve10, reject, {
               data: responseData,
               headers: AxiosHeaders$1.from(response.headers),
               status: response.status,
@@ -30927,8 +30949,8 @@ var require_axios = __commonJS({
           throw new TypeError("executor must be a function.");
         }
         let resolvePromise;
-        this.promise = new Promise(function promiseExecutor(resolve8) {
-          resolvePromise = resolve8;
+        this.promise = new Promise(function promiseExecutor(resolve10) {
+          resolvePromise = resolve10;
         });
         const token = this;
         this.promise.then((cancel) => {
@@ -30941,9 +30963,9 @@ var require_axios = __commonJS({
         });
         this.promise.then = (onfulfilled) => {
           let _resolve;
-          const promise2 = new Promise((resolve8) => {
-            token.subscribe(resolve8);
-            _resolve = resolve8;
+          const promise2 = new Promise((resolve10) => {
+            token.subscribe(resolve10);
+            _resolve = resolve10;
           }).then(onfulfilled);
           promise2.cancel = function reject() {
             token.unsubscribe(_resolve);
@@ -31492,16 +31514,16 @@ var require_tunnelManagementHttpClient = __commonJS({
         if (endpoint.id == null) {
           throw new Error("Endpoint ID must be specified when updating an endpoint.");
         }
-        const path11 = `${endpointsApiSubPath}/${endpoint.id}`;
-        const result = await this.sendTunnelRequest("PUT", tunnel, hostAccessTokenScope, path11, "connectionMode=" + endpoint.connectionMode, options, endpoint, void 0, cancellation);
+        const path14 = `${endpointsApiSubPath}/${endpoint.id}`;
+        const result = await this.sendTunnelRequest("PUT", tunnel, hostAccessTokenScope, path14, "connectionMode=" + endpoint.connectionMode, options, endpoint, void 0, cancellation);
         if (tunnel.endpoints) {
           tunnel.endpoints = tunnel.endpoints.filter((e) => e.hostId !== endpoint.hostId || e.connectionMode !== endpoint.connectionMode).concat(result);
         }
         return result;
       }
       async deleteTunnelEndpoints(tunnel, id, options, cancellation) {
-        const path11 = `${endpointsApiSubPath}/${id}`;
-        const result = await this.sendTunnelRequest("DELETE", tunnel, hostAccessTokenScope, path11, void 0, options, void 0, true, cancellation);
+        const path14 = `${endpointsApiSubPath}/${id}`;
+        const result = await this.sendTunnelRequest("DELETE", tunnel, hostAccessTokenScope, path14, void 0, options, void 0, true, cancellation);
         if (result && tunnel.endpoints) {
           tunnel.endpoints = tunnel.endpoints.filter((e) => e.id !== id);
         }
@@ -31520,8 +31542,8 @@ var require_tunnelManagementHttpClient = __commonJS({
       }
       async getTunnelPort(tunnel, portNumber, options, cancellation) {
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingGetTunnelPort);
-        const path11 = `${portsApiSubPath}/${portNumber}`;
-        const result = await this.sendTunnelRequest("GET", tunnel, readAccessTokenScopes, path11, void 0, options, void 0, void 0, cancellation);
+        const path14 = `${portsApiSubPath}/${portNumber}`;
+        const result = await this.sendTunnelRequest("GET", tunnel, readAccessTokenScopes, path14, void 0, options, void 0, void 0, cancellation);
         parseTunnelPortDates(result);
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.CompletedGetTunnelPort);
         return result;
@@ -31529,11 +31551,11 @@ var require_tunnelManagementHttpClient = __commonJS({
       async createTunnelPort(tunnel, tunnelPort, options, cancellation) {
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingCreateTunnelPort);
         tunnelPort = this.convertTunnelPortForRequest(tunnel, tunnelPort);
-        const path11 = `${portsApiSubPath}/${tunnelPort.portNumber}`;
+        const path14 = `${portsApiSubPath}/${tunnelPort.portNumber}`;
         options = options || {};
         options.additionalHeaders = options.additionalHeaders || {};
         options.additionalHeaders["If-Not-Match"] = "*";
-        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path11, void 0, options, tunnelPort, void 0, cancellation);
+        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path14, void 0, options, tunnelPort, void 0, cancellation);
         tunnel.ports = tunnel.ports || [];
         tunnel.ports = tunnel.ports.filter((p) => p.portNumber !== tunnelPort.portNumber).concat(result).sort(comparePorts);
         parseTunnelPortDates(result);
@@ -31548,9 +31570,9 @@ var require_tunnelManagementHttpClient = __commonJS({
         options.additionalHeaders = options.additionalHeaders || {};
         options.additionalHeaders["If-Match"] = "*";
         const portNumber = tunnelPort.portNumber;
-        const path11 = `${portsApiSubPath}/${portNumber}`;
+        const path14 = `${portsApiSubPath}/${portNumber}`;
         tunnelPort = this.convertTunnelPortForRequest(tunnel, tunnelPort);
-        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path11, void 0, options, tunnelPort, void 0, cancellation);
+        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path14, void 0, options, tunnelPort, void 0, cancellation);
         preserveAccessTokens(tunnelPort, result);
         parseTunnelPortDates(result);
         tunnel.ports = tunnel.ports || [];
@@ -31559,16 +31581,16 @@ var require_tunnelManagementHttpClient = __commonJS({
       }
       async createOrUpdateTunnelPort(tunnel, tunnelPort, options, cancellation) {
         tunnelPort = this.convertTunnelPortForRequest(tunnel, tunnelPort);
-        const path11 = `${portsApiSubPath}/${tunnelPort.portNumber}`;
-        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path11, void 0, options, tunnelPort, void 0, cancellation);
+        const path14 = `${portsApiSubPath}/${tunnelPort.portNumber}`;
+        const result = await this.sendTunnelRequest("PUT", tunnel, managePortsAccessTokenScopes, path14, void 0, options, tunnelPort, void 0, cancellation);
         tunnel.ports = tunnel.ports || [];
         tunnel.ports = tunnel.ports.filter((p) => p.portNumber !== tunnelPort.portNumber).concat(result).sort(comparePorts);
         parseTunnelPortDates(result);
         return result;
       }
       async deleteTunnelPort(tunnel, portNumber, options, cancellation) {
-        const path11 = `${portsApiSubPath}/${portNumber}`;
-        const result = await this.sendTunnelRequest("DELETE", tunnel, managePortsAccessTokenScopes, path11, void 0, options, void 0, true, cancellation);
+        const path14 = `${portsApiSubPath}/${portNumber}`;
+        const result = await this.sendTunnelRequest("DELETE", tunnel, managePortsAccessTokenScopes, path14, void 0, options, void 0, true, cancellation);
         if (result && tunnel.ports) {
           tunnel.ports = tunnel.ports.filter((p) => p.portNumber !== portNumber).sort(comparePorts);
         }
@@ -31594,9 +31616,9 @@ var require_tunnelManagementHttpClient = __commonJS({
        * @param isCreate Set to true if this is a tunnel create request, default is false.
        * @returns Result of the request.
        */
-      async sendTunnelRequest(method, tunnel, accessTokenScopes, path11, query, options, body, allowNotFound, cancellation, isCreate = false) {
+      async sendTunnelRequest(method, tunnel, accessTokenScopes, path14, query, options, body, allowNotFound, cancellation, isCreate = false) {
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingRequestUri);
-        const uri = await this.buildUriForTunnel(tunnel, path11, query, options, isCreate);
+        const uri = await this.buildUriForTunnel(tunnel, path14, query, options, isCreate);
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingRequestConfig);
         const config = await this.getAxiosRequestConfig(tunnel, options, accessTokenScopes);
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingSendTunnelRequest);
@@ -31627,9 +31649,9 @@ var require_tunnelManagementHttpClient = __commonJS({
        * @param cancellationToken Optional cancellation token for the request.
        * @returns Result of the request.
        */
-      async sendRequest(method, clusterId, path11, query, options, body, allowNotFound, cancellation) {
+      async sendRequest(method, clusterId, path14, query, options, body, allowNotFound, cancellation) {
         this.raiseReportProgress(dev_tunnels_contracts_1.TunnelProgress.StartingSendTunnelRequest);
-        const uri = await this.buildUri(clusterId, path11, query, options);
+        const uri = await this.buildUri(clusterId, path14, query, options);
         const config = await this.getAxiosRequestConfig(void 0, options);
         try {
           const result = await this.request(method, uri, body, config, allowNotFound, cancellation);
@@ -31769,7 +31791,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
         return errorMessage;
       }
       // Helper functions
-      async buildUri(clusterId, path11, query, options) {
+      async buildUri(clusterId, path14, query, options) {
         if (clusterId === void 0 && this.userTokenCallback) {
           let token = await this.userTokenCallback();
           if (token && token.startsWith("tunnelplan")) {
@@ -31793,7 +31815,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
           }
           baseAddress = url.toString();
         }
-        baseAddress = `${baseAddress.replace(/\/$/, "")}${path11}`;
+        baseAddress = `${baseAddress.replace(/\/$/, "")}${path14}`;
         const optionsQuery = this.tunnelRequestOptionsToQueryString(options, query);
         if (optionsQuery) {
           baseAddress += `?${optionsQuery}`;
@@ -31810,7 +31832,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
           return `${clusterId}.${hostname}`;
         }
       }
-      buildUriForTunnel(tunnel, path11, query, options, isCreate = false) {
+      buildUriForTunnel(tunnel, path14, query, options, isCreate = false) {
         let tunnelPath = "";
         if ((tunnel.clusterId || isCreate) && tunnel.tunnelId) {
           tunnelPath = `${tunnelsApiPath}/${tunnel.tunnelId}`;
@@ -31826,7 +31848,7 @@ Request ID: ${error.response.headers[requestIdHeaderName]}`;
             }
           }
         }
-        return this.buildUri(tunnel.clusterId, tunnelPath + (path11 ? path11 : ""), query, options);
+        return this.buildUri(tunnel.clusterId, tunnelPath + (path14 ? path14 : ""), query, options);
       }
       async getAxiosRequestConfig(tunnel, options, accessTokenScopes) {
         const headers = {};
@@ -32202,8 +32224,8 @@ var require_utils = __commonJS({
       }
     };
     exports2.List = List;
-    function delay2(milliseconds, cancellation) {
-      return new Promise((resolve8, reject) => {
+    function delay3(milliseconds, cancellation) {
+      return new Promise((resolve10, reject) => {
         let cancellationDisposable;
         let timeout = void 0;
         if (cancellation) {
@@ -32221,11 +32243,11 @@ var require_utils = __commonJS({
         }
         timeout = setTimeout(() => {
           cancellationDisposable === null || cancellationDisposable === void 0 ? void 0 : cancellationDisposable.dispose();
-          resolve8();
+          resolve10();
         }, milliseconds);
       });
     }
-    exports2.delay = delay2;
+    exports2.delay = delay3;
     function getErrorMessage2(e) {
       var _a2;
       return String((_a2 = e === null || e === void 0 ? void 0 : e.message) !== null && _a2 !== void 0 ? _a2 : e);
@@ -32241,7 +32263,7 @@ var require_utils = __commonJS({
       }
       return Promise.race([
         promise2,
-        new Promise((resolve8, reject) => {
+        new Promise((resolve10, reject) => {
           if (cancellation.isCancellationRequested) {
             reject(new dev_tunnels_ssh_1.CancellationError());
           } else {
@@ -32466,7 +32488,7 @@ var require_multiModeTunnelClient = __commonJS({
         if (!tunnel) {
           throw new Error("Tunnel cannot be null");
         }
-        return new Promise((resolve8) => {
+        return new Promise((resolve10) => {
         });
       }
       get portForwarding() {
@@ -32719,7 +32741,7 @@ var require_retryTcpListenerFactory = __commonJS({
         for (let offset = 0; ; offset++) {
           const localPortNumber = offset === maxOffset ? 0 : localPort + offset;
           try {
-            return await new Promise((resolve8, reject) => {
+            return await new Promise((resolve10, reject) => {
               listener.listen({
                 host: localIPAddress,
                 port: localPortNumber,
@@ -32730,7 +32752,7 @@ var require_retryTcpListenerFactory = __commonJS({
                   const { address, port } = listener.address();
                   console.log(`Forwarding from ${address}:${port} to host port ${remotePort}.`);
                 }
-                resolve8(listener);
+                resolve10(listener);
               });
               listener.on("error", (err) => {
                 reject(err);
@@ -33273,7 +33295,7 @@ var require_node_gyp_build = __commonJS({
   "../../node_modules/node-gyp-build/node-gyp-build.js"(exports2, module2) {
     "use strict";
     var fs10 = require("fs");
-    var path11 = require("path");
+    var path14 = require("path");
     var os5 = require("os");
     var runtimeRequire = typeof __webpack_require__ === "function" ? __non_webpack_require__ : require;
     var vars = process.config && process.config.variables || {};
@@ -33290,21 +33312,21 @@ var require_node_gyp_build = __commonJS({
       return runtimeRequire(load.resolve(dir));
     }
     load.resolve = load.path = function(dir) {
-      dir = path11.resolve(dir || ".");
+      dir = path14.resolve(dir || ".");
       try {
-        var name = runtimeRequire(path11.join(dir, "package.json")).name.toUpperCase().replace(/-/g, "_");
+        var name = runtimeRequire(path14.join(dir, "package.json")).name.toUpperCase().replace(/-/g, "_");
         if (process.env[name + "_PREBUILD"]) dir = process.env[name + "_PREBUILD"];
       } catch (err) {
       }
       if (!prebuildsOnly) {
-        var release = getFirst(path11.join(dir, "build/Release"), matchBuild);
+        var release = getFirst(path14.join(dir, "build/Release"), matchBuild);
         if (release) return release;
-        var debug2 = getFirst(path11.join(dir, "build/Debug"), matchBuild);
+        var debug2 = getFirst(path14.join(dir, "build/Debug"), matchBuild);
         if (debug2) return debug2;
       }
-      var prebuild = resolve8(dir);
+      var prebuild = resolve10(dir);
       if (prebuild) return prebuild;
-      var nearby = resolve8(path11.dirname(process.execPath));
+      var nearby = resolve10(path14.dirname(process.execPath));
       if (nearby) return nearby;
       var target = [
         "platform=" + platform,
@@ -33320,15 +33342,15 @@ var require_node_gyp_build = __commonJS({
         // eslint-disable-line
       ].filter(Boolean).join(" ");
       throw new Error("No native build was found for " + target + "\n    loaded from: " + dir + "\n");
-      function resolve8(dir2) {
-        var tuples = readdirSync(path11.join(dir2, "prebuilds")).map(parseTuple);
+      function resolve10(dir2) {
+        var tuples = readdirSync(path14.join(dir2, "prebuilds")).map(parseTuple);
         var tuple = tuples.filter(matchTuple(platform, arch)).sort(compareTuples)[0];
         if (!tuple) return;
-        var prebuilds = path11.join(dir2, "prebuilds", tuple.name);
+        var prebuilds = path14.join(dir2, "prebuilds", tuple.name);
         var parsed = readdirSync(prebuilds).map(parseTags);
         var candidates = parsed.filter(matchTags(runtime, abi));
         var winner = candidates.sort(compareTags(runtime))[0];
-        if (winner) return path11.join(prebuilds, winner.file);
+        if (winner) return path14.join(prebuilds, winner.file);
       }
     };
     function readdirSync(dir) {
@@ -33340,7 +33362,7 @@ var require_node_gyp_build = __commonJS({
     }
     function getFirst(dir, filter) {
       var files = readdirSync(dir).filter(filter);
-      return files[0] && path11.join(dir, files[0]);
+      return files[0] && path14.join(dir, files[0]);
     }
     function matchBuild(name) {
       return /\.node$/.test(name);
@@ -33701,13 +33723,13 @@ var require_FastBufferList = __commonJS({
   "../../node_modules/websocket/vendor/FastBufferList.js"(exports2, module2) {
     "use strict";
     var Buffer3 = require("buffer").Buffer;
-    var EventEmitter4 = require("events").EventEmitter;
+    var EventEmitter3 = require("events").EventEmitter;
     var bufferAllocUnsafe = require_utils2().bufferAllocUnsafe;
     module2.exports = BufferList;
     module2.exports.BufferList = BufferList;
     function BufferList(opts) {
       if (!(this instanceof BufferList)) return new BufferList(opts);
-      EventEmitter4.call(this);
+      EventEmitter3.call(this);
       var self2 = this;
       if (typeof opts == "undefined") opts = {};
       self2.encoding = opts.encoding;
@@ -33832,7 +33854,7 @@ var require_FastBufferList = __commonJS({
         return self2.take("binary");
       };
     }
-    require("util").inherits(BufferList, EventEmitter4);
+    require("util").inherits(BufferList, EventEmitter3);
   }
 });
 
@@ -33891,7 +33913,7 @@ var require_WebSocketConnection = __commonJS({
     "use strict";
     var util2 = require("util");
     var utils = require_utils2();
-    var EventEmitter4 = require("events").EventEmitter;
+    var EventEmitter3 = require("events").EventEmitter;
     var WebSocketFrame = require_WebSocketFrame();
     var BufferList = require_FastBufferList();
     var isValidUTF8 = require_utf_8_validate();
@@ -33909,7 +33931,7 @@ var require_WebSocketConnection = __commonJS({
       if (this._debug.enabled) {
         instrumentSocketForDebugging(this, socket);
       }
-      EventEmitter4.call(this);
+      EventEmitter3.call(this);
       this._pingListenerCount = 0;
       this.on("newListener", function(ev) {
         if (ev === "ping") {
@@ -34013,7 +34035,7 @@ var require_WebSocketConnection = __commonJS({
         return false;
       }
     }
-    util2.inherits(WebSocketConnection, EventEmitter4);
+    util2.inherits(WebSocketConnection, EventEmitter3);
     WebSocketConnection.prototype._addSocketEventListeners = function() {
       this.socket.on("error", this.handleSocketError.bind(this));
       this.socket.on("end", this.handleSocketEnd.bind(this));
@@ -34613,7 +34635,7 @@ var require_WebSocketRequest = __commonJS({
     var crypto2 = require("crypto");
     var util2 = require("util");
     var url = require("url");
-    var EventEmitter4 = require("events").EventEmitter;
+    var EventEmitter3 = require("events").EventEmitter;
     var WebSocketConnection = require_WebSocketConnection();
     var headerValueSplitRegExp = /,\s*/;
     var headerParamSplitRegExp = /;\s*/;
@@ -34695,7 +34717,7 @@ var require_WebSocketRequest = __commonJS({
       505: "HTTP Version Not Supported"
     };
     function WebSocketRequest(socket, httpRequest, serverConfig) {
-      EventEmitter4.call(this);
+      EventEmitter3.call(this);
       this.socket = socket;
       this.httpRequest = httpRequest;
       this.resource = httpRequest.url;
@@ -34708,7 +34730,7 @@ var require_WebSocketRequest = __commonJS({
       this.socket.on("close", this._socketCloseHandler);
       this._resolved = false;
     }
-    util2.inherits(WebSocketRequest, EventEmitter4);
+    util2.inherits(WebSocketRequest, EventEmitter3);
     WebSocketRequest.prototype.readHandshake = function() {
       var self2 = this;
       var request = this.httpRequest;
@@ -35030,10 +35052,10 @@ var require_WebSocketServer = __commonJS({
     var utils = require_utils2();
     var util2 = require("util");
     var debug2 = require_src2()("websocket:server");
-    var EventEmitter4 = require("events").EventEmitter;
+    var EventEmitter3 = require("events").EventEmitter;
     var WebSocketRequest = require_WebSocketRequest();
     var WebSocketServer = function WebSocketServer2(config) {
-      EventEmitter4.call(this);
+      EventEmitter3.call(this);
       this._handlers = {
         upgrade: this.handleUpgrade.bind(this),
         requestAccepted: this.handleRequestAccepted.bind(this),
@@ -35045,7 +35067,7 @@ var require_WebSocketServer = __commonJS({
         this.mount(config);
       }
     };
-    util2.inherits(WebSocketServer, EventEmitter4);
+    util2.inherits(WebSocketServer, EventEmitter3);
     WebSocketServer.prototype.mount = function(config) {
       this.config = {
         // The http server instance to attach to.  Required.
@@ -35237,7 +35259,7 @@ var require_WebSocketClient = __commonJS({
     var utils = require_utils2();
     var extend = utils.extend;
     var util2 = require("util");
-    var EventEmitter4 = require("events").EventEmitter;
+    var EventEmitter3 = require("events").EventEmitter;
     var http = require("http");
     var https = require("https");
     var url = require("url");
@@ -35267,7 +35289,7 @@ var require_WebSocketClient = __commonJS({
     ];
     var excludedTlsOptions = ["hostname", "port", "method", "path", "headers"];
     function WebSocketClient(config) {
-      EventEmitter4.call(this);
+      EventEmitter3.call(this);
       this.config = {
         // 1MiB max frame size.
         maxReceivedFrameSize: 1048576,
@@ -35328,7 +35350,7 @@ var require_WebSocketClient = __commonJS({
           throw new Error("Requested webSocketVersion is not supported. Allowed values are 8 and 13.");
       }
     }
-    util2.inherits(WebSocketClient, EventEmitter4);
+    util2.inherits(WebSocketClient, EventEmitter3);
     WebSocketClient.prototype.connect = function(requestUrl, protocols, origin, headers, extraRequestOptions) {
       var self2 = this;
       if (typeof protocols === "string") {
@@ -35531,9 +35553,9 @@ var require_WebSocketRouterRequest = __commonJS({
   "../../node_modules/websocket/lib/WebSocketRouterRequest.js"(exports2, module2) {
     "use strict";
     var util2 = require("util");
-    var EventEmitter4 = require("events").EventEmitter;
+    var EventEmitter3 = require("events").EventEmitter;
     function WebSocketRouterRequest(webSocketRequest, resolvedProtocol) {
-      EventEmitter4.call(this);
+      EventEmitter3.call(this);
       this.webSocketRequest = webSocketRequest;
       if (resolvedProtocol === "____no_protocol____") {
         this.protocol = null;
@@ -35549,7 +35571,7 @@ var require_WebSocketRouterRequest = __commonJS({
       this.requestedExtensions = webSocketRequest.requestedExtensions;
       this.cookies = webSocketRequest.cookies;
     }
-    util2.inherits(WebSocketRouterRequest, EventEmitter4);
+    util2.inherits(WebSocketRouterRequest, EventEmitter3);
     WebSocketRouterRequest.prototype.accept = function(origin, cookies) {
       var connection = this.webSocketRequest.accept(this.protocol, origin, cookies);
       this.emit("requestAccepted", connection);
@@ -35569,10 +35591,10 @@ var require_WebSocketRouter = __commonJS({
     "use strict";
     var extend = require_utils2().extend;
     var util2 = require("util");
-    var EventEmitter4 = require("events").EventEmitter;
+    var EventEmitter3 = require("events").EventEmitter;
     var WebSocketRouterRequest = require_WebSocketRouterRequest();
     function WebSocketRouter(config) {
-      EventEmitter4.call(this);
+      EventEmitter3.call(this);
       this.config = {
         // The WebSocketServer instance to attach to.
         server: null
@@ -35586,7 +35608,7 @@ var require_WebSocketRouter = __commonJS({
         this.attachServer(this.config.server);
       }
     }
-    util2.inherits(WebSocketRouter, EventEmitter4);
+    util2.inherits(WebSocketRouter, EventEmitter3);
     WebSocketRouter.prototype.attachServer = function(server) {
       if (server) {
         this.server = server;
@@ -35603,8 +35625,8 @@ var require_WebSocketRouter = __commonJS({
         throw new Error("Cannot detach from server: not attached.");
       }
     };
-    WebSocketRouter.prototype.mount = function(path11, protocol, callback2) {
-      if (!path11) {
+    WebSocketRouter.prototype.mount = function(path14, protocol, callback2) {
+      if (!path14) {
         throw new Error("You must specify a path for this handler.");
       }
       if (!protocol) {
@@ -35613,24 +35635,24 @@ var require_WebSocketRouter = __commonJS({
       if (!callback2) {
         throw new Error("You must specify a callback for this handler.");
       }
-      path11 = this.pathToRegExp(path11);
-      if (!(path11 instanceof RegExp)) {
+      path14 = this.pathToRegExp(path14);
+      if (!(path14 instanceof RegExp)) {
         throw new Error("Path must be specified as either a string or a RegExp.");
       }
-      var pathString = path11.toString();
+      var pathString = path14.toString();
       protocol = protocol.toLocaleLowerCase();
       if (this.findHandlerIndex(pathString, protocol) !== -1) {
         throw new Error("You may only mount one handler per path/protocol combination.");
       }
       this.handlers.push({
-        "path": path11,
+        "path": path14,
         "pathString": pathString,
         "protocol": protocol,
         "callback": callback2
       });
     };
-    WebSocketRouter.prototype.unmount = function(path11, protocol) {
-      var index = this.findHandlerIndex(this.pathToRegExp(path11).toString(), protocol);
+    WebSocketRouter.prototype.unmount = function(path14, protocol) {
+      var index = this.findHandlerIndex(this.pathToRegExp(path14).toString(), protocol);
       if (index !== -1) {
         this.handlers.splice(index, 1);
       } else {
@@ -35647,16 +35669,16 @@ var require_WebSocketRouter = __commonJS({
       }
       return -1;
     };
-    WebSocketRouter.prototype.pathToRegExp = function(path11) {
-      if (typeof path11 === "string") {
-        if (path11 === "*") {
-          path11 = /^.*$/;
+    WebSocketRouter.prototype.pathToRegExp = function(path14) {
+      if (typeof path14 === "string") {
+        if (path14 === "*") {
+          path14 = /^.*$/;
         } else {
-          path11 = path11.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
-          path11 = new RegExp("^" + path11 + "$");
+          path14 = path14.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+          path14 = new RegExp("^" + path14 + "$");
         }
       }
-      return path11;
+      return path14;
     };
     WebSocketRouter.prototype.handleRequest = function(request) {
       var requestedProtocols = request.requestedProtocols;
@@ -36212,10 +36234,10 @@ var require_sshHelpers = __commonJS({
        */
       static webSshStreamFactory(socket) {
         socket.binaryType = "arraybuffer";
-        return new Promise((resolve8, reject) => {
+        return new Promise((resolve10, reject) => {
           const relayError = "Failed to connect to relay url";
           socket.onopen = () => {
-            resolve8(new ssh.WebSocketStream(socket));
+            resolve10(new ssh.WebSocketStream(socket));
           };
           socket.onerror = (e) => {
             setTimeout(() => reject(new BrowserWebSocketRelayError(relayError)), 100);
@@ -36237,9 +36259,9 @@ var require_sshHelpers = __commonJS({
       }
       static nodeSshStreamFactory(relayUri, protocols, headers, clientConfig) {
         const client = new websocket_1.client(clientConfig);
-        return new Promise((resolve8, reject) => {
+        return new Promise((resolve10, reject) => {
           client.on("connect", (connection) => {
-            resolve8(new ssh.WebSocketStream(new WebsocketStreamAdapter(connection)));
+            resolve10(new ssh.WebSocketStream(new WebsocketStreamAdapter(connection)));
           });
           client.on("httpResponse", ({ statusCode, statusMessage }) => {
             var _a2;
@@ -36436,8 +36458,8 @@ var require_sshClient = __commonJS({
       }
       async openConnection(serverHost, serverPort, cancellation) {
         const socket = new net2.Socket();
-        await new Promise((resolve8, reject) => {
-          socket.on("connect", resolve8);
+        await new Promise((resolve10, reject) => {
+          socket.on("connect", resolve10);
           socket.on("error", reject);
           if (cancellation) {
             if (cancellation.isCancellationRequested) {
@@ -36480,14 +36502,14 @@ var require_tcpListenerFactory = __commonJS({
         if (!Number.isInteger(localPort) || localPort < 0)
           throw new TypeError("Local port must be a non-negative integer.");
         const listener = net2.createServer();
-        await new Promise((resolve8, reject) => {
+        await new Promise((resolve10, reject) => {
           listener.listen({
             host: localIPAddress,
             port: localPort,
             ipv6Only: net2.isIPv6(localIPAddress),
             exclusive: false
           });
-          listener.on("listening", resolve8);
+          listener.on("listening", resolve10);
           listener.on("error", reject);
         });
         return listener;
@@ -38923,21 +38945,21 @@ var require_tunnelRelayTunnelClient = __commonJS({
         const relayResponseMessage = channel.openConfirmationMessage.convertTo(new portRelayConnectResponseMessage_1.PortRelayConnectResponseMessage());
         if (relayResponseMessage.isE2EEncryptionEnabled) {
           const clientCredentials = { username: "tunnel" };
-          e.transformPromise = new Promise((resolve8, reject) => {
+          e.transformPromise = new Promise((resolve10, reject) => {
             var _a2;
             let secureStream = (_a2 = this.disconnectedStreams.get(e.port)) === null || _a2 === void 0 ? void 0 : _a2.shift();
             if (secureStream) {
               this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, `Reconnecting encrypted stream for port ${e.port}...`);
               secureStream.reconnect(e.stream).then(() => {
                 this.trace(dev_tunnels_ssh_1.TraceLevel.Verbose, 0, `Reconnecting encrypted stream for port ${e.port} succeeded.`);
-                resolve8(secureStream);
+                resolve10(secureStream);
               }).catch(reject);
             } else {
               secureStream = new dev_tunnels_ssh_1.SecureStream(e.stream, clientCredentials);
               secureStream.trace = this.trace;
               secureStream.onAuthenticating((authEvent) => authEvent.authenticationPromise = this.onHostAuthenticating(authEvent).catch());
               secureStream.onDisconnected(() => this.onSecureStreamDisconnected(e.port, secureStream));
-              secureStream.connect().then(() => resolve8(secureStream)).catch(reject);
+              secureStream.connect().then(() => resolve10(secureStream)).catch(reject);
             }
           });
         }
@@ -39593,1521 +39615,3259 @@ var require_dev_tunnels_connections = __commonJS({
   }
 });
 
-// ../../node_modules/picomatch/lib/constants.js
-var require_constants = __commonJS({
-  "../../node_modules/picomatch/lib/constants.js"(exports2, module2) {
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/is.js
+var require_is2 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/is.js"(exports2) {
     "use strict";
-    var WIN_SLASH = "\\\\/";
-    var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
-    var DOT_LITERAL = "\\.";
-    var PLUS_LITERAL = "\\+";
-    var QMARK_LITERAL = "\\?";
-    var SLASH_LITERAL = "\\/";
-    var ONE_CHAR = "(?=.)";
-    var QMARK = "[^/]";
-    var END_ANCHOR = `(?:${SLASH_LITERAL}|$)`;
-    var START_ANCHOR = `(?:^|${SLASH_LITERAL})`;
-    var DOTS_SLASH = `${DOT_LITERAL}{1,2}${END_ANCHOR}`;
-    var NO_DOT = `(?!${DOT_LITERAL})`;
-    var NO_DOTS = `(?!${START_ANCHOR}${DOTS_SLASH})`;
-    var NO_DOT_SLASH = `(?!${DOT_LITERAL}{0,1}${END_ANCHOR})`;
-    var NO_DOTS_SLASH = `(?!${DOTS_SLASH})`;
-    var QMARK_NO_DOT = `[^.${SLASH_LITERAL}]`;
-    var STAR = `${QMARK}*?`;
-    var SEP = "/";
-    var POSIX_CHARS = {
-      DOT_LITERAL,
-      PLUS_LITERAL,
-      QMARK_LITERAL,
-      SLASH_LITERAL,
-      ONE_CHAR,
-      QMARK,
-      END_ANCHOR,
-      DOTS_SLASH,
-      NO_DOT,
-      NO_DOTS,
-      NO_DOT_SLASH,
-      NO_DOTS_SLASH,
-      QMARK_NO_DOT,
-      STAR,
-      START_ANCHOR,
-      SEP
-    };
-    var WINDOWS_CHARS = {
-      ...POSIX_CHARS,
-      SLASH_LITERAL: `[${WIN_SLASH}]`,
-      QMARK: WIN_NO_SLASH,
-      STAR: `${WIN_NO_SLASH}*?`,
-      DOTS_SLASH: `${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$)`,
-      NO_DOT: `(?!${DOT_LITERAL})`,
-      NO_DOTS: `(?!(?:^|[${WIN_SLASH}])${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$))`,
-      NO_DOT_SLASH: `(?!${DOT_LITERAL}{0,1}(?:[${WIN_SLASH}]|$))`,
-      NO_DOTS_SLASH: `(?!${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$))`,
-      QMARK_NO_DOT: `[^.${WIN_SLASH}]`,
-      START_ANCHOR: `(?:^|[${WIN_SLASH}])`,
-      END_ANCHOR: `(?:[${WIN_SLASH}]|$)`,
-      SEP: "\\"
-    };
-    var POSIX_REGEX_SOURCE = {
-      alnum: "a-zA-Z0-9",
-      alpha: "a-zA-Z",
-      ascii: "\\x00-\\x7F",
-      blank: " \\t",
-      cntrl: "\\x00-\\x1F\\x7F",
-      digit: "0-9",
-      graph: "\\x21-\\x7E",
-      lower: "a-z",
-      print: "\\x20-\\x7E ",
-      punct: "\\-!\"#$%&'()\\*+,./:;<=>?@[\\]^_`{|}~",
-      space: " \\t\\r\\n\\v\\f",
-      upper: "A-Z",
-      word: "A-Za-z0-9_",
-      xdigit: "A-Fa-f0-9"
-    };
-    module2.exports = {
-      MAX_LENGTH: 1024 * 64,
-      POSIX_REGEX_SOURCE,
-      // regular expressions
-      REGEX_BACKSLASH: /\\(?![*+?^${}(|)[\]])/g,
-      REGEX_NON_SPECIAL_CHARS: /^[^@![\].,$*+?^{}()|\\/]+/,
-      REGEX_SPECIAL_CHARS: /[-*+?.^${}(|)[\]]/,
-      REGEX_SPECIAL_CHARS_BACKREF: /(\\?)((\W)(\3*))/g,
-      REGEX_SPECIAL_CHARS_GLOBAL: /([-*+?.^${}(|)[\]])/g,
-      REGEX_REMOVE_BACKSLASH: /(?:\[.*?[^\\]\]|\\(?=.))/g,
-      // Replace globs with equivalent patterns to reduce parsing time.
-      REPLACEMENTS: {
-        __proto__: null,
-        "***": "*",
-        "**/**": "**",
-        "**/**/**": "**"
-      },
-      // Digits
-      CHAR_0: 48,
-      /* 0 */
-      CHAR_9: 57,
-      /* 9 */
-      // Alphabet chars.
-      CHAR_UPPERCASE_A: 65,
-      /* A */
-      CHAR_LOWERCASE_A: 97,
-      /* a */
-      CHAR_UPPERCASE_Z: 90,
-      /* Z */
-      CHAR_LOWERCASE_Z: 122,
-      /* z */
-      CHAR_LEFT_PARENTHESES: 40,
-      /* ( */
-      CHAR_RIGHT_PARENTHESES: 41,
-      /* ) */
-      CHAR_ASTERISK: 42,
-      /* * */
-      // Non-alphabetic chars.
-      CHAR_AMPERSAND: 38,
-      /* & */
-      CHAR_AT: 64,
-      /* @ */
-      CHAR_BACKWARD_SLASH: 92,
-      /* \ */
-      CHAR_CARRIAGE_RETURN: 13,
-      /* \r */
-      CHAR_CIRCUMFLEX_ACCENT: 94,
-      /* ^ */
-      CHAR_COLON: 58,
-      /* : */
-      CHAR_COMMA: 44,
-      /* , */
-      CHAR_DOT: 46,
-      /* . */
-      CHAR_DOUBLE_QUOTE: 34,
-      /* " */
-      CHAR_EQUAL: 61,
-      /* = */
-      CHAR_EXCLAMATION_MARK: 33,
-      /* ! */
-      CHAR_FORM_FEED: 12,
-      /* \f */
-      CHAR_FORWARD_SLASH: 47,
-      /* / */
-      CHAR_GRAVE_ACCENT: 96,
-      /* ` */
-      CHAR_HASH: 35,
-      /* # */
-      CHAR_HYPHEN_MINUS: 45,
-      /* - */
-      CHAR_LEFT_ANGLE_BRACKET: 60,
-      /* < */
-      CHAR_LEFT_CURLY_BRACE: 123,
-      /* { */
-      CHAR_LEFT_SQUARE_BRACKET: 91,
-      /* [ */
-      CHAR_LINE_FEED: 10,
-      /* \n */
-      CHAR_NO_BREAK_SPACE: 160,
-      /* \u00A0 */
-      CHAR_PERCENT: 37,
-      /* % */
-      CHAR_PLUS: 43,
-      /* + */
-      CHAR_QUESTION_MARK: 63,
-      /* ? */
-      CHAR_RIGHT_ANGLE_BRACKET: 62,
-      /* > */
-      CHAR_RIGHT_CURLY_BRACE: 125,
-      /* } */
-      CHAR_RIGHT_SQUARE_BRACKET: 93,
-      /* ] */
-      CHAR_SEMICOLON: 59,
-      /* ; */
-      CHAR_SINGLE_QUOTE: 39,
-      /* ' */
-      CHAR_SPACE: 32,
-      /*   */
-      CHAR_TAB: 9,
-      /* \t */
-      CHAR_UNDERSCORE: 95,
-      /* _ */
-      CHAR_VERTICAL_LINE: 124,
-      /* | */
-      CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
-      /* \uFEFF */
-      /**
-       * Create EXTGLOB_CHARS
-       */
-      extglobChars(chars) {
-        return {
-          "!": { type: "negate", open: "(?:(?!(?:", close: `))${chars.STAR})` },
-          "?": { type: "qmark", open: "(?:", close: ")?" },
-          "+": { type: "plus", open: "(?:", close: ")+" },
-          "*": { type: "star", open: "(?:", close: ")*" },
-          "@": { type: "at", open: "(?:", close: ")" }
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.stringArray = exports2.array = exports2.func = exports2.error = exports2.number = exports2.string = exports2.boolean = void 0;
+    function boolean(value) {
+      return value === true || value === false;
+    }
+    exports2.boolean = boolean;
+    function string(value) {
+      return typeof value === "string" || value instanceof String;
+    }
+    exports2.string = string;
+    function number(value) {
+      return typeof value === "number" || value instanceof Number;
+    }
+    exports2.number = number;
+    function error(value) {
+      return value instanceof Error;
+    }
+    exports2.error = error;
+    function func(value) {
+      return typeof value === "function";
+    }
+    exports2.func = func;
+    function array(value) {
+      return Array.isArray(value);
+    }
+    exports2.array = array;
+    function stringArray(value) {
+      return array(value) && value.every((elem) => string(elem));
+    }
+    exports2.stringArray = stringArray;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messages.js
+var require_messages2 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messages.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Message = exports2.NotificationType9 = exports2.NotificationType8 = exports2.NotificationType7 = exports2.NotificationType6 = exports2.NotificationType5 = exports2.NotificationType4 = exports2.NotificationType3 = exports2.NotificationType2 = exports2.NotificationType1 = exports2.NotificationType0 = exports2.NotificationType = exports2.RequestType9 = exports2.RequestType8 = exports2.RequestType7 = exports2.RequestType6 = exports2.RequestType5 = exports2.RequestType4 = exports2.RequestType3 = exports2.RequestType2 = exports2.RequestType1 = exports2.RequestType = exports2.RequestType0 = exports2.AbstractMessageSignature = exports2.ParameterStructures = exports2.ResponseError = exports2.ErrorCodes = void 0;
+    var is = require_is2();
+    var ErrorCodes;
+    (function(ErrorCodes2) {
+      ErrorCodes2.ParseError = -32700;
+      ErrorCodes2.InvalidRequest = -32600;
+      ErrorCodes2.MethodNotFound = -32601;
+      ErrorCodes2.InvalidParams = -32602;
+      ErrorCodes2.InternalError = -32603;
+      ErrorCodes2.jsonrpcReservedErrorRangeStart = -32099;
+      ErrorCodes2.serverErrorStart = -32099;
+      ErrorCodes2.MessageWriteError = -32099;
+      ErrorCodes2.MessageReadError = -32098;
+      ErrorCodes2.PendingResponseRejected = -32097;
+      ErrorCodes2.ConnectionInactive = -32096;
+      ErrorCodes2.ServerNotInitialized = -32002;
+      ErrorCodes2.UnknownErrorCode = -32001;
+      ErrorCodes2.jsonrpcReservedErrorRangeEnd = -32e3;
+      ErrorCodes2.serverErrorEnd = -32e3;
+    })(ErrorCodes || (exports2.ErrorCodes = ErrorCodes = {}));
+    var ResponseError = class _ResponseError extends Error {
+      constructor(code, message, data) {
+        super(message);
+        this.code = is.number(code) ? code : ErrorCodes.UnknownErrorCode;
+        this.data = data;
+        Object.setPrototypeOf(this, _ResponseError.prototype);
+      }
+      toJson() {
+        const result = {
+          code: this.code,
+          message: this.message
         };
-      },
-      /**
-       * Create GLOB_CHARS
-       */
-      globChars(win32) {
-        return win32 === true ? WINDOWS_CHARS : POSIX_CHARS;
+        if (this.data !== void 0) {
+          result.data = this.data;
+        }
+        return result;
       }
     };
+    exports2.ResponseError = ResponseError;
+    var ParameterStructures = class _ParameterStructures {
+      constructor(kind) {
+        this.kind = kind;
+      }
+      static is(value) {
+        return value === _ParameterStructures.auto || value === _ParameterStructures.byName || value === _ParameterStructures.byPosition;
+      }
+      toString() {
+        return this.kind;
+      }
+    };
+    exports2.ParameterStructures = ParameterStructures;
+    ParameterStructures.auto = new ParameterStructures("auto");
+    ParameterStructures.byPosition = new ParameterStructures("byPosition");
+    ParameterStructures.byName = new ParameterStructures("byName");
+    var AbstractMessageSignature = class {
+      constructor(method, numberOfParams) {
+        this.method = method;
+        this.numberOfParams = numberOfParams;
+      }
+      get parameterStructures() {
+        return ParameterStructures.auto;
+      }
+    };
+    exports2.AbstractMessageSignature = AbstractMessageSignature;
+    var RequestType0 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 0);
+      }
+    };
+    exports2.RequestType0 = RequestType0;
+    var RequestType = class extends AbstractMessageSignature {
+      constructor(method, _parameterStructures = ParameterStructures.auto) {
+        super(method, 1);
+        this._parameterStructures = _parameterStructures;
+      }
+      get parameterStructures() {
+        return this._parameterStructures;
+      }
+    };
+    exports2.RequestType = RequestType;
+    var RequestType1 = class extends AbstractMessageSignature {
+      constructor(method, _parameterStructures = ParameterStructures.auto) {
+        super(method, 1);
+        this._parameterStructures = _parameterStructures;
+      }
+      get parameterStructures() {
+        return this._parameterStructures;
+      }
+    };
+    exports2.RequestType1 = RequestType1;
+    var RequestType2 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 2);
+      }
+    };
+    exports2.RequestType2 = RequestType2;
+    var RequestType3 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 3);
+      }
+    };
+    exports2.RequestType3 = RequestType3;
+    var RequestType4 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 4);
+      }
+    };
+    exports2.RequestType4 = RequestType4;
+    var RequestType5 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 5);
+      }
+    };
+    exports2.RequestType5 = RequestType5;
+    var RequestType6 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 6);
+      }
+    };
+    exports2.RequestType6 = RequestType6;
+    var RequestType7 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 7);
+      }
+    };
+    exports2.RequestType7 = RequestType7;
+    var RequestType8 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 8);
+      }
+    };
+    exports2.RequestType8 = RequestType8;
+    var RequestType9 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 9);
+      }
+    };
+    exports2.RequestType9 = RequestType9;
+    var NotificationType = class extends AbstractMessageSignature {
+      constructor(method, _parameterStructures = ParameterStructures.auto) {
+        super(method, 1);
+        this._parameterStructures = _parameterStructures;
+      }
+      get parameterStructures() {
+        return this._parameterStructures;
+      }
+    };
+    exports2.NotificationType = NotificationType;
+    var NotificationType0 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 0);
+      }
+    };
+    exports2.NotificationType0 = NotificationType0;
+    var NotificationType1 = class extends AbstractMessageSignature {
+      constructor(method, _parameterStructures = ParameterStructures.auto) {
+        super(method, 1);
+        this._parameterStructures = _parameterStructures;
+      }
+      get parameterStructures() {
+        return this._parameterStructures;
+      }
+    };
+    exports2.NotificationType1 = NotificationType1;
+    var NotificationType2 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 2);
+      }
+    };
+    exports2.NotificationType2 = NotificationType2;
+    var NotificationType3 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 3);
+      }
+    };
+    exports2.NotificationType3 = NotificationType3;
+    var NotificationType4 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 4);
+      }
+    };
+    exports2.NotificationType4 = NotificationType4;
+    var NotificationType5 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 5);
+      }
+    };
+    exports2.NotificationType5 = NotificationType5;
+    var NotificationType6 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 6);
+      }
+    };
+    exports2.NotificationType6 = NotificationType6;
+    var NotificationType7 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 7);
+      }
+    };
+    exports2.NotificationType7 = NotificationType7;
+    var NotificationType8 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 8);
+      }
+    };
+    exports2.NotificationType8 = NotificationType8;
+    var NotificationType9 = class extends AbstractMessageSignature {
+      constructor(method) {
+        super(method, 9);
+      }
+    };
+    exports2.NotificationType9 = NotificationType9;
+    var Message;
+    (function(Message2) {
+      function isRequest2(message) {
+        const candidate = message;
+        return candidate && is.string(candidate.method) && (is.string(candidate.id) || is.number(candidate.id));
+      }
+      Message2.isRequest = isRequest2;
+      function isNotification2(message) {
+        const candidate = message;
+        return candidate && is.string(candidate.method) && message.id === void 0;
+      }
+      Message2.isNotification = isNotification2;
+      function isResponse2(message) {
+        const candidate = message;
+        return candidate && (candidate.result !== void 0 || !!candidate.error) && (is.string(candidate.id) || is.number(candidate.id) || candidate.id === null);
+      }
+      Message2.isResponse = isResponse2;
+    })(Message || (exports2.Message = Message = {}));
   }
 });
 
-// ../../node_modules/picomatch/lib/utils.js
-var require_utils3 = __commonJS({
-  "../../node_modules/picomatch/lib/utils.js"(exports2) {
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/linkedMap.js
+var require_linkedMap2 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/linkedMap.js"(exports2) {
     "use strict";
-    var {
-      REGEX_BACKSLASH,
-      REGEX_REMOVE_BACKSLASH,
-      REGEX_SPECIAL_CHARS,
-      REGEX_SPECIAL_CHARS_GLOBAL
-    } = require_constants();
-    exports2.isObject = (val) => val !== null && typeof val === "object" && !Array.isArray(val);
-    exports2.hasRegexChars = (str) => REGEX_SPECIAL_CHARS.test(str);
-    exports2.isRegexChar = (str) => str.length === 1 && exports2.hasRegexChars(str);
-    exports2.escapeRegex = (str) => str.replace(REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
-    exports2.toPosixSlashes = (str) => str.replace(REGEX_BACKSLASH, "/");
-    exports2.isWindows = () => {
-      if (typeof navigator !== "undefined" && navigator.platform) {
-        const platform = navigator.platform.toLowerCase();
-        return platform === "win32" || platform === "windows";
+    var _a2;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.LRUCache = exports2.LinkedMap = exports2.Touch = void 0;
+    var Touch;
+    (function(Touch2) {
+      Touch2.None = 0;
+      Touch2.First = 1;
+      Touch2.AsOld = Touch2.First;
+      Touch2.Last = 2;
+      Touch2.AsNew = Touch2.Last;
+    })(Touch || (exports2.Touch = Touch = {}));
+    var LinkedMap = class {
+      constructor() {
+        this[_a2] = "LinkedMap";
+        this._map = /* @__PURE__ */ new Map();
+        this._head = void 0;
+        this._tail = void 0;
+        this._size = 0;
+        this._state = 0;
       }
-      if (typeof process !== "undefined" && process.platform) {
-        return process.platform === "win32";
+      clear() {
+        this._map.clear();
+        this._head = void 0;
+        this._tail = void 0;
+        this._size = 0;
+        this._state++;
       }
-      return false;
-    };
-    exports2.removeBackslashes = (str) => {
-      return str.replace(REGEX_REMOVE_BACKSLASH, (match) => {
-        return match === "\\" ? "" : match;
-      });
-    };
-    exports2.escapeLast = (input, char, lastIdx) => {
-      const idx = input.lastIndexOf(char, lastIdx);
-      if (idx === -1) return input;
-      if (input[idx - 1] === "\\") return exports2.escapeLast(input, char, idx - 1);
-      return `${input.slice(0, idx)}\\${input.slice(idx)}`;
-    };
-    exports2.removePrefix = (input, state = {}) => {
-      let output = input;
-      if (output.startsWith("./")) {
-        output = output.slice(2);
-        state.prefix = "./";
+      isEmpty() {
+        return !this._head && !this._tail;
       }
-      return output;
-    };
-    exports2.wrapOutput = (input, state = {}, options = {}) => {
-      const prepend = options.contains ? "" : "^";
-      const append2 = options.contains ? "" : "$";
-      let output = `${prepend}(?:${input})${append2}`;
-      if (state.negated === true) {
-        output = `(?:^(?!${output}).*$)`;
+      get size() {
+        return this._size;
       }
-      return output;
-    };
-    exports2.basename = (path11, { windows } = {}) => {
-      const segs = path11.split(windows ? /[\\/]/ : "/");
-      const last2 = segs[segs.length - 1];
-      if (last2 === "") {
-        return segs[segs.length - 2];
+      get first() {
+        return this._head?.value;
       }
-      return last2;
-    };
-  }
-});
-
-// ../../node_modules/picomatch/lib/scan.js
-var require_scan = __commonJS({
-  "../../node_modules/picomatch/lib/scan.js"(exports2, module2) {
-    "use strict";
-    var utils = require_utils3();
-    var {
-      CHAR_ASTERISK,
-      /* * */
-      CHAR_AT,
-      /* @ */
-      CHAR_BACKWARD_SLASH,
-      /* \ */
-      CHAR_COMMA,
-      /* , */
-      CHAR_DOT,
-      /* . */
-      CHAR_EXCLAMATION_MARK,
-      /* ! */
-      CHAR_FORWARD_SLASH,
-      /* / */
-      CHAR_LEFT_CURLY_BRACE,
-      /* { */
-      CHAR_LEFT_PARENTHESES,
-      /* ( */
-      CHAR_LEFT_SQUARE_BRACKET,
-      /* [ */
-      CHAR_PLUS,
-      /* + */
-      CHAR_QUESTION_MARK,
-      /* ? */
-      CHAR_RIGHT_CURLY_BRACE,
-      /* } */
-      CHAR_RIGHT_PARENTHESES,
-      /* ) */
-      CHAR_RIGHT_SQUARE_BRACKET
-      /* ] */
-    } = require_constants();
-    var isPathSeparator = (code) => {
-      return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
-    };
-    var depth = (token) => {
-      if (token.isPrefix !== true) {
-        token.depth = token.isGlobstar ? Infinity : 1;
+      get last() {
+        return this._tail?.value;
       }
-    };
-    var scan = (input, options) => {
-      const opts = options || {};
-      const length = input.length - 1;
-      const scanToEnd = opts.parts === true || opts.scanToEnd === true;
-      const slashes = [];
-      const tokens = [];
-      const parts = [];
-      let str = input;
-      let index = -1;
-      let start = 0;
-      let lastIndex = 0;
-      let isBrace = false;
-      let isBracket = false;
-      let isGlob = false;
-      let isExtglob = false;
-      let isGlobstar = false;
-      let braceEscaped = false;
-      let backslashes = false;
-      let negated = false;
-      let negatedExtglob = false;
-      let finished = false;
-      let braces = 0;
-      let prev;
-      let code;
-      let token = { value: "", depth: 0, isGlob: false };
-      const eos = () => index >= length;
-      const peek = () => str.charCodeAt(index + 1);
-      const advance = () => {
-        prev = code;
-        return str.charCodeAt(++index);
-      };
-      while (index < length) {
-        code = advance();
-        let next;
-        if (code === CHAR_BACKWARD_SLASH) {
-          backslashes = token.backslashes = true;
-          code = advance();
-          if (code === CHAR_LEFT_CURLY_BRACE) {
-            braceEscaped = true;
-          }
-          continue;
+      has(key) {
+        return this._map.has(key);
+      }
+      get(key, touch = Touch.None) {
+        const item = this._map.get(key);
+        if (!item) {
+          return void 0;
         }
-        if (braceEscaped === true || code === CHAR_LEFT_CURLY_BRACE) {
-          braces++;
-          while (eos() !== true && (code = advance())) {
-            if (code === CHAR_BACKWARD_SLASH) {
-              backslashes = token.backslashes = true;
-              advance();
-              continue;
-            }
-            if (code === CHAR_LEFT_CURLY_BRACE) {
-              braces++;
-              continue;
-            }
-            if (braceEscaped !== true && code === CHAR_DOT && (code = advance()) === CHAR_DOT) {
-              isBrace = token.isBrace = true;
-              isGlob = token.isGlob = true;
-              finished = true;
-              if (scanToEnd === true) {
-                continue;
-              }
+        if (touch !== Touch.None) {
+          this.touch(item, touch);
+        }
+        return item.value;
+      }
+      set(key, value, touch = Touch.None) {
+        let item = this._map.get(key);
+        if (item) {
+          item.value = value;
+          if (touch !== Touch.None) {
+            this.touch(item, touch);
+          }
+        } else {
+          item = { key, value, next: void 0, previous: void 0 };
+          switch (touch) {
+            case Touch.None:
+              this.addItemLast(item);
               break;
-            }
-            if (braceEscaped !== true && code === CHAR_COMMA) {
-              isBrace = token.isBrace = true;
-              isGlob = token.isGlob = true;
-              finished = true;
-              if (scanToEnd === true) {
-                continue;
-              }
+            case Touch.First:
+              this.addItemFirst(item);
               break;
-            }
-            if (code === CHAR_RIGHT_CURLY_BRACE) {
-              braces--;
-              if (braces === 0) {
-                braceEscaped = false;
-                isBrace = token.isBrace = true;
-                finished = true;
-                break;
-              }
-            }
-          }
-          if (scanToEnd === true) {
-            continue;
-          }
-          break;
-        }
-        if (code === CHAR_FORWARD_SLASH) {
-          slashes.push(index);
-          tokens.push(token);
-          token = { value: "", depth: 0, isGlob: false };
-          if (finished === true) continue;
-          if (prev === CHAR_DOT && index === start + 1) {
-            start += 2;
-            continue;
-          }
-          lastIndex = index + 1;
-          continue;
-        }
-        if (opts.noext !== true) {
-          const isExtglobChar = code === CHAR_PLUS || code === CHAR_AT || code === CHAR_ASTERISK || code === CHAR_QUESTION_MARK || code === CHAR_EXCLAMATION_MARK;
-          if (isExtglobChar === true && peek() === CHAR_LEFT_PARENTHESES) {
-            isGlob = token.isGlob = true;
-            isExtglob = token.isExtglob = true;
-            finished = true;
-            if (code === CHAR_EXCLAMATION_MARK && index === start) {
-              negatedExtglob = true;
-            }
-            if (scanToEnd === true) {
-              while (eos() !== true && (code = advance())) {
-                if (code === CHAR_BACKWARD_SLASH) {
-                  backslashes = token.backslashes = true;
-                  code = advance();
-                  continue;
-                }
-                if (code === CHAR_RIGHT_PARENTHESES) {
-                  isGlob = token.isGlob = true;
-                  finished = true;
-                  break;
-                }
-              }
-              continue;
-            }
-            break;
-          }
-        }
-        if (code === CHAR_ASTERISK) {
-          if (prev === CHAR_ASTERISK) isGlobstar = token.isGlobstar = true;
-          isGlob = token.isGlob = true;
-          finished = true;
-          if (scanToEnd === true) {
-            continue;
-          }
-          break;
-        }
-        if (code === CHAR_QUESTION_MARK) {
-          isGlob = token.isGlob = true;
-          finished = true;
-          if (scanToEnd === true) {
-            continue;
-          }
-          break;
-        }
-        if (code === CHAR_LEFT_SQUARE_BRACKET) {
-          while (eos() !== true && (next = advance())) {
-            if (next === CHAR_BACKWARD_SLASH) {
-              backslashes = token.backslashes = true;
-              advance();
-              continue;
-            }
-            if (next === CHAR_RIGHT_SQUARE_BRACKET) {
-              isBracket = token.isBracket = true;
-              isGlob = token.isGlob = true;
-              finished = true;
+            case Touch.Last:
+              this.addItemLast(item);
               break;
+            default:
+              this.addItemLast(item);
+              break;
+          }
+          this._map.set(key, item);
+          this._size++;
+        }
+        return this;
+      }
+      delete(key) {
+        return !!this.remove(key);
+      }
+      remove(key) {
+        const item = this._map.get(key);
+        if (!item) {
+          return void 0;
+        }
+        this._map.delete(key);
+        this.removeItem(item);
+        this._size--;
+        return item.value;
+      }
+      shift() {
+        if (!this._head && !this._tail) {
+          return void 0;
+        }
+        if (!this._head || !this._tail) {
+          throw new Error("Invalid list");
+        }
+        const item = this._head;
+        this._map.delete(item.key);
+        this.removeItem(item);
+        this._size--;
+        return item.value;
+      }
+      forEach(callbackfn, thisArg) {
+        const state = this._state;
+        let current = this._head;
+        while (current) {
+          if (thisArg) {
+            callbackfn.bind(thisArg)(current.value, current.key, this);
+          } else {
+            callbackfn(current.value, current.key, this);
+          }
+          if (this._state !== state) {
+            throw new Error(`LinkedMap got modified during iteration.`);
+          }
+          current = current.next;
+        }
+      }
+      keys() {
+        const state = this._state;
+        let current = this._head;
+        const iterator = {
+          [Symbol.iterator]: () => {
+            return iterator;
+          },
+          next: () => {
+            if (this._state !== state) {
+              throw new Error(`LinkedMap got modified during iteration.`);
             }
-          }
-          if (scanToEnd === true) {
-            continue;
-          }
-          break;
-        }
-        if (opts.nonegate !== true && code === CHAR_EXCLAMATION_MARK && index === start) {
-          negated = token.negated = true;
-          start++;
-          continue;
-        }
-        if (opts.noparen !== true && code === CHAR_LEFT_PARENTHESES) {
-          isGlob = token.isGlob = true;
-          if (scanToEnd === true) {
-            while (eos() !== true && (code = advance())) {
-              if (code === CHAR_LEFT_PARENTHESES) {
-                backslashes = token.backslashes = true;
-                code = advance();
-                continue;
-              }
-              if (code === CHAR_RIGHT_PARENTHESES) {
-                finished = true;
-                break;
-              }
-            }
-            continue;
-          }
-          break;
-        }
-        if (isGlob === true) {
-          finished = true;
-          if (scanToEnd === true) {
-            continue;
-          }
-          break;
-        }
-      }
-      if (opts.noext === true) {
-        isExtglob = false;
-        isGlob = false;
-      }
-      let base = str;
-      let prefix = "";
-      let glob = "";
-      if (start > 0) {
-        prefix = str.slice(0, start);
-        str = str.slice(start);
-        lastIndex -= start;
-      }
-      if (base && isGlob === true && lastIndex > 0) {
-        base = str.slice(0, lastIndex);
-        glob = str.slice(lastIndex);
-      } else if (isGlob === true) {
-        base = "";
-        glob = str;
-      } else {
-        base = str;
-      }
-      if (base && base !== "" && base !== "/" && base !== str) {
-        if (isPathSeparator(base.charCodeAt(base.length - 1))) {
-          base = base.slice(0, -1);
-        }
-      }
-      if (opts.unescape === true) {
-        if (glob) glob = utils.removeBackslashes(glob);
-        if (base && backslashes === true) {
-          base = utils.removeBackslashes(base);
-        }
-      }
-      const state = {
-        prefix,
-        input,
-        start,
-        base,
-        glob,
-        isBrace,
-        isBracket,
-        isGlob,
-        isExtglob,
-        isGlobstar,
-        negated,
-        negatedExtglob
-      };
-      if (opts.tokens === true) {
-        state.maxDepth = 0;
-        if (!isPathSeparator(code)) {
-          tokens.push(token);
-        }
-        state.tokens = tokens;
-      }
-      if (opts.parts === true || opts.tokens === true) {
-        let prevIndex;
-        for (let idx = 0; idx < slashes.length; idx++) {
-          const n = prevIndex ? prevIndex + 1 : start;
-          const i = slashes[idx];
-          const value = input.slice(n, i);
-          if (opts.tokens) {
-            if (idx === 0 && start !== 0) {
-              tokens[idx].isPrefix = true;
-              tokens[idx].value = prefix;
+            if (current) {
+              const result = { value: current.key, done: false };
+              current = current.next;
+              return result;
             } else {
-              tokens[idx].value = value;
+              return { value: void 0, done: true };
             }
-            depth(tokens[idx]);
-            state.maxDepth += tokens[idx].depth;
           }
-          if (idx !== 0 || value !== "") {
-            parts.push(value);
+        };
+        return iterator;
+      }
+      values() {
+        const state = this._state;
+        let current = this._head;
+        const iterator = {
+          [Symbol.iterator]: () => {
+            return iterator;
+          },
+          next: () => {
+            if (this._state !== state) {
+              throw new Error(`LinkedMap got modified during iteration.`);
+            }
+            if (current) {
+              const result = { value: current.value, done: false };
+              current = current.next;
+              return result;
+            } else {
+              return { value: void 0, done: true };
+            }
           }
-          prevIndex = i;
-        }
-        if (prevIndex && prevIndex + 1 < input.length) {
-          const value = input.slice(prevIndex + 1);
-          parts.push(value);
-          if (opts.tokens) {
-            tokens[tokens.length - 1].value = value;
-            depth(tokens[tokens.length - 1]);
-            state.maxDepth += tokens[tokens.length - 1].depth;
+        };
+        return iterator;
+      }
+      entries() {
+        const state = this._state;
+        let current = this._head;
+        const iterator = {
+          [Symbol.iterator]: () => {
+            return iterator;
+          },
+          next: () => {
+            if (this._state !== state) {
+              throw new Error(`LinkedMap got modified during iteration.`);
+            }
+            if (current) {
+              const result = { value: [current.key, current.value], done: false };
+              current = current.next;
+              return result;
+            } else {
+              return { value: void 0, done: true };
+            }
           }
-        }
-        state.slashes = slashes;
-        state.parts = parts;
+        };
+        return iterator;
       }
-      return state;
-    };
-    module2.exports = scan;
-  }
-});
-
-// ../../node_modules/picomatch/lib/parse.js
-var require_parse = __commonJS({
-  "../../node_modules/picomatch/lib/parse.js"(exports2, module2) {
-    "use strict";
-    var constants = require_constants();
-    var utils = require_utils3();
-    var {
-      MAX_LENGTH,
-      POSIX_REGEX_SOURCE,
-      REGEX_NON_SPECIAL_CHARS,
-      REGEX_SPECIAL_CHARS_BACKREF,
-      REPLACEMENTS
-    } = constants;
-    var expandRange = (args, options) => {
-      if (typeof options.expandRange === "function") {
-        return options.expandRange(...args, options);
+      [(_a2 = Symbol.toStringTag, Symbol.iterator)]() {
+        return this.entries();
       }
-      args.sort();
-      const value = `[${args.join("-")}]`;
-      try {
-        new RegExp(value);
-      } catch (ex) {
-        return args.map((v) => utils.escapeRegex(v)).join("..");
-      }
-      return value;
-    };
-    var syntaxError = (type, char) => {
-      return `Missing ${type}: "${char}" - use "\\\\${char}" to match literal characters`;
-    };
-    var parse2 = (input, options) => {
-      if (typeof input !== "string") {
-        throw new TypeError("Expected a string");
-      }
-      input = REPLACEMENTS[input] || input;
-      const opts = { ...options };
-      const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
-      let len = input.length;
-      if (len > max) {
-        throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
-      }
-      const bos = { type: "bos", value: "", output: opts.prepend || "" };
-      const tokens = [bos];
-      const capture = opts.capture ? "" : "?:";
-      const PLATFORM_CHARS = constants.globChars(opts.windows);
-      const EXTGLOB_CHARS = constants.extglobChars(PLATFORM_CHARS);
-      const {
-        DOT_LITERAL,
-        PLUS_LITERAL,
-        SLASH_LITERAL,
-        ONE_CHAR,
-        DOTS_SLASH,
-        NO_DOT,
-        NO_DOT_SLASH,
-        NO_DOTS_SLASH,
-        QMARK,
-        QMARK_NO_DOT,
-        STAR,
-        START_ANCHOR
-      } = PLATFORM_CHARS;
-      const globstar = (opts2) => {
-        return `(${capture}(?:(?!${START_ANCHOR}${opts2.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
-      };
-      const nodot = opts.dot ? "" : NO_DOT;
-      const qmarkNoDot = opts.dot ? QMARK : QMARK_NO_DOT;
-      let star = opts.bash === true ? globstar(opts) : STAR;
-      if (opts.capture) {
-        star = `(${star})`;
-      }
-      if (typeof opts.noext === "boolean") {
-        opts.noextglob = opts.noext;
-      }
-      const state = {
-        input,
-        index: -1,
-        start: 0,
-        dot: opts.dot === true,
-        consumed: "",
-        output: "",
-        prefix: "",
-        backtrack: false,
-        negated: false,
-        brackets: 0,
-        braces: 0,
-        parens: 0,
-        quotes: 0,
-        globstar: false,
-        tokens
-      };
-      input = utils.removePrefix(input, state);
-      len = input.length;
-      const extglobs = [];
-      const braces = [];
-      const stack = [];
-      let prev = bos;
-      let value;
-      const eos = () => state.index === len - 1;
-      const peek = state.peek = (n = 1) => input[state.index + n];
-      const advance = state.advance = () => input[++state.index] || "";
-      const remaining = () => input.slice(state.index + 1);
-      const consume = (value2 = "", num = 0) => {
-        state.consumed += value2;
-        state.index += num;
-      };
-      const append2 = (token) => {
-        state.output += token.output != null ? token.output : token.value;
-        consume(token.value);
-      };
-      const negate = () => {
-        let count = 1;
-        while (peek() === "!" && (peek(2) !== "(" || peek(3) === "?")) {
-          advance();
-          state.start++;
-          count++;
-        }
-        if (count % 2 === 0) {
-          return false;
-        }
-        state.negated = true;
-        state.start++;
-        return true;
-      };
-      const increment = (type) => {
-        state[type]++;
-        stack.push(type);
-      };
-      const decrement = (type) => {
-        state[type]--;
-        stack.pop();
-      };
-      const push = (tok) => {
-        if (prev.type === "globstar") {
-          const isBrace = state.braces > 0 && (tok.type === "comma" || tok.type === "brace");
-          const isExtglob = tok.extglob === true || extglobs.length && (tok.type === "pipe" || tok.type === "paren");
-          if (tok.type !== "slash" && tok.type !== "paren" && !isBrace && !isExtglob) {
-            state.output = state.output.slice(0, -prev.output.length);
-            prev.type = "star";
-            prev.value = "*";
-            prev.output = star;
-            state.output += prev.output;
-          }
-        }
-        if (extglobs.length && tok.type !== "paren") {
-          extglobs[extglobs.length - 1].inner += tok.value;
-        }
-        if (tok.value || tok.output) append2(tok);
-        if (prev && prev.type === "text" && tok.type === "text") {
-          prev.output = (prev.output || prev.value) + tok.value;
-          prev.value += tok.value;
+      trimOld(newSize) {
+        if (newSize >= this.size) {
           return;
         }
-        tok.prev = prev;
-        tokens.push(tok);
-        prev = tok;
-      };
-      const extglobOpen = (type, value2) => {
-        const token = { ...EXTGLOB_CHARS[value2], conditions: 1, inner: "" };
-        token.prev = prev;
-        token.parens = state.parens;
-        token.output = state.output;
-        const output = (opts.capture ? "(" : "") + token.open;
-        increment("parens");
-        push({ type, value: value2, output: state.output ? "" : ONE_CHAR });
-        push({ type: "paren", extglob: true, value: advance(), output });
-        extglobs.push(token);
-      };
-      const extglobClose = (token) => {
-        let output = token.close + (opts.capture ? ")" : "");
-        let rest;
-        if (token.type === "negate") {
-          let extglobStar = star;
-          if (token.inner && token.inner.length > 1 && token.inner.includes("/")) {
-            extglobStar = globstar(opts);
-          }
-          if (extglobStar !== star || eos() || /^\)+$/.test(remaining())) {
-            output = token.close = `)$))${extglobStar}`;
-          }
-          if (token.inner.includes("*") && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
-            const expression = parse2(rest, { ...options, fastpaths: false }).output;
-            output = token.close = `)${expression})${extglobStar})`;
-          }
-          if (token.prev.type === "bos") {
-            state.negatedExtglob = true;
-          }
+        if (newSize === 0) {
+          this.clear();
+          return;
         }
-        push({ type: "paren", extglob: true, value, output });
-        decrement("parens");
-      };
-      if (opts.fastpaths !== false && !/(^[*!]|[/()[\]{}"])/.test(input)) {
-        let backslashes = false;
-        let output = input.replace(REGEX_SPECIAL_CHARS_BACKREF, (m, esc, chars, first2, rest, index) => {
-          if (first2 === "\\") {
-            backslashes = true;
-            return m;
-          }
-          if (first2 === "?") {
-            if (esc) {
-              return esc + first2 + (rest ? QMARK.repeat(rest.length) : "");
-            }
-            if (index === 0) {
-              return qmarkNoDot + (rest ? QMARK.repeat(rest.length) : "");
-            }
-            return QMARK.repeat(chars.length);
-          }
-          if (first2 === ".") {
-            return DOT_LITERAL.repeat(chars.length);
-          }
-          if (first2 === "*") {
-            if (esc) {
-              return esc + first2 + (rest ? star : "");
-            }
-            return star;
-          }
-          return esc ? m : `\\${m}`;
-        });
-        if (backslashes === true) {
-          if (opts.unescape === true) {
-            output = output.replace(/\\/g, "");
-          } else {
-            output = output.replace(/\\+/g, (m) => {
-              return m.length % 2 === 0 ? "\\\\" : m ? "\\" : "";
-            });
-          }
+        let current = this._head;
+        let currentSize = this.size;
+        while (current && currentSize > newSize) {
+          this._map.delete(current.key);
+          current = current.next;
+          currentSize--;
         }
-        if (output === input && opts.contains === true) {
-          state.output = input;
-          return state;
+        this._head = current;
+        this._size = currentSize;
+        if (current) {
+          current.previous = void 0;
         }
-        state.output = utils.wrapOutput(output, state, options);
-        return state;
+        this._state++;
       }
-      while (!eos()) {
-        value = advance();
-        if (value === "\0") {
-          continue;
+      addItemFirst(item) {
+        if (!this._head && !this._tail) {
+          this._tail = item;
+        } else if (!this._head) {
+          throw new Error("Invalid list");
+        } else {
+          item.next = this._head;
+          this._head.previous = item;
         }
-        if (value === "\\") {
-          const next = peek();
-          if (next === "/" && opts.bash !== true) {
-            continue;
+        this._head = item;
+        this._state++;
+      }
+      addItemLast(item) {
+        if (!this._head && !this._tail) {
+          this._head = item;
+        } else if (!this._tail) {
+          throw new Error("Invalid list");
+        } else {
+          item.previous = this._tail;
+          this._tail.next = item;
+        }
+        this._tail = item;
+        this._state++;
+      }
+      removeItem(item) {
+        if (item === this._head && item === this._tail) {
+          this._head = void 0;
+          this._tail = void 0;
+        } else if (item === this._head) {
+          if (!item.next) {
+            throw new Error("Invalid list");
           }
-          if (next === "." || next === ";") {
-            continue;
+          item.next.previous = void 0;
+          this._head = item.next;
+        } else if (item === this._tail) {
+          if (!item.previous) {
+            throw new Error("Invalid list");
           }
-          if (!next) {
-            value += "\\";
-            push({ type: "text", value });
-            continue;
+          item.previous.next = void 0;
+          this._tail = item.previous;
+        } else {
+          const next = item.next;
+          const previous = item.previous;
+          if (!next || !previous) {
+            throw new Error("Invalid list");
           }
-          const match = /^\\+/.exec(remaining());
-          let slashes = 0;
-          if (match && match[0].length > 2) {
-            slashes = match[0].length;
-            state.index += slashes;
-            if (slashes % 2 !== 0) {
-              value += "\\";
+          next.previous = previous;
+          previous.next = next;
+        }
+        item.next = void 0;
+        item.previous = void 0;
+        this._state++;
+      }
+      touch(item, touch) {
+        if (!this._head || !this._tail) {
+          throw new Error("Invalid list");
+        }
+        if (touch !== Touch.First && touch !== Touch.Last) {
+          return;
+        }
+        if (touch === Touch.First) {
+          if (item === this._head) {
+            return;
+          }
+          const next = item.next;
+          const previous = item.previous;
+          if (item === this._tail) {
+            previous.next = void 0;
+            this._tail = previous;
+          } else {
+            next.previous = previous;
+            previous.next = next;
+          }
+          item.previous = void 0;
+          item.next = this._head;
+          this._head.previous = item;
+          this._head = item;
+          this._state++;
+        } else if (touch === Touch.Last) {
+          if (item === this._tail) {
+            return;
+          }
+          const next = item.next;
+          const previous = item.previous;
+          if (item === this._head) {
+            next.previous = void 0;
+            this._head = next;
+          } else {
+            next.previous = previous;
+            previous.next = next;
+          }
+          item.next = void 0;
+          item.previous = this._tail;
+          this._tail.next = item;
+          this._tail = item;
+          this._state++;
+        }
+      }
+      toJSON() {
+        const data = [];
+        this.forEach((value, key) => {
+          data.push([key, value]);
+        });
+        return data;
+      }
+      fromJSON(data) {
+        this.clear();
+        for (const [key, value] of data) {
+          this.set(key, value);
+        }
+      }
+    };
+    exports2.LinkedMap = LinkedMap;
+    var LRUCache = class extends LinkedMap {
+      constructor(limit, ratio = 1) {
+        super();
+        this._limit = limit;
+        this._ratio = Math.min(Math.max(0, ratio), 1);
+      }
+      get limit() {
+        return this._limit;
+      }
+      set limit(limit) {
+        this._limit = limit;
+        this.checkTrim();
+      }
+      get ratio() {
+        return this._ratio;
+      }
+      set ratio(ratio) {
+        this._ratio = Math.min(Math.max(0, ratio), 1);
+        this.checkTrim();
+      }
+      get(key, touch = Touch.AsNew) {
+        return super.get(key, touch);
+      }
+      peek(key) {
+        return super.get(key, Touch.None);
+      }
+      set(key, value) {
+        super.set(key, value, Touch.Last);
+        this.checkTrim();
+        return this;
+      }
+      checkTrim() {
+        if (this.size > this._limit) {
+          this.trimOld(Math.round(this._limit * this._ratio));
+        }
+      }
+    };
+    exports2.LRUCache = LRUCache;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/disposable.js
+var require_disposable = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/disposable.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Disposable = void 0;
+    var Disposable;
+    (function(Disposable2) {
+      function create(func) {
+        return {
+          dispose: func
+        };
+      }
+      Disposable2.create = create;
+    })(Disposable || (exports2.Disposable = Disposable = {}));
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/ral.js
+var require_ral = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/ral.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    var _ral;
+    function RAL() {
+      if (_ral === void 0) {
+        throw new Error(`No runtime abstraction layer installed`);
+      }
+      return _ral;
+    }
+    (function(RAL2) {
+      function install(ral) {
+        if (ral === void 0) {
+          throw new Error(`No runtime abstraction layer provided`);
+        }
+        _ral = ral;
+      }
+      RAL2.install = install;
+    })(RAL || (RAL = {}));
+    exports2.default = RAL;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/events.js
+var require_events2 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/events.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Emitter = exports2.Event = void 0;
+    var ral_1 = require_ral();
+    var Event;
+    (function(Event2) {
+      const _disposable = { dispose() {
+      } };
+      Event2.None = function() {
+        return _disposable;
+      };
+    })(Event || (exports2.Event = Event = {}));
+    var CallbackList = class {
+      add(callback2, context = null, bucket) {
+        if (!this._callbacks) {
+          this._callbacks = [];
+          this._contexts = [];
+        }
+        this._callbacks.push(callback2);
+        this._contexts.push(context);
+        if (Array.isArray(bucket)) {
+          bucket.push({ dispose: () => this.remove(callback2, context) });
+        }
+      }
+      remove(callback2, context = null) {
+        if (!this._callbacks) {
+          return;
+        }
+        let foundCallbackWithDifferentContext = false;
+        for (let i = 0, len = this._callbacks.length; i < len; i++) {
+          if (this._callbacks[i] === callback2) {
+            if (this._contexts[i] === context) {
+              this._callbacks.splice(i, 1);
+              this._contexts.splice(i, 1);
+              return;
+            } else {
+              foundCallbackWithDifferentContext = true;
             }
           }
-          if (opts.unescape === true) {
-            value = advance();
-          } else {
-            value += advance();
-          }
-          if (state.brackets === 0) {
-            push({ type: "text", value });
-            continue;
+        }
+        if (foundCallbackWithDifferentContext) {
+          throw new Error("When adding a listener with a context, you should remove it with the same context");
+        }
+      }
+      invoke(...args) {
+        if (!this._callbacks) {
+          return [];
+        }
+        const ret = [], callbacks = this._callbacks.slice(0), contexts = this._contexts.slice(0);
+        for (let i = 0, len = callbacks.length; i < len; i++) {
+          try {
+            ret.push(callbacks[i].apply(contexts[i], args));
+          } catch (e) {
+            (0, ral_1.default)().console.error(e);
           }
         }
-        if (state.brackets > 0 && (value !== "]" || prev.value === "[" || prev.value === "[^")) {
-          if (opts.posix !== false && value === ":") {
-            const inner = prev.value.slice(1);
-            if (inner.includes("[")) {
-              prev.posix = true;
-              if (inner.includes(":")) {
-                const idx = prev.value.lastIndexOf("[");
-                const pre = prev.value.slice(0, idx);
-                const rest2 = prev.value.slice(idx + 2);
-                const posix = POSIX_REGEX_SOURCE[rest2];
-                if (posix) {
-                  prev.value = pre + posix;
-                  state.backtrack = true;
-                  advance();
-                  if (!bos.output && tokens.indexOf(prev) === 1) {
-                    bos.output = ONE_CHAR;
-                  }
-                  continue;
+        return ret;
+      }
+      isEmpty() {
+        return !this._callbacks || this._callbacks.length === 0;
+      }
+      dispose() {
+        this._callbacks = void 0;
+        this._contexts = void 0;
+      }
+    };
+    var Emitter = class _Emitter {
+      constructor(_options) {
+        this._options = _options;
+      }
+      /**
+       * For the public to allow to subscribe
+       * to events from this Emitter
+       */
+      get event() {
+        if (!this._event) {
+          this._event = (listener, thisArgs, disposables) => {
+            if (!this._callbacks) {
+              this._callbacks = new CallbackList();
+            }
+            if (this._options && this._options.onFirstListenerAdd && this._callbacks.isEmpty()) {
+              this._options.onFirstListenerAdd(this);
+            }
+            this._callbacks.add(listener, thisArgs);
+            const result = {
+              dispose: () => {
+                if (!this._callbacks) {
+                  return;
+                }
+                this._callbacks.remove(listener, thisArgs);
+                result.dispose = _Emitter._noop;
+                if (this._options && this._options.onLastListenerRemove && this._callbacks.isEmpty()) {
+                  this._options.onLastListenerRemove(this);
                 }
               }
+            };
+            if (Array.isArray(disposables)) {
+              disposables.push(result);
             }
-          }
-          if (value === "[" && peek() !== ":" || value === "-" && peek() === "]") {
-            value = `\\${value}`;
-          }
-          if (value === "]" && (prev.value === "[" || prev.value === "[^")) {
-            value = `\\${value}`;
-          }
-          if (opts.posix === true && value === "!" && prev.value === "[") {
-            value = "^";
-          }
-          prev.value += value;
-          append2({ value });
-          continue;
-        }
-        if (state.quotes === 1 && value !== '"') {
-          value = utils.escapeRegex(value);
-          prev.value += value;
-          append2({ value });
-          continue;
-        }
-        if (value === '"') {
-          state.quotes = state.quotes === 1 ? 0 : 1;
-          if (opts.keepQuotes === true) {
-            push({ type: "text", value });
-          }
-          continue;
-        }
-        if (value === "(") {
-          increment("parens");
-          push({ type: "paren", value });
-          continue;
-        }
-        if (value === ")") {
-          if (state.parens === 0 && opts.strictBrackets === true) {
-            throw new SyntaxError(syntaxError("opening", "("));
-          }
-          const extglob = extglobs[extglobs.length - 1];
-          if (extglob && state.parens === extglob.parens + 1) {
-            extglobClose(extglobs.pop());
-            continue;
-          }
-          push({ type: "paren", value, output: state.parens ? ")" : "\\)" });
-          decrement("parens");
-          continue;
-        }
-        if (value === "[") {
-          if (opts.nobracket === true || !remaining().includes("]")) {
-            if (opts.nobracket !== true && opts.strictBrackets === true) {
-              throw new SyntaxError(syntaxError("closing", "]"));
-            }
-            value = `\\${value}`;
-          } else {
-            increment("brackets");
-          }
-          push({ type: "bracket", value });
-          continue;
-        }
-        if (value === "]") {
-          if (opts.nobracket === true || prev && prev.type === "bracket" && prev.value.length === 1) {
-            push({ type: "text", value, output: `\\${value}` });
-            continue;
-          }
-          if (state.brackets === 0) {
-            if (opts.strictBrackets === true) {
-              throw new SyntaxError(syntaxError("opening", "["));
-            }
-            push({ type: "text", value, output: `\\${value}` });
-            continue;
-          }
-          decrement("brackets");
-          const prevValue = prev.value.slice(1);
-          if (prev.posix !== true && prevValue[0] === "^" && !prevValue.includes("/")) {
-            value = `/${value}`;
-          }
-          prev.value += value;
-          append2({ value });
-          if (opts.literalBrackets === false || utils.hasRegexChars(prevValue)) {
-            continue;
-          }
-          const escaped = utils.escapeRegex(prev.value);
-          state.output = state.output.slice(0, -prev.value.length);
-          if (opts.literalBrackets === true) {
-            state.output += escaped;
-            prev.value = escaped;
-            continue;
-          }
-          prev.value = `(${capture}${escaped}|${prev.value})`;
-          state.output += prev.value;
-          continue;
-        }
-        if (value === "{" && opts.nobrace !== true) {
-          increment("braces");
-          const open = {
-            type: "brace",
-            value,
-            output: "(",
-            outputIndex: state.output.length,
-            tokensIndex: state.tokens.length
+            return result;
           };
-          braces.push(open);
-          push(open);
-          continue;
         }
-        if (value === "}") {
-          const brace = braces[braces.length - 1];
-          if (opts.nobrace === true || !brace) {
-            push({ type: "text", value, output: value });
-            continue;
-          }
-          let output = ")";
-          if (brace.dots === true) {
-            const arr = tokens.slice();
-            const range = [];
-            for (let i = arr.length - 1; i >= 0; i--) {
-              tokens.pop();
-              if (arr[i].type === "brace") {
-                break;
-              }
-              if (arr[i].type !== "dots") {
-                range.unshift(arr[i].value);
-              }
-            }
-            output = expandRange(range, opts);
-            state.backtrack = true;
-          }
-          if (brace.comma !== true && brace.dots !== true) {
-            const out = state.output.slice(0, brace.outputIndex);
-            const toks = state.tokens.slice(brace.tokensIndex);
-            brace.value = brace.output = "\\{";
-            value = output = "\\}";
-            state.output = out;
-            for (const t of toks) {
-              state.output += t.output || t.value;
-            }
-          }
-          push({ type: "brace", value, output });
-          decrement("braces");
-          braces.pop();
-          continue;
-        }
-        if (value === "|") {
-          if (extglobs.length > 0) {
-            extglobs[extglobs.length - 1].conditions++;
-          }
-          push({ type: "text", value });
-          continue;
-        }
-        if (value === ",") {
-          let output = value;
-          const brace = braces[braces.length - 1];
-          if (brace && stack[stack.length - 1] === "braces") {
-            brace.comma = true;
-            output = "|";
-          }
-          push({ type: "comma", value, output });
-          continue;
-        }
-        if (value === "/") {
-          if (prev.type === "dot" && state.index === state.start + 1) {
-            state.start = state.index + 1;
-            state.consumed = "";
-            state.output = "";
-            tokens.pop();
-            prev = bos;
-            continue;
-          }
-          push({ type: "slash", value, output: SLASH_LITERAL });
-          continue;
-        }
-        if (value === ".") {
-          if (state.braces > 0 && prev.type === "dot") {
-            if (prev.value === ".") prev.output = DOT_LITERAL;
-            const brace = braces[braces.length - 1];
-            prev.type = "dots";
-            prev.output += value;
-            prev.value += value;
-            brace.dots = true;
-            continue;
-          }
-          if (state.braces + state.parens === 0 && prev.type !== "bos" && prev.type !== "slash") {
-            push({ type: "text", value, output: DOT_LITERAL });
-            continue;
-          }
-          push({ type: "dot", value, output: DOT_LITERAL });
-          continue;
-        }
-        if (value === "?") {
-          const isGroup = prev && prev.value === "(";
-          if (!isGroup && opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
-            extglobOpen("qmark", value);
-            continue;
-          }
-          if (prev && prev.type === "paren") {
-            const next = peek();
-            let output = value;
-            if (prev.value === "(" && !/[!=<:]/.test(next) || next === "<" && !/<([!=]|\w+>)/.test(remaining())) {
-              output = `\\${value}`;
-            }
-            push({ type: "text", value, output });
-            continue;
-          }
-          if (opts.dot !== true && (prev.type === "slash" || prev.type === "bos")) {
-            push({ type: "qmark", value, output: QMARK_NO_DOT });
-            continue;
-          }
-          push({ type: "qmark", value, output: QMARK });
-          continue;
-        }
-        if (value === "!") {
-          if (opts.noextglob !== true && peek() === "(") {
-            if (peek(2) !== "?" || !/[!=<:]/.test(peek(3))) {
-              extglobOpen("negate", value);
-              continue;
-            }
-          }
-          if (opts.nonegate !== true && state.index === 0) {
-            negate();
-            continue;
-          }
-        }
-        if (value === "+") {
-          if (opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
-            extglobOpen("plus", value);
-            continue;
-          }
-          if (prev && prev.value === "(" || opts.regex === false) {
-            push({ type: "plus", value, output: PLUS_LITERAL });
-            continue;
-          }
-          if (prev && (prev.type === "bracket" || prev.type === "paren" || prev.type === "brace") || state.parens > 0) {
-            push({ type: "plus", value });
-            continue;
-          }
-          push({ type: "plus", value: PLUS_LITERAL });
-          continue;
-        }
-        if (value === "@") {
-          if (opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
-            push({ type: "at", extglob: true, value, output: "" });
-            continue;
-          }
-          push({ type: "text", value });
-          continue;
-        }
-        if (value !== "*") {
-          if (value === "$" || value === "^") {
-            value = `\\${value}`;
-          }
-          const match = REGEX_NON_SPECIAL_CHARS.exec(remaining());
-          if (match) {
-            value += match[0];
-            state.index += match[0].length;
-          }
-          push({ type: "text", value });
-          continue;
-        }
-        if (prev && (prev.type === "globstar" || prev.star === true)) {
-          prev.type = "star";
-          prev.star = true;
-          prev.value += value;
-          prev.output = star;
-          state.backtrack = true;
-          state.globstar = true;
-          consume(value);
-          continue;
-        }
-        let rest = remaining();
-        if (opts.noextglob !== true && /^\([^?]/.test(rest)) {
-          extglobOpen("star", value);
-          continue;
-        }
-        if (prev.type === "star") {
-          if (opts.noglobstar === true) {
-            consume(value);
-            continue;
-          }
-          const prior = prev.prev;
-          const before = prior.prev;
-          const isStart = prior.type === "slash" || prior.type === "bos";
-          const afterStar = before && (before.type === "star" || before.type === "globstar");
-          if (opts.bash === true && (!isStart || rest[0] && rest[0] !== "/")) {
-            push({ type: "star", value, output: "" });
-            continue;
-          }
-          const isBrace = state.braces > 0 && (prior.type === "comma" || prior.type === "brace");
-          const isExtglob = extglobs.length && (prior.type === "pipe" || prior.type === "paren");
-          if (!isStart && prior.type !== "paren" && !isBrace && !isExtglob) {
-            push({ type: "star", value, output: "" });
-            continue;
-          }
-          while (rest.slice(0, 3) === "/**") {
-            const after = input[state.index + 4];
-            if (after && after !== "/") {
-              break;
-            }
-            rest = rest.slice(3);
-            consume("/**", 3);
-          }
-          if (prior.type === "bos" && eos()) {
-            prev.type = "globstar";
-            prev.value += value;
-            prev.output = globstar(opts);
-            state.output = prev.output;
-            state.globstar = true;
-            consume(value);
-            continue;
-          }
-          if (prior.type === "slash" && prior.prev.type !== "bos" && !afterStar && eos()) {
-            state.output = state.output.slice(0, -(prior.output + prev.output).length);
-            prior.output = `(?:${prior.output}`;
-            prev.type = "globstar";
-            prev.output = globstar(opts) + (opts.strictSlashes ? ")" : "|$)");
-            prev.value += value;
-            state.globstar = true;
-            state.output += prior.output + prev.output;
-            consume(value);
-            continue;
-          }
-          if (prior.type === "slash" && prior.prev.type !== "bos" && rest[0] === "/") {
-            const end = rest[1] !== void 0 ? "|$" : "";
-            state.output = state.output.slice(0, -(prior.output + prev.output).length);
-            prior.output = `(?:${prior.output}`;
-            prev.type = "globstar";
-            prev.output = `${globstar(opts)}${SLASH_LITERAL}|${SLASH_LITERAL}${end})`;
-            prev.value += value;
-            state.output += prior.output + prev.output;
-            state.globstar = true;
-            consume(value + advance());
-            push({ type: "slash", value: "/", output: "" });
-            continue;
-          }
-          if (prior.type === "bos" && rest[0] === "/") {
-            prev.type = "globstar";
-            prev.value += value;
-            prev.output = `(?:^|${SLASH_LITERAL}|${globstar(opts)}${SLASH_LITERAL})`;
-            state.output = prev.output;
-            state.globstar = true;
-            consume(value + advance());
-            push({ type: "slash", value: "/", output: "" });
-            continue;
-          }
-          state.output = state.output.slice(0, -prev.output.length);
-          prev.type = "globstar";
-          prev.output = globstar(opts);
-          prev.value += value;
-          state.output += prev.output;
-          state.globstar = true;
-          consume(value);
-          continue;
-        }
-        const token = { type: "star", value, output: star };
-        if (opts.bash === true) {
-          token.output = ".*?";
-          if (prev.type === "bos" || prev.type === "slash") {
-            token.output = nodot + token.output;
-          }
-          push(token);
-          continue;
-        }
-        if (prev && (prev.type === "bracket" || prev.type === "paren") && opts.regex === true) {
-          token.output = value;
-          push(token);
-          continue;
-        }
-        if (state.index === state.start || prev.type === "slash" || prev.type === "dot") {
-          if (prev.type === "dot") {
-            state.output += NO_DOT_SLASH;
-            prev.output += NO_DOT_SLASH;
-          } else if (opts.dot === true) {
-            state.output += NO_DOTS_SLASH;
-            prev.output += NO_DOTS_SLASH;
-          } else {
-            state.output += nodot;
-            prev.output += nodot;
-          }
-          if (peek() !== "*") {
-            state.output += ONE_CHAR;
-            prev.output += ONE_CHAR;
-          }
-        }
-        push(token);
+        return this._event;
       }
-      while (state.brackets > 0) {
-        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", "]"));
-        state.output = utils.escapeLast(state.output, "[");
-        decrement("brackets");
-      }
-      while (state.parens > 0) {
-        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", ")"));
-        state.output = utils.escapeLast(state.output, "(");
-        decrement("parens");
-      }
-      while (state.braces > 0) {
-        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", "}"));
-        state.output = utils.escapeLast(state.output, "{");
-        decrement("braces");
-      }
-      if (opts.strictSlashes !== true && (prev.type === "star" || prev.type === "bracket")) {
-        push({ type: "maybe_slash", value: "", output: `${SLASH_LITERAL}?` });
-      }
-      if (state.backtrack === true) {
-        state.output = "";
-        for (const token of state.tokens) {
-          state.output += token.output != null ? token.output : token.value;
-          if (token.suffix) {
-            state.output += token.suffix;
-          }
+      /**
+       * To be kept private to fire an event to
+       * subscribers
+       */
+      fire(event) {
+        if (this._callbacks) {
+          this._callbacks.invoke.call(this._callbacks, event);
         }
       }
-      return state;
+      dispose() {
+        if (this._callbacks) {
+          this._callbacks.dispose();
+          this._callbacks = void 0;
+        }
+      }
     };
-    parse2.fastpaths = (input, options) => {
-      const opts = { ...options };
-      const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
-      const len = input.length;
-      if (len > max) {
-        throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
-      }
-      input = REPLACEMENTS[input] || input;
-      const {
-        DOT_LITERAL,
-        SLASH_LITERAL,
-        ONE_CHAR,
-        DOTS_SLASH,
-        NO_DOT,
-        NO_DOTS,
-        NO_DOTS_SLASH,
-        STAR,
-        START_ANCHOR
-      } = constants.globChars(opts.windows);
-      const nodot = opts.dot ? NO_DOTS : NO_DOT;
-      const slashDot = opts.dot ? NO_DOTS_SLASH : NO_DOT;
-      const capture = opts.capture ? "" : "?:";
-      const state = { negated: false, prefix: "" };
-      let star = opts.bash === true ? ".*?" : STAR;
-      if (opts.capture) {
-        star = `(${star})`;
-      }
-      const globstar = (opts2) => {
-        if (opts2.noglobstar === true) return star;
-        return `(${capture}(?:(?!${START_ANCHOR}${opts2.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
-      };
-      const create = (str) => {
-        switch (str) {
-          case "*":
-            return `${nodot}${ONE_CHAR}${star}`;
-          case ".*":
-            return `${DOT_LITERAL}${ONE_CHAR}${star}`;
-          case "*.*":
-            return `${nodot}${star}${DOT_LITERAL}${ONE_CHAR}${star}`;
-          case "*/*":
-            return `${nodot}${star}${SLASH_LITERAL}${ONE_CHAR}${slashDot}${star}`;
-          case "**":
-            return nodot + globstar(opts);
-          case "**/*":
-            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${slashDot}${ONE_CHAR}${star}`;
-          case "**/*.*":
-            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${slashDot}${star}${DOT_LITERAL}${ONE_CHAR}${star}`;
-          case "**/.*":
-            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${DOT_LITERAL}${ONE_CHAR}${star}`;
-          default: {
-            const match = /^(.*?)\.(\w+)$/.exec(str);
-            if (!match) return;
-            const source2 = create(match[1]);
-            if (!source2) return;
-            return source2 + DOT_LITERAL + match[2];
-          }
-        }
-      };
-      const output = utils.removePrefix(input, state);
-      let source = create(output);
-      if (source && opts.strictSlashes !== true) {
-        source += `${SLASH_LITERAL}?`;
-      }
-      return source;
+    exports2.Emitter = Emitter;
+    Emitter._noop = function() {
     };
-    module2.exports = parse2;
   }
 });
 
-// ../../node_modules/picomatch/lib/picomatch.js
-var require_picomatch = __commonJS({
-  "../../node_modules/picomatch/lib/picomatch.js"(exports2, module2) {
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/cancellation.js
+var require_cancellation3 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/cancellation.js"(exports2) {
     "use strict";
-    var scan = require_scan();
-    var parse2 = require_parse();
-    var utils = require_utils3();
-    var constants = require_constants();
-    var isObject = (val) => val && typeof val === "object" && !Array.isArray(val);
-    var picomatch2 = (glob, options, returnState = false) => {
-      if (Array.isArray(glob)) {
-        const fns = glob.map((input) => picomatch2(input, options, returnState));
-        const arrayMatcher = (str) => {
-          for (const isMatch of fns) {
-            const state2 = isMatch(str);
-            if (state2) return state2;
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.CancellationTokenSource = exports2.CancellationToken = void 0;
+    var ral_1 = require_ral();
+    var Is = require_is2();
+    var events_1 = require_events2();
+    var CancellationToken;
+    (function(CancellationToken2) {
+      CancellationToken2.None = Object.freeze({
+        isCancellationRequested: false,
+        onCancellationRequested: events_1.Event.None
+      });
+      CancellationToken2.Cancelled = Object.freeze({
+        isCancellationRequested: true,
+        onCancellationRequested: events_1.Event.None
+      });
+      function is(value) {
+        const candidate = value;
+        return candidate && (candidate === CancellationToken2.None || candidate === CancellationToken2.Cancelled || Is.boolean(candidate.isCancellationRequested) && !!candidate.onCancellationRequested);
+      }
+      CancellationToken2.is = is;
+    })(CancellationToken || (exports2.CancellationToken = CancellationToken = {}));
+    var shortcutEvent = Object.freeze(function(callback2, context) {
+      const handle = (0, ral_1.default)().timer.setTimeout(callback2.bind(context), 0);
+      return { dispose() {
+        handle.dispose();
+      } };
+    });
+    var MutableToken = class {
+      constructor() {
+        this._isCancelled = false;
+      }
+      cancel() {
+        if (!this._isCancelled) {
+          this._isCancelled = true;
+          if (this._emitter) {
+            this._emitter.fire(void 0);
+            this.dispose();
           }
-          return false;
-        };
-        return arrayMatcher;
-      }
-      const isState = isObject(glob) && glob.tokens && glob.input;
-      if (glob === "" || typeof glob !== "string" && !isState) {
-        throw new TypeError("Expected pattern to be a non-empty string");
-      }
-      const opts = options || {};
-      const posix = opts.windows;
-      const regex = isState ? picomatch2.compileRe(glob, options) : picomatch2.makeRe(glob, options, false, true);
-      const state = regex.state;
-      delete regex.state;
-      let isIgnored = () => false;
-      if (opts.ignore) {
-        const ignoreOpts = { ...options, ignore: null, onMatch: null, onResult: null };
-        isIgnored = picomatch2(opts.ignore, ignoreOpts, returnState);
-      }
-      const matcher = (input, returnObject = false) => {
-        const { isMatch, match, output } = picomatch2.test(input, regex, options, { glob, posix });
-        const result = { glob, state, regex, posix, input, output, match, isMatch };
-        if (typeof opts.onResult === "function") {
-          opts.onResult(result);
         }
-        if (isMatch === false) {
-          result.isMatch = false;
-          return returnObject ? result : false;
-        }
-        if (isIgnored(input)) {
-          if (typeof opts.onIgnore === "function") {
-            opts.onIgnore(result);
-          }
-          result.isMatch = false;
-          return returnObject ? result : false;
-        }
-        if (typeof opts.onMatch === "function") {
-          opts.onMatch(result);
-        }
-        return returnObject ? result : true;
-      };
-      if (returnState) {
-        matcher.state = state;
       }
-      return matcher;
+      get isCancellationRequested() {
+        return this._isCancelled;
+      }
+      get onCancellationRequested() {
+        if (this._isCancelled) {
+          return shortcutEvent;
+        }
+        if (!this._emitter) {
+          this._emitter = new events_1.Emitter();
+        }
+        return this._emitter.event;
+      }
+      dispose() {
+        if (this._emitter) {
+          this._emitter.dispose();
+          this._emitter = void 0;
+        }
+      }
     };
-    picomatch2.test = (input, regex, options, { glob, posix } = {}) => {
-      if (typeof input !== "string") {
-        throw new TypeError("Expected input to be a string");
+    var CancellationTokenSource = class {
+      get token() {
+        if (!this._token) {
+          this._token = new MutableToken();
+        }
+        return this._token;
       }
-      if (input === "") {
-        return { isMatch: false, output: "" };
-      }
-      const opts = options || {};
-      const format = opts.format || (posix ? utils.toPosixSlashes : null);
-      let match = input === glob;
-      let output = match && format ? format(input) : input;
-      if (match === false) {
-        output = format ? format(input) : input;
-        match = output === glob;
-      }
-      if (match === false || opts.capture === true) {
-        if (opts.matchBase === true || opts.basename === true) {
-          match = picomatch2.matchBase(input, regex, options, posix);
+      cancel() {
+        if (!this._token) {
+          this._token = CancellationToken.Cancelled;
         } else {
-          match = regex.exec(output);
+          this._token.cancel();
         }
       }
-      return { isMatch: Boolean(match), match, output };
-    };
-    picomatch2.matchBase = (input, glob, options) => {
-      const regex = glob instanceof RegExp ? glob : picomatch2.makeRe(glob, options);
-      return regex.test(utils.basename(input));
-    };
-    picomatch2.isMatch = (str, patterns, options) => picomatch2(patterns, options)(str);
-    picomatch2.parse = (pattern, options) => {
-      if (Array.isArray(pattern)) return pattern.map((p) => picomatch2.parse(p, options));
-      return parse2(pattern, { ...options, fastpaths: false });
-    };
-    picomatch2.scan = (input, options) => scan(input, options);
-    picomatch2.compileRe = (state, options, returnOutput = false, returnState = false) => {
-      if (returnOutput === true) {
-        return state.output;
-      }
-      const opts = options || {};
-      const prepend = opts.contains ? "" : "^";
-      const append2 = opts.contains ? "" : "$";
-      let source = `${prepend}(?:${state.output})${append2}`;
-      if (state && state.negated === true) {
-        source = `^(?!${source}).*$`;
-      }
-      const regex = picomatch2.toRegex(source, options);
-      if (returnState === true) {
-        regex.state = state;
-      }
-      return regex;
-    };
-    picomatch2.makeRe = (input, options = {}, returnOutput = false, returnState = false) => {
-      if (!input || typeof input !== "string") {
-        throw new TypeError("Expected a non-empty string");
-      }
-      let parsed = { negated: false, fastpaths: true };
-      if (options.fastpaths !== false && (input[0] === "." || input[0] === "*")) {
-        parsed.output = parse2.fastpaths(input, options);
-      }
-      if (!parsed.output) {
-        parsed = parse2(input, options);
-      }
-      return picomatch2.compileRe(parsed, options, returnOutput, returnState);
-    };
-    picomatch2.toRegex = (source, options) => {
-      try {
-        const opts = options || {};
-        return new RegExp(source, opts.flags || (opts.nocase ? "i" : ""));
-      } catch (err) {
-        if (options && options.debug === true) throw err;
-        return /$^/;
+      dispose() {
+        if (!this._token) {
+          this._token = CancellationToken.None;
+        } else if (this._token instanceof MutableToken) {
+          this._token.dispose();
+        }
       }
     };
-    picomatch2.constants = constants;
-    module2.exports = picomatch2;
+    exports2.CancellationTokenSource = CancellationTokenSource;
   }
 });
 
-// ../../node_modules/picomatch/index.js
-var require_picomatch2 = __commonJS({
-  "../../node_modules/picomatch/index.js"(exports2, module2) {
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/sharedArrayCancellation.js
+var require_sharedArrayCancellation = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/sharedArrayCancellation.js"(exports2) {
     "use strict";
-    var pico = require_picomatch();
-    var utils = require_utils3();
-    function picomatch2(glob, options, returnState = false) {
-      if (options && (options.windows === null || options.windows === void 0)) {
-        options = { ...options, windows: utils.isWindows() };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.SharedArrayReceiverStrategy = exports2.SharedArraySenderStrategy = void 0;
+    var cancellation_1 = require_cancellation3();
+    var CancellationState;
+    (function(CancellationState2) {
+      CancellationState2.Continue = 0;
+      CancellationState2.Cancelled = 1;
+    })(CancellationState || (CancellationState = {}));
+    var SharedArraySenderStrategy = class {
+      constructor() {
+        this.buffers = /* @__PURE__ */ new Map();
       }
-      return pico(glob, options, returnState);
+      enableCancellation(request) {
+        if (request.id === null) {
+          return;
+        }
+        const buffer = new SharedArrayBuffer(4);
+        const data = new Int32Array(buffer, 0, 1);
+        data[0] = CancellationState.Continue;
+        this.buffers.set(request.id, buffer);
+        request.$cancellationData = buffer;
+      }
+      async sendCancellation(_conn, id) {
+        const buffer = this.buffers.get(id);
+        if (buffer === void 0) {
+          return;
+        }
+        const data = new Int32Array(buffer, 0, 1);
+        Atomics.store(data, 0, CancellationState.Cancelled);
+      }
+      cleanup(id) {
+        this.buffers.delete(id);
+      }
+      dispose() {
+        this.buffers.clear();
+      }
+    };
+    exports2.SharedArraySenderStrategy = SharedArraySenderStrategy;
+    var SharedArrayBufferCancellationToken = class {
+      constructor(buffer) {
+        this.data = new Int32Array(buffer, 0, 1);
+      }
+      get isCancellationRequested() {
+        return Atomics.load(this.data, 0) === CancellationState.Cancelled;
+      }
+      get onCancellationRequested() {
+        throw new Error(`Cancellation over SharedArrayBuffer doesn't support cancellation events`);
+      }
+    };
+    var SharedArrayBufferCancellationTokenSource = class {
+      constructor(buffer) {
+        this.token = new SharedArrayBufferCancellationToken(buffer);
+      }
+      cancel() {
+      }
+      dispose() {
+      }
+    };
+    var SharedArrayReceiverStrategy = class {
+      constructor() {
+        this.kind = "request";
+      }
+      createCancellationTokenSource(request) {
+        const buffer = request.$cancellationData;
+        if (buffer === void 0) {
+          return new cancellation_1.CancellationTokenSource();
+        }
+        return new SharedArrayBufferCancellationTokenSource(buffer);
+      }
+    };
+    exports2.SharedArrayReceiverStrategy = SharedArrayReceiverStrategy;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/semaphore.js
+var require_semaphore2 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/semaphore.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.Semaphore = void 0;
+    var ral_1 = require_ral();
+    var Semaphore = class {
+      constructor(capacity = 1) {
+        if (capacity <= 0) {
+          throw new Error("Capacity must be greater than 0");
+        }
+        this._capacity = capacity;
+        this._active = 0;
+        this._waiting = [];
+      }
+      lock(thunk) {
+        return new Promise((resolve10, reject) => {
+          this._waiting.push({ thunk, resolve: resolve10, reject });
+          this.runNext();
+        });
+      }
+      get active() {
+        return this._active;
+      }
+      runNext() {
+        if (this._waiting.length === 0 || this._active === this._capacity) {
+          return;
+        }
+        (0, ral_1.default)().timer.setImmediate(() => this.doRunNext());
+      }
+      doRunNext() {
+        if (this._waiting.length === 0 || this._active === this._capacity) {
+          return;
+        }
+        const next = this._waiting.shift();
+        this._active++;
+        if (this._active > this._capacity) {
+          throw new Error(`To many thunks active`);
+        }
+        try {
+          const result = next.thunk();
+          if (result instanceof Promise) {
+            result.then((value) => {
+              this._active--;
+              next.resolve(value);
+              this.runNext();
+            }, (err) => {
+              this._active--;
+              next.reject(err);
+              this.runNext();
+            });
+          } else {
+            this._active--;
+            next.resolve(result);
+            this.runNext();
+          }
+        } catch (err) {
+          this._active--;
+          next.reject(err);
+          this.runNext();
+        }
+      }
+    };
+    exports2.Semaphore = Semaphore;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageReader.js
+var require_messageReader2 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageReader.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ReadableStreamMessageReader = exports2.AbstractMessageReader = exports2.MessageReader = void 0;
+    var ral_1 = require_ral();
+    var Is = require_is2();
+    var events_1 = require_events2();
+    var semaphore_1 = require_semaphore2();
+    var MessageReader;
+    (function(MessageReader2) {
+      function is(value) {
+        let candidate = value;
+        return candidate && Is.func(candidate.listen) && Is.func(candidate.dispose) && Is.func(candidate.onError) && Is.func(candidate.onClose) && Is.func(candidate.onPartialMessage);
+      }
+      MessageReader2.is = is;
+    })(MessageReader || (exports2.MessageReader = MessageReader = {}));
+    var AbstractMessageReader = class {
+      constructor() {
+        this.errorEmitter = new events_1.Emitter();
+        this.closeEmitter = new events_1.Emitter();
+        this.partialMessageEmitter = new events_1.Emitter();
+      }
+      dispose() {
+        this.errorEmitter.dispose();
+        this.closeEmitter.dispose();
+      }
+      get onError() {
+        return this.errorEmitter.event;
+      }
+      fireError(error) {
+        this.errorEmitter.fire(this.asError(error));
+      }
+      get onClose() {
+        return this.closeEmitter.event;
+      }
+      fireClose() {
+        this.closeEmitter.fire(void 0);
+      }
+      get onPartialMessage() {
+        return this.partialMessageEmitter.event;
+      }
+      firePartialMessage(info) {
+        this.partialMessageEmitter.fire(info);
+      }
+      asError(error) {
+        if (error instanceof Error) {
+          return error;
+        } else {
+          return new Error(`Reader received error. Reason: ${Is.string(error.message) ? error.message : "unknown"}`);
+        }
+      }
+    };
+    exports2.AbstractMessageReader = AbstractMessageReader;
+    var ResolvedMessageReaderOptions;
+    (function(ResolvedMessageReaderOptions2) {
+      function fromOptions(options) {
+        let charset;
+        let result;
+        let contentDecoder;
+        const contentDecoders = /* @__PURE__ */ new Map();
+        let contentTypeDecoder;
+        const contentTypeDecoders = /* @__PURE__ */ new Map();
+        if (options === void 0 || typeof options === "string") {
+          charset = options ?? "utf-8";
+        } else {
+          charset = options.charset ?? "utf-8";
+          if (options.contentDecoder !== void 0) {
+            contentDecoder = options.contentDecoder;
+            contentDecoders.set(contentDecoder.name, contentDecoder);
+          }
+          if (options.contentDecoders !== void 0) {
+            for (const decoder of options.contentDecoders) {
+              contentDecoders.set(decoder.name, decoder);
+            }
+          }
+          if (options.contentTypeDecoder !== void 0) {
+            contentTypeDecoder = options.contentTypeDecoder;
+            contentTypeDecoders.set(contentTypeDecoder.name, contentTypeDecoder);
+          }
+          if (options.contentTypeDecoders !== void 0) {
+            for (const decoder of options.contentTypeDecoders) {
+              contentTypeDecoders.set(decoder.name, decoder);
+            }
+          }
+        }
+        if (contentTypeDecoder === void 0) {
+          contentTypeDecoder = (0, ral_1.default)().applicationJson.decoder;
+          contentTypeDecoders.set(contentTypeDecoder.name, contentTypeDecoder);
+        }
+        return { charset, contentDecoder, contentDecoders, contentTypeDecoder, contentTypeDecoders };
+      }
+      ResolvedMessageReaderOptions2.fromOptions = fromOptions;
+    })(ResolvedMessageReaderOptions || (ResolvedMessageReaderOptions = {}));
+    var ReadableStreamMessageReader = class extends AbstractMessageReader {
+      constructor(readable, options) {
+        super();
+        this.readable = readable;
+        this.options = ResolvedMessageReaderOptions.fromOptions(options);
+        this.buffer = (0, ral_1.default)().messageBuffer.create(this.options.charset);
+        this._partialMessageTimeout = 1e4;
+        this.nextMessageLength = -1;
+        this.messageToken = 0;
+        this.readSemaphore = new semaphore_1.Semaphore(1);
+      }
+      set partialMessageTimeout(timeout) {
+        this._partialMessageTimeout = timeout;
+      }
+      get partialMessageTimeout() {
+        return this._partialMessageTimeout;
+      }
+      listen(callback2) {
+        this.nextMessageLength = -1;
+        this.messageToken = 0;
+        this.partialMessageTimer = void 0;
+        this.callback = callback2;
+        const result = this.readable.onData((data) => {
+          this.onData(data);
+        });
+        this.readable.onError((error) => this.fireError(error));
+        this.readable.onClose(() => this.fireClose());
+        return result;
+      }
+      onData(data) {
+        try {
+          this.buffer.append(data);
+          while (true) {
+            if (this.nextMessageLength === -1) {
+              const headers = this.buffer.tryReadHeaders(true);
+              if (!headers) {
+                return;
+              }
+              const contentLength = headers.get("content-length");
+              if (!contentLength) {
+                this.fireError(new Error(`Header must provide a Content-Length property.
+${JSON.stringify(Object.fromEntries(headers))}`));
+                return;
+              }
+              const length = parseInt(contentLength);
+              if (isNaN(length)) {
+                this.fireError(new Error(`Content-Length value must be a number. Got ${contentLength}`));
+                return;
+              }
+              this.nextMessageLength = length;
+            }
+            const body = this.buffer.tryReadBody(this.nextMessageLength);
+            if (body === void 0) {
+              this.setPartialMessageTimer();
+              return;
+            }
+            this.clearPartialMessageTimer();
+            this.nextMessageLength = -1;
+            this.readSemaphore.lock(async () => {
+              const bytes = this.options.contentDecoder !== void 0 ? await this.options.contentDecoder.decode(body) : body;
+              const message = await this.options.contentTypeDecoder.decode(bytes, this.options);
+              this.callback(message);
+            }).catch((error) => {
+              this.fireError(error);
+            });
+          }
+        } catch (error) {
+          this.fireError(error);
+        }
+      }
+      clearPartialMessageTimer() {
+        if (this.partialMessageTimer) {
+          this.partialMessageTimer.dispose();
+          this.partialMessageTimer = void 0;
+        }
+      }
+      setPartialMessageTimer() {
+        this.clearPartialMessageTimer();
+        if (this._partialMessageTimeout <= 0) {
+          return;
+        }
+        this.partialMessageTimer = (0, ral_1.default)().timer.setTimeout((token, timeout) => {
+          this.partialMessageTimer = void 0;
+          if (token === this.messageToken) {
+            this.firePartialMessage({ messageToken: token, waitingTime: timeout });
+            this.setPartialMessageTimer();
+          }
+        }, this._partialMessageTimeout, this.messageToken, this._partialMessageTimeout);
+      }
+    };
+    exports2.ReadableStreamMessageReader = ReadableStreamMessageReader;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageWriter.js
+var require_messageWriter2 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageWriter.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.WriteableStreamMessageWriter = exports2.AbstractMessageWriter = exports2.MessageWriter = void 0;
+    var ral_1 = require_ral();
+    var Is = require_is2();
+    var semaphore_1 = require_semaphore2();
+    var events_1 = require_events2();
+    var ContentLength = "Content-Length: ";
+    var CRLF = "\r\n";
+    var MessageWriter;
+    (function(MessageWriter2) {
+      function is(value) {
+        let candidate = value;
+        return candidate && Is.func(candidate.dispose) && Is.func(candidate.onClose) && Is.func(candidate.onError) && Is.func(candidate.write);
+      }
+      MessageWriter2.is = is;
+    })(MessageWriter || (exports2.MessageWriter = MessageWriter = {}));
+    var AbstractMessageWriter = class {
+      constructor() {
+        this.errorEmitter = new events_1.Emitter();
+        this.closeEmitter = new events_1.Emitter();
+      }
+      dispose() {
+        this.errorEmitter.dispose();
+        this.closeEmitter.dispose();
+      }
+      get onError() {
+        return this.errorEmitter.event;
+      }
+      fireError(error, message, count) {
+        this.errorEmitter.fire([this.asError(error), message, count]);
+      }
+      get onClose() {
+        return this.closeEmitter.event;
+      }
+      fireClose() {
+        this.closeEmitter.fire(void 0);
+      }
+      asError(error) {
+        if (error instanceof Error) {
+          return error;
+        } else {
+          return new Error(`Writer received error. Reason: ${Is.string(error.message) ? error.message : "unknown"}`);
+        }
+      }
+    };
+    exports2.AbstractMessageWriter = AbstractMessageWriter;
+    var ResolvedMessageWriterOptions;
+    (function(ResolvedMessageWriterOptions2) {
+      function fromOptions(options) {
+        if (options === void 0 || typeof options === "string") {
+          return { charset: options ?? "utf-8", contentTypeEncoder: (0, ral_1.default)().applicationJson.encoder };
+        } else {
+          return { charset: options.charset ?? "utf-8", contentEncoder: options.contentEncoder, contentTypeEncoder: options.contentTypeEncoder ?? (0, ral_1.default)().applicationJson.encoder };
+        }
+      }
+      ResolvedMessageWriterOptions2.fromOptions = fromOptions;
+    })(ResolvedMessageWriterOptions || (ResolvedMessageWriterOptions = {}));
+    var WriteableStreamMessageWriter = class extends AbstractMessageWriter {
+      constructor(writable, options) {
+        super();
+        this.writable = writable;
+        this.options = ResolvedMessageWriterOptions.fromOptions(options);
+        this.errorCount = 0;
+        this.writeSemaphore = new semaphore_1.Semaphore(1);
+        this.writable.onError((error) => this.fireError(error));
+        this.writable.onClose(() => this.fireClose());
+      }
+      async write(msg) {
+        return this.writeSemaphore.lock(async () => {
+          const payload = this.options.contentTypeEncoder.encode(msg, this.options).then((buffer) => {
+            if (this.options.contentEncoder !== void 0) {
+              return this.options.contentEncoder.encode(buffer);
+            } else {
+              return buffer;
+            }
+          });
+          return payload.then((buffer) => {
+            const headers = [];
+            headers.push(ContentLength, buffer.byteLength.toString(), CRLF);
+            headers.push(CRLF);
+            return this.doWrite(msg, headers, buffer);
+          }, (error) => {
+            this.fireError(error);
+            throw error;
+          });
+        });
+      }
+      async doWrite(msg, headers, data) {
+        try {
+          await this.writable.write(headers.join(""), "ascii");
+          return this.writable.write(data);
+        } catch (error) {
+          this.handleError(error, msg);
+          return Promise.reject(error);
+        }
+      }
+      handleError(error, msg) {
+        this.errorCount++;
+        this.fireError(error, msg, this.errorCount);
+      }
+      end() {
+        this.writable.end();
+      }
+    };
+    exports2.WriteableStreamMessageWriter = WriteableStreamMessageWriter;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageBuffer.js
+var require_messageBuffer = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/messageBuffer.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.AbstractMessageBuffer = void 0;
+    var CR = 13;
+    var LF = 10;
+    var CRLF = "\r\n";
+    var AbstractMessageBuffer = class {
+      constructor(encoding = "utf-8") {
+        this._encoding = encoding;
+        this._chunks = [];
+        this._totalLength = 0;
+      }
+      get encoding() {
+        return this._encoding;
+      }
+      append(chunk) {
+        const toAppend = typeof chunk === "string" ? this.fromString(chunk, this._encoding) : chunk;
+        this._chunks.push(toAppend);
+        this._totalLength += toAppend.byteLength;
+      }
+      tryReadHeaders(lowerCaseKeys = false) {
+        if (this._chunks.length === 0) {
+          return void 0;
+        }
+        let state = 0;
+        let chunkIndex = 0;
+        let offset = 0;
+        let chunkBytesRead = 0;
+        row: while (chunkIndex < this._chunks.length) {
+          const chunk = this._chunks[chunkIndex];
+          offset = 0;
+          column: while (offset < chunk.length) {
+            const value = chunk[offset];
+            switch (value) {
+              case CR:
+                switch (state) {
+                  case 0:
+                    state = 1;
+                    break;
+                  case 2:
+                    state = 3;
+                    break;
+                  default:
+                    state = 0;
+                }
+                break;
+              case LF:
+                switch (state) {
+                  case 1:
+                    state = 2;
+                    break;
+                  case 3:
+                    state = 4;
+                    offset++;
+                    break row;
+                  default:
+                    state = 0;
+                }
+                break;
+              default:
+                state = 0;
+            }
+            offset++;
+          }
+          chunkBytesRead += chunk.byteLength;
+          chunkIndex++;
+        }
+        if (state !== 4) {
+          return void 0;
+        }
+        const buffer = this._read(chunkBytesRead + offset);
+        const result = /* @__PURE__ */ new Map();
+        const headers = this.toString(buffer, "ascii").split(CRLF);
+        if (headers.length < 2) {
+          return result;
+        }
+        for (let i = 0; i < headers.length - 2; i++) {
+          const header = headers[i];
+          const index = header.indexOf(":");
+          if (index === -1) {
+            throw new Error(`Message header must separate key and value using ':'
+${header}`);
+          }
+          const key = header.substr(0, index);
+          const value = header.substr(index + 1).trim();
+          result.set(lowerCaseKeys ? key.toLowerCase() : key, value);
+        }
+        return result;
+      }
+      tryReadBody(length) {
+        if (this._totalLength < length) {
+          return void 0;
+        }
+        return this._read(length);
+      }
+      get numberOfBytes() {
+        return this._totalLength;
+      }
+      _read(byteCount) {
+        if (byteCount === 0) {
+          return this.emptyBuffer();
+        }
+        if (byteCount > this._totalLength) {
+          throw new Error(`Cannot read so many bytes!`);
+        }
+        if (this._chunks[0].byteLength === byteCount) {
+          const chunk = this._chunks[0];
+          this._chunks.shift();
+          this._totalLength -= byteCount;
+          return this.asNative(chunk);
+        }
+        if (this._chunks[0].byteLength > byteCount) {
+          const chunk = this._chunks[0];
+          const result2 = this.asNative(chunk, byteCount);
+          this._chunks[0] = chunk.slice(byteCount);
+          this._totalLength -= byteCount;
+          return result2;
+        }
+        const result = this.allocNative(byteCount);
+        let resultOffset = 0;
+        let chunkIndex = 0;
+        while (byteCount > 0) {
+          const chunk = this._chunks[chunkIndex];
+          if (chunk.byteLength > byteCount) {
+            const chunkPart = chunk.slice(0, byteCount);
+            result.set(chunkPart, resultOffset);
+            resultOffset += byteCount;
+            this._chunks[chunkIndex] = chunk.slice(byteCount);
+            this._totalLength -= byteCount;
+            byteCount -= byteCount;
+          } else {
+            result.set(chunk, resultOffset);
+            resultOffset += chunk.byteLength;
+            this._chunks.shift();
+            this._totalLength -= chunk.byteLength;
+            byteCount -= chunk.byteLength;
+          }
+        }
+        return result;
+      }
+    };
+    exports2.AbstractMessageBuffer = AbstractMessageBuffer;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/connection.js
+var require_connection = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/connection.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.createMessageConnection = exports2.ConnectionOptions = exports2.MessageStrategy = exports2.CancellationStrategy = exports2.CancellationSenderStrategy = exports2.CancellationReceiverStrategy = exports2.RequestCancellationReceiverStrategy = exports2.IdCancellationReceiverStrategy = exports2.ConnectionStrategy = exports2.ConnectionError = exports2.ConnectionErrors = exports2.LogTraceNotification = exports2.SetTraceNotification = exports2.TraceFormat = exports2.TraceValues = exports2.Trace = exports2.NullLogger = exports2.ProgressType = exports2.ProgressToken = void 0;
+    var ral_1 = require_ral();
+    var Is = require_is2();
+    var messages_1 = require_messages2();
+    var linkedMap_1 = require_linkedMap2();
+    var events_1 = require_events2();
+    var cancellation_1 = require_cancellation3();
+    var CancelNotification;
+    (function(CancelNotification2) {
+      CancelNotification2.type = new messages_1.NotificationType("$/cancelRequest");
+    })(CancelNotification || (CancelNotification = {}));
+    var ProgressToken;
+    (function(ProgressToken2) {
+      function is(value) {
+        return typeof value === "string" || typeof value === "number";
+      }
+      ProgressToken2.is = is;
+    })(ProgressToken || (exports2.ProgressToken = ProgressToken = {}));
+    var ProgressNotification;
+    (function(ProgressNotification2) {
+      ProgressNotification2.type = new messages_1.NotificationType("$/progress");
+    })(ProgressNotification || (ProgressNotification = {}));
+    var ProgressType = class {
+      constructor() {
+      }
+    };
+    exports2.ProgressType = ProgressType;
+    var StarRequestHandler;
+    (function(StarRequestHandler2) {
+      function is(value) {
+        return Is.func(value);
+      }
+      StarRequestHandler2.is = is;
+    })(StarRequestHandler || (StarRequestHandler = {}));
+    exports2.NullLogger = Object.freeze({
+      error: () => {
+      },
+      warn: () => {
+      },
+      info: () => {
+      },
+      log: () => {
+      }
+    });
+    var Trace;
+    (function(Trace2) {
+      Trace2[Trace2["Off"] = 0] = "Off";
+      Trace2[Trace2["Messages"] = 1] = "Messages";
+      Trace2[Trace2["Compact"] = 2] = "Compact";
+      Trace2[Trace2["Verbose"] = 3] = "Verbose";
+    })(Trace || (exports2.Trace = Trace = {}));
+    var TraceValues;
+    (function(TraceValues2) {
+      TraceValues2.Off = "off";
+      TraceValues2.Messages = "messages";
+      TraceValues2.Compact = "compact";
+      TraceValues2.Verbose = "verbose";
+    })(TraceValues || (exports2.TraceValues = TraceValues = {}));
+    (function(Trace2) {
+      function fromString(value) {
+        if (!Is.string(value)) {
+          return Trace2.Off;
+        }
+        value = value.toLowerCase();
+        switch (value) {
+          case "off":
+            return Trace2.Off;
+          case "messages":
+            return Trace2.Messages;
+          case "compact":
+            return Trace2.Compact;
+          case "verbose":
+            return Trace2.Verbose;
+          default:
+            return Trace2.Off;
+        }
+      }
+      Trace2.fromString = fromString;
+      function toString(value) {
+        switch (value) {
+          case Trace2.Off:
+            return "off";
+          case Trace2.Messages:
+            return "messages";
+          case Trace2.Compact:
+            return "compact";
+          case Trace2.Verbose:
+            return "verbose";
+          default:
+            return "off";
+        }
+      }
+      Trace2.toString = toString;
+    })(Trace || (exports2.Trace = Trace = {}));
+    var TraceFormat;
+    (function(TraceFormat2) {
+      TraceFormat2["Text"] = "text";
+      TraceFormat2["JSON"] = "json";
+    })(TraceFormat || (exports2.TraceFormat = TraceFormat = {}));
+    (function(TraceFormat2) {
+      function fromString(value) {
+        if (!Is.string(value)) {
+          return TraceFormat2.Text;
+        }
+        value = value.toLowerCase();
+        if (value === "json") {
+          return TraceFormat2.JSON;
+        } else {
+          return TraceFormat2.Text;
+        }
+      }
+      TraceFormat2.fromString = fromString;
+    })(TraceFormat || (exports2.TraceFormat = TraceFormat = {}));
+    var SetTraceNotification;
+    (function(SetTraceNotification2) {
+      SetTraceNotification2.type = new messages_1.NotificationType("$/setTrace");
+    })(SetTraceNotification || (exports2.SetTraceNotification = SetTraceNotification = {}));
+    var LogTraceNotification;
+    (function(LogTraceNotification2) {
+      LogTraceNotification2.type = new messages_1.NotificationType("$/logTrace");
+    })(LogTraceNotification || (exports2.LogTraceNotification = LogTraceNotification = {}));
+    var ConnectionErrors;
+    (function(ConnectionErrors2) {
+      ConnectionErrors2[ConnectionErrors2["Closed"] = 1] = "Closed";
+      ConnectionErrors2[ConnectionErrors2["Disposed"] = 2] = "Disposed";
+      ConnectionErrors2[ConnectionErrors2["AlreadyListening"] = 3] = "AlreadyListening";
+    })(ConnectionErrors || (exports2.ConnectionErrors = ConnectionErrors = {}));
+    var ConnectionError = class _ConnectionError extends Error {
+      constructor(code, message) {
+        super(message);
+        this.code = code;
+        Object.setPrototypeOf(this, _ConnectionError.prototype);
+      }
+    };
+    exports2.ConnectionError = ConnectionError;
+    var ConnectionStrategy;
+    (function(ConnectionStrategy2) {
+      function is(value) {
+        const candidate = value;
+        return candidate && Is.func(candidate.cancelUndispatched);
+      }
+      ConnectionStrategy2.is = is;
+    })(ConnectionStrategy || (exports2.ConnectionStrategy = ConnectionStrategy = {}));
+    var IdCancellationReceiverStrategy;
+    (function(IdCancellationReceiverStrategy2) {
+      function is(value) {
+        const candidate = value;
+        return candidate && (candidate.kind === void 0 || candidate.kind === "id") && Is.func(candidate.createCancellationTokenSource) && (candidate.dispose === void 0 || Is.func(candidate.dispose));
+      }
+      IdCancellationReceiverStrategy2.is = is;
+    })(IdCancellationReceiverStrategy || (exports2.IdCancellationReceiverStrategy = IdCancellationReceiverStrategy = {}));
+    var RequestCancellationReceiverStrategy;
+    (function(RequestCancellationReceiverStrategy2) {
+      function is(value) {
+        const candidate = value;
+        return candidate && candidate.kind === "request" && Is.func(candidate.createCancellationTokenSource) && (candidate.dispose === void 0 || Is.func(candidate.dispose));
+      }
+      RequestCancellationReceiverStrategy2.is = is;
+    })(RequestCancellationReceiverStrategy || (exports2.RequestCancellationReceiverStrategy = RequestCancellationReceiverStrategy = {}));
+    var CancellationReceiverStrategy;
+    (function(CancellationReceiverStrategy2) {
+      CancellationReceiverStrategy2.Message = Object.freeze({
+        createCancellationTokenSource(_) {
+          return new cancellation_1.CancellationTokenSource();
+        }
+      });
+      function is(value) {
+        return IdCancellationReceiverStrategy.is(value) || RequestCancellationReceiverStrategy.is(value);
+      }
+      CancellationReceiverStrategy2.is = is;
+    })(CancellationReceiverStrategy || (exports2.CancellationReceiverStrategy = CancellationReceiverStrategy = {}));
+    var CancellationSenderStrategy;
+    (function(CancellationSenderStrategy2) {
+      CancellationSenderStrategy2.Message = Object.freeze({
+        sendCancellation(conn, id) {
+          return conn.sendNotification(CancelNotification.type, { id });
+        },
+        cleanup(_) {
+        }
+      });
+      function is(value) {
+        const candidate = value;
+        return candidate && Is.func(candidate.sendCancellation) && Is.func(candidate.cleanup);
+      }
+      CancellationSenderStrategy2.is = is;
+    })(CancellationSenderStrategy || (exports2.CancellationSenderStrategy = CancellationSenderStrategy = {}));
+    var CancellationStrategy;
+    (function(CancellationStrategy2) {
+      CancellationStrategy2.Message = Object.freeze({
+        receiver: CancellationReceiverStrategy.Message,
+        sender: CancellationSenderStrategy.Message
+      });
+      function is(value) {
+        const candidate = value;
+        return candidate && CancellationReceiverStrategy.is(candidate.receiver) && CancellationSenderStrategy.is(candidate.sender);
+      }
+      CancellationStrategy2.is = is;
+    })(CancellationStrategy || (exports2.CancellationStrategy = CancellationStrategy = {}));
+    var MessageStrategy;
+    (function(MessageStrategy2) {
+      function is(value) {
+        const candidate = value;
+        return candidate && Is.func(candidate.handleMessage);
+      }
+      MessageStrategy2.is = is;
+    })(MessageStrategy || (exports2.MessageStrategy = MessageStrategy = {}));
+    var ConnectionOptions;
+    (function(ConnectionOptions2) {
+      function is(value) {
+        const candidate = value;
+        return candidate && (CancellationStrategy.is(candidate.cancellationStrategy) || ConnectionStrategy.is(candidate.connectionStrategy) || MessageStrategy.is(candidate.messageStrategy));
+      }
+      ConnectionOptions2.is = is;
+    })(ConnectionOptions || (exports2.ConnectionOptions = ConnectionOptions = {}));
+    var ConnectionState;
+    (function(ConnectionState2) {
+      ConnectionState2[ConnectionState2["New"] = 1] = "New";
+      ConnectionState2[ConnectionState2["Listening"] = 2] = "Listening";
+      ConnectionState2[ConnectionState2["Closed"] = 3] = "Closed";
+      ConnectionState2[ConnectionState2["Disposed"] = 4] = "Disposed";
+    })(ConnectionState || (ConnectionState = {}));
+    function createMessageConnection2(messageReader, messageWriter, _logger, options) {
+      const logger = _logger !== void 0 ? _logger : exports2.NullLogger;
+      let sequenceNumber = 0;
+      let notificationSequenceNumber = 0;
+      let unknownResponseSequenceNumber = 0;
+      const version = "2.0";
+      let starRequestHandler = void 0;
+      const requestHandlers = /* @__PURE__ */ new Map();
+      let starNotificationHandler = void 0;
+      const notificationHandlers = /* @__PURE__ */ new Map();
+      const progressHandlers = /* @__PURE__ */ new Map();
+      let timer;
+      let messageQueue = new linkedMap_1.LinkedMap();
+      let responsePromises = /* @__PURE__ */ new Map();
+      let knownCanceledRequests = /* @__PURE__ */ new Set();
+      let requestTokens = /* @__PURE__ */ new Map();
+      let trace = Trace.Off;
+      let traceFormat = TraceFormat.Text;
+      let tracer;
+      let state = ConnectionState.New;
+      const errorEmitter = new events_1.Emitter();
+      const closeEmitter = new events_1.Emitter();
+      const unhandledNotificationEmitter = new events_1.Emitter();
+      const unhandledProgressEmitter = new events_1.Emitter();
+      const disposeEmitter = new events_1.Emitter();
+      const cancellationStrategy = options && options.cancellationStrategy ? options.cancellationStrategy : CancellationStrategy.Message;
+      function createRequestQueueKey(id) {
+        if (id === null) {
+          throw new Error(`Can't send requests with id null since the response can't be correlated.`);
+        }
+        return "req-" + id.toString();
+      }
+      function createResponseQueueKey(id) {
+        if (id === null) {
+          return "res-unknown-" + (++unknownResponseSequenceNumber).toString();
+        } else {
+          return "res-" + id.toString();
+        }
+      }
+      function createNotificationQueueKey() {
+        return "not-" + (++notificationSequenceNumber).toString();
+      }
+      function addMessageToQueue(queue, message) {
+        if (messages_1.Message.isRequest(message)) {
+          queue.set(createRequestQueueKey(message.id), message);
+        } else if (messages_1.Message.isResponse(message)) {
+          queue.set(createResponseQueueKey(message.id), message);
+        } else {
+          queue.set(createNotificationQueueKey(), message);
+        }
+      }
+      function cancelUndispatched(_message) {
+        return void 0;
+      }
+      function isListening() {
+        return state === ConnectionState.Listening;
+      }
+      function isClosed() {
+        return state === ConnectionState.Closed;
+      }
+      function isDisposed() {
+        return state === ConnectionState.Disposed;
+      }
+      function closeHandler() {
+        if (state === ConnectionState.New || state === ConnectionState.Listening) {
+          state = ConnectionState.Closed;
+          closeEmitter.fire(void 0);
+        }
+      }
+      function readErrorHandler(error) {
+        errorEmitter.fire([error, void 0, void 0]);
+      }
+      function writeErrorHandler(data) {
+        errorEmitter.fire(data);
+      }
+      messageReader.onClose(closeHandler);
+      messageReader.onError(readErrorHandler);
+      messageWriter.onClose(closeHandler);
+      messageWriter.onError(writeErrorHandler);
+      function triggerMessageQueue() {
+        if (timer || messageQueue.size === 0) {
+          return;
+        }
+        timer = (0, ral_1.default)().timer.setImmediate(() => {
+          timer = void 0;
+          processMessageQueue();
+        });
+      }
+      function handleMessage(message) {
+        if (messages_1.Message.isRequest(message)) {
+          handleRequest(message);
+        } else if (messages_1.Message.isNotification(message)) {
+          handleNotification(message);
+        } else if (messages_1.Message.isResponse(message)) {
+          handleResponse(message);
+        } else {
+          handleInvalidMessage(message);
+        }
+      }
+      function processMessageQueue() {
+        if (messageQueue.size === 0) {
+          return;
+        }
+        const message = messageQueue.shift();
+        try {
+          const messageStrategy = options?.messageStrategy;
+          if (MessageStrategy.is(messageStrategy)) {
+            messageStrategy.handleMessage(message, handleMessage);
+          } else {
+            handleMessage(message);
+          }
+        } finally {
+          triggerMessageQueue();
+        }
+      }
+      const callback2 = (message) => {
+        try {
+          if (messages_1.Message.isNotification(message) && message.method === CancelNotification.type.method) {
+            const cancelId = message.params.id;
+            const key = createRequestQueueKey(cancelId);
+            const toCancel = messageQueue.get(key);
+            if (messages_1.Message.isRequest(toCancel)) {
+              const strategy = options?.connectionStrategy;
+              const response = strategy && strategy.cancelUndispatched ? strategy.cancelUndispatched(toCancel, cancelUndispatched) : cancelUndispatched(toCancel);
+              if (response && (response.error !== void 0 || response.result !== void 0)) {
+                messageQueue.delete(key);
+                requestTokens.delete(cancelId);
+                response.id = toCancel.id;
+                traceSendingResponse(response, message.method, Date.now());
+                messageWriter.write(response).catch(() => logger.error(`Sending response for canceled message failed.`));
+                return;
+              }
+            }
+            const cancellationToken = requestTokens.get(cancelId);
+            if (cancellationToken !== void 0) {
+              cancellationToken.cancel();
+              traceReceivedNotification(message);
+              return;
+            } else {
+              knownCanceledRequests.add(cancelId);
+            }
+          }
+          addMessageToQueue(messageQueue, message);
+        } finally {
+          triggerMessageQueue();
+        }
+      };
+      function handleRequest(requestMessage) {
+        if (isDisposed()) {
+          return;
+        }
+        function reply(resultOrError, method, startTime2) {
+          const message = {
+            jsonrpc: version,
+            id: requestMessage.id
+          };
+          if (resultOrError instanceof messages_1.ResponseError) {
+            message.error = resultOrError.toJson();
+          } else {
+            message.result = resultOrError === void 0 ? null : resultOrError;
+          }
+          traceSendingResponse(message, method, startTime2);
+          messageWriter.write(message).catch(() => logger.error(`Sending response failed.`));
+        }
+        function replyError(error, method, startTime2) {
+          const message = {
+            jsonrpc: version,
+            id: requestMessage.id,
+            error: error.toJson()
+          };
+          traceSendingResponse(message, method, startTime2);
+          messageWriter.write(message).catch(() => logger.error(`Sending response failed.`));
+        }
+        function replySuccess(result, method, startTime2) {
+          if (result === void 0) {
+            result = null;
+          }
+          const message = {
+            jsonrpc: version,
+            id: requestMessage.id,
+            result
+          };
+          traceSendingResponse(message, method, startTime2);
+          messageWriter.write(message).catch(() => logger.error(`Sending response failed.`));
+        }
+        traceReceivedRequest(requestMessage);
+        const element = requestHandlers.get(requestMessage.method);
+        let type;
+        let requestHandler;
+        if (element) {
+          type = element.type;
+          requestHandler = element.handler;
+        }
+        const startTime = Date.now();
+        if (requestHandler || starRequestHandler) {
+          const tokenKey = requestMessage.id ?? String(Date.now());
+          const cancellationSource = IdCancellationReceiverStrategy.is(cancellationStrategy.receiver) ? cancellationStrategy.receiver.createCancellationTokenSource(tokenKey) : cancellationStrategy.receiver.createCancellationTokenSource(requestMessage);
+          if (requestMessage.id !== null && knownCanceledRequests.has(requestMessage.id)) {
+            cancellationSource.cancel();
+          }
+          if (requestMessage.id !== null) {
+            requestTokens.set(tokenKey, cancellationSource);
+          }
+          try {
+            let handlerResult;
+            if (requestHandler) {
+              if (requestMessage.params === void 0) {
+                if (type !== void 0 && type.numberOfParams !== 0) {
+                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InvalidParams, `Request ${requestMessage.method} defines ${type.numberOfParams} params but received none.`), requestMessage.method, startTime);
+                  return;
+                }
+                handlerResult = requestHandler(cancellationSource.token);
+              } else if (Array.isArray(requestMessage.params)) {
+                if (type !== void 0 && type.parameterStructures === messages_1.ParameterStructures.byName) {
+                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InvalidParams, `Request ${requestMessage.method} defines parameters by name but received parameters by position`), requestMessage.method, startTime);
+                  return;
+                }
+                handlerResult = requestHandler(...requestMessage.params, cancellationSource.token);
+              } else {
+                if (type !== void 0 && type.parameterStructures === messages_1.ParameterStructures.byPosition) {
+                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InvalidParams, `Request ${requestMessage.method} defines parameters by position but received parameters by name`), requestMessage.method, startTime);
+                  return;
+                }
+                handlerResult = requestHandler(requestMessage.params, cancellationSource.token);
+              }
+            } else if (starRequestHandler) {
+              handlerResult = starRequestHandler(requestMessage.method, requestMessage.params, cancellationSource.token);
+            }
+            const promise2 = handlerResult;
+            if (!handlerResult) {
+              requestTokens.delete(tokenKey);
+              replySuccess(handlerResult, requestMessage.method, startTime);
+            } else if (promise2.then) {
+              promise2.then((resultOrError) => {
+                requestTokens.delete(tokenKey);
+                reply(resultOrError, requestMessage.method, startTime);
+              }, (error) => {
+                requestTokens.delete(tokenKey);
+                if (error instanceof messages_1.ResponseError) {
+                  replyError(error, requestMessage.method, startTime);
+                } else if (error && Is.string(error.message)) {
+                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InternalError, `Request ${requestMessage.method} failed with message: ${error.message}`), requestMessage.method, startTime);
+                } else {
+                  replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InternalError, `Request ${requestMessage.method} failed unexpectedly without providing any details.`), requestMessage.method, startTime);
+                }
+              });
+            } else {
+              requestTokens.delete(tokenKey);
+              reply(handlerResult, requestMessage.method, startTime);
+            }
+          } catch (error) {
+            requestTokens.delete(tokenKey);
+            if (error instanceof messages_1.ResponseError) {
+              reply(error, requestMessage.method, startTime);
+            } else if (error && Is.string(error.message)) {
+              replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InternalError, `Request ${requestMessage.method} failed with message: ${error.message}`), requestMessage.method, startTime);
+            } else {
+              replyError(new messages_1.ResponseError(messages_1.ErrorCodes.InternalError, `Request ${requestMessage.method} failed unexpectedly without providing any details.`), requestMessage.method, startTime);
+            }
+          }
+        } else {
+          replyError(new messages_1.ResponseError(messages_1.ErrorCodes.MethodNotFound, `Unhandled method ${requestMessage.method}`), requestMessage.method, startTime);
+        }
+      }
+      function handleResponse(responseMessage) {
+        if (isDisposed()) {
+          return;
+        }
+        if (responseMessage.id === null) {
+          if (responseMessage.error) {
+            logger.error(`Received response message without id: Error is: 
+${JSON.stringify(responseMessage.error, void 0, 4)}`);
+          } else {
+            logger.error(`Received response message without id. No further error information provided.`);
+          }
+        } else {
+          const key = responseMessage.id;
+          const responsePromise = responsePromises.get(key);
+          traceReceivedResponse(responseMessage, responsePromise);
+          if (responsePromise !== void 0) {
+            responsePromises.delete(key);
+            try {
+              if (responseMessage.error) {
+                const error = responseMessage.error;
+                responsePromise.reject(new messages_1.ResponseError(error.code, error.message, error.data));
+              } else if (responseMessage.result !== void 0) {
+                responsePromise.resolve(responseMessage.result);
+              } else {
+                throw new Error("Should never happen.");
+              }
+            } catch (error) {
+              if (error.message) {
+                logger.error(`Response handler '${responsePromise.method}' failed with message: ${error.message}`);
+              } else {
+                logger.error(`Response handler '${responsePromise.method}' failed unexpectedly.`);
+              }
+            }
+          }
+        }
+      }
+      function handleNotification(message) {
+        if (isDisposed()) {
+          return;
+        }
+        let type = void 0;
+        let notificationHandler;
+        if (message.method === CancelNotification.type.method) {
+          const cancelId = message.params.id;
+          knownCanceledRequests.delete(cancelId);
+          traceReceivedNotification(message);
+          return;
+        } else {
+          const element = notificationHandlers.get(message.method);
+          if (element) {
+            notificationHandler = element.handler;
+            type = element.type;
+          }
+        }
+        if (notificationHandler || starNotificationHandler) {
+          try {
+            traceReceivedNotification(message);
+            if (notificationHandler) {
+              if (message.params === void 0) {
+                if (type !== void 0) {
+                  if (type.numberOfParams !== 0 && type.parameterStructures !== messages_1.ParameterStructures.byName) {
+                    logger.error(`Notification ${message.method} defines ${type.numberOfParams} params but received none.`);
+                  }
+                }
+                notificationHandler();
+              } else if (Array.isArray(message.params)) {
+                const params = message.params;
+                if (message.method === ProgressNotification.type.method && params.length === 2 && ProgressToken.is(params[0])) {
+                  notificationHandler({ token: params[0], value: params[1] });
+                } else {
+                  if (type !== void 0) {
+                    if (type.parameterStructures === messages_1.ParameterStructures.byName) {
+                      logger.error(`Notification ${message.method} defines parameters by name but received parameters by position`);
+                    }
+                    if (type.numberOfParams !== message.params.length) {
+                      logger.error(`Notification ${message.method} defines ${type.numberOfParams} params but received ${params.length} arguments`);
+                    }
+                  }
+                  notificationHandler(...params);
+                }
+              } else {
+                if (type !== void 0 && type.parameterStructures === messages_1.ParameterStructures.byPosition) {
+                  logger.error(`Notification ${message.method} defines parameters by position but received parameters by name`);
+                }
+                notificationHandler(message.params);
+              }
+            } else if (starNotificationHandler) {
+              starNotificationHandler(message.method, message.params);
+            }
+          } catch (error) {
+            if (error.message) {
+              logger.error(`Notification handler '${message.method}' failed with message: ${error.message}`);
+            } else {
+              logger.error(`Notification handler '${message.method}' failed unexpectedly.`);
+            }
+          }
+        } else {
+          unhandledNotificationEmitter.fire(message);
+        }
+      }
+      function handleInvalidMessage(message) {
+        if (!message) {
+          logger.error("Received empty message.");
+          return;
+        }
+        logger.error(`Received message which is neither a response nor a notification message:
+${JSON.stringify(message, null, 4)}`);
+        const responseMessage = message;
+        if (Is.string(responseMessage.id) || Is.number(responseMessage.id)) {
+          const key = responseMessage.id;
+          const responseHandler = responsePromises.get(key);
+          if (responseHandler) {
+            responseHandler.reject(new Error("The received response has neither a result nor an error property."));
+          }
+        }
+      }
+      function stringifyTrace(params) {
+        if (params === void 0 || params === null) {
+          return void 0;
+        }
+        switch (trace) {
+          case Trace.Verbose:
+            return JSON.stringify(params, null, 4);
+          case Trace.Compact:
+            return JSON.stringify(params);
+          default:
+            return void 0;
+        }
+      }
+      function traceSendingRequest(message) {
+        if (trace === Trace.Off || !tracer) {
+          return;
+        }
+        if (traceFormat === TraceFormat.Text) {
+          let data = void 0;
+          if ((trace === Trace.Verbose || trace === Trace.Compact) && message.params) {
+            data = `Params: ${stringifyTrace(message.params)}
+
+`;
+          }
+          tracer.log(`Sending request '${message.method} - (${message.id})'.`, data);
+        } else {
+          logLSPMessage("send-request", message);
+        }
+      }
+      function traceSendingNotification(message) {
+        if (trace === Trace.Off || !tracer) {
+          return;
+        }
+        if (traceFormat === TraceFormat.Text) {
+          let data = void 0;
+          if (trace === Trace.Verbose || trace === Trace.Compact) {
+            if (message.params) {
+              data = `Params: ${stringifyTrace(message.params)}
+
+`;
+            } else {
+              data = "No parameters provided.\n\n";
+            }
+          }
+          tracer.log(`Sending notification '${message.method}'.`, data);
+        } else {
+          logLSPMessage("send-notification", message);
+        }
+      }
+      function traceSendingResponse(message, method, startTime) {
+        if (trace === Trace.Off || !tracer) {
+          return;
+        }
+        if (traceFormat === TraceFormat.Text) {
+          let data = void 0;
+          if (trace === Trace.Verbose || trace === Trace.Compact) {
+            if (message.error && message.error.data) {
+              data = `Error data: ${stringifyTrace(message.error.data)}
+
+`;
+            } else {
+              if (message.result) {
+                data = `Result: ${stringifyTrace(message.result)}
+
+`;
+              } else if (message.error === void 0) {
+                data = "No result returned.\n\n";
+              }
+            }
+          }
+          tracer.log(`Sending response '${method} - (${message.id})'. Processing request took ${Date.now() - startTime}ms`, data);
+        } else {
+          logLSPMessage("send-response", message);
+        }
+      }
+      function traceReceivedRequest(message) {
+        if (trace === Trace.Off || !tracer) {
+          return;
+        }
+        if (traceFormat === TraceFormat.Text) {
+          let data = void 0;
+          if ((trace === Trace.Verbose || trace === Trace.Compact) && message.params) {
+            data = `Params: ${stringifyTrace(message.params)}
+
+`;
+          }
+          tracer.log(`Received request '${message.method} - (${message.id})'.`, data);
+        } else {
+          logLSPMessage("receive-request", message);
+        }
+      }
+      function traceReceivedNotification(message) {
+        if (trace === Trace.Off || !tracer || message.method === LogTraceNotification.type.method) {
+          return;
+        }
+        if (traceFormat === TraceFormat.Text) {
+          let data = void 0;
+          if (trace === Trace.Verbose || trace === Trace.Compact) {
+            if (message.params) {
+              data = `Params: ${stringifyTrace(message.params)}
+
+`;
+            } else {
+              data = "No parameters provided.\n\n";
+            }
+          }
+          tracer.log(`Received notification '${message.method}'.`, data);
+        } else {
+          logLSPMessage("receive-notification", message);
+        }
+      }
+      function traceReceivedResponse(message, responsePromise) {
+        if (trace === Trace.Off || !tracer) {
+          return;
+        }
+        if (traceFormat === TraceFormat.Text) {
+          let data = void 0;
+          if (trace === Trace.Verbose || trace === Trace.Compact) {
+            if (message.error && message.error.data) {
+              data = `Error data: ${stringifyTrace(message.error.data)}
+
+`;
+            } else {
+              if (message.result) {
+                data = `Result: ${stringifyTrace(message.result)}
+
+`;
+              } else if (message.error === void 0) {
+                data = "No result returned.\n\n";
+              }
+            }
+          }
+          if (responsePromise) {
+            const error = message.error ? ` Request failed: ${message.error.message} (${message.error.code}).` : "";
+            tracer.log(`Received response '${responsePromise.method} - (${message.id})' in ${Date.now() - responsePromise.timerStart}ms.${error}`, data);
+          } else {
+            tracer.log(`Received response ${message.id} without active response promise.`, data);
+          }
+        } else {
+          logLSPMessage("receive-response", message);
+        }
+      }
+      function logLSPMessage(type, message) {
+        if (!tracer || trace === Trace.Off) {
+          return;
+        }
+        const lspMessage = {
+          isLSPMessage: true,
+          type,
+          message,
+          timestamp: Date.now()
+        };
+        tracer.log(lspMessage);
+      }
+      function throwIfClosedOrDisposed() {
+        if (isClosed()) {
+          throw new ConnectionError(ConnectionErrors.Closed, "Connection is closed.");
+        }
+        if (isDisposed()) {
+          throw new ConnectionError(ConnectionErrors.Disposed, "Connection is disposed.");
+        }
+      }
+      function throwIfListening() {
+        if (isListening()) {
+          throw new ConnectionError(ConnectionErrors.AlreadyListening, "Connection is already listening");
+        }
+      }
+      function throwIfNotListening() {
+        if (!isListening()) {
+          throw new Error("Call listen() first.");
+        }
+      }
+      function undefinedToNull(param) {
+        if (param === void 0) {
+          return null;
+        } else {
+          return param;
+        }
+      }
+      function nullToUndefined(param) {
+        if (param === null) {
+          return void 0;
+        } else {
+          return param;
+        }
+      }
+      function isNamedParam(param) {
+        return param !== void 0 && param !== null && !Array.isArray(param) && typeof param === "object";
+      }
+      function computeSingleParam(parameterStructures, param) {
+        switch (parameterStructures) {
+          case messages_1.ParameterStructures.auto:
+            if (isNamedParam(param)) {
+              return nullToUndefined(param);
+            } else {
+              return [undefinedToNull(param)];
+            }
+          case messages_1.ParameterStructures.byName:
+            if (!isNamedParam(param)) {
+              throw new Error(`Received parameters by name but param is not an object literal.`);
+            }
+            return nullToUndefined(param);
+          case messages_1.ParameterStructures.byPosition:
+            return [undefinedToNull(param)];
+          default:
+            throw new Error(`Unknown parameter structure ${parameterStructures.toString()}`);
+        }
+      }
+      function computeMessageParams(type, params) {
+        let result;
+        const numberOfParams = type.numberOfParams;
+        switch (numberOfParams) {
+          case 0:
+            result = void 0;
+            break;
+          case 1:
+            result = computeSingleParam(type.parameterStructures, params[0]);
+            break;
+          default:
+            result = [];
+            for (let i = 0; i < params.length && i < numberOfParams; i++) {
+              result.push(undefinedToNull(params[i]));
+            }
+            if (params.length < numberOfParams) {
+              for (let i = params.length; i < numberOfParams; i++) {
+                result.push(null);
+              }
+            }
+            break;
+        }
+        return result;
+      }
+      const connection = {
+        sendNotification: (type, ...args) => {
+          throwIfClosedOrDisposed();
+          let method;
+          let messageParams;
+          if (Is.string(type)) {
+            method = type;
+            const first2 = args[0];
+            let paramStart = 0;
+            let parameterStructures = messages_1.ParameterStructures.auto;
+            if (messages_1.ParameterStructures.is(first2)) {
+              paramStart = 1;
+              parameterStructures = first2;
+            }
+            let paramEnd = args.length;
+            const numberOfParams = paramEnd - paramStart;
+            switch (numberOfParams) {
+              case 0:
+                messageParams = void 0;
+                break;
+              case 1:
+                messageParams = computeSingleParam(parameterStructures, args[paramStart]);
+                break;
+              default:
+                if (parameterStructures === messages_1.ParameterStructures.byName) {
+                  throw new Error(`Received ${numberOfParams} parameters for 'by Name' notification parameter structure.`);
+                }
+                messageParams = args.slice(paramStart, paramEnd).map((value) => undefinedToNull(value));
+                break;
+            }
+          } else {
+            const params = args;
+            method = type.method;
+            messageParams = computeMessageParams(type, params);
+          }
+          const notificationMessage = {
+            jsonrpc: version,
+            method,
+            params: messageParams
+          };
+          traceSendingNotification(notificationMessage);
+          return messageWriter.write(notificationMessage).catch((error) => {
+            logger.error(`Sending notification failed.`);
+            throw error;
+          });
+        },
+        onNotification: (type, handler) => {
+          throwIfClosedOrDisposed();
+          let method;
+          if (Is.func(type)) {
+            starNotificationHandler = type;
+          } else if (handler) {
+            if (Is.string(type)) {
+              method = type;
+              notificationHandlers.set(type, { type: void 0, handler });
+            } else {
+              method = type.method;
+              notificationHandlers.set(type.method, { type, handler });
+            }
+          }
+          return {
+            dispose: () => {
+              if (method !== void 0) {
+                notificationHandlers.delete(method);
+              } else {
+                starNotificationHandler = void 0;
+              }
+            }
+          };
+        },
+        onProgress: (_type, token, handler) => {
+          if (progressHandlers.has(token)) {
+            throw new Error(`Progress handler for token ${token} already registered`);
+          }
+          progressHandlers.set(token, handler);
+          return {
+            dispose: () => {
+              progressHandlers.delete(token);
+            }
+          };
+        },
+        sendProgress: (_type, token, value) => {
+          return connection.sendNotification(ProgressNotification.type, { token, value });
+        },
+        onUnhandledProgress: unhandledProgressEmitter.event,
+        sendRequest: (type, ...args) => {
+          throwIfClosedOrDisposed();
+          throwIfNotListening();
+          let method;
+          let messageParams;
+          let token = void 0;
+          if (Is.string(type)) {
+            method = type;
+            const first2 = args[0];
+            const last2 = args[args.length - 1];
+            let paramStart = 0;
+            let parameterStructures = messages_1.ParameterStructures.auto;
+            if (messages_1.ParameterStructures.is(first2)) {
+              paramStart = 1;
+              parameterStructures = first2;
+            }
+            let paramEnd = args.length;
+            if (cancellation_1.CancellationToken.is(last2)) {
+              paramEnd = paramEnd - 1;
+              token = last2;
+            }
+            const numberOfParams = paramEnd - paramStart;
+            switch (numberOfParams) {
+              case 0:
+                messageParams = void 0;
+                break;
+              case 1:
+                messageParams = computeSingleParam(parameterStructures, args[paramStart]);
+                break;
+              default:
+                if (parameterStructures === messages_1.ParameterStructures.byName) {
+                  throw new Error(`Received ${numberOfParams} parameters for 'by Name' request parameter structure.`);
+                }
+                messageParams = args.slice(paramStart, paramEnd).map((value) => undefinedToNull(value));
+                break;
+            }
+          } else {
+            const params = args;
+            method = type.method;
+            messageParams = computeMessageParams(type, params);
+            const numberOfParams = type.numberOfParams;
+            token = cancellation_1.CancellationToken.is(params[numberOfParams]) ? params[numberOfParams] : void 0;
+          }
+          const id = sequenceNumber++;
+          let disposable;
+          if (token) {
+            disposable = token.onCancellationRequested(() => {
+              const p = cancellationStrategy.sender.sendCancellation(connection, id);
+              if (p === void 0) {
+                logger.log(`Received no promise from cancellation strategy when cancelling id ${id}`);
+                return Promise.resolve();
+              } else {
+                return p.catch(() => {
+                  logger.log(`Sending cancellation messages for id ${id} failed`);
+                });
+              }
+            });
+          }
+          const requestMessage = {
+            jsonrpc: version,
+            id,
+            method,
+            params: messageParams
+          };
+          traceSendingRequest(requestMessage);
+          if (typeof cancellationStrategy.sender.enableCancellation === "function") {
+            cancellationStrategy.sender.enableCancellation(requestMessage);
+          }
+          return new Promise(async (resolve10, reject) => {
+            const resolveWithCleanup = (r) => {
+              resolve10(r);
+              cancellationStrategy.sender.cleanup(id);
+              disposable?.dispose();
+            };
+            const rejectWithCleanup = (r) => {
+              reject(r);
+              cancellationStrategy.sender.cleanup(id);
+              disposable?.dispose();
+            };
+            const responsePromise = { method, timerStart: Date.now(), resolve: resolveWithCleanup, reject: rejectWithCleanup };
+            try {
+              responsePromises.set(id, responsePromise);
+              await messageWriter.write(requestMessage);
+            } catch (error) {
+              responsePromises.delete(id);
+              responsePromise.reject(new messages_1.ResponseError(messages_1.ErrorCodes.MessageWriteError, error.message ? error.message : "Unknown reason"));
+              logger.error(`Sending request failed.`);
+              throw error;
+            }
+          });
+        },
+        onRequest: (type, handler) => {
+          throwIfClosedOrDisposed();
+          let method = null;
+          if (StarRequestHandler.is(type)) {
+            method = void 0;
+            starRequestHandler = type;
+          } else if (Is.string(type)) {
+            method = null;
+            if (handler !== void 0) {
+              method = type;
+              requestHandlers.set(type, { handler, type: void 0 });
+            }
+          } else {
+            if (handler !== void 0) {
+              method = type.method;
+              requestHandlers.set(type.method, { type, handler });
+            }
+          }
+          return {
+            dispose: () => {
+              if (method === null) {
+                return;
+              }
+              if (method !== void 0) {
+                requestHandlers.delete(method);
+              } else {
+                starRequestHandler = void 0;
+              }
+            }
+          };
+        },
+        hasPendingResponse: () => {
+          return responsePromises.size > 0;
+        },
+        trace: async (_value, _tracer, sendNotificationOrTraceOptions) => {
+          let _sendNotification = false;
+          let _traceFormat = TraceFormat.Text;
+          if (sendNotificationOrTraceOptions !== void 0) {
+            if (Is.boolean(sendNotificationOrTraceOptions)) {
+              _sendNotification = sendNotificationOrTraceOptions;
+            } else {
+              _sendNotification = sendNotificationOrTraceOptions.sendNotification || false;
+              _traceFormat = sendNotificationOrTraceOptions.traceFormat || TraceFormat.Text;
+            }
+          }
+          trace = _value;
+          traceFormat = _traceFormat;
+          if (trace === Trace.Off) {
+            tracer = void 0;
+          } else {
+            tracer = _tracer;
+          }
+          if (_sendNotification && !isClosed() && !isDisposed()) {
+            await connection.sendNotification(SetTraceNotification.type, { value: Trace.toString(_value) });
+          }
+        },
+        onError: errorEmitter.event,
+        onClose: closeEmitter.event,
+        onUnhandledNotification: unhandledNotificationEmitter.event,
+        onDispose: disposeEmitter.event,
+        end: () => {
+          messageWriter.end();
+        },
+        dispose: () => {
+          if (isDisposed()) {
+            return;
+          }
+          state = ConnectionState.Disposed;
+          disposeEmitter.fire(void 0);
+          const error = new messages_1.ResponseError(messages_1.ErrorCodes.PendingResponseRejected, "Pending response rejected since connection got disposed");
+          for (const promise2 of responsePromises.values()) {
+            promise2.reject(error);
+          }
+          responsePromises = /* @__PURE__ */ new Map();
+          requestTokens = /* @__PURE__ */ new Map();
+          knownCanceledRequests = /* @__PURE__ */ new Set();
+          messageQueue = new linkedMap_1.LinkedMap();
+          if (Is.func(messageWriter.dispose)) {
+            messageWriter.dispose();
+          }
+          if (Is.func(messageReader.dispose)) {
+            messageReader.dispose();
+          }
+        },
+        listen: () => {
+          throwIfClosedOrDisposed();
+          throwIfListening();
+          state = ConnectionState.Listening;
+          messageReader.listen(callback2);
+        },
+        inspect: () => {
+          (0, ral_1.default)().console.log("inspect");
+        }
+      };
+      connection.onNotification(LogTraceNotification.type, (params) => {
+        if (trace === Trace.Off || !tracer) {
+          return;
+        }
+        const verbose = trace === Trace.Verbose || trace === Trace.Compact;
+        tracer.log(params.message, verbose ? params.verbose : void 0);
+      });
+      connection.onNotification(ProgressNotification.type, (params) => {
+        const handler = progressHandlers.get(params.token);
+        if (handler) {
+          handler(params.value);
+        } else {
+          unhandledProgressEmitter.fire(params);
+        }
+      });
+      return connection;
     }
-    Object.assign(picomatch2, pico);
-    module2.exports = picomatch2;
+    exports2.createMessageConnection = createMessageConnection2;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/api.js
+var require_api = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/common/api.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.ProgressType = exports2.ProgressToken = exports2.createMessageConnection = exports2.NullLogger = exports2.ConnectionOptions = exports2.ConnectionStrategy = exports2.AbstractMessageBuffer = exports2.WriteableStreamMessageWriter = exports2.AbstractMessageWriter = exports2.MessageWriter = exports2.ReadableStreamMessageReader = exports2.AbstractMessageReader = exports2.MessageReader = exports2.SharedArrayReceiverStrategy = exports2.SharedArraySenderStrategy = exports2.CancellationToken = exports2.CancellationTokenSource = exports2.Emitter = exports2.Event = exports2.Disposable = exports2.LRUCache = exports2.Touch = exports2.LinkedMap = exports2.ParameterStructures = exports2.NotificationType9 = exports2.NotificationType8 = exports2.NotificationType7 = exports2.NotificationType6 = exports2.NotificationType5 = exports2.NotificationType4 = exports2.NotificationType3 = exports2.NotificationType2 = exports2.NotificationType1 = exports2.NotificationType0 = exports2.NotificationType = exports2.ErrorCodes = exports2.ResponseError = exports2.RequestType9 = exports2.RequestType8 = exports2.RequestType7 = exports2.RequestType6 = exports2.RequestType5 = exports2.RequestType4 = exports2.RequestType3 = exports2.RequestType2 = exports2.RequestType1 = exports2.RequestType0 = exports2.RequestType = exports2.Message = exports2.RAL = void 0;
+    exports2.MessageStrategy = exports2.CancellationStrategy = exports2.CancellationSenderStrategy = exports2.CancellationReceiverStrategy = exports2.ConnectionError = exports2.ConnectionErrors = exports2.LogTraceNotification = exports2.SetTraceNotification = exports2.TraceFormat = exports2.TraceValues = exports2.Trace = void 0;
+    var messages_1 = require_messages2();
+    Object.defineProperty(exports2, "Message", { enumerable: true, get: function() {
+      return messages_1.Message;
+    } });
+    Object.defineProperty(exports2, "RequestType", { enumerable: true, get: function() {
+      return messages_1.RequestType;
+    } });
+    Object.defineProperty(exports2, "RequestType0", { enumerable: true, get: function() {
+      return messages_1.RequestType0;
+    } });
+    Object.defineProperty(exports2, "RequestType1", { enumerable: true, get: function() {
+      return messages_1.RequestType1;
+    } });
+    Object.defineProperty(exports2, "RequestType2", { enumerable: true, get: function() {
+      return messages_1.RequestType2;
+    } });
+    Object.defineProperty(exports2, "RequestType3", { enumerable: true, get: function() {
+      return messages_1.RequestType3;
+    } });
+    Object.defineProperty(exports2, "RequestType4", { enumerable: true, get: function() {
+      return messages_1.RequestType4;
+    } });
+    Object.defineProperty(exports2, "RequestType5", { enumerable: true, get: function() {
+      return messages_1.RequestType5;
+    } });
+    Object.defineProperty(exports2, "RequestType6", { enumerable: true, get: function() {
+      return messages_1.RequestType6;
+    } });
+    Object.defineProperty(exports2, "RequestType7", { enumerable: true, get: function() {
+      return messages_1.RequestType7;
+    } });
+    Object.defineProperty(exports2, "RequestType8", { enumerable: true, get: function() {
+      return messages_1.RequestType8;
+    } });
+    Object.defineProperty(exports2, "RequestType9", { enumerable: true, get: function() {
+      return messages_1.RequestType9;
+    } });
+    Object.defineProperty(exports2, "ResponseError", { enumerable: true, get: function() {
+      return messages_1.ResponseError;
+    } });
+    Object.defineProperty(exports2, "ErrorCodes", { enumerable: true, get: function() {
+      return messages_1.ErrorCodes;
+    } });
+    Object.defineProperty(exports2, "NotificationType", { enumerable: true, get: function() {
+      return messages_1.NotificationType;
+    } });
+    Object.defineProperty(exports2, "NotificationType0", { enumerable: true, get: function() {
+      return messages_1.NotificationType0;
+    } });
+    Object.defineProperty(exports2, "NotificationType1", { enumerable: true, get: function() {
+      return messages_1.NotificationType1;
+    } });
+    Object.defineProperty(exports2, "NotificationType2", { enumerable: true, get: function() {
+      return messages_1.NotificationType2;
+    } });
+    Object.defineProperty(exports2, "NotificationType3", { enumerable: true, get: function() {
+      return messages_1.NotificationType3;
+    } });
+    Object.defineProperty(exports2, "NotificationType4", { enumerable: true, get: function() {
+      return messages_1.NotificationType4;
+    } });
+    Object.defineProperty(exports2, "NotificationType5", { enumerable: true, get: function() {
+      return messages_1.NotificationType5;
+    } });
+    Object.defineProperty(exports2, "NotificationType6", { enumerable: true, get: function() {
+      return messages_1.NotificationType6;
+    } });
+    Object.defineProperty(exports2, "NotificationType7", { enumerable: true, get: function() {
+      return messages_1.NotificationType7;
+    } });
+    Object.defineProperty(exports2, "NotificationType8", { enumerable: true, get: function() {
+      return messages_1.NotificationType8;
+    } });
+    Object.defineProperty(exports2, "NotificationType9", { enumerable: true, get: function() {
+      return messages_1.NotificationType9;
+    } });
+    Object.defineProperty(exports2, "ParameterStructures", { enumerable: true, get: function() {
+      return messages_1.ParameterStructures;
+    } });
+    var linkedMap_1 = require_linkedMap2();
+    Object.defineProperty(exports2, "LinkedMap", { enumerable: true, get: function() {
+      return linkedMap_1.LinkedMap;
+    } });
+    Object.defineProperty(exports2, "LRUCache", { enumerable: true, get: function() {
+      return linkedMap_1.LRUCache;
+    } });
+    Object.defineProperty(exports2, "Touch", { enumerable: true, get: function() {
+      return linkedMap_1.Touch;
+    } });
+    var disposable_1 = require_disposable();
+    Object.defineProperty(exports2, "Disposable", { enumerable: true, get: function() {
+      return disposable_1.Disposable;
+    } });
+    var events_1 = require_events2();
+    Object.defineProperty(exports2, "Event", { enumerable: true, get: function() {
+      return events_1.Event;
+    } });
+    Object.defineProperty(exports2, "Emitter", { enumerable: true, get: function() {
+      return events_1.Emitter;
+    } });
+    var cancellation_1 = require_cancellation3();
+    Object.defineProperty(exports2, "CancellationTokenSource", { enumerable: true, get: function() {
+      return cancellation_1.CancellationTokenSource;
+    } });
+    Object.defineProperty(exports2, "CancellationToken", { enumerable: true, get: function() {
+      return cancellation_1.CancellationToken;
+    } });
+    var sharedArrayCancellation_1 = require_sharedArrayCancellation();
+    Object.defineProperty(exports2, "SharedArraySenderStrategy", { enumerable: true, get: function() {
+      return sharedArrayCancellation_1.SharedArraySenderStrategy;
+    } });
+    Object.defineProperty(exports2, "SharedArrayReceiverStrategy", { enumerable: true, get: function() {
+      return sharedArrayCancellation_1.SharedArrayReceiverStrategy;
+    } });
+    var messageReader_1 = require_messageReader2();
+    Object.defineProperty(exports2, "MessageReader", { enumerable: true, get: function() {
+      return messageReader_1.MessageReader;
+    } });
+    Object.defineProperty(exports2, "AbstractMessageReader", { enumerable: true, get: function() {
+      return messageReader_1.AbstractMessageReader;
+    } });
+    Object.defineProperty(exports2, "ReadableStreamMessageReader", { enumerable: true, get: function() {
+      return messageReader_1.ReadableStreamMessageReader;
+    } });
+    var messageWriter_1 = require_messageWriter2();
+    Object.defineProperty(exports2, "MessageWriter", { enumerable: true, get: function() {
+      return messageWriter_1.MessageWriter;
+    } });
+    Object.defineProperty(exports2, "AbstractMessageWriter", { enumerable: true, get: function() {
+      return messageWriter_1.AbstractMessageWriter;
+    } });
+    Object.defineProperty(exports2, "WriteableStreamMessageWriter", { enumerable: true, get: function() {
+      return messageWriter_1.WriteableStreamMessageWriter;
+    } });
+    var messageBuffer_1 = require_messageBuffer();
+    Object.defineProperty(exports2, "AbstractMessageBuffer", { enumerable: true, get: function() {
+      return messageBuffer_1.AbstractMessageBuffer;
+    } });
+    var connection_1 = require_connection();
+    Object.defineProperty(exports2, "ConnectionStrategy", { enumerable: true, get: function() {
+      return connection_1.ConnectionStrategy;
+    } });
+    Object.defineProperty(exports2, "ConnectionOptions", { enumerable: true, get: function() {
+      return connection_1.ConnectionOptions;
+    } });
+    Object.defineProperty(exports2, "NullLogger", { enumerable: true, get: function() {
+      return connection_1.NullLogger;
+    } });
+    Object.defineProperty(exports2, "createMessageConnection", { enumerable: true, get: function() {
+      return connection_1.createMessageConnection;
+    } });
+    Object.defineProperty(exports2, "ProgressToken", { enumerable: true, get: function() {
+      return connection_1.ProgressToken;
+    } });
+    Object.defineProperty(exports2, "ProgressType", { enumerable: true, get: function() {
+      return connection_1.ProgressType;
+    } });
+    Object.defineProperty(exports2, "Trace", { enumerable: true, get: function() {
+      return connection_1.Trace;
+    } });
+    Object.defineProperty(exports2, "TraceValues", { enumerable: true, get: function() {
+      return connection_1.TraceValues;
+    } });
+    Object.defineProperty(exports2, "TraceFormat", { enumerable: true, get: function() {
+      return connection_1.TraceFormat;
+    } });
+    Object.defineProperty(exports2, "SetTraceNotification", { enumerable: true, get: function() {
+      return connection_1.SetTraceNotification;
+    } });
+    Object.defineProperty(exports2, "LogTraceNotification", { enumerable: true, get: function() {
+      return connection_1.LogTraceNotification;
+    } });
+    Object.defineProperty(exports2, "ConnectionErrors", { enumerable: true, get: function() {
+      return connection_1.ConnectionErrors;
+    } });
+    Object.defineProperty(exports2, "ConnectionError", { enumerable: true, get: function() {
+      return connection_1.ConnectionError;
+    } });
+    Object.defineProperty(exports2, "CancellationReceiverStrategy", { enumerable: true, get: function() {
+      return connection_1.CancellationReceiverStrategy;
+    } });
+    Object.defineProperty(exports2, "CancellationSenderStrategy", { enumerable: true, get: function() {
+      return connection_1.CancellationSenderStrategy;
+    } });
+    Object.defineProperty(exports2, "CancellationStrategy", { enumerable: true, get: function() {
+      return connection_1.CancellationStrategy;
+    } });
+    Object.defineProperty(exports2, "MessageStrategy", { enumerable: true, get: function() {
+      return connection_1.MessageStrategy;
+    } });
+    var ral_1 = require_ral();
+    exports2.RAL = ral_1.default;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/ril.js
+var require_ril = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/ril.js"(exports2) {
+    "use strict";
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    var util_1 = require("util");
+    var api_1 = require_api();
+    var MessageBuffer = class _MessageBuffer extends api_1.AbstractMessageBuffer {
+      constructor(encoding = "utf-8") {
+        super(encoding);
+      }
+      emptyBuffer() {
+        return _MessageBuffer.emptyBuffer;
+      }
+      fromString(value, encoding) {
+        return Buffer.from(value, encoding);
+      }
+      toString(value, encoding) {
+        if (value instanceof Buffer) {
+          return value.toString(encoding);
+        } else {
+          return new util_1.TextDecoder(encoding).decode(value);
+        }
+      }
+      asNative(buffer, length) {
+        if (length === void 0) {
+          return buffer instanceof Buffer ? buffer : Buffer.from(buffer);
+        } else {
+          return buffer instanceof Buffer ? buffer.slice(0, length) : Buffer.from(buffer, 0, length);
+        }
+      }
+      allocNative(length) {
+        return Buffer.allocUnsafe(length);
+      }
+    };
+    MessageBuffer.emptyBuffer = Buffer.allocUnsafe(0);
+    var ReadableStreamWrapper = class {
+      constructor(stream) {
+        this.stream = stream;
+      }
+      onClose(listener) {
+        this.stream.on("close", listener);
+        return api_1.Disposable.create(() => this.stream.off("close", listener));
+      }
+      onError(listener) {
+        this.stream.on("error", listener);
+        return api_1.Disposable.create(() => this.stream.off("error", listener));
+      }
+      onEnd(listener) {
+        this.stream.on("end", listener);
+        return api_1.Disposable.create(() => this.stream.off("end", listener));
+      }
+      onData(listener) {
+        this.stream.on("data", listener);
+        return api_1.Disposable.create(() => this.stream.off("data", listener));
+      }
+    };
+    var WritableStreamWrapper = class {
+      constructor(stream) {
+        this.stream = stream;
+      }
+      onClose(listener) {
+        this.stream.on("close", listener);
+        return api_1.Disposable.create(() => this.stream.off("close", listener));
+      }
+      onError(listener) {
+        this.stream.on("error", listener);
+        return api_1.Disposable.create(() => this.stream.off("error", listener));
+      }
+      onEnd(listener) {
+        this.stream.on("end", listener);
+        return api_1.Disposable.create(() => this.stream.off("end", listener));
+      }
+      write(data, encoding) {
+        return new Promise((resolve10, reject) => {
+          const callback2 = (error) => {
+            if (error === void 0 || error === null) {
+              resolve10();
+            } else {
+              reject(error);
+            }
+          };
+          if (typeof data === "string") {
+            this.stream.write(data, encoding, callback2);
+          } else {
+            this.stream.write(data, callback2);
+          }
+        });
+      }
+      end() {
+        this.stream.end();
+      }
+    };
+    var _ril = Object.freeze({
+      messageBuffer: Object.freeze({
+        create: (encoding) => new MessageBuffer(encoding)
+      }),
+      applicationJson: Object.freeze({
+        encoder: Object.freeze({
+          name: "application/json",
+          encode: (msg, options) => {
+            try {
+              return Promise.resolve(Buffer.from(JSON.stringify(msg, void 0, 0), options.charset));
+            } catch (err) {
+              return Promise.reject(err);
+            }
+          }
+        }),
+        decoder: Object.freeze({
+          name: "application/json",
+          decode: (buffer, options) => {
+            try {
+              if (buffer instanceof Buffer) {
+                return Promise.resolve(JSON.parse(buffer.toString(options.charset)));
+              } else {
+                return Promise.resolve(JSON.parse(new util_1.TextDecoder(options.charset).decode(buffer)));
+              }
+            } catch (err) {
+              return Promise.reject(err);
+            }
+          }
+        })
+      }),
+      stream: Object.freeze({
+        asReadableStream: (stream) => new ReadableStreamWrapper(stream),
+        asWritableStream: (stream) => new WritableStreamWrapper(stream)
+      }),
+      console,
+      timer: Object.freeze({
+        setTimeout(callback2, ms, ...args) {
+          const handle = setTimeout(callback2, ms, ...args);
+          return { dispose: () => clearTimeout(handle) };
+        },
+        setImmediate(callback2, ...args) {
+          const handle = setImmediate(callback2, ...args);
+          return { dispose: () => clearImmediate(handle) };
+        },
+        setInterval(callback2, ms, ...args) {
+          const handle = setInterval(callback2, ms, ...args);
+          return { dispose: () => clearInterval(handle) };
+        }
+      })
+    });
+    function RIL() {
+      return _ril;
+    }
+    (function(RIL2) {
+      function install() {
+        api_1.RAL.install(_ril);
+      }
+      RIL2.install = install;
+    })(RIL || (RIL = {}));
+    exports2.default = RIL;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/main.js
+var require_main2 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/lib/node/main.js"(exports2) {
+    "use strict";
+    var __createBinding = exports2 && exports2.__createBinding || (Object.create ? (function(o, m, k, k2) {
+      if (k2 === void 0) k2 = k;
+      var desc = Object.getOwnPropertyDescriptor(m, k);
+      if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+        desc = { enumerable: true, get: function() {
+          return m[k];
+        } };
+      }
+      Object.defineProperty(o, k2, desc);
+    }) : (function(o, m, k, k2) {
+      if (k2 === void 0) k2 = k;
+      o[k2] = m[k];
+    }));
+    var __exportStar = exports2 && exports2.__exportStar || function(m, exports3) {
+      for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports3, p)) __createBinding(exports3, m, p);
+    };
+    Object.defineProperty(exports2, "__esModule", { value: true });
+    exports2.createMessageConnection = exports2.createServerSocketTransport = exports2.createClientSocketTransport = exports2.createServerPipeTransport = exports2.createClientPipeTransport = exports2.generateRandomPipeName = exports2.StreamMessageWriter = exports2.StreamMessageReader = exports2.SocketMessageWriter = exports2.SocketMessageReader = exports2.PortMessageWriter = exports2.PortMessageReader = exports2.IPCMessageWriter = exports2.IPCMessageReader = void 0;
+    var ril_1 = require_ril();
+    ril_1.default.install();
+    var path14 = require("path");
+    var os5 = require("os");
+    var crypto_1 = require("crypto");
+    var net_1 = require("net");
+    var api_1 = require_api();
+    __exportStar(require_api(), exports2);
+    var IPCMessageReader = class extends api_1.AbstractMessageReader {
+      constructor(process2) {
+        super();
+        this.process = process2;
+        let eventEmitter = this.process;
+        eventEmitter.on("error", (error) => this.fireError(error));
+        eventEmitter.on("close", () => this.fireClose());
+      }
+      listen(callback2) {
+        this.process.on("message", callback2);
+        return api_1.Disposable.create(() => this.process.off("message", callback2));
+      }
+    };
+    exports2.IPCMessageReader = IPCMessageReader;
+    var IPCMessageWriter = class extends api_1.AbstractMessageWriter {
+      constructor(process2) {
+        super();
+        this.process = process2;
+        this.errorCount = 0;
+        const eventEmitter = this.process;
+        eventEmitter.on("error", (error) => this.fireError(error));
+        eventEmitter.on("close", () => this.fireClose);
+      }
+      write(msg) {
+        try {
+          if (typeof this.process.send === "function") {
+            this.process.send(msg, void 0, void 0, (error) => {
+              if (error) {
+                this.errorCount++;
+                this.handleError(error, msg);
+              } else {
+                this.errorCount = 0;
+              }
+            });
+          }
+          return Promise.resolve();
+        } catch (error) {
+          this.handleError(error, msg);
+          return Promise.reject(error);
+        }
+      }
+      handleError(error, msg) {
+        this.errorCount++;
+        this.fireError(error, msg, this.errorCount);
+      }
+      end() {
+      }
+    };
+    exports2.IPCMessageWriter = IPCMessageWriter;
+    var PortMessageReader = class extends api_1.AbstractMessageReader {
+      constructor(port) {
+        super();
+        this.onData = new api_1.Emitter();
+        port.on("close", () => this.fireClose);
+        port.on("error", (error) => this.fireError(error));
+        port.on("message", (message) => {
+          this.onData.fire(message);
+        });
+      }
+      listen(callback2) {
+        return this.onData.event(callback2);
+      }
+    };
+    exports2.PortMessageReader = PortMessageReader;
+    var PortMessageWriter = class extends api_1.AbstractMessageWriter {
+      constructor(port) {
+        super();
+        this.port = port;
+        this.errorCount = 0;
+        port.on("close", () => this.fireClose());
+        port.on("error", (error) => this.fireError(error));
+      }
+      write(msg) {
+        try {
+          this.port.postMessage(msg);
+          return Promise.resolve();
+        } catch (error) {
+          this.handleError(error, msg);
+          return Promise.reject(error);
+        }
+      }
+      handleError(error, msg) {
+        this.errorCount++;
+        this.fireError(error, msg, this.errorCount);
+      }
+      end() {
+      }
+    };
+    exports2.PortMessageWriter = PortMessageWriter;
+    var SocketMessageReader = class extends api_1.ReadableStreamMessageReader {
+      constructor(socket, encoding = "utf-8") {
+        super((0, ril_1.default)().stream.asReadableStream(socket), encoding);
+      }
+    };
+    exports2.SocketMessageReader = SocketMessageReader;
+    var SocketMessageWriter = class extends api_1.WriteableStreamMessageWriter {
+      constructor(socket, options) {
+        super((0, ril_1.default)().stream.asWritableStream(socket), options);
+        this.socket = socket;
+      }
+      dispose() {
+        super.dispose();
+        this.socket.destroy();
+      }
+    };
+    exports2.SocketMessageWriter = SocketMessageWriter;
+    var StreamMessageReader2 = class extends api_1.ReadableStreamMessageReader {
+      constructor(readable, encoding) {
+        super((0, ril_1.default)().stream.asReadableStream(readable), encoding);
+      }
+    };
+    exports2.StreamMessageReader = StreamMessageReader2;
+    var StreamMessageWriter2 = class extends api_1.WriteableStreamMessageWriter {
+      constructor(writable, options) {
+        super((0, ril_1.default)().stream.asWritableStream(writable), options);
+      }
+    };
+    exports2.StreamMessageWriter = StreamMessageWriter2;
+    var XDG_RUNTIME_DIR = process.env["XDG_RUNTIME_DIR"];
+    var safeIpcPathLengths = /* @__PURE__ */ new Map([
+      ["linux", 107],
+      ["darwin", 103]
+    ]);
+    function generateRandomPipeName() {
+      const randomSuffix = (0, crypto_1.randomBytes)(21).toString("hex");
+      if (process.platform === "win32") {
+        return `\\\\.\\pipe\\vscode-jsonrpc-${randomSuffix}-sock`;
+      }
+      let result;
+      if (XDG_RUNTIME_DIR) {
+        result = path14.join(XDG_RUNTIME_DIR, `vscode-ipc-${randomSuffix}.sock`);
+      } else {
+        result = path14.join(os5.tmpdir(), `vscode-${randomSuffix}.sock`);
+      }
+      const limit = safeIpcPathLengths.get(process.platform);
+      if (limit !== void 0 && result.length > limit) {
+        (0, ril_1.default)().console.warn(`WARNING: IPC handle "${result}" is longer than ${limit} characters.`);
+      }
+      return result;
+    }
+    exports2.generateRandomPipeName = generateRandomPipeName;
+    function createClientPipeTransport(pipeName, encoding = "utf-8") {
+      let connectResolve;
+      const connected = new Promise((resolve10, _reject) => {
+        connectResolve = resolve10;
+      });
+      return new Promise((resolve10, reject) => {
+        let server = (0, net_1.createServer)((socket) => {
+          server.close();
+          connectResolve([
+            new SocketMessageReader(socket, encoding),
+            new SocketMessageWriter(socket, encoding)
+          ]);
+        });
+        server.on("error", reject);
+        server.listen(pipeName, () => {
+          server.removeListener("error", reject);
+          resolve10({
+            onConnected: () => {
+              return connected;
+            }
+          });
+        });
+      });
+    }
+    exports2.createClientPipeTransport = createClientPipeTransport;
+    function createServerPipeTransport(pipeName, encoding = "utf-8") {
+      const socket = (0, net_1.createConnection)(pipeName);
+      return [
+        new SocketMessageReader(socket, encoding),
+        new SocketMessageWriter(socket, encoding)
+      ];
+    }
+    exports2.createServerPipeTransport = createServerPipeTransport;
+    function createClientSocketTransport(port, encoding = "utf-8") {
+      let connectResolve;
+      const connected = new Promise((resolve10, _reject) => {
+        connectResolve = resolve10;
+      });
+      return new Promise((resolve10, reject) => {
+        const server = (0, net_1.createServer)((socket) => {
+          server.close();
+          connectResolve([
+            new SocketMessageReader(socket, encoding),
+            new SocketMessageWriter(socket, encoding)
+          ]);
+        });
+        server.on("error", reject);
+        server.listen(port, "127.0.0.1", () => {
+          server.removeListener("error", reject);
+          resolve10({
+            onConnected: () => {
+              return connected;
+            }
+          });
+        });
+      });
+    }
+    exports2.createClientSocketTransport = createClientSocketTransport;
+    function createServerSocketTransport(port, encoding = "utf-8") {
+      const socket = (0, net_1.createConnection)(port, "127.0.0.1");
+      return [
+        new SocketMessageReader(socket, encoding),
+        new SocketMessageWriter(socket, encoding)
+      ];
+    }
+    exports2.createServerSocketTransport = createServerSocketTransport;
+    function isReadableStream(value) {
+      const candidate = value;
+      return candidate.read !== void 0 && candidate.addListener !== void 0;
+    }
+    function isWritableStream(value) {
+      const candidate = value;
+      return candidate.write !== void 0 && candidate.addListener !== void 0;
+    }
+    function createMessageConnection2(input, output, logger, options) {
+      if (!logger) {
+        logger = api_1.NullLogger;
+      }
+      const reader = isReadableStream(input) ? new StreamMessageReader2(input) : input;
+      const writer = isWritableStream(output) ? new StreamMessageWriter2(output) : output;
+      if (api_1.ConnectionStrategy.is(options)) {
+        options = { connectionStrategy: options };
+      }
+      return (0, api_1.createMessageConnection)(reader, writer, logger, options);
+    }
+    exports2.createMessageConnection = createMessageConnection2;
+  }
+});
+
+// ../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/node.js
+var require_node3 = __commonJS({
+  "../../node_modules/@github/copilot-sdk/node_modules/vscode-jsonrpc/node.js"(exports2, module2) {
+    "use strict";
+    module2.exports = require_main2();
   }
 });
 
@@ -41409,7 +43169,7 @@ var require_ignore = __commonJS({
       //   path matching.
       // - check `string` either `MODE_IGNORE` or `MODE_CHECK_IGNORE`
       // @returns {TestResult} true if a file is ignored
-      test(path11, checkUnignored, mode) {
+      test(path14, checkUnignored, mode) {
         let ignored = false;
         let unignored = false;
         let matchedRule;
@@ -41418,7 +43178,7 @@ var require_ignore = __commonJS({
           if (unignored === negative && ignored !== unignored || negative && !ignored && !unignored && !checkUnignored) {
             return;
           }
-          const matched = rule[mode].test(path11);
+          const matched = rule[mode].test(path14);
           if (!matched) {
             return;
           }
@@ -41439,17 +43199,17 @@ var require_ignore = __commonJS({
     var throwError = (message, Ctor) => {
       throw new Ctor(message);
     };
-    var checkPath = (path11, originalPath, doThrow) => {
-      if (!isString(path11)) {
+    var checkPath = (path14, originalPath, doThrow) => {
+      if (!isString(path14)) {
         return doThrow(
           `path must be a string, but got \`${originalPath}\``,
           TypeError
         );
       }
-      if (!path11) {
+      if (!path14) {
         return doThrow(`path must not be empty`, TypeError);
       }
-      if (checkPath.isNotRelative(path11)) {
+      if (checkPath.isNotRelative(path14)) {
         const r = "`path.relative()`d";
         return doThrow(
           `path should be a ${r} string, but got "${originalPath}"`,
@@ -41458,7 +43218,7 @@ var require_ignore = __commonJS({
       }
       return true;
     };
-    var isNotRelative = (path11) => REGEX_TEST_INVALID_PATH.test(path11);
+    var isNotRelative = (path14) => REGEX_TEST_INVALID_PATH.test(path14);
     checkPath.isNotRelative = isNotRelative;
     checkPath.convert = (p) => p;
     var Ignore = class {
@@ -41488,19 +43248,19 @@ var require_ignore = __commonJS({
       }
       // @returns {TestResult}
       _test(originalPath, cache2, checkUnignored, slices) {
-        const path11 = originalPath && checkPath.convert(originalPath);
+        const path14 = originalPath && checkPath.convert(originalPath);
         checkPath(
-          path11,
+          path14,
           originalPath,
           this._strictPathCheck ? throwError : RETURN_FALSE
         );
-        return this._t(path11, cache2, checkUnignored, slices);
+        return this._t(path14, cache2, checkUnignored, slices);
       }
-      checkIgnore(path11) {
-        if (!REGEX_TEST_TRAILING_SLASH.test(path11)) {
-          return this.test(path11);
+      checkIgnore(path14) {
+        if (!REGEX_TEST_TRAILING_SLASH.test(path14)) {
+          return this.test(path14);
         }
-        const slices = path11.split(SLASH).filter(Boolean);
+        const slices = path14.split(SLASH).filter(Boolean);
         slices.pop();
         if (slices.length) {
           const parent = this._t(
@@ -41513,18 +43273,18 @@ var require_ignore = __commonJS({
             return parent;
           }
         }
-        return this._rules.test(path11, false, MODE_CHECK_IGNORE);
+        return this._rules.test(path14, false, MODE_CHECK_IGNORE);
       }
-      _t(path11, cache2, checkUnignored, slices) {
-        if (path11 in cache2) {
-          return cache2[path11];
+      _t(path14, cache2, checkUnignored, slices) {
+        if (path14 in cache2) {
+          return cache2[path14];
         }
         if (!slices) {
-          slices = path11.split(SLASH).filter(Boolean);
+          slices = path14.split(SLASH).filter(Boolean);
         }
         slices.pop();
         if (!slices.length) {
-          return cache2[path11] = this._rules.test(path11, checkUnignored, MODE_IGNORE);
+          return cache2[path14] = this._rules.test(path14, checkUnignored, MODE_IGNORE);
         }
         const parent = this._t(
           slices.join(SLASH) + SLASH,
@@ -41532,29 +43292,29 @@ var require_ignore = __commonJS({
           checkUnignored,
           slices
         );
-        return cache2[path11] = parent.ignored ? parent : this._rules.test(path11, checkUnignored, MODE_IGNORE);
+        return cache2[path14] = parent.ignored ? parent : this._rules.test(path14, checkUnignored, MODE_IGNORE);
       }
-      ignores(path11) {
-        return this._test(path11, this._ignoreCache, false).ignored;
+      ignores(path14) {
+        return this._test(path14, this._ignoreCache, false).ignored;
       }
       createFilter() {
-        return (path11) => !this.ignores(path11);
+        return (path14) => !this.ignores(path14);
       }
       filter(paths) {
         return makeArray(paths).filter(this.createFilter());
       }
       // @returns {TestResult}
-      test(path11) {
-        return this._test(path11, this._testCache, true);
+      test(path14) {
+        return this._test(path14, this._testCache, true);
       }
     };
     var factory = (options) => new Ignore(options);
-    var isPathValid = (path11) => checkPath(path11 && checkPath.convert(path11), path11, RETURN_FALSE);
+    var isPathValid = (path14) => checkPath(path14 && checkPath.convert(path14), path14, RETURN_FALSE);
     var setupWindows = () => {
       const makePosix = (str) => /^\\\\\?\\/.test(str) || /["<>|\u0000-\u001F]+/u.test(str) ? str : str.replace(/\\/g, "/");
       checkPath.convert = makePosix;
       const REGEX_TEST_WINDOWS_PATH_ABSOLUTE = /^[a-z]:\//i;
-      checkPath.isNotRelative = (path11) => REGEX_TEST_WINDOWS_PATH_ABSOLUTE.test(path11) || isNotRelative(path11);
+      checkPath.isNotRelative = (path14) => REGEX_TEST_WINDOWS_PATH_ABSOLUTE.test(path14) || isNotRelative(path14);
     };
     if (
       // Detect `process` so that it can run in browsers.
@@ -41580,10 +43340,10 @@ var require_src3 = __commonJS({
     var fs_1 = require("fs");
     var debug_1 = __importDefault(require_src());
     var log = debug_1.default("@kwsites/file-exists");
-    function check(path11, isFile, isDirectory) {
-      log(`checking %s`, path11);
+    function check(path14, isFile, isDirectory) {
+      log(`checking %s`, path14);
       try {
-        const stat3 = fs_1.statSync(path11);
+        const stat3 = fs_1.statSync(path14);
         if (stat3.isFile() && isFile) {
           log(`[OK] path represents a file`);
           return true;
@@ -41603,8 +43363,8 @@ var require_src3 = __commonJS({
         throw e;
       }
     }
-    function exists2(path11, type = exports2.READABLE) {
-      return check(path11, (type & exports2.FILE) > 0, (type & exports2.FOLDER) > 0);
+    function exists2(path14, type = exports2.READABLE) {
+      return check(path14, (type & exports2.FILE) > 0, (type & exports2.FOLDER) > 0);
     }
     exports2.exists = exists2;
     exports2.FILE = 1;
@@ -41744,17 +43504,17 @@ var require_visit = __commonJS({
     visit.BREAK = BREAK;
     visit.SKIP = SKIP;
     visit.REMOVE = REMOVE;
-    function visit_(key, node, visitor, path11) {
-      const ctrl = callVisitor(key, node, visitor, path11);
+    function visit_(key, node, visitor, path14) {
+      const ctrl = callVisitor(key, node, visitor, path14);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path11, ctrl);
-        return visit_(key, ctrl, visitor, path11);
+        replaceNode(key, path14, ctrl);
+        return visit_(key, ctrl, visitor, path14);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path11 = Object.freeze(path11.concat(node));
+          path14 = Object.freeze(path14.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = visit_(i, node.items[i], visitor, path11);
+            const ci = visit_(i, node.items[i], visitor, path14);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -41765,13 +43525,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path11 = Object.freeze(path11.concat(node));
-          const ck = visit_("key", node.key, visitor, path11);
+          path14 = Object.freeze(path14.concat(node));
+          const ck = visit_("key", node.key, visitor, path14);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = visit_("value", node.value, visitor, path11);
+          const cv = visit_("value", node.value, visitor, path14);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -41792,17 +43552,17 @@ var require_visit = __commonJS({
     visitAsync.BREAK = BREAK;
     visitAsync.SKIP = SKIP;
     visitAsync.REMOVE = REMOVE;
-    async function visitAsync_(key, node, visitor, path11) {
-      const ctrl = await callVisitor(key, node, visitor, path11);
+    async function visitAsync_(key, node, visitor, path14) {
+      const ctrl = await callVisitor(key, node, visitor, path14);
       if (identity.isNode(ctrl) || identity.isPair(ctrl)) {
-        replaceNode(key, path11, ctrl);
-        return visitAsync_(key, ctrl, visitor, path11);
+        replaceNode(key, path14, ctrl);
+        return visitAsync_(key, ctrl, visitor, path14);
       }
       if (typeof ctrl !== "symbol") {
         if (identity.isCollection(node)) {
-          path11 = Object.freeze(path11.concat(node));
+          path14 = Object.freeze(path14.concat(node));
           for (let i = 0; i < node.items.length; ++i) {
-            const ci = await visitAsync_(i, node.items[i], visitor, path11);
+            const ci = await visitAsync_(i, node.items[i], visitor, path14);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -41813,13 +43573,13 @@ var require_visit = __commonJS({
             }
           }
         } else if (identity.isPair(node)) {
-          path11 = Object.freeze(path11.concat(node));
-          const ck = await visitAsync_("key", node.key, visitor, path11);
+          path14 = Object.freeze(path14.concat(node));
+          const ck = await visitAsync_("key", node.key, visitor, path14);
           if (ck === BREAK)
             return BREAK;
           else if (ck === REMOVE)
             node.key = null;
-          const cv = await visitAsync_("value", node.value, visitor, path11);
+          const cv = await visitAsync_("value", node.value, visitor, path14);
           if (cv === BREAK)
             return BREAK;
           else if (cv === REMOVE)
@@ -41846,23 +43606,23 @@ var require_visit = __commonJS({
       }
       return visitor;
     }
-    function callVisitor(key, node, visitor, path11) {
+    function callVisitor(key, node, visitor, path14) {
       if (typeof visitor === "function")
-        return visitor(key, node, path11);
+        return visitor(key, node, path14);
       if (identity.isMap(node))
-        return visitor.Map?.(key, node, path11);
+        return visitor.Map?.(key, node, path14);
       if (identity.isSeq(node))
-        return visitor.Seq?.(key, node, path11);
+        return visitor.Seq?.(key, node, path14);
       if (identity.isPair(node))
-        return visitor.Pair?.(key, node, path11);
+        return visitor.Pair?.(key, node, path14);
       if (identity.isScalar(node))
-        return visitor.Scalar?.(key, node, path11);
+        return visitor.Scalar?.(key, node, path14);
       if (identity.isAlias(node))
-        return visitor.Alias?.(key, node, path11);
+        return visitor.Alias?.(key, node, path14);
       return void 0;
     }
-    function replaceNode(key, path11, node) {
-      const parent = path11[path11.length - 1];
+    function replaceNode(key, path14, node) {
+      const parent = path14[path14.length - 1];
       if (identity.isCollection(parent)) {
         parent.items[key] = node;
       } else if (identity.isPair(parent)) {
@@ -42470,10 +44230,10 @@ var require_Collection = __commonJS({
     var createNode = require_createNode();
     var identity = require_identity();
     var Node = require_Node();
-    function collectionFromPath(schema, path11, value) {
+    function collectionFromPath(schema, path14, value) {
       let v = value;
-      for (let i = path11.length - 1; i >= 0; --i) {
-        const k = path11[i];
+      for (let i = path14.length - 1; i >= 0; --i) {
+        const k = path14[i];
         if (typeof k === "number" && Number.isInteger(k) && k >= 0) {
           const a = [];
           a[k] = v;
@@ -42492,7 +44252,7 @@ var require_Collection = __commonJS({
         sourceObjects: /* @__PURE__ */ new Map()
       });
     }
-    var isEmptyPath = (path11) => path11 == null || typeof path11 === "object" && !!path11[Symbol.iterator]().next().done;
+    var isEmptyPath = (path14) => path14 == null || typeof path14 === "object" && !!path14[Symbol.iterator]().next().done;
     var Collection = class extends Node.NodeBase {
       constructor(type, schema) {
         super(type);
@@ -42522,11 +44282,11 @@ var require_Collection = __commonJS({
        * be a Pair instance or a `{ key, value }` object, which may not have a key
        * that already exists in the map.
        */
-      addIn(path11, value) {
-        if (isEmptyPath(path11))
+      addIn(path14, value) {
+        if (isEmptyPath(path14))
           this.add(value);
         else {
-          const [key, ...rest] = path11;
+          const [key, ...rest] = path14;
           const node = this.get(key, true);
           if (identity.isCollection(node))
             node.addIn(rest, value);
@@ -42540,8 +44300,8 @@ var require_Collection = __commonJS({
        * Removes a value from the collection.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path11) {
-        const [key, ...rest] = path11;
+      deleteIn(path14) {
+        const [key, ...rest] = path14;
         if (rest.length === 0)
           return this.delete(key);
         const node = this.get(key, true);
@@ -42555,8 +44315,8 @@ var require_Collection = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path11, keepScalar) {
-        const [key, ...rest] = path11;
+      getIn(path14, keepScalar) {
+        const [key, ...rest] = path14;
         const node = this.get(key, true);
         if (rest.length === 0)
           return !keepScalar && identity.isScalar(node) ? node.value : node;
@@ -42574,8 +44334,8 @@ var require_Collection = __commonJS({
       /**
        * Checks if the collection includes a value with the key `key`.
        */
-      hasIn(path11) {
-        const [key, ...rest] = path11;
+      hasIn(path14) {
+        const [key, ...rest] = path14;
         if (rest.length === 0)
           return this.has(key);
         const node = this.get(key, true);
@@ -42585,8 +44345,8 @@ var require_Collection = __commonJS({
        * Sets a value in this collection. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path11, value) {
-        const [key, ...rest] = path11;
+      setIn(path14, value) {
+        const [key, ...rest] = path14;
         if (rest.length === 0) {
           this.set(key, value);
         } else {
@@ -45090,9 +46850,9 @@ var require_Document = __commonJS({
           this.contents.add(value);
       }
       /** Adds a value to the document. */
-      addIn(path11, value) {
+      addIn(path14, value) {
         if (assertCollection(this.contents))
-          this.contents.addIn(path11, value);
+          this.contents.addIn(path14, value);
       }
       /**
        * Create a new `Alias` node, ensuring that the target `node` has the required anchor.
@@ -45167,14 +46927,14 @@ var require_Document = __commonJS({
        * Removes a value from the document.
        * @returns `true` if the item was found and removed.
        */
-      deleteIn(path11) {
-        if (Collection.isEmptyPath(path11)) {
+      deleteIn(path14) {
+        if (Collection.isEmptyPath(path14)) {
           if (this.contents == null)
             return false;
           this.contents = null;
           return true;
         }
-        return assertCollection(this.contents) ? this.contents.deleteIn(path11) : false;
+        return assertCollection(this.contents) ? this.contents.deleteIn(path14) : false;
       }
       /**
        * Returns item at `key`, or `undefined` if not found. By default unwraps
@@ -45189,10 +46949,10 @@ var require_Document = __commonJS({
        * scalar values from their surrounding node; to disable set `keepScalar` to
        * `true` (collections are always returned intact).
        */
-      getIn(path11, keepScalar) {
-        if (Collection.isEmptyPath(path11))
+      getIn(path14, keepScalar) {
+        if (Collection.isEmptyPath(path14))
           return !keepScalar && identity.isScalar(this.contents) ? this.contents.value : this.contents;
-        return identity.isCollection(this.contents) ? this.contents.getIn(path11, keepScalar) : void 0;
+        return identity.isCollection(this.contents) ? this.contents.getIn(path14, keepScalar) : void 0;
       }
       /**
        * Checks if the document includes a value with the key `key`.
@@ -45203,10 +46963,10 @@ var require_Document = __commonJS({
       /**
        * Checks if the document includes a value at `path`.
        */
-      hasIn(path11) {
-        if (Collection.isEmptyPath(path11))
+      hasIn(path14) {
+        if (Collection.isEmptyPath(path14))
           return this.contents !== void 0;
-        return identity.isCollection(this.contents) ? this.contents.hasIn(path11) : false;
+        return identity.isCollection(this.contents) ? this.contents.hasIn(path14) : false;
       }
       /**
        * Sets a value in this document. For `!!set`, `value` needs to be a
@@ -45223,13 +46983,13 @@ var require_Document = __commonJS({
        * Sets a value in this document. For `!!set`, `value` needs to be a
        * boolean to add/remove the item from the set.
        */
-      setIn(path11, value) {
-        if (Collection.isEmptyPath(path11)) {
+      setIn(path14, value) {
+        if (Collection.isEmptyPath(path14)) {
           this.contents = value;
         } else if (this.contents == null) {
-          this.contents = Collection.collectionFromPath(this.schema, Array.from(path11), value);
+          this.contents = Collection.collectionFromPath(this.schema, Array.from(path14), value);
         } else if (assertCollection(this.contents)) {
-          this.contents.setIn(path11, value);
+          this.contents.setIn(path14, value);
         }
       }
       /**
@@ -47181,9 +48941,9 @@ var require_cst_visit = __commonJS({
     visit.BREAK = BREAK;
     visit.SKIP = SKIP;
     visit.REMOVE = REMOVE;
-    visit.itemAtPath = (cst, path11) => {
+    visit.itemAtPath = (cst, path14) => {
       let item = cst;
-      for (const [field, index] of path11) {
+      for (const [field, index] of path14) {
         const tok = item?.[field];
         if (tok && "items" in tok) {
           item = tok.items[index];
@@ -47192,23 +48952,23 @@ var require_cst_visit = __commonJS({
       }
       return item;
     };
-    visit.parentCollection = (cst, path11) => {
-      const parent = visit.itemAtPath(cst, path11.slice(0, -1));
-      const field = path11[path11.length - 1][0];
+    visit.parentCollection = (cst, path14) => {
+      const parent = visit.itemAtPath(cst, path14.slice(0, -1));
+      const field = path14[path14.length - 1][0];
       const coll = parent?.[field];
       if (coll && "items" in coll)
         return coll;
       throw new Error("Parent collection not found");
     };
-    function _visit(path11, item, visitor) {
-      let ctrl = visitor(item, path11);
+    function _visit(path14, item, visitor) {
+      let ctrl = visitor(item, path14);
       if (typeof ctrl === "symbol")
         return ctrl;
       for (const field of ["key", "value"]) {
         const token = item[field];
         if (token && "items" in token) {
           for (let i = 0; i < token.items.length; ++i) {
-            const ci = _visit(Object.freeze(path11.concat([[field, i]])), token.items[i], visitor);
+            const ci = _visit(Object.freeze(path14.concat([[field, i]])), token.items[i], visitor);
             if (typeof ci === "number")
               i = ci - 1;
             else if (ci === BREAK)
@@ -47219,10 +48979,10 @@ var require_cst_visit = __commonJS({
             }
           }
           if (typeof ctrl === "function" && field === "key")
-            ctrl = ctrl(item, path11);
+            ctrl = ctrl(item, path14);
         }
       }
-      return typeof ctrl === "function" ? ctrl(item, path11) : ctrl;
+      return typeof ctrl === "function" ? ctrl(item, path14) : ctrl;
     }
     exports2.visit = visit;
   }
@@ -48956,6 +50716,1524 @@ var require_dist3 = __commonJS({
   }
 });
 
+// ../../node_modules/picomatch/lib/constants.js
+var require_constants = __commonJS({
+  "../../node_modules/picomatch/lib/constants.js"(exports2, module2) {
+    "use strict";
+    var WIN_SLASH = "\\\\/";
+    var WIN_NO_SLASH = `[^${WIN_SLASH}]`;
+    var DOT_LITERAL = "\\.";
+    var PLUS_LITERAL = "\\+";
+    var QMARK_LITERAL = "\\?";
+    var SLASH_LITERAL = "\\/";
+    var ONE_CHAR = "(?=.)";
+    var QMARK = "[^/]";
+    var END_ANCHOR = `(?:${SLASH_LITERAL}|$)`;
+    var START_ANCHOR = `(?:^|${SLASH_LITERAL})`;
+    var DOTS_SLASH = `${DOT_LITERAL}{1,2}${END_ANCHOR}`;
+    var NO_DOT = `(?!${DOT_LITERAL})`;
+    var NO_DOTS = `(?!${START_ANCHOR}${DOTS_SLASH})`;
+    var NO_DOT_SLASH = `(?!${DOT_LITERAL}{0,1}${END_ANCHOR})`;
+    var NO_DOTS_SLASH = `(?!${DOTS_SLASH})`;
+    var QMARK_NO_DOT = `[^.${SLASH_LITERAL}]`;
+    var STAR = `${QMARK}*?`;
+    var SEP = "/";
+    var POSIX_CHARS = {
+      DOT_LITERAL,
+      PLUS_LITERAL,
+      QMARK_LITERAL,
+      SLASH_LITERAL,
+      ONE_CHAR,
+      QMARK,
+      END_ANCHOR,
+      DOTS_SLASH,
+      NO_DOT,
+      NO_DOTS,
+      NO_DOT_SLASH,
+      NO_DOTS_SLASH,
+      QMARK_NO_DOT,
+      STAR,
+      START_ANCHOR,
+      SEP
+    };
+    var WINDOWS_CHARS = {
+      ...POSIX_CHARS,
+      SLASH_LITERAL: `[${WIN_SLASH}]`,
+      QMARK: WIN_NO_SLASH,
+      STAR: `${WIN_NO_SLASH}*?`,
+      DOTS_SLASH: `${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$)`,
+      NO_DOT: `(?!${DOT_LITERAL})`,
+      NO_DOTS: `(?!(?:^|[${WIN_SLASH}])${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$))`,
+      NO_DOT_SLASH: `(?!${DOT_LITERAL}{0,1}(?:[${WIN_SLASH}]|$))`,
+      NO_DOTS_SLASH: `(?!${DOT_LITERAL}{1,2}(?:[${WIN_SLASH}]|$))`,
+      QMARK_NO_DOT: `[^.${WIN_SLASH}]`,
+      START_ANCHOR: `(?:^|[${WIN_SLASH}])`,
+      END_ANCHOR: `(?:[${WIN_SLASH}]|$)`,
+      SEP: "\\"
+    };
+    var POSIX_REGEX_SOURCE = {
+      alnum: "a-zA-Z0-9",
+      alpha: "a-zA-Z",
+      ascii: "\\x00-\\x7F",
+      blank: " \\t",
+      cntrl: "\\x00-\\x1F\\x7F",
+      digit: "0-9",
+      graph: "\\x21-\\x7E",
+      lower: "a-z",
+      print: "\\x20-\\x7E ",
+      punct: "\\-!\"#$%&'()\\*+,./:;<=>?@[\\]^_`{|}~",
+      space: " \\t\\r\\n\\v\\f",
+      upper: "A-Z",
+      word: "A-Za-z0-9_",
+      xdigit: "A-Fa-f0-9"
+    };
+    module2.exports = {
+      MAX_LENGTH: 1024 * 64,
+      POSIX_REGEX_SOURCE,
+      // regular expressions
+      REGEX_BACKSLASH: /\\(?![*+?^${}(|)[\]])/g,
+      REGEX_NON_SPECIAL_CHARS: /^[^@![\].,$*+?^{}()|\\/]+/,
+      REGEX_SPECIAL_CHARS: /[-*+?.^${}(|)[\]]/,
+      REGEX_SPECIAL_CHARS_BACKREF: /(\\?)((\W)(\3*))/g,
+      REGEX_SPECIAL_CHARS_GLOBAL: /([-*+?.^${}(|)[\]])/g,
+      REGEX_REMOVE_BACKSLASH: /(?:\[.*?[^\\]\]|\\(?=.))/g,
+      // Replace globs with equivalent patterns to reduce parsing time.
+      REPLACEMENTS: {
+        __proto__: null,
+        "***": "*",
+        "**/**": "**",
+        "**/**/**": "**"
+      },
+      // Digits
+      CHAR_0: 48,
+      /* 0 */
+      CHAR_9: 57,
+      /* 9 */
+      // Alphabet chars.
+      CHAR_UPPERCASE_A: 65,
+      /* A */
+      CHAR_LOWERCASE_A: 97,
+      /* a */
+      CHAR_UPPERCASE_Z: 90,
+      /* Z */
+      CHAR_LOWERCASE_Z: 122,
+      /* z */
+      CHAR_LEFT_PARENTHESES: 40,
+      /* ( */
+      CHAR_RIGHT_PARENTHESES: 41,
+      /* ) */
+      CHAR_ASTERISK: 42,
+      /* * */
+      // Non-alphabetic chars.
+      CHAR_AMPERSAND: 38,
+      /* & */
+      CHAR_AT: 64,
+      /* @ */
+      CHAR_BACKWARD_SLASH: 92,
+      /* \ */
+      CHAR_CARRIAGE_RETURN: 13,
+      /* \r */
+      CHAR_CIRCUMFLEX_ACCENT: 94,
+      /* ^ */
+      CHAR_COLON: 58,
+      /* : */
+      CHAR_COMMA: 44,
+      /* , */
+      CHAR_DOT: 46,
+      /* . */
+      CHAR_DOUBLE_QUOTE: 34,
+      /* " */
+      CHAR_EQUAL: 61,
+      /* = */
+      CHAR_EXCLAMATION_MARK: 33,
+      /* ! */
+      CHAR_FORM_FEED: 12,
+      /* \f */
+      CHAR_FORWARD_SLASH: 47,
+      /* / */
+      CHAR_GRAVE_ACCENT: 96,
+      /* ` */
+      CHAR_HASH: 35,
+      /* # */
+      CHAR_HYPHEN_MINUS: 45,
+      /* - */
+      CHAR_LEFT_ANGLE_BRACKET: 60,
+      /* < */
+      CHAR_LEFT_CURLY_BRACE: 123,
+      /* { */
+      CHAR_LEFT_SQUARE_BRACKET: 91,
+      /* [ */
+      CHAR_LINE_FEED: 10,
+      /* \n */
+      CHAR_NO_BREAK_SPACE: 160,
+      /* \u00A0 */
+      CHAR_PERCENT: 37,
+      /* % */
+      CHAR_PLUS: 43,
+      /* + */
+      CHAR_QUESTION_MARK: 63,
+      /* ? */
+      CHAR_RIGHT_ANGLE_BRACKET: 62,
+      /* > */
+      CHAR_RIGHT_CURLY_BRACE: 125,
+      /* } */
+      CHAR_RIGHT_SQUARE_BRACKET: 93,
+      /* ] */
+      CHAR_SEMICOLON: 59,
+      /* ; */
+      CHAR_SINGLE_QUOTE: 39,
+      /* ' */
+      CHAR_SPACE: 32,
+      /*   */
+      CHAR_TAB: 9,
+      /* \t */
+      CHAR_UNDERSCORE: 95,
+      /* _ */
+      CHAR_VERTICAL_LINE: 124,
+      /* | */
+      CHAR_ZERO_WIDTH_NOBREAK_SPACE: 65279,
+      /* \uFEFF */
+      /**
+       * Create EXTGLOB_CHARS
+       */
+      extglobChars(chars) {
+        return {
+          "!": { type: "negate", open: "(?:(?!(?:", close: `))${chars.STAR})` },
+          "?": { type: "qmark", open: "(?:", close: ")?" },
+          "+": { type: "plus", open: "(?:", close: ")+" },
+          "*": { type: "star", open: "(?:", close: ")*" },
+          "@": { type: "at", open: "(?:", close: ")" }
+        };
+      },
+      /**
+       * Create GLOB_CHARS
+       */
+      globChars(win32) {
+        return win32 === true ? WINDOWS_CHARS : POSIX_CHARS;
+      }
+    };
+  }
+});
+
+// ../../node_modules/picomatch/lib/utils.js
+var require_utils3 = __commonJS({
+  "../../node_modules/picomatch/lib/utils.js"(exports2) {
+    "use strict";
+    var {
+      REGEX_BACKSLASH,
+      REGEX_REMOVE_BACKSLASH,
+      REGEX_SPECIAL_CHARS,
+      REGEX_SPECIAL_CHARS_GLOBAL
+    } = require_constants();
+    exports2.isObject = (val) => val !== null && typeof val === "object" && !Array.isArray(val);
+    exports2.hasRegexChars = (str) => REGEX_SPECIAL_CHARS.test(str);
+    exports2.isRegexChar = (str) => str.length === 1 && exports2.hasRegexChars(str);
+    exports2.escapeRegex = (str) => str.replace(REGEX_SPECIAL_CHARS_GLOBAL, "\\$1");
+    exports2.toPosixSlashes = (str) => str.replace(REGEX_BACKSLASH, "/");
+    exports2.isWindows = () => {
+      if (typeof navigator !== "undefined" && navigator.platform) {
+        const platform = navigator.platform.toLowerCase();
+        return platform === "win32" || platform === "windows";
+      }
+      if (typeof process !== "undefined" && process.platform) {
+        return process.platform === "win32";
+      }
+      return false;
+    };
+    exports2.removeBackslashes = (str) => {
+      return str.replace(REGEX_REMOVE_BACKSLASH, (match) => {
+        return match === "\\" ? "" : match;
+      });
+    };
+    exports2.escapeLast = (input, char, lastIdx) => {
+      const idx = input.lastIndexOf(char, lastIdx);
+      if (idx === -1) return input;
+      if (input[idx - 1] === "\\") return exports2.escapeLast(input, char, idx - 1);
+      return `${input.slice(0, idx)}\\${input.slice(idx)}`;
+    };
+    exports2.removePrefix = (input, state = {}) => {
+      let output = input;
+      if (output.startsWith("./")) {
+        output = output.slice(2);
+        state.prefix = "./";
+      }
+      return output;
+    };
+    exports2.wrapOutput = (input, state = {}, options = {}) => {
+      const prepend = options.contains ? "" : "^";
+      const append2 = options.contains ? "" : "$";
+      let output = `${prepend}(?:${input})${append2}`;
+      if (state.negated === true) {
+        output = `(?:^(?!${output}).*$)`;
+      }
+      return output;
+    };
+    exports2.basename = (path14, { windows } = {}) => {
+      const segs = path14.split(windows ? /[\\/]/ : "/");
+      const last2 = segs[segs.length - 1];
+      if (last2 === "") {
+        return segs[segs.length - 2];
+      }
+      return last2;
+    };
+  }
+});
+
+// ../../node_modules/picomatch/lib/scan.js
+var require_scan = __commonJS({
+  "../../node_modules/picomatch/lib/scan.js"(exports2, module2) {
+    "use strict";
+    var utils = require_utils3();
+    var {
+      CHAR_ASTERISK,
+      /* * */
+      CHAR_AT,
+      /* @ */
+      CHAR_BACKWARD_SLASH,
+      /* \ */
+      CHAR_COMMA,
+      /* , */
+      CHAR_DOT,
+      /* . */
+      CHAR_EXCLAMATION_MARK,
+      /* ! */
+      CHAR_FORWARD_SLASH,
+      /* / */
+      CHAR_LEFT_CURLY_BRACE,
+      /* { */
+      CHAR_LEFT_PARENTHESES,
+      /* ( */
+      CHAR_LEFT_SQUARE_BRACKET,
+      /* [ */
+      CHAR_PLUS,
+      /* + */
+      CHAR_QUESTION_MARK,
+      /* ? */
+      CHAR_RIGHT_CURLY_BRACE,
+      /* } */
+      CHAR_RIGHT_PARENTHESES,
+      /* ) */
+      CHAR_RIGHT_SQUARE_BRACKET
+      /* ] */
+    } = require_constants();
+    var isPathSeparator = (code) => {
+      return code === CHAR_FORWARD_SLASH || code === CHAR_BACKWARD_SLASH;
+    };
+    var depth = (token) => {
+      if (token.isPrefix !== true) {
+        token.depth = token.isGlobstar ? Infinity : 1;
+      }
+    };
+    var scan = (input, options) => {
+      const opts = options || {};
+      const length = input.length - 1;
+      const scanToEnd = opts.parts === true || opts.scanToEnd === true;
+      const slashes = [];
+      const tokens = [];
+      const parts = [];
+      let str = input;
+      let index = -1;
+      let start = 0;
+      let lastIndex = 0;
+      let isBrace = false;
+      let isBracket = false;
+      let isGlob = false;
+      let isExtglob = false;
+      let isGlobstar = false;
+      let braceEscaped = false;
+      let backslashes = false;
+      let negated = false;
+      let negatedExtglob = false;
+      let finished = false;
+      let braces = 0;
+      let prev;
+      let code;
+      let token = { value: "", depth: 0, isGlob: false };
+      const eos = () => index >= length;
+      const peek = () => str.charCodeAt(index + 1);
+      const advance = () => {
+        prev = code;
+        return str.charCodeAt(++index);
+      };
+      while (index < length) {
+        code = advance();
+        let next;
+        if (code === CHAR_BACKWARD_SLASH) {
+          backslashes = token.backslashes = true;
+          code = advance();
+          if (code === CHAR_LEFT_CURLY_BRACE) {
+            braceEscaped = true;
+          }
+          continue;
+        }
+        if (braceEscaped === true || code === CHAR_LEFT_CURLY_BRACE) {
+          braces++;
+          while (eos() !== true && (code = advance())) {
+            if (code === CHAR_BACKWARD_SLASH) {
+              backslashes = token.backslashes = true;
+              advance();
+              continue;
+            }
+            if (code === CHAR_LEFT_CURLY_BRACE) {
+              braces++;
+              continue;
+            }
+            if (braceEscaped !== true && code === CHAR_DOT && (code = advance()) === CHAR_DOT) {
+              isBrace = token.isBrace = true;
+              isGlob = token.isGlob = true;
+              finished = true;
+              if (scanToEnd === true) {
+                continue;
+              }
+              break;
+            }
+            if (braceEscaped !== true && code === CHAR_COMMA) {
+              isBrace = token.isBrace = true;
+              isGlob = token.isGlob = true;
+              finished = true;
+              if (scanToEnd === true) {
+                continue;
+              }
+              break;
+            }
+            if (code === CHAR_RIGHT_CURLY_BRACE) {
+              braces--;
+              if (braces === 0) {
+                braceEscaped = false;
+                isBrace = token.isBrace = true;
+                finished = true;
+                break;
+              }
+            }
+          }
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+        if (code === CHAR_FORWARD_SLASH) {
+          slashes.push(index);
+          tokens.push(token);
+          token = { value: "", depth: 0, isGlob: false };
+          if (finished === true) continue;
+          if (prev === CHAR_DOT && index === start + 1) {
+            start += 2;
+            continue;
+          }
+          lastIndex = index + 1;
+          continue;
+        }
+        if (opts.noext !== true) {
+          const isExtglobChar = code === CHAR_PLUS || code === CHAR_AT || code === CHAR_ASTERISK || code === CHAR_QUESTION_MARK || code === CHAR_EXCLAMATION_MARK;
+          if (isExtglobChar === true && peek() === CHAR_LEFT_PARENTHESES) {
+            isGlob = token.isGlob = true;
+            isExtglob = token.isExtglob = true;
+            finished = true;
+            if (code === CHAR_EXCLAMATION_MARK && index === start) {
+              negatedExtglob = true;
+            }
+            if (scanToEnd === true) {
+              while (eos() !== true && (code = advance())) {
+                if (code === CHAR_BACKWARD_SLASH) {
+                  backslashes = token.backslashes = true;
+                  code = advance();
+                  continue;
+                }
+                if (code === CHAR_RIGHT_PARENTHESES) {
+                  isGlob = token.isGlob = true;
+                  finished = true;
+                  break;
+                }
+              }
+              continue;
+            }
+            break;
+          }
+        }
+        if (code === CHAR_ASTERISK) {
+          if (prev === CHAR_ASTERISK) isGlobstar = token.isGlobstar = true;
+          isGlob = token.isGlob = true;
+          finished = true;
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+        if (code === CHAR_QUESTION_MARK) {
+          isGlob = token.isGlob = true;
+          finished = true;
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+        if (code === CHAR_LEFT_SQUARE_BRACKET) {
+          while (eos() !== true && (next = advance())) {
+            if (next === CHAR_BACKWARD_SLASH) {
+              backslashes = token.backslashes = true;
+              advance();
+              continue;
+            }
+            if (next === CHAR_RIGHT_SQUARE_BRACKET) {
+              isBracket = token.isBracket = true;
+              isGlob = token.isGlob = true;
+              finished = true;
+              break;
+            }
+          }
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+        if (opts.nonegate !== true && code === CHAR_EXCLAMATION_MARK && index === start) {
+          negated = token.negated = true;
+          start++;
+          continue;
+        }
+        if (opts.noparen !== true && code === CHAR_LEFT_PARENTHESES) {
+          isGlob = token.isGlob = true;
+          if (scanToEnd === true) {
+            while (eos() !== true && (code = advance())) {
+              if (code === CHAR_LEFT_PARENTHESES) {
+                backslashes = token.backslashes = true;
+                code = advance();
+                continue;
+              }
+              if (code === CHAR_RIGHT_PARENTHESES) {
+                finished = true;
+                break;
+              }
+            }
+            continue;
+          }
+          break;
+        }
+        if (isGlob === true) {
+          finished = true;
+          if (scanToEnd === true) {
+            continue;
+          }
+          break;
+        }
+      }
+      if (opts.noext === true) {
+        isExtglob = false;
+        isGlob = false;
+      }
+      let base = str;
+      let prefix = "";
+      let glob = "";
+      if (start > 0) {
+        prefix = str.slice(0, start);
+        str = str.slice(start);
+        lastIndex -= start;
+      }
+      if (base && isGlob === true && lastIndex > 0) {
+        base = str.slice(0, lastIndex);
+        glob = str.slice(lastIndex);
+      } else if (isGlob === true) {
+        base = "";
+        glob = str;
+      } else {
+        base = str;
+      }
+      if (base && base !== "" && base !== "/" && base !== str) {
+        if (isPathSeparator(base.charCodeAt(base.length - 1))) {
+          base = base.slice(0, -1);
+        }
+      }
+      if (opts.unescape === true) {
+        if (glob) glob = utils.removeBackslashes(glob);
+        if (base && backslashes === true) {
+          base = utils.removeBackslashes(base);
+        }
+      }
+      const state = {
+        prefix,
+        input,
+        start,
+        base,
+        glob,
+        isBrace,
+        isBracket,
+        isGlob,
+        isExtglob,
+        isGlobstar,
+        negated,
+        negatedExtglob
+      };
+      if (opts.tokens === true) {
+        state.maxDepth = 0;
+        if (!isPathSeparator(code)) {
+          tokens.push(token);
+        }
+        state.tokens = tokens;
+      }
+      if (opts.parts === true || opts.tokens === true) {
+        let prevIndex;
+        for (let idx = 0; idx < slashes.length; idx++) {
+          const n = prevIndex ? prevIndex + 1 : start;
+          const i = slashes[idx];
+          const value = input.slice(n, i);
+          if (opts.tokens) {
+            if (idx === 0 && start !== 0) {
+              tokens[idx].isPrefix = true;
+              tokens[idx].value = prefix;
+            } else {
+              tokens[idx].value = value;
+            }
+            depth(tokens[idx]);
+            state.maxDepth += tokens[idx].depth;
+          }
+          if (idx !== 0 || value !== "") {
+            parts.push(value);
+          }
+          prevIndex = i;
+        }
+        if (prevIndex && prevIndex + 1 < input.length) {
+          const value = input.slice(prevIndex + 1);
+          parts.push(value);
+          if (opts.tokens) {
+            tokens[tokens.length - 1].value = value;
+            depth(tokens[tokens.length - 1]);
+            state.maxDepth += tokens[tokens.length - 1].depth;
+          }
+        }
+        state.slashes = slashes;
+        state.parts = parts;
+      }
+      return state;
+    };
+    module2.exports = scan;
+  }
+});
+
+// ../../node_modules/picomatch/lib/parse.js
+var require_parse = __commonJS({
+  "../../node_modules/picomatch/lib/parse.js"(exports2, module2) {
+    "use strict";
+    var constants = require_constants();
+    var utils = require_utils3();
+    var {
+      MAX_LENGTH,
+      POSIX_REGEX_SOURCE,
+      REGEX_NON_SPECIAL_CHARS,
+      REGEX_SPECIAL_CHARS_BACKREF,
+      REPLACEMENTS
+    } = constants;
+    var expandRange = (args, options) => {
+      if (typeof options.expandRange === "function") {
+        return options.expandRange(...args, options);
+      }
+      args.sort();
+      const value = `[${args.join("-")}]`;
+      try {
+        new RegExp(value);
+      } catch (ex) {
+        return args.map((v) => utils.escapeRegex(v)).join("..");
+      }
+      return value;
+    };
+    var syntaxError = (type, char) => {
+      return `Missing ${type}: "${char}" - use "\\\\${char}" to match literal characters`;
+    };
+    var parse2 = (input, options) => {
+      if (typeof input !== "string") {
+        throw new TypeError("Expected a string");
+      }
+      input = REPLACEMENTS[input] || input;
+      const opts = { ...options };
+      const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
+      let len = input.length;
+      if (len > max) {
+        throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
+      }
+      const bos = { type: "bos", value: "", output: opts.prepend || "" };
+      const tokens = [bos];
+      const capture = opts.capture ? "" : "?:";
+      const PLATFORM_CHARS = constants.globChars(opts.windows);
+      const EXTGLOB_CHARS = constants.extglobChars(PLATFORM_CHARS);
+      const {
+        DOT_LITERAL,
+        PLUS_LITERAL,
+        SLASH_LITERAL,
+        ONE_CHAR,
+        DOTS_SLASH,
+        NO_DOT,
+        NO_DOT_SLASH,
+        NO_DOTS_SLASH,
+        QMARK,
+        QMARK_NO_DOT,
+        STAR,
+        START_ANCHOR
+      } = PLATFORM_CHARS;
+      const globstar = (opts2) => {
+        return `(${capture}(?:(?!${START_ANCHOR}${opts2.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
+      };
+      const nodot = opts.dot ? "" : NO_DOT;
+      const qmarkNoDot = opts.dot ? QMARK : QMARK_NO_DOT;
+      let star = opts.bash === true ? globstar(opts) : STAR;
+      if (opts.capture) {
+        star = `(${star})`;
+      }
+      if (typeof opts.noext === "boolean") {
+        opts.noextglob = opts.noext;
+      }
+      const state = {
+        input,
+        index: -1,
+        start: 0,
+        dot: opts.dot === true,
+        consumed: "",
+        output: "",
+        prefix: "",
+        backtrack: false,
+        negated: false,
+        brackets: 0,
+        braces: 0,
+        parens: 0,
+        quotes: 0,
+        globstar: false,
+        tokens
+      };
+      input = utils.removePrefix(input, state);
+      len = input.length;
+      const extglobs = [];
+      const braces = [];
+      const stack = [];
+      let prev = bos;
+      let value;
+      const eos = () => state.index === len - 1;
+      const peek = state.peek = (n = 1) => input[state.index + n];
+      const advance = state.advance = () => input[++state.index] || "";
+      const remaining = () => input.slice(state.index + 1);
+      const consume = (value2 = "", num = 0) => {
+        state.consumed += value2;
+        state.index += num;
+      };
+      const append2 = (token) => {
+        state.output += token.output != null ? token.output : token.value;
+        consume(token.value);
+      };
+      const negate = () => {
+        let count = 1;
+        while (peek() === "!" && (peek(2) !== "(" || peek(3) === "?")) {
+          advance();
+          state.start++;
+          count++;
+        }
+        if (count % 2 === 0) {
+          return false;
+        }
+        state.negated = true;
+        state.start++;
+        return true;
+      };
+      const increment = (type) => {
+        state[type]++;
+        stack.push(type);
+      };
+      const decrement = (type) => {
+        state[type]--;
+        stack.pop();
+      };
+      const push = (tok) => {
+        if (prev.type === "globstar") {
+          const isBrace = state.braces > 0 && (tok.type === "comma" || tok.type === "brace");
+          const isExtglob = tok.extglob === true || extglobs.length && (tok.type === "pipe" || tok.type === "paren");
+          if (tok.type !== "slash" && tok.type !== "paren" && !isBrace && !isExtglob) {
+            state.output = state.output.slice(0, -prev.output.length);
+            prev.type = "star";
+            prev.value = "*";
+            prev.output = star;
+            state.output += prev.output;
+          }
+        }
+        if (extglobs.length && tok.type !== "paren") {
+          extglobs[extglobs.length - 1].inner += tok.value;
+        }
+        if (tok.value || tok.output) append2(tok);
+        if (prev && prev.type === "text" && tok.type === "text") {
+          prev.output = (prev.output || prev.value) + tok.value;
+          prev.value += tok.value;
+          return;
+        }
+        tok.prev = prev;
+        tokens.push(tok);
+        prev = tok;
+      };
+      const extglobOpen = (type, value2) => {
+        const token = { ...EXTGLOB_CHARS[value2], conditions: 1, inner: "" };
+        token.prev = prev;
+        token.parens = state.parens;
+        token.output = state.output;
+        const output = (opts.capture ? "(" : "") + token.open;
+        increment("parens");
+        push({ type, value: value2, output: state.output ? "" : ONE_CHAR });
+        push({ type: "paren", extglob: true, value: advance(), output });
+        extglobs.push(token);
+      };
+      const extglobClose = (token) => {
+        let output = token.close + (opts.capture ? ")" : "");
+        let rest;
+        if (token.type === "negate") {
+          let extglobStar = star;
+          if (token.inner && token.inner.length > 1 && token.inner.includes("/")) {
+            extglobStar = globstar(opts);
+          }
+          if (extglobStar !== star || eos() || /^\)+$/.test(remaining())) {
+            output = token.close = `)$))${extglobStar}`;
+          }
+          if (token.inner.includes("*") && (rest = remaining()) && /^\.[^\\/.]+$/.test(rest)) {
+            const expression = parse2(rest, { ...options, fastpaths: false }).output;
+            output = token.close = `)${expression})${extglobStar})`;
+          }
+          if (token.prev.type === "bos") {
+            state.negatedExtglob = true;
+          }
+        }
+        push({ type: "paren", extglob: true, value, output });
+        decrement("parens");
+      };
+      if (opts.fastpaths !== false && !/(^[*!]|[/()[\]{}"])/.test(input)) {
+        let backslashes = false;
+        let output = input.replace(REGEX_SPECIAL_CHARS_BACKREF, (m, esc, chars, first2, rest, index) => {
+          if (first2 === "\\") {
+            backslashes = true;
+            return m;
+          }
+          if (first2 === "?") {
+            if (esc) {
+              return esc + first2 + (rest ? QMARK.repeat(rest.length) : "");
+            }
+            if (index === 0) {
+              return qmarkNoDot + (rest ? QMARK.repeat(rest.length) : "");
+            }
+            return QMARK.repeat(chars.length);
+          }
+          if (first2 === ".") {
+            return DOT_LITERAL.repeat(chars.length);
+          }
+          if (first2 === "*") {
+            if (esc) {
+              return esc + first2 + (rest ? star : "");
+            }
+            return star;
+          }
+          return esc ? m : `\\${m}`;
+        });
+        if (backslashes === true) {
+          if (opts.unescape === true) {
+            output = output.replace(/\\/g, "");
+          } else {
+            output = output.replace(/\\+/g, (m) => {
+              return m.length % 2 === 0 ? "\\\\" : m ? "\\" : "";
+            });
+          }
+        }
+        if (output === input && opts.contains === true) {
+          state.output = input;
+          return state;
+        }
+        state.output = utils.wrapOutput(output, state, options);
+        return state;
+      }
+      while (!eos()) {
+        value = advance();
+        if (value === "\0") {
+          continue;
+        }
+        if (value === "\\") {
+          const next = peek();
+          if (next === "/" && opts.bash !== true) {
+            continue;
+          }
+          if (next === "." || next === ";") {
+            continue;
+          }
+          if (!next) {
+            value += "\\";
+            push({ type: "text", value });
+            continue;
+          }
+          const match = /^\\+/.exec(remaining());
+          let slashes = 0;
+          if (match && match[0].length > 2) {
+            slashes = match[0].length;
+            state.index += slashes;
+            if (slashes % 2 !== 0) {
+              value += "\\";
+            }
+          }
+          if (opts.unescape === true) {
+            value = advance();
+          } else {
+            value += advance();
+          }
+          if (state.brackets === 0) {
+            push({ type: "text", value });
+            continue;
+          }
+        }
+        if (state.brackets > 0 && (value !== "]" || prev.value === "[" || prev.value === "[^")) {
+          if (opts.posix !== false && value === ":") {
+            const inner = prev.value.slice(1);
+            if (inner.includes("[")) {
+              prev.posix = true;
+              if (inner.includes(":")) {
+                const idx = prev.value.lastIndexOf("[");
+                const pre = prev.value.slice(0, idx);
+                const rest2 = prev.value.slice(idx + 2);
+                const posix = POSIX_REGEX_SOURCE[rest2];
+                if (posix) {
+                  prev.value = pre + posix;
+                  state.backtrack = true;
+                  advance();
+                  if (!bos.output && tokens.indexOf(prev) === 1) {
+                    bos.output = ONE_CHAR;
+                  }
+                  continue;
+                }
+              }
+            }
+          }
+          if (value === "[" && peek() !== ":" || value === "-" && peek() === "]") {
+            value = `\\${value}`;
+          }
+          if (value === "]" && (prev.value === "[" || prev.value === "[^")) {
+            value = `\\${value}`;
+          }
+          if (opts.posix === true && value === "!" && prev.value === "[") {
+            value = "^";
+          }
+          prev.value += value;
+          append2({ value });
+          continue;
+        }
+        if (state.quotes === 1 && value !== '"') {
+          value = utils.escapeRegex(value);
+          prev.value += value;
+          append2({ value });
+          continue;
+        }
+        if (value === '"') {
+          state.quotes = state.quotes === 1 ? 0 : 1;
+          if (opts.keepQuotes === true) {
+            push({ type: "text", value });
+          }
+          continue;
+        }
+        if (value === "(") {
+          increment("parens");
+          push({ type: "paren", value });
+          continue;
+        }
+        if (value === ")") {
+          if (state.parens === 0 && opts.strictBrackets === true) {
+            throw new SyntaxError(syntaxError("opening", "("));
+          }
+          const extglob = extglobs[extglobs.length - 1];
+          if (extglob && state.parens === extglob.parens + 1) {
+            extglobClose(extglobs.pop());
+            continue;
+          }
+          push({ type: "paren", value, output: state.parens ? ")" : "\\)" });
+          decrement("parens");
+          continue;
+        }
+        if (value === "[") {
+          if (opts.nobracket === true || !remaining().includes("]")) {
+            if (opts.nobracket !== true && opts.strictBrackets === true) {
+              throw new SyntaxError(syntaxError("closing", "]"));
+            }
+            value = `\\${value}`;
+          } else {
+            increment("brackets");
+          }
+          push({ type: "bracket", value });
+          continue;
+        }
+        if (value === "]") {
+          if (opts.nobracket === true || prev && prev.type === "bracket" && prev.value.length === 1) {
+            push({ type: "text", value, output: `\\${value}` });
+            continue;
+          }
+          if (state.brackets === 0) {
+            if (opts.strictBrackets === true) {
+              throw new SyntaxError(syntaxError("opening", "["));
+            }
+            push({ type: "text", value, output: `\\${value}` });
+            continue;
+          }
+          decrement("brackets");
+          const prevValue = prev.value.slice(1);
+          if (prev.posix !== true && prevValue[0] === "^" && !prevValue.includes("/")) {
+            value = `/${value}`;
+          }
+          prev.value += value;
+          append2({ value });
+          if (opts.literalBrackets === false || utils.hasRegexChars(prevValue)) {
+            continue;
+          }
+          const escaped = utils.escapeRegex(prev.value);
+          state.output = state.output.slice(0, -prev.value.length);
+          if (opts.literalBrackets === true) {
+            state.output += escaped;
+            prev.value = escaped;
+            continue;
+          }
+          prev.value = `(${capture}${escaped}|${prev.value})`;
+          state.output += prev.value;
+          continue;
+        }
+        if (value === "{" && opts.nobrace !== true) {
+          increment("braces");
+          const open = {
+            type: "brace",
+            value,
+            output: "(",
+            outputIndex: state.output.length,
+            tokensIndex: state.tokens.length
+          };
+          braces.push(open);
+          push(open);
+          continue;
+        }
+        if (value === "}") {
+          const brace = braces[braces.length - 1];
+          if (opts.nobrace === true || !brace) {
+            push({ type: "text", value, output: value });
+            continue;
+          }
+          let output = ")";
+          if (brace.dots === true) {
+            const arr = tokens.slice();
+            const range = [];
+            for (let i = arr.length - 1; i >= 0; i--) {
+              tokens.pop();
+              if (arr[i].type === "brace") {
+                break;
+              }
+              if (arr[i].type !== "dots") {
+                range.unshift(arr[i].value);
+              }
+            }
+            output = expandRange(range, opts);
+            state.backtrack = true;
+          }
+          if (brace.comma !== true && brace.dots !== true) {
+            const out = state.output.slice(0, brace.outputIndex);
+            const toks = state.tokens.slice(brace.tokensIndex);
+            brace.value = brace.output = "\\{";
+            value = output = "\\}";
+            state.output = out;
+            for (const t of toks) {
+              state.output += t.output || t.value;
+            }
+          }
+          push({ type: "brace", value, output });
+          decrement("braces");
+          braces.pop();
+          continue;
+        }
+        if (value === "|") {
+          if (extglobs.length > 0) {
+            extglobs[extglobs.length - 1].conditions++;
+          }
+          push({ type: "text", value });
+          continue;
+        }
+        if (value === ",") {
+          let output = value;
+          const brace = braces[braces.length - 1];
+          if (brace && stack[stack.length - 1] === "braces") {
+            brace.comma = true;
+            output = "|";
+          }
+          push({ type: "comma", value, output });
+          continue;
+        }
+        if (value === "/") {
+          if (prev.type === "dot" && state.index === state.start + 1) {
+            state.start = state.index + 1;
+            state.consumed = "";
+            state.output = "";
+            tokens.pop();
+            prev = bos;
+            continue;
+          }
+          push({ type: "slash", value, output: SLASH_LITERAL });
+          continue;
+        }
+        if (value === ".") {
+          if (state.braces > 0 && prev.type === "dot") {
+            if (prev.value === ".") prev.output = DOT_LITERAL;
+            const brace = braces[braces.length - 1];
+            prev.type = "dots";
+            prev.output += value;
+            prev.value += value;
+            brace.dots = true;
+            continue;
+          }
+          if (state.braces + state.parens === 0 && prev.type !== "bos" && prev.type !== "slash") {
+            push({ type: "text", value, output: DOT_LITERAL });
+            continue;
+          }
+          push({ type: "dot", value, output: DOT_LITERAL });
+          continue;
+        }
+        if (value === "?") {
+          const isGroup = prev && prev.value === "(";
+          if (!isGroup && opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+            extglobOpen("qmark", value);
+            continue;
+          }
+          if (prev && prev.type === "paren") {
+            const next = peek();
+            let output = value;
+            if (prev.value === "(" && !/[!=<:]/.test(next) || next === "<" && !/<([!=]|\w+>)/.test(remaining())) {
+              output = `\\${value}`;
+            }
+            push({ type: "text", value, output });
+            continue;
+          }
+          if (opts.dot !== true && (prev.type === "slash" || prev.type === "bos")) {
+            push({ type: "qmark", value, output: QMARK_NO_DOT });
+            continue;
+          }
+          push({ type: "qmark", value, output: QMARK });
+          continue;
+        }
+        if (value === "!") {
+          if (opts.noextglob !== true && peek() === "(") {
+            if (peek(2) !== "?" || !/[!=<:]/.test(peek(3))) {
+              extglobOpen("negate", value);
+              continue;
+            }
+          }
+          if (opts.nonegate !== true && state.index === 0) {
+            negate();
+            continue;
+          }
+        }
+        if (value === "+") {
+          if (opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+            extglobOpen("plus", value);
+            continue;
+          }
+          if (prev && prev.value === "(" || opts.regex === false) {
+            push({ type: "plus", value, output: PLUS_LITERAL });
+            continue;
+          }
+          if (prev && (prev.type === "bracket" || prev.type === "paren" || prev.type === "brace") || state.parens > 0) {
+            push({ type: "plus", value });
+            continue;
+          }
+          push({ type: "plus", value: PLUS_LITERAL });
+          continue;
+        }
+        if (value === "@") {
+          if (opts.noextglob !== true && peek() === "(" && peek(2) !== "?") {
+            push({ type: "at", extglob: true, value, output: "" });
+            continue;
+          }
+          push({ type: "text", value });
+          continue;
+        }
+        if (value !== "*") {
+          if (value === "$" || value === "^") {
+            value = `\\${value}`;
+          }
+          const match = REGEX_NON_SPECIAL_CHARS.exec(remaining());
+          if (match) {
+            value += match[0];
+            state.index += match[0].length;
+          }
+          push({ type: "text", value });
+          continue;
+        }
+        if (prev && (prev.type === "globstar" || prev.star === true)) {
+          prev.type = "star";
+          prev.star = true;
+          prev.value += value;
+          prev.output = star;
+          state.backtrack = true;
+          state.globstar = true;
+          consume(value);
+          continue;
+        }
+        let rest = remaining();
+        if (opts.noextglob !== true && /^\([^?]/.test(rest)) {
+          extglobOpen("star", value);
+          continue;
+        }
+        if (prev.type === "star") {
+          if (opts.noglobstar === true) {
+            consume(value);
+            continue;
+          }
+          const prior = prev.prev;
+          const before = prior.prev;
+          const isStart = prior.type === "slash" || prior.type === "bos";
+          const afterStar = before && (before.type === "star" || before.type === "globstar");
+          if (opts.bash === true && (!isStart || rest[0] && rest[0] !== "/")) {
+            push({ type: "star", value, output: "" });
+            continue;
+          }
+          const isBrace = state.braces > 0 && (prior.type === "comma" || prior.type === "brace");
+          const isExtglob = extglobs.length && (prior.type === "pipe" || prior.type === "paren");
+          if (!isStart && prior.type !== "paren" && !isBrace && !isExtglob) {
+            push({ type: "star", value, output: "" });
+            continue;
+          }
+          while (rest.slice(0, 3) === "/**") {
+            const after = input[state.index + 4];
+            if (after && after !== "/") {
+              break;
+            }
+            rest = rest.slice(3);
+            consume("/**", 3);
+          }
+          if (prior.type === "bos" && eos()) {
+            prev.type = "globstar";
+            prev.value += value;
+            prev.output = globstar(opts);
+            state.output = prev.output;
+            state.globstar = true;
+            consume(value);
+            continue;
+          }
+          if (prior.type === "slash" && prior.prev.type !== "bos" && !afterStar && eos()) {
+            state.output = state.output.slice(0, -(prior.output + prev.output).length);
+            prior.output = `(?:${prior.output}`;
+            prev.type = "globstar";
+            prev.output = globstar(opts) + (opts.strictSlashes ? ")" : "|$)");
+            prev.value += value;
+            state.globstar = true;
+            state.output += prior.output + prev.output;
+            consume(value);
+            continue;
+          }
+          if (prior.type === "slash" && prior.prev.type !== "bos" && rest[0] === "/") {
+            const end = rest[1] !== void 0 ? "|$" : "";
+            state.output = state.output.slice(0, -(prior.output + prev.output).length);
+            prior.output = `(?:${prior.output}`;
+            prev.type = "globstar";
+            prev.output = `${globstar(opts)}${SLASH_LITERAL}|${SLASH_LITERAL}${end})`;
+            prev.value += value;
+            state.output += prior.output + prev.output;
+            state.globstar = true;
+            consume(value + advance());
+            push({ type: "slash", value: "/", output: "" });
+            continue;
+          }
+          if (prior.type === "bos" && rest[0] === "/") {
+            prev.type = "globstar";
+            prev.value += value;
+            prev.output = `(?:^|${SLASH_LITERAL}|${globstar(opts)}${SLASH_LITERAL})`;
+            state.output = prev.output;
+            state.globstar = true;
+            consume(value + advance());
+            push({ type: "slash", value: "/", output: "" });
+            continue;
+          }
+          state.output = state.output.slice(0, -prev.output.length);
+          prev.type = "globstar";
+          prev.output = globstar(opts);
+          prev.value += value;
+          state.output += prev.output;
+          state.globstar = true;
+          consume(value);
+          continue;
+        }
+        const token = { type: "star", value, output: star };
+        if (opts.bash === true) {
+          token.output = ".*?";
+          if (prev.type === "bos" || prev.type === "slash") {
+            token.output = nodot + token.output;
+          }
+          push(token);
+          continue;
+        }
+        if (prev && (prev.type === "bracket" || prev.type === "paren") && opts.regex === true) {
+          token.output = value;
+          push(token);
+          continue;
+        }
+        if (state.index === state.start || prev.type === "slash" || prev.type === "dot") {
+          if (prev.type === "dot") {
+            state.output += NO_DOT_SLASH;
+            prev.output += NO_DOT_SLASH;
+          } else if (opts.dot === true) {
+            state.output += NO_DOTS_SLASH;
+            prev.output += NO_DOTS_SLASH;
+          } else {
+            state.output += nodot;
+            prev.output += nodot;
+          }
+          if (peek() !== "*") {
+            state.output += ONE_CHAR;
+            prev.output += ONE_CHAR;
+          }
+        }
+        push(token);
+      }
+      while (state.brackets > 0) {
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", "]"));
+        state.output = utils.escapeLast(state.output, "[");
+        decrement("brackets");
+      }
+      while (state.parens > 0) {
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", ")"));
+        state.output = utils.escapeLast(state.output, "(");
+        decrement("parens");
+      }
+      while (state.braces > 0) {
+        if (opts.strictBrackets === true) throw new SyntaxError(syntaxError("closing", "}"));
+        state.output = utils.escapeLast(state.output, "{");
+        decrement("braces");
+      }
+      if (opts.strictSlashes !== true && (prev.type === "star" || prev.type === "bracket")) {
+        push({ type: "maybe_slash", value: "", output: `${SLASH_LITERAL}?` });
+      }
+      if (state.backtrack === true) {
+        state.output = "";
+        for (const token of state.tokens) {
+          state.output += token.output != null ? token.output : token.value;
+          if (token.suffix) {
+            state.output += token.suffix;
+          }
+        }
+      }
+      return state;
+    };
+    parse2.fastpaths = (input, options) => {
+      const opts = { ...options };
+      const max = typeof opts.maxLength === "number" ? Math.min(MAX_LENGTH, opts.maxLength) : MAX_LENGTH;
+      const len = input.length;
+      if (len > max) {
+        throw new SyntaxError(`Input length: ${len}, exceeds maximum allowed length: ${max}`);
+      }
+      input = REPLACEMENTS[input] || input;
+      const {
+        DOT_LITERAL,
+        SLASH_LITERAL,
+        ONE_CHAR,
+        DOTS_SLASH,
+        NO_DOT,
+        NO_DOTS,
+        NO_DOTS_SLASH,
+        STAR,
+        START_ANCHOR
+      } = constants.globChars(opts.windows);
+      const nodot = opts.dot ? NO_DOTS : NO_DOT;
+      const slashDot = opts.dot ? NO_DOTS_SLASH : NO_DOT;
+      const capture = opts.capture ? "" : "?:";
+      const state = { negated: false, prefix: "" };
+      let star = opts.bash === true ? ".*?" : STAR;
+      if (opts.capture) {
+        star = `(${star})`;
+      }
+      const globstar = (opts2) => {
+        if (opts2.noglobstar === true) return star;
+        return `(${capture}(?:(?!${START_ANCHOR}${opts2.dot ? DOTS_SLASH : DOT_LITERAL}).)*?)`;
+      };
+      const create = (str) => {
+        switch (str) {
+          case "*":
+            return `${nodot}${ONE_CHAR}${star}`;
+          case ".*":
+            return `${DOT_LITERAL}${ONE_CHAR}${star}`;
+          case "*.*":
+            return `${nodot}${star}${DOT_LITERAL}${ONE_CHAR}${star}`;
+          case "*/*":
+            return `${nodot}${star}${SLASH_LITERAL}${ONE_CHAR}${slashDot}${star}`;
+          case "**":
+            return nodot + globstar(opts);
+          case "**/*":
+            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${slashDot}${ONE_CHAR}${star}`;
+          case "**/*.*":
+            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${slashDot}${star}${DOT_LITERAL}${ONE_CHAR}${star}`;
+          case "**/.*":
+            return `(?:${nodot}${globstar(opts)}${SLASH_LITERAL})?${DOT_LITERAL}${ONE_CHAR}${star}`;
+          default: {
+            const match = /^(.*?)\.(\w+)$/.exec(str);
+            if (!match) return;
+            const source2 = create(match[1]);
+            if (!source2) return;
+            return source2 + DOT_LITERAL + match[2];
+          }
+        }
+      };
+      const output = utils.removePrefix(input, state);
+      let source = create(output);
+      if (source && opts.strictSlashes !== true) {
+        source += `${SLASH_LITERAL}?`;
+      }
+      return source;
+    };
+    module2.exports = parse2;
+  }
+});
+
+// ../../node_modules/picomatch/lib/picomatch.js
+var require_picomatch = __commonJS({
+  "../../node_modules/picomatch/lib/picomatch.js"(exports2, module2) {
+    "use strict";
+    var scan = require_scan();
+    var parse2 = require_parse();
+    var utils = require_utils3();
+    var constants = require_constants();
+    var isObject = (val) => val && typeof val === "object" && !Array.isArray(val);
+    var picomatch2 = (glob, options, returnState = false) => {
+      if (Array.isArray(glob)) {
+        const fns = glob.map((input) => picomatch2(input, options, returnState));
+        const arrayMatcher = (str) => {
+          for (const isMatch of fns) {
+            const state2 = isMatch(str);
+            if (state2) return state2;
+          }
+          return false;
+        };
+        return arrayMatcher;
+      }
+      const isState = isObject(glob) && glob.tokens && glob.input;
+      if (glob === "" || typeof glob !== "string" && !isState) {
+        throw new TypeError("Expected pattern to be a non-empty string");
+      }
+      const opts = options || {};
+      const posix = opts.windows;
+      const regex = isState ? picomatch2.compileRe(glob, options) : picomatch2.makeRe(glob, options, false, true);
+      const state = regex.state;
+      delete regex.state;
+      let isIgnored = () => false;
+      if (opts.ignore) {
+        const ignoreOpts = { ...options, ignore: null, onMatch: null, onResult: null };
+        isIgnored = picomatch2(opts.ignore, ignoreOpts, returnState);
+      }
+      const matcher = (input, returnObject = false) => {
+        const { isMatch, match, output } = picomatch2.test(input, regex, options, { glob, posix });
+        const result = { glob, state, regex, posix, input, output, match, isMatch };
+        if (typeof opts.onResult === "function") {
+          opts.onResult(result);
+        }
+        if (isMatch === false) {
+          result.isMatch = false;
+          return returnObject ? result : false;
+        }
+        if (isIgnored(input)) {
+          if (typeof opts.onIgnore === "function") {
+            opts.onIgnore(result);
+          }
+          result.isMatch = false;
+          return returnObject ? result : false;
+        }
+        if (typeof opts.onMatch === "function") {
+          opts.onMatch(result);
+        }
+        return returnObject ? result : true;
+      };
+      if (returnState) {
+        matcher.state = state;
+      }
+      return matcher;
+    };
+    picomatch2.test = (input, regex, options, { glob, posix } = {}) => {
+      if (typeof input !== "string") {
+        throw new TypeError("Expected input to be a string");
+      }
+      if (input === "") {
+        return { isMatch: false, output: "" };
+      }
+      const opts = options || {};
+      const format = opts.format || (posix ? utils.toPosixSlashes : null);
+      let match = input === glob;
+      let output = match && format ? format(input) : input;
+      if (match === false) {
+        output = format ? format(input) : input;
+        match = output === glob;
+      }
+      if (match === false || opts.capture === true) {
+        if (opts.matchBase === true || opts.basename === true) {
+          match = picomatch2.matchBase(input, regex, options, posix);
+        } else {
+          match = regex.exec(output);
+        }
+      }
+      return { isMatch: Boolean(match), match, output };
+    };
+    picomatch2.matchBase = (input, glob, options) => {
+      const regex = glob instanceof RegExp ? glob : picomatch2.makeRe(glob, options);
+      return regex.test(utils.basename(input));
+    };
+    picomatch2.isMatch = (str, patterns, options) => picomatch2(patterns, options)(str);
+    picomatch2.parse = (pattern, options) => {
+      if (Array.isArray(pattern)) return pattern.map((p) => picomatch2.parse(p, options));
+      return parse2(pattern, { ...options, fastpaths: false });
+    };
+    picomatch2.scan = (input, options) => scan(input, options);
+    picomatch2.compileRe = (state, options, returnOutput = false, returnState = false) => {
+      if (returnOutput === true) {
+        return state.output;
+      }
+      const opts = options || {};
+      const prepend = opts.contains ? "" : "^";
+      const append2 = opts.contains ? "" : "$";
+      let source = `${prepend}(?:${state.output})${append2}`;
+      if (state && state.negated === true) {
+        source = `^(?!${source}).*$`;
+      }
+      const regex = picomatch2.toRegex(source, options);
+      if (returnState === true) {
+        regex.state = state;
+      }
+      return regex;
+    };
+    picomatch2.makeRe = (input, options = {}, returnOutput = false, returnState = false) => {
+      if (!input || typeof input !== "string") {
+        throw new TypeError("Expected a non-empty string");
+      }
+      let parsed = { negated: false, fastpaths: true };
+      if (options.fastpaths !== false && (input[0] === "." || input[0] === "*")) {
+        parsed.output = parse2.fastpaths(input, options);
+      }
+      if (!parsed.output) {
+        parsed = parse2(input, options);
+      }
+      return picomatch2.compileRe(parsed, options, returnOutput, returnState);
+    };
+    picomatch2.toRegex = (source, options) => {
+      try {
+        const opts = options || {};
+        return new RegExp(source, opts.flags || (opts.nocase ? "i" : ""));
+      } catch (err) {
+        if (options && options.debug === true) throw err;
+        return /$^/;
+      }
+    };
+    picomatch2.constants = constants;
+    module2.exports = picomatch2;
+  }
+});
+
+// ../../node_modules/picomatch/index.js
+var require_picomatch2 = __commonJS({
+  "../../node_modules/picomatch/index.js"(exports2, module2) {
+    "use strict";
+    var pico = require_picomatch();
+    var utils = require_utils3();
+    function picomatch2(glob, options, returnState = false) {
+      if (options && (options.windows === null || options.windows === void 0)) {
+        options = { ...options, windows: utils.isWindows() };
+      }
+      return pico(glob, options, returnState);
+    }
+    Object.assign(picomatch2, pico);
+    module2.exports = picomatch2;
+  }
+});
+
 // node_modules/commander/esm.mjs
 var import_index = __toESM(require_commander(), 1);
 var {
@@ -48973,179 +52251,338 @@ var {
   Help
 } = import_index.default;
 
-// src/sdk-proxy.ts
-var import_dev_tunnels_management2 = __toESM(require_dev_tunnels_management(), 1);
-
-// src/tunnel-adapter.ts
-var dns = __toESM(require("dns"), 1);
-var net = __toESM(require("net"), 1);
-var os2 = __toESM(require("os"), 1);
-var import_dev_tunnels_connections = __toESM(require_dev_tunnels_connections(), 1);
-var import_dev_tunnels_contracts = __toESM(require_dev_tunnels_contracts(), 1);
-var import_dev_tunnels_management = __toESM(require_dev_tunnels_management(), 1);
-
-// src/token-storage.ts
+// src/auth/keychain-token-storage.ts
 var import_keytar = __toESM(require("keytar"), 1);
 var SERVICE_NAME = "agent-tunnels";
 var ACCOUNT_NAME = "github-token-data";
-function formatTokenForLog(label, data) {
-  const now = Date.now();
-  const fmtExp = (ts) => {
-    if (!ts) return "N/A";
-    const remaining = Math.round((ts - now) / 6e4);
-    return `${new Date(ts).toISOString()} (${remaining}min remaining)`;
-  };
-  return `[Auth Debug] ${label}: access=${data.accessToken?.slice(0, 8) ?? "none"}... refresh=${data.refreshToken?.slice(0, 8) ?? "none"}... accessExp=${fmtExp(data.expiresAt)} refreshExp=${fmtExp(data.refreshExpiresAt)}`;
-}
-async function loadTokenData() {
-  try {
-    const data = await import_keytar.default.getPassword(SERVICE_NAME, ACCOUNT_NAME);
-    if (!data) {
-      console.log("[Auth Debug] loadTokenData: no token data in keychain");
+var KeychainTokenStorage = class {
+  async load() {
+    try {
+      const raw = await import_keytar.default.getPassword(SERVICE_NAME, ACCOUNT_NAME);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return {
+        accessToken: parsed.accessToken,
+        refreshToken: parsed.refreshToken,
+        expiresAt: parsed.expiresAt,
+        refreshExpiresAt: parsed.refreshExpiresAt
+      };
+    } catch {
       return null;
     }
-    const parsed = JSON.parse(data);
-    console.log(formatTokenForLog("loadTokenData", parsed));
-    return parsed;
-  } catch (error) {
-    console.warn("[Auth Debug] loadTokenData: keychain error:", error);
-    return null;
   }
-}
-async function saveTokenData(tokenData) {
-  console.log(formatTokenForLog("saveTokenData", tokenData));
-  try {
-    await import_keytar.default.setPassword(SERVICE_NAME, ACCOUNT_NAME, JSON.stringify(tokenData));
-  } catch (error) {
-    console.warn("[Auth Debug] saveTokenData: keychain error:", error);
-    throw error;
+  async save(data) {
+    await import_keytar.default.setPassword(SERVICE_NAME, ACCOUNT_NAME, JSON.stringify(data));
   }
-}
-async function clearTokenData() {
-  const caller = new Error().stack?.split("\n")[2]?.trim() ?? "unknown";
-  console.log(`[Auth Debug] clearTokenData called from: ${caller}`);
-  try {
-    await import_keytar.default.deletePassword(SERVICE_NAME, ACCOUNT_NAME);
-  } catch (error) {
-    console.warn("[Auth Debug] clearTokenData: keychain error:", error);
-  }
-}
-
-// src/tunnel-config.ts
-var fs = __toESM(require("fs/promises"), 1);
-var path = __toESM(require("path"), 1);
-var os = __toESM(require("os"), 1);
-function getConfigDir() {
-  return path.join(os.homedir(), ".copilot", "agent-tunnels");
-}
-function getConfigPath() {
-  return path.join(getConfigDir(), "host-config.json");
-}
-async function loadTunnelConfig() {
-  try {
-    const configPath = getConfigPath();
-    const data = await fs.readFile(configPath, "utf-8");
-    return JSON.parse(data);
-  } catch {
-    return null;
-  }
-}
-async function saveTunnelConfig(config) {
-  const configDir = getConfigDir();
-  const configPath = getConfigPath();
-  await fs.mkdir(configDir, { recursive: true });
-  await fs.writeFile(configPath, JSON.stringify(config, null, 2), "utf-8");
-}
-async function clearTunnelConfig() {
-  try {
-    const configPath = getConfigPath();
-    await fs.unlink(configPath);
-  } catch {
-  }
-}
-
-// src/tunnel-adapter.ts
-var DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS = 5;
-var DEFAULT_CONNECTION_TIMEOUT_MS = 3e4;
-var NETWORK_CHECK_INTERVAL_MS = 5e3;
-var MIN_RETRY_DELAY_MS = 1e3;
-var DNS_TIMEOUT_MS = 5e3;
-var SLEEP_WAKE_THRESHOLD_MS = 3e4;
-var TUNNEL_LABEL = "copilot-tunnel-session";
-var GITHUB_CLIENT_ID = "Iv1.e7b89e013f801f03";
-var GITHUB_SCOPES = "read:user,read:org";
-var GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code";
-var GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token";
-var DEVICE_CODE_POLL_INTERVAL_MS = 5e3;
-var RefreshTokenInvalidError = class extends Error {
-  constructor(message = "Refresh token is invalid or expired") {
-    super(message);
-    this.name = "RefreshTokenInvalidError";
+  async clear() {
+    try {
+      await import_keytar.default.deletePassword(SERVICE_NAME, ACCOUNT_NAME);
+    } catch {
+    }
   }
 };
-function maskTokenResponse(resp) {
+
+// src/auth/direct-auth-gateway.ts
+var GITHUB_DEVICE_CODE_URL = "https://github.com/login/device/code";
+var GITHUB_TOKEN_URL = "https://github.com/login/oauth/access_token";
+var DirectAuthGateway = class {
+  async requestDeviceCode(clientId, scopes) {
+    const params = new URLSearchParams();
+    params.append("client_id", clientId);
+    params.append("scope", scopes);
+    return this.post(GITHUB_DEVICE_CODE_URL, params);
+  }
+  async exchangeDeviceCode(clientId, deviceCode) {
+    const params = new URLSearchParams();
+    params.append("client_id", clientId);
+    params.append("device_code", deviceCode);
+    params.append("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
+    return this.post(GITHUB_TOKEN_URL, params);
+  }
+  async refreshToken(clientId, refreshToken) {
+    const params = new URLSearchParams();
+    params.append("client_id", clientId);
+    params.append("refresh_token", refreshToken);
+    params.append("grant_type", "refresh_token");
+    return this.post(GITHUB_TOKEN_URL, params);
+  }
+  async post(url, params) {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: params.toString()
+    });
+    if (!response.ok) {
+      throw new Error(`GitHub API error: ${response.status} ${response.statusText}`);
+    }
+    return await response.json();
+  }
+};
+
+// src/auth/direct-token-verifier.ts
+var GITHUB_USER_URL = "https://api.github.com/user";
+var DirectTokenVerifier = class {
+  async verifyToken(accessToken) {
+    try {
+      const response = await fetch(GITHUB_USER_URL, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          Accept: "application/json"
+        }
+      });
+      if (!response.ok) {
+        return { valid: false };
+      }
+      const body = await response.json();
+      const scopes = response.headers.get("x-oauth-scopes") ?? void 0;
+      return {
+        valid: true,
+        username: body.login,
+        scopes
+      };
+    } catch {
+      return { valid: false };
+    }
+  }
+};
+
+// src/tunnel/mgmt-api-tunnel-gateway.ts
+var import_dev_tunnels_management = __toESM(require_dev_tunnels_management(), 1);
+var import_dev_tunnels_contracts = __toESM(require_dev_tunnels_contracts(), 1);
+var USER_AGENT = "RemoteSdkBridge/2.0";
+var API_VERSION = import_dev_tunnels_management.ManagementApiVersions.Version20230927preview;
+var TOKEN_SCOPES = [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect];
+var MgmtApiTunnelGateway = class {
+  client;
+  currentToken = null;
+  constructor() {
+    this.client = new import_dev_tunnels_management.TunnelManagementHttpClient(
+      USER_AGENT,
+      API_VERSION,
+      () => Promise.resolve(this.currentToken ? `github ${this.currentToken}` : null)
+    );
+  }
+  async getTunnel(tunnelId, clusterId, token) {
+    this.currentToken = token;
+    try {
+      const result = await this.client.getTunnel(
+        { tunnelId, clusterId },
+        { tokenScopes: TOKEN_SCOPES, includePorts: true }
+      );
+      return result ? toTunnel(result) : null;
+    } catch (err) {
+      if (is404(err)) return null;
+      throw err;
+    }
+  }
+  async listByLabel(label, token) {
+    this.currentToken = token;
+    const result = await this.client.listTunnels(
+      void 0,
+      void 0,
+      { labels: [label] }
+    );
+    return result.map(toTunnel);
+  }
+  async createTunnel(label, token) {
+    this.currentToken = token;
+    const result = await this.client.createTunnel(
+      { labels: [label], ports: [] },
+      { tokenScopes: TOKEN_SCOPES, includePorts: true }
+    );
+    return toTunnel(result);
+  }
+  async addPort(tunnel, port, token) {
+    this.currentToken = token;
+    const sdkTunnel = { tunnelId: tunnel.tunnelId, clusterId: tunnel.clusterId };
+    await this.client.createTunnelPort(sdkTunnel, {
+      portNumber: port,
+      protocol: "auto"
+    });
+    const updated = await this.client.getTunnel(sdkTunnel, {
+      tokenScopes: TOKEN_SCOPES,
+      includePorts: true
+    });
+    return toTunnel(updated);
+  }
+  async removePorts(tunnel, token) {
+    this.currentToken = token;
+    const sdkTunnel = { tunnelId: tunnel.tunnelId, clusterId: tunnel.clusterId };
+    for (const port of tunnel.ports) {
+      try {
+        await this.client.deleteTunnelPort(sdkTunnel, port.portNumber);
+      } catch {
+      }
+    }
+  }
+  async deleteTunnel(tunnel, token) {
+    this.currentToken = token;
+    const sdkTunnel = { tunnelId: tunnel.tunnelId, clusterId: tunnel.clusterId };
+    await this.client.deleteTunnel(sdkTunnel);
+  }
+};
+function toTunnel(sdk) {
   return {
-    access_token: resp.access_token ? `${resp.access_token.slice(0, 8)}...` : void 0,
-    refresh_token: resp.refresh_token ? `${resp.refresh_token.slice(0, 8)}...` : void 0,
-    expires_in: resp.expires_in,
-    refresh_token_expires_in: resp.refresh_token_expires_in,
-    token_type: resp.token_type,
-    scope: resp.scope,
-    error: resp.error,
-    error_description: resp.error_description
+    tunnelId: sdk.tunnelId,
+    clusterId: sdk.clusterId,
+    created: sdk.created ? new Date(sdk.created).toISOString() : void 0,
+    hostConnectionCount: extractCount(sdk.status?.hostConnectionCount),
+    lastHostConnectionTime: sdk.status?.lastHostConnectionTime ? new Date(sdk.status.lastHostConnectionTime).toISOString() : void 0,
+    ports: (sdk.ports ?? []).map((p) => ({
+      portNumber: p.portNumber,
+      protocol: p.protocol
+    }))
   };
 }
-var DevTunnelHostAdapter = class {
-  config;
-  server = null;
-  tunnel = null;
-  host = null;
-  managementClient = null;
-  clientHandlers = [];
-  disconnectHandlers = [];
-  clientCounter = 0;
-  clients = /* @__PURE__ */ new Map();
-  disconnectedClients = /* @__PURE__ */ new Set();
-  // Track already-disconnected clients to avoid duplicate notifications
-  relayConnected = false;
-  // Track relay status — reject new TCP clients when relay is down
-  isDisposed = false;
-  username;
-  currentToken = null;
-  hasEverConnected = false;
-  // Track initial connection for logging
-  // Disconnect tracking for reconnection context
-  lastDisconnectReason;
-  disconnectedAt;
-  // Network monitoring state (runs when disconnected)
-  lastNetworkInterfaces = "";
-  networkCheckTimer = null;
-  lastNetworkCheckTime = 0;
-  // For sleep/wake detection
-  isNetworkAvailable = true;
-  retryCount = 0;
-  // Sleep detection state (runs always to detect system wake)
-  sleepDetectionTimer = null;
-  lastSleepCheckTime = 0;
-  // Log level filtering
-  logLevel;
-  constructor(config) {
-    this.config = config;
-    this.logLevel = config.logLevel ?? "info";
+function extractCount(value) {
+  if (value === void 0 || value === null) return 0;
+  if (typeof value === "number") return value;
+  if (typeof value === "object" && value !== null && "current" in value) {
+    return value.current;
   }
-  log(level, message) {
-    if (level === "debug" && this.logLevel !== "debug") {
+  return 0;
+}
+function is404(error) {
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    return msg.includes("404") || msg.includes("not found") || msg.includes("does not exist");
+  }
+  return false;
+}
+
+// src/tunnel/file-tunnel-config-store.ts
+var fs = __toESM(require("fs"), 1);
+var path = __toESM(require("path"), 1);
+var os = __toESM(require("os"), 1);
+var DEFAULT_CONFIG_DIR = path.join(os.homedir(), ".copilot", "agent-tunnels");
+var CONFIG_FILENAME = "host-config.json";
+var FileTunnelConfigStore = class {
+  configPath;
+  configDir;
+  constructor(configDir) {
+    this.configDir = configDir ?? DEFAULT_CONFIG_DIR;
+    this.configPath = path.join(this.configDir, CONFIG_FILENAME);
+  }
+  /** The full path to the config file on disk. */
+  get filePath() {
+    return this.configPath;
+  }
+  load() {
+    try {
+      const data = fs.readFileSync(this.configPath, "utf-8");
+      const parsed = JSON.parse(data);
+      return {
+        tunnelId: parsed.tunnelId,
+        clusterId: parsed.clusterId,
+        // Handle V1's `createdAt` field for backwards compatibility
+        savedAt: parsed.savedAt ?? parsed.createdAt ?? (/* @__PURE__ */ new Date()).toISOString()
+      };
+    } catch {
+      return null;
+    }
+  }
+  save(config) {
+    fs.mkdirSync(this.configDir, { recursive: true });
+    fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2), "utf-8");
+  }
+  clear() {
+    try {
+      fs.unlinkSync(this.configPath);
+    } catch {
+    }
+  }
+};
+
+// src/connection/node-connectivity-monitor.ts
+var dns = __toESM(require("dns"), 1);
+var os2 = __toESM(require("os"), 1);
+var CHECK_INTERVAL_MS = 5e3;
+var DNS_TIMEOUT_MS = 5e3;
+var SLEEP_WAKE_THRESHOLD_MS = 3e4;
+var DNS_HOSTNAME = "github.com";
+var NodeConnectivityMonitor = class {
+  _isOnline = true;
+  timer = null;
+  lastTickTime = 0;
+  lastFingerprint = "";
+  connectivityHandlers = [];
+  wakeHandlers = [];
+  get isOnline() {
+    return this._isOnline;
+  }
+  start() {
+    if (this.timer) return;
+    this.lastTickTime = Date.now();
+    this.lastFingerprint = this.getNetworkFingerprint();
+    this.timer = setInterval(() => this.tick(), CHECK_INTERVAL_MS);
+  }
+  stop() {
+    if (this.timer) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+  onConnectivityChanged(handler) {
+    this.connectivityHandlers.push(handler);
+    return {
+      dispose: () => {
+        const idx = this.connectivityHandlers.indexOf(handler);
+        if (idx !== -1) this.connectivityHandlers.splice(idx, 1);
+      }
+    };
+  }
+  onWake(handler) {
+    this.wakeHandlers.push(handler);
+    return {
+      dispose: () => {
+        const idx = this.wakeHandlers.indexOf(handler);
+        if (idx !== -1) this.wakeHandlers.splice(idx, 1);
+      }
+    };
+  }
+  // ---------------------------------------------------------------------------
+  // Private: tick
+  // ---------------------------------------------------------------------------
+  tick() {
+    const now = Date.now();
+    const elapsed = now - this.lastTickTime;
+    this.lastTickTime = now;
+    if (elapsed > SLEEP_WAKE_THRESHOLD_MS) {
+      this.emitWake();
+      this.checkDns();
       return;
     }
-    this.config.onLog?.(level, message);
+    const currentFingerprint = this.getNetworkFingerprint();
+    const fingerprintChanged = currentFingerprint !== this.lastFingerprint;
+    this.lastFingerprint = currentFingerprint;
+    if (fingerprintChanged || !this._isOnline) {
+      this.checkDns();
+    }
   }
-  // ===========================================================================
-  // Network Monitoring & Reconnection
-  // ===========================================================================
-  /**
-   * Get a fingerprint of current network interfaces.
-   * Changes indicate network state changed (e.g., wifi reconnected).
-   */
+  // ---------------------------------------------------------------------------
+  // Private: DNS
+  // ---------------------------------------------------------------------------
+  checkDns() {
+    const timeout = setTimeout(() => {
+      this.updateOnlineState(false);
+    }, DNS_TIMEOUT_MS);
+    dns.resolve(DNS_HOSTNAME, (err) => {
+      clearTimeout(timeout);
+      this.updateOnlineState(!err);
+    });
+  }
+  updateOnlineState(online) {
+    if (online !== this._isOnline) {
+      this._isOnline = online;
+      this.emitConnectivityChanged(online);
+    }
+  }
+  // ---------------------------------------------------------------------------
+  // Private: fingerprinting
+  // ---------------------------------------------------------------------------
   getNetworkFingerprint() {
     const interfaces = os2.networkInterfaces();
     const addresses = [];
@@ -49159,557 +52596,1371 @@ var DevTunnelHostAdapter = class {
     }
     return addresses.sort().join(",");
   }
-  /**
-   * Check if network is available by attempting DNS resolution with timeout.
-   */
-  async checkNetworkAvailable() {
-    return new Promise((resolve8) => {
-      const timeout = setTimeout(() => resolve8(false), DNS_TIMEOUT_MS);
-      dns.resolve("github.com", (err) => {
-        clearTimeout(timeout);
-        resolve8(!err);
-      });
-    });
-  }
-  /**
-   * Start monitoring network for changes and system sleep/wake events.
-   * When network is restored or system wakes from sleep, resets retryCount
-   * so the next SDK retry will happen faster.
-   */
-  startNetworkMonitoring() {
-    if (this.networkCheckTimer) return;
-    this.lastNetworkInterfaces = this.getNetworkFingerprint();
-    this.lastNetworkCheckTime = Date.now();
-    this.log("debug", "Started network monitoring");
-    this.networkCheckTimer = setInterval(async () => {
-      if (this.isDisposed) {
-        this.stopNetworkMonitoring();
-        return;
-      }
-      const now = Date.now();
-      const elapsed = now - this.lastNetworkCheckTime;
-      this.lastNetworkCheckTime = now;
-      if (elapsed > SLEEP_WAKE_THRESHOLD_MS) {
-        this.log("debug", `System wake detected (${Math.round(elapsed / 1e3)}s since last check)`);
-        await this.handleSystemWake();
-        return;
-      }
-      const currentFingerprint = this.getNetworkFingerprint();
-      if (currentFingerprint !== this.lastNetworkInterfaces) {
-        this.lastNetworkInterfaces = currentFingerprint;
-        await this.handleNetworkChange();
-      }
-    }, NETWORK_CHECK_INTERVAL_MS);
-  }
-  /**
-   * Handle detected network interface change.
-   */
-  async handleNetworkChange() {
-    this.log("debug", "Network interfaces changed");
-    const available = await this.checkNetworkAvailable();
-    if (available && !this.isNetworkAvailable) {
-      this.log("debug", "Network connectivity restored - next retry will be faster");
-      this.isNetworkAvailable = true;
-      this.retryCount = 0;
-    }
-    this.isNetworkAvailable = available;
-  }
-  /**
-   * Handle system wake from sleep.
-   * Forces a reconnection attempt by resetting retry state, regardless of
-   * whether network interfaces changed (they often don't when waking to same WiFi).
-   */
-  async handleSystemWake() {
-    this.lastNetworkInterfaces = this.getNetworkFingerprint();
-    const available = await this.checkNetworkAvailable();
-    if (available) {
-      this.log("debug", "Network available after wake - triggering reconnection");
-      this.isNetworkAvailable = true;
-      this.retryCount = 0;
-    } else {
-      this.log("debug", "Network not yet available after wake");
-      this.isNetworkAvailable = false;
+  // ---------------------------------------------------------------------------
+  // Private: event emission
+  // ---------------------------------------------------------------------------
+  emitConnectivityChanged(online) {
+    for (const handler of this.connectivityHandlers) {
+      handler(online);
     }
   }
+  emitWake() {
+    for (const handler of this.wakeHandlers) {
+      handler();
+    }
+  }
+};
+
+// src/connection/host-relay.ts
+var net = __toESM(require("net"), 1);
+var import_dev_tunnels_connections = __toESM(require_dev_tunnels_connections(), 1);
+var import_dev_tunnels_contracts2 = __toESM(require_dev_tunnels_contracts(), 1);
+var import_dev_tunnels_management2 = __toESM(require_dev_tunnels_management(), 1);
+
+// ../remote-sdk-common/dist/index.js
+var DeviceCodeExpiredError = class extends Error {
+  constructor(message = "Device code expired") {
+    super(message);
+    this.name = "DeviceCodeExpiredError";
+  }
+};
+var RefreshTokenInvalidError = class extends Error {
+  constructor(message = "Refresh token is invalid or expired") {
+    super(message);
+    this.name = "RefreshTokenInvalidError";
+  }
+};
+var AuthRequiredError = class extends Error {
+  constructor(message = "Authentication required") {
+    super(message);
+    this.name = "AuthRequiredError";
+  }
+};
+var EXPIRY_BUFFER_MS = 5 * 60 * 1e3;
+var MIN_POLL_INTERVAL_S = 5;
+var TokenManager = class {
+  storage;
+  gateway;
+  clientId;
+  scopes;
+  onAuthRequired;
+  onTokenUpdated;
+  onTokenCleared;
+  tokenVerifier;
+  onDiagnostic;
+  /** In-memory cache; populated on first load. */
+  tokenData = void 0;
+  /** Deduplication: a single in-flight refresh promise. */
+  refreshPromise = null;
+  constructor(config) {
+    this.storage = config.storage;
+    this.gateway = config.gateway;
+    this.clientId = config.clientId;
+    this.scopes = config.scopes;
+    this.onAuthRequired = config.onAuthRequired;
+    this.onTokenUpdated = config.onTokenUpdated;
+    this.onTokenCleared = config.onTokenCleared;
+    this.tokenVerifier = config.tokenVerifier;
+    this.onDiagnostic = config.onDiagnostic;
+  }
+  // ---------------------------------------------------------------------------
+  // Public API
+  // ---------------------------------------------------------------------------
+  /** Check token status without performing any network calls. */
+  async getTokenStatus() {
+    const data = await this.loadTokenData();
+    if (!data) return { status: "none" };
+    const now = Date.now();
+    const refreshExpired = data.refreshExpiresAt < now + EXPIRY_BUFFER_MS;
+    if (refreshExpired) return { status: "refresh_expired", tokenData: data };
+    const accessExpired = data.expiresAt < now + EXPIRY_BUFFER_MS;
+    if (accessExpired) return { status: "access_expired", tokenData: data };
+    return { status: "valid", tokenData: data };
+  }
   /**
-   * Stop network monitoring.
+   * Get a valid access token, refreshing if necessary.
+   *
+   * Call this *before* making API requests (proactive).
+   * Deduplicates concurrent calls — safe to call from multiple places.
    */
-  stopNetworkMonitoring() {
-    if (this.networkCheckTimer) {
-      clearInterval(this.networkCheckTimer);
-      this.networkCheckTimer = null;
-      this.log("debug", "Stopped network monitoring");
+  async getValidToken() {
+    const status = await this.getTokenStatus();
+    switch (status.status) {
+      case "none":
+        return { success: false, error: { type: "no_token" } };
+      case "refresh_expired":
+        await this.clearTokens();
+        return { success: false, error: { type: "refresh_token_expired" } };
+      case "valid":
+        return {
+          success: true,
+          accessToken: status.tokenData.accessToken,
+          wasRefreshed: false
+        };
+      case "access_expired":
+        try {
+          const refreshed = await this.refreshToken(status.tokenData);
+          return {
+            success: true,
+            accessToken: refreshed.accessToken,
+            wasRefreshed: true
+          };
+        } catch (err) {
+          if (err instanceof RefreshTokenInvalidError) {
+            await this.clearTokens();
+            return { success: false, error: { type: "refresh_token_invalid" } };
+          }
+          const message = err instanceof Error ? err.message : "Unknown error";
+          return { success: false, error: { type: "refresh_failed", message } };
+        }
     }
   }
   /**
-   * Start always-on sleep detection.
-   * This runs even when connected to detect system wake events that may have
-   * left the connection in a stale state.
+   * Force a token refresh even if the access token appears valid.
+   *
+   * Call this *after* getting a 401 (reactive). If a refresh is already
+   * in flight, awaits it instead of starting a second one.
    */
-  startSleepDetection() {
-    if (this.sleepDetectionTimer) return;
-    this.lastSleepCheckTime = Date.now();
-    this.log("debug", "Started sleep detection");
-    this.sleepDetectionTimer = setInterval(() => {
-      if (this.isDisposed) {
-        this.stopSleepDetection();
-        return;
-      }
-      const now = Date.now();
-      const elapsed = now - this.lastSleepCheckTime;
-      this.lastSleepCheckTime = now;
-      if (elapsed > SLEEP_WAKE_THRESHOLD_MS) {
-        this.log("debug", `System wake detected (${Math.round(elapsed / 1e3)}s since last check)`);
-        this.handleConnectedWake();
-      }
-    }, NETWORK_CHECK_INTERVAL_MS);
-  }
-  /**
-   * Stop sleep detection.
-   */
-  stopSleepDetection() {
-    if (this.sleepDetectionTimer) {
-      clearInterval(this.sleepDetectionTimer);
-      this.sleepDetectionTimer = null;
-      this.log("debug", "Stopped sleep detection");
-    }
-  }
-  /**
-   * Handle system wake while tunnel is connected.
-   * The underlying connection may be stale after sleep, so we trigger
-   * a keepAlive to verify and potentially force reconnection.
-   */
-  handleConnectedWake() {
-    const host = this.host;
-    if (host?.sshSession?.sendKeepAlive) {
-      this.log("debug", "Triggering keepAlive check after wake");
+  async forceRefresh() {
+    if (this.refreshPromise) {
       try {
-        host.sshSession.sendKeepAlive();
+        const refreshed = await this.refreshPromise;
+        return {
+          success: true,
+          accessToken: refreshed.accessToken,
+          wasRefreshed: true
+        };
       } catch (err) {
-        this.log("warn", `KeepAlive after wake failed: ${err}`);
+        return this.classifyRefreshError(err);
       }
+    }
+    const data = await this.loadTokenData();
+    if (!data) {
+      return { success: false, error: { type: "no_token" } };
+    }
+    const now = Date.now();
+    if (data.refreshExpiresAt < now + EXPIRY_BUFFER_MS) {
+      await this.clearTokens();
+      return { success: false, error: { type: "refresh_token_expired" } };
+    }
+    try {
+      const refreshed = await this.refreshToken(data);
+      return {
+        success: true,
+        accessToken: refreshed.accessToken,
+        wasRefreshed: true
+      };
+    } catch (err) {
+      if (err instanceof RefreshTokenInvalidError) {
+        await this.clearTokens();
+      }
+      return this.classifyRefreshError(err);
     }
   }
   /**
-   * Handle connection status change from SDK.
+   * Run the full device code authentication flow.
+   *
+   * Calls the onAuthRequired callback with the user code/verification URI.
+   * Polls until the user completes auth or the device code expires.
+   *
+   * @returns The access token
    */
-  handleConnectionStatusChange(status, reason) {
-    if (status === "disconnected") {
-      this.relayConnected = false;
-      this.log("info", "Tunnel disconnected" + (reason ? ` (${reason})` : ""));
-      this.log("info", "Reconnecting...");
-      this.lastDisconnectReason = reason;
-      this.disconnectedAt = Date.now();
-      this.stopSleepDetection();
-      this.startNetworkMonitoring();
-      if (this.clients.size > 0) {
-        this.log("debug", `Closing ${this.clients.size} orphaned client connection(s)`);
-        for (const [clientId, socket] of this.clients) {
-          this.disconnectedClients.add(clientId);
-          socket.destroy();
+  async authenticate(abortSignal) {
+    const deviceCodeResponse = await this.gateway.requestDeviceCode(
+      this.clientId,
+      this.scopes
+    );
+    this.onAuthRequired?.({
+      userCode: deviceCodeResponse.user_code,
+      verificationUri: deviceCodeResponse.verification_uri,
+      expiresIn: deviceCodeResponse.expires_in
+    });
+    const tokenData = await this.pollForToken(
+      deviceCodeResponse.device_code,
+      deviceCodeResponse.interval,
+      deviceCodeResponse.expires_in,
+      abortSignal
+    );
+    await this.saveTokenData(tokenData);
+    return tokenData.accessToken;
+  }
+  /**
+   * Convenience wrapper: try an operation with auth, retry once on 401.
+   *
+   * Pattern:
+   *  1. getValidToken() → call operation
+   *  2. On auth error → forceRefresh() → retry operation
+   *  3. On second auth failure → throw AuthRequiredError
+   */
+  async withAuth(operation, isAuthError) {
+    const is401 = isAuthError ?? defaultIsAuthError;
+    const result = await this.getValidToken();
+    if (!result.success) {
+      throw new AuthRequiredError();
+    }
+    try {
+      return await operation(result.accessToken);
+    } catch (err) {
+      if (!is401(err)) throw err;
+      if (this.tokenVerifier && this.onDiagnostic) {
+        try {
+          const verification = await this.tokenVerifier.verifyToken(result.accessToken);
+          if (verification.valid) {
+            this.onDiagnostic(`Token valid at GitHub (${verification.username ?? "unknown"}) but rejected by tunnel service`);
+          } else {
+            this.onDiagnostic("Token invalid at GitHub \u2014 will refresh");
+          }
+        } catch {
         }
       }
-    } else if (status === "connected") {
-      this.relayConnected = true;
-      if (this.hasEverConnected) {
-        const parts = ["Tunnel reconnected"];
-        if (this.disconnectedAt) {
-          const downtime = Math.round((Date.now() - this.disconnectedAt) / 1e3);
-          parts.push(`after ${downtime}s`);
-        }
-        const contextParts = [];
-        if (this.lastDisconnectReason) {
-          contextParts.push(this.lastDisconnectReason);
-        }
-        if (this.retryCount > 0) {
-          contextParts.push(`${this.retryCount} ${this.retryCount === 1 ? "retry" : "retries"}`);
-        }
-        if (contextParts.length > 0) {
-          parts.push(`(${contextParts.join(", ")})`);
-        }
-        this.log("info", parts.join(" "));
-        this.lastDisconnectReason = void 0;
-        this.disconnectedAt = void 0;
-      } else {
-        this.hasEverConnected = true;
+    }
+    const refreshResult = await this.forceRefresh();
+    if (!refreshResult.success) {
+      throw new AuthRequiredError();
+    }
+    return operation(refreshResult.accessToken);
+  }
+  /** Clear all stored tokens. */
+  async clearTokens() {
+    this.tokenData = null;
+    await this.storage.clear();
+    this.onTokenCleared?.();
+  }
+  // ---------------------------------------------------------------------------
+  // Private: token loading & saving
+  // ---------------------------------------------------------------------------
+  async loadTokenData() {
+    if (this.tokenData === void 0) {
+      this.tokenData = await this.storage.load();
+    }
+    return this.tokenData;
+  }
+  async saveTokenData(data) {
+    this.tokenData = data;
+    await this.storage.save(data);
+    this.onTokenUpdated?.(data);
+  }
+  // ---------------------------------------------------------------------------
+  // Private: token refresh (with deduplication)
+  // ---------------------------------------------------------------------------
+  /**
+   * Refresh the access token. Deduplicates concurrent calls since GitHub
+   * refresh tokens are single-use — a second concurrent refresh would fail.
+   */
+  refreshToken(currentData) {
+    if (this.refreshPromise) return this.refreshPromise;
+    this.refreshPromise = this.doRefresh(currentData).finally(() => {
+      this.refreshPromise = null;
+    });
+    return this.refreshPromise;
+  }
+  async doRefresh(currentData) {
+    const response = await this.gateway.refreshToken(
+      this.clientId,
+      currentData.refreshToken
+    );
+    if (response.error) {
+      this.classifyGatewayError(response);
+    }
+    if (!response.access_token) {
+      throw new Error("Token refresh failed: no access token in response");
+    }
+    const now = Date.now();
+    const newRefreshToken = response.refresh_token ?? currentData.refreshToken;
+    const refreshExpiresAt = response.refresh_token_expires_in ? now + response.refresh_token_expires_in * 1e3 : currentData.refreshExpiresAt;
+    const newData = {
+      accessToken: response.access_token,
+      refreshToken: newRefreshToken,
+      expiresAt: now + (response.expires_in ?? 28800) * 1e3,
+      refreshExpiresAt,
+      username: currentData.username
+    };
+    await this.saveTokenData(newData);
+    return newData;
+  }
+  // ---------------------------------------------------------------------------
+  // Private: device code polling
+  // ---------------------------------------------------------------------------
+  async pollForToken(deviceCode, interval, expiresIn, abortSignal) {
+    const expiresAt = Date.now() + expiresIn * 1e3;
+    let pollInterval = Math.max(interval, MIN_POLL_INTERVAL_S) * 1e3;
+    while (Date.now() < expiresAt) {
+      if (abortSignal?.aborted) {
+        throw new Error("Authentication cancelled");
       }
-      this.stopNetworkMonitoring();
-      this.startSleepDetection();
-      this.disconnectedClients.clear();
-      this.retryCount = 0;
-      this.isNetworkAvailable = true;
+      await delay(pollInterval);
+      if (abortSignal?.aborted) {
+        throw new Error("Authentication cancelled");
+      }
+      const response = await this.gateway.exchangeDeviceCode(
+        this.clientId,
+        deviceCode
+      );
+      if (response.access_token) {
+        const now = Date.now();
+        return {
+          accessToken: response.access_token,
+          refreshToken: response.refresh_token ?? "",
+          expiresAt: now + (response.expires_in ?? 28800) * 1e3,
+          refreshExpiresAt: now + (response.refresh_token_expires_in ?? 15638400) * 1e3,
+          username: response.username
+        };
+      }
+      if (response.error === "authorization_pending") continue;
+      if (response.error === "slow_down") {
+        pollInterval += 5e3;
+        continue;
+      }
+      if (response.error === "expired_token") {
+        throw new DeviceCodeExpiredError("Device code expired");
+      }
+      if (response.error === "access_denied") {
+        throw new Error("Authorization was denied.");
+      }
+      if (response.error) {
+        throw new Error(
+          `OAuth error: ${response.error_description ?? response.error}`
+        );
+      }
+    }
+    throw new DeviceCodeExpiredError("Timed out waiting for authorization");
+  }
+  // ---------------------------------------------------------------------------
+  // Private: error classification
+  // ---------------------------------------------------------------------------
+  /**
+   * Inspect a raw gateway error response and throw the appropriate error.
+   *
+   * Definitive errors (bad_refresh_token, invalid_grant, incorrect_client_credentials,
+   * or descriptions mentioning client_id/client_secret) → RefreshTokenInvalidError.
+   * Everything else → generic Error (transient).
+   */
+  classifyGatewayError(response) {
+    const errorCode = response.error;
+    const errorDesc = response.error_description ?? errorCode;
+    const errorDescLower = errorDesc.toLowerCase();
+    const isDefinitive = errorCode === "bad_refresh_token" || errorCode === "invalid_grant" || errorCode === "incorrect_client_credentials" || errorDescLower.includes("client_id") || errorDescLower.includes("client_secret");
+    if (isDefinitive) {
+      throw new RefreshTokenInvalidError(errorDesc);
+    }
+    throw new Error(`Token refresh failed: ${errorDesc}`);
+  }
+  /** Map a caught refresh error to a GetTokenResult. */
+  classifyRefreshError(err) {
+    if (err instanceof RefreshTokenInvalidError) {
+      return { success: false, error: { type: "refresh_token_invalid" } };
+    }
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return { success: false, error: { type: "refresh_failed", message } };
+  }
+};
+function delay(ms) {
+  return new Promise((resolve10) => setTimeout(resolve10, ms));
+}
+function defaultIsAuthError(err) {
+  return err instanceof Error && ("status" in err && err.status === 401);
+}
+var TunnelNotFoundError = class extends Error {
+  constructor(message = "No tunnel found") {
+    super(message);
+    this.name = "TunnelNotFoundError";
+  }
+};
+var NoHostConnectedError = class extends Error {
+  /** ISO timestamp of the last time a host was connected, if known */
+  lastHostConnectionTime;
+  constructor(message = "No host connected to tunnel", lastHostConnectionTime) {
+    super(message);
+    this.name = "NoHostConnectedError";
+    this.lastHostConnectionTime = lastHostConnectionTime;
+  }
+};
+var TunnelResolver = class {
+  gateway;
+  configStore;
+  label;
+  constructor(config) {
+    this.gateway = config.gateway;
+    this.configStore = config.configStore;
+    this.label = config.label;
+  }
+  /**
+   * Find an existing tunnel to connect to (client-side).
+   *
+   * Tries stored config first, then label discovery.
+   * Validates that the tunnel has a connected host and at least one port.
+   *
+   * @throws {TunnelNotFoundError} if no tunnel can be found
+   * @throws {NoHostConnectedError} if tunnel exists but no host is connected
+   */
+  async findTunnel(token) {
+    const tunnel = await this.resolve(token);
+    if (!tunnel) {
+      throw new TunnelNotFoundError();
+    }
+    this.validateHostConnected(tunnel);
+    this.saveConfig(tunnel);
+    return {
+      tunnel,
+      port: tunnel.ports[0].portNumber
+    };
+  }
+  /**
+   * Find or create a tunnel (host-side).
+   *
+   * Tries stored config, then label discovery, then creates a new one.
+   * Does NOT validate host connection count (the host *is* the host).
+   *
+   * @returns The tunnel (may have no ports yet — call registerPort() next)
+   */
+  async findOrCreateTunnel(token) {
+    const tunnel = await this.resolve(token);
+    if (tunnel) {
+      this.saveConfig(tunnel);
+      return tunnel;
+    }
+    const created = await this.gateway.createTunnel(this.label, token);
+    this.saveConfig(created);
+    return created;
+  }
+  /**
+   * Register the RPC port on a tunnel.
+   *
+   * Removes all existing ports first (clean slate), then adds the new one.
+   * Called by the host after obtaining a tunnel.
+   */
+  async registerPort(tunnel, port, token) {
+    await this.gateway.removePorts(tunnel, token);
+    return this.gateway.addPort(tunnel, port, token);
+  }
+  // ---------------------------------------------------------------------------
+  // Private
+  // ---------------------------------------------------------------------------
+  /**
+   * Core resolution: try stored config, fall back to label discovery.
+   * Returns null if nothing is found.
+   */
+  async resolve(token) {
+    const config = this.configStore.load();
+    if (config) {
+      const tunnel = await this.gateway.getTunnel(
+        config.tunnelId,
+        config.clusterId,
+        token
+      );
+      if (tunnel) return tunnel;
+      this.configStore.clear();
+    }
+    const tunnels = await this.gateway.listByLabel(this.label, token);
+    if (tunnels.length === 0) return null;
+    return pickNewest(tunnels);
+  }
+  validateHostConnected(tunnel) {
+    if (tunnel.hostConnectionCount === 0) {
+      throw new NoHostConnectedError(
+        "No host connected to tunnel",
+        tunnel.lastHostConnectionTime
+      );
+    }
+    if (tunnel.ports.length === 0) {
+      throw new NoHostConnectedError(
+        "Tunnel has no registered ports",
+        tunnel.lastHostConnectionTime
+      );
+    }
+  }
+  saveConfig(tunnel) {
+    const config = {
+      tunnelId: tunnel.tunnelId,
+      clusterId: tunnel.clusterId,
+      savedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    this.configStore.save(config);
+  }
+};
+function pickNewest(tunnels) {
+  return tunnels.sort((a, b) => {
+    const aTime = a.created ? new Date(a.created).getTime() : 0;
+    const bTime = b.created ? new Date(b.created).getTime() : 0;
+    return bTime - aTime;
+  })[0];
+}
+var ReconnectionPolicy = class {
+  baseDelay;
+  maxDelay;
+  jitter;
+  constructor(config) {
+    this.baseDelay = config?.baseDelay ?? 1e3;
+    this.maxDelay = config?.maxDelay ?? 3e4;
+    this.jitter = config?.jitter ?? 0.25;
+  }
+  /** Calculate delay for the given attempt (0-indexed). */
+  nextDelay(attempt) {
+    const exponential = Math.min(this.baseDelay * Math.pow(2, attempt), this.maxDelay);
+    const jitterRange = exponential * this.jitter;
+    const jitterOffset = jitterRange * 2 * (Math.random() - 0.5);
+    return Math.max(0, exponential + jitterOffset);
+  }
+};
+function isRequest(message) {
+  return "method" in message && "id" in message;
+}
+function isResponse(message) {
+  return ("result" in message || "error" in message) && !("method" in message);
+}
+function isNotification(message) {
+  return "method" in message && !("id" in message);
+}
+var CONTENT_LENGTH_HEADER = "Content-Length: ";
+var HEADER_DELIMITER = "\r\n\r\n";
+var textEncoder = new TextEncoder();
+var textDecoder = new TextDecoder();
+function encodeJsonRpcMessage(message) {
+  const bodyBytes = textEncoder.encode(JSON.stringify(message));
+  const headerBytes = textEncoder.encode(
+    `${CONTENT_LENGTH_HEADER}${bodyBytes.length}${HEADER_DELIMITER}`
+  );
+  const result = new Uint8Array(headerBytes.length + bodyBytes.length);
+  result.set(headerBytes, 0);
+  result.set(bodyBytes, headerBytes.length);
+  return result;
+}
+var JsonRpcDecoder = class {
+  buffer = new Uint8Array(0);
+  expectedLength = null;
+  /** Feed data and return any complete messages. */
+  decode(data) {
+    const newBuffer = new Uint8Array(this.buffer.length + data.length);
+    newBuffer.set(this.buffer, 0);
+    newBuffer.set(data, this.buffer.length);
+    this.buffer = newBuffer;
+    const messages = [];
+    const headerDelimiterBytes = textEncoder.encode(HEADER_DELIMITER);
+    while (true) {
+      if (this.expectedLength === null) {
+        const headerEndIndex = findSequence(this.buffer, headerDelimiterBytes);
+        if (headerEndIndex === -1) break;
+        const headerSection = textDecoder.decode(this.buffer.slice(0, headerEndIndex));
+        const match = headerSection.match(/Content-Length:\s*(\d+)/i);
+        if (!match) {
+          this.buffer = this.buffer.slice(headerEndIndex + headerDelimiterBytes.length);
+          continue;
+        }
+        this.expectedLength = parseInt(match[1], 10);
+        this.buffer = this.buffer.slice(headerEndIndex + headerDelimiterBytes.length);
+      }
+      if (this.buffer.length < this.expectedLength) break;
+      const bodyBytes = this.buffer.slice(0, this.expectedLength);
+      this.buffer = this.buffer.slice(this.expectedLength);
+      this.expectedLength = null;
+      try {
+        messages.push(JSON.parse(textDecoder.decode(bodyBytes)));
+      } catch {
+      }
+    }
+    return messages;
+  }
+  reset() {
+    this.buffer = new Uint8Array(0);
+    this.expectedLength = null;
+  }
+};
+function findSequence(buffer, sequence) {
+  outer: for (let i = 0; i <= buffer.length - sequence.length; i++) {
+    for (let j = 0; j < sequence.length; j++) {
+      if (buffer[i + j] !== sequence[j]) continue outer;
+    }
+    return i;
+  }
+  return -1;
+}
+var DEFAULT_TIMEOUT_MS = 3e4;
+var RpcChannel = class {
+  stream;
+  decoder = new JsonRpcDecoder();
+  pending = /* @__PURE__ */ new Map();
+  nextId = 1;
+  requestHandler = null;
+  notificationHandler = null;
+  closeHandlers = [];
+  _isClosed = false;
+  closeReason;
+  disposables = [];
+  constructor(stream) {
+    this.stream = stream;
+    this.disposables.push(
+      stream.onData((data) => this.handleData(data)),
+      stream.onClose(() => this.handleClose()),
+      stream.onError((err) => this.handleClose(err))
+    );
+  }
+  // ---------------------------------------------------------------------------
+  // Outbound
+  // ---------------------------------------------------------------------------
+  /** Send a request and wait for a response. */
+  request(method, params, timeout = DEFAULT_TIMEOUT_MS) {
+    if (this._isClosed) {
+      return Promise.reject(
+        new Error(`Channel closed: ${this.closeReason?.message ?? "unknown"}`)
+      );
+    }
+    const id = this.nextId++;
+    const message = {
+      jsonrpc: "2.0",
+      id,
+      method,
+      ...params !== void 0 && { params }
+    };
+    return new Promise((resolve10, reject) => {
+      const timer = setTimeout(() => {
+        this.pending.delete(id);
+        reject(new Error(`RPC timeout: ${method} (${timeout}ms)`));
+      }, timeout);
+      this.pending.set(id, { resolve: resolve10, reject, timer });
+      this.send(message);
+    });
+  }
+  /** Send a notification (no response expected). */
+  notify(method, params) {
+    if (this._isClosed) return;
+    const message = {
+      jsonrpc: "2.0",
+      method,
+      ...params !== void 0 && { params }
+    };
+    this.send(message);
+  }
+  // ---------------------------------------------------------------------------
+  // Inbound handlers
+  // ---------------------------------------------------------------------------
+  /** Register a handler for incoming requests (server → client). */
+  onRequest(handler) {
+    this.requestHandler = handler;
+    return {
+      dispose: () => {
+        if (this.requestHandler === handler) {
+          this.requestHandler = null;
+        }
+      }
+    };
+  }
+  /** Register a handler for incoming notifications. */
+  onNotification(handler) {
+    this.notificationHandler = handler;
+    return {
+      dispose: () => {
+        if (this.notificationHandler === handler) {
+          this.notificationHandler = null;
+        }
+      }
+    };
+  }
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
+  /** Close the channel and reject all pending requests. */
+  close() {
+    if (this._isClosed) return;
+    this.handleClose(new Error("Channel closed by caller"));
+    this.stream.close();
+  }
+  get isClosed() {
+    return this._isClosed;
+  }
+  /** Register a callback for when the channel closes. */
+  onClose(handler) {
+    if (this._isClosed) {
+      handler(this.closeReason);
+      return { dispose: () => {
+      } };
+    }
+    this.closeHandlers.push(handler);
+    return {
+      dispose: () => {
+        const idx = this.closeHandlers.indexOf(handler);
+        if (idx !== -1) this.closeHandlers.splice(idx, 1);
+      }
+    };
+  }
+  // ---------------------------------------------------------------------------
+  // Private: stream handling
+  // ---------------------------------------------------------------------------
+  send(message) {
+    try {
+      const encoded = encodeJsonRpcMessage(message);
+      this.stream.write(encoded);
+    } catch {
+      this.handleClose(new Error("Connection lost: write failed"));
+    }
+  }
+  handleData(data) {
+    const messages = this.decoder.decode(data);
+    for (const message of messages) {
+      this.dispatch(message);
+    }
+  }
+  handleClose(reason) {
+    if (this._isClosed) return;
+    this._isClosed = true;
+    this.closeReason = reason;
+    for (const [id, pending] of this.pending) {
+      clearTimeout(pending.timer);
+      pending.reject(new Error("Connection lost"));
+    }
+    this.pending.clear();
+    this.decoder.reset();
+    for (const d of this.disposables) d.dispose();
+    this.disposables.length = 0;
+    for (const handler of this.closeHandlers) {
+      try {
+        handler(reason);
+      } catch {
+      }
+    }
+  }
+  // ---------------------------------------------------------------------------
+  // Private: message dispatch
+  // ---------------------------------------------------------------------------
+  dispatch(message) {
+    if (isResponse(message)) {
+      this.handleResponse(message);
+    } else if (isRequest(message)) {
+      this.handleIncomingRequest(message);
+    } else if (isNotification(message)) {
+      this.notificationHandler?.(message.method, message.params);
+    }
+  }
+  handleResponse(response) {
+    if (response.id == null) return;
+    const pending = this.pending.get(response.id);
+    if (!pending) return;
+    clearTimeout(pending.timer);
+    this.pending.delete(response.id);
+    if (response.error) {
+      pending.reject(new Error(response.error.message));
     } else {
-      this.log("debug", `Tunnel status: ${status}`);
+      pending.resolve(response.result);
     }
-    this.config.onStatusChange?.(status, reason);
+  }
+  async handleIncomingRequest(request) {
+    if (!this.requestHandler) {
+      this.sendResponse(request.id, void 0, {
+        code: -32601,
+        message: `Method not found: ${request.method}`
+      });
+      return;
+    }
+    try {
+      const result = await this.requestHandler(request.method, request.params);
+      this.sendResponse(request.id, result);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Internal error";
+      this.sendResponse(request.id, void 0, {
+        code: -32603,
+        message
+      });
+    }
+  }
+  sendResponse(id, result, error) {
+    const response = {
+      jsonrpc: "2.0",
+      id,
+      ...error ? { error } : { result: result ?? null }
+    };
+    this.send(response);
+  }
+};
+var Heartbeat = class {
+  channel;
+  failureThreshold;
+  timeout;
+  interval;
+  timer = null;
+  pingId = 0;
+  consecutiveFailures = 0;
+  lastSuccessAt = null;
+  staleHandlers = [];
+  constructor(config) {
+    this.channel = config.channel;
+    this.interval = config.interval ?? 5e3;
+    this.failureThreshold = config.failureThreshold ?? 2;
+    this.timeout = config.timeout ?? 5e3;
+  }
+  /** Start sending heartbeats. */
+  start() {
+    this.stop();
+    this.consecutiveFailures = 0;
+    this.lastSuccessAt = Date.now();
+    this.timer = setInterval(() => this.sendPing(), this.interval);
+  }
+  /** Stop sending heartbeats. */
+  stop() {
+    if (this.timer !== null) {
+      clearInterval(this.timer);
+      this.timer = null;
+    }
+  }
+  /** Change the ping interval (e.g., on tab visibility change). Restarts the timer. */
+  setInterval(ms) {
+    this.interval = ms;
+    if (this.timer !== null) {
+      this.stop();
+      this.timer = setInterval(() => this.sendPing(), this.interval);
+    }
   }
   /**
-   * Handle SDK retry event - speed up the first retry after network restoration.
+   * Check if the connection is likely stale.
+   *
+   * @param gracePeriod Extra time beyond 2 × interval before considering stale.
+   *   Default: 5000ms. Total threshold = (interval × 2) + gracePeriod.
    */
-  handleRetryEvent(e) {
-    this.retryCount++;
-    this.log("debug", `Retry #${this.retryCount} in ${e.delayMs}ms (${e.error.message})`);
-    if (this.isNetworkAvailable && this.retryCount === 1) {
-      const reducedDelay = Math.min(e.delayMs, MIN_RETRY_DELAY_MS);
-      if (reducedDelay < e.delayMs) {
-        this.log("debug", `Network available, reducing delay to ${reducedDelay}ms`);
-        e.delayMs = reducedDelay;
+  isStale(gracePeriod = 5e3) {
+    if (this.lastSuccessAt === null) return false;
+    const elapsed = Date.now() - this.lastSuccessAt;
+    return elapsed > this.interval * 2 + gracePeriod;
+  }
+  /** Register a callback for when the connection is detected as stale. */
+  onStale(handler) {
+    this.staleHandlers.push(handler);
+    return {
+      dispose: () => {
+        const idx = this.staleHandlers.indexOf(handler);
+        if (idx !== -1) this.staleHandlers.splice(idx, 1);
+      }
+    };
+  }
+  // ---------------------------------------------------------------------------
+  // Private
+  // ---------------------------------------------------------------------------
+  async sendPing() {
+    if (this.channel.isClosed) {
+      this.stop();
+      return;
+    }
+    try {
+      await this.channel.request("ping", { timestamp: Date.now() }, this.timeout);
+      this.consecutiveFailures = 0;
+      this.lastSuccessAt = Date.now();
+    } catch {
+      this.consecutiveFailures++;
+      if (this.consecutiveFailures >= this.failureThreshold) {
+        this.emitStale();
       }
     }
   }
-  /**
-   * Check if an error indicates the tunnel doesn't exist (404).
-   */
-  isTunnelNotFoundError(error) {
-    if (error instanceof Error) {
-      const message = error.message.toLowerCase();
-      return message.includes("404") || message.includes("not found") || message.includes("does not exist");
+  emitStale() {
+    this.stop();
+    for (const handler of this.staleHandlers) {
+      try {
+        handler();
+      } catch {
+      }
     }
-    return false;
+  }
+};
+var RecoveryLoop = class {
+  onRecoveryNeeded;
+  reconnectionPolicy;
+  log;
+  _isExhausted = false;
+  recoveryAttempt = 0;
+  recoveryTimer = null;
+  recoveryInFlight = false;
+  constructor(config) {
+    this.onRecoveryNeeded = config.onRecoveryNeeded;
+    this.reconnectionPolicy = config.reconnectionPolicy;
+    this.log = config.onLog ?? (() => {
+    });
+  }
+  get isExhausted() {
+    return this._isExhausted;
   }
   /**
-   * Connect to the tunnel relay and set up event handlers.
+   * SDK exhaustion or external signal (stale, keepAlive) detected.
+   * Marks as exhausted and schedules the next recovery attempt.
    */
-  async connectToTunnel(rpcPort) {
-    if (!this.managementClient || !this.tunnel) {
-      throw new Error("Management client or tunnel not initialized");
+  notifyExhausted() {
+    this._isExhausted = true;
+    this.log("info", "SDK retry loop exhausted \u2014 scheduling recovery");
+    this.scheduleRecovery();
+  }
+  /**
+   * Connection succeeded or fatal error — stop everything, reset state.
+   * If recovery is in-flight, it will finish but won't re-schedule
+   * (because _isExhausted is now false).
+   */
+  reset() {
+    const wasExhausted = this._isExhausted;
+    this._isExhausted = false;
+    this.recoveryAttempt = 0;
+    this.clearRecoveryTimer();
+    if (wasExhausted) {
+      this.log("info", "RecoveryLoop reset \u2014 connection succeeded, clearing exhausted state");
     }
-    this.log("debug", "Connecting to tunnel relay...");
+  }
+  /**
+   * Network restore / wake — reset backoff and attempt immediately.
+   * If recovery is already in-flight, just resets the backoff counter
+   * so the next scheduled attempt starts from 0.
+   */
+  triggerImmediate() {
+    if (!this._isExhausted) return;
+    this.recoveryAttempt = 0;
+    if (this.recoveryInFlight) {
+      this.log("debug", "triggerImmediate: recovery already in-flight, will reset backoff after it completes");
+      return;
+    }
+    this.clearRecoveryTimer();
+    this.log("info", "Triggering immediate recovery from connectivity signal");
+    this.executeRecovery();
+  }
+  dispose() {
+    this.clearRecoveryTimer();
+  }
+  // ---------------------------------------------------------------------------
+  // Private
+  // ---------------------------------------------------------------------------
+  /**
+   * Schedules the next recovery attempt after a backoff delay.
+   * Skips if a recovery is already in-flight (the .finally() handler
+   * in executeRecovery will re-schedule if still needed).
+   */
+  scheduleRecovery() {
+    if (this.recoveryInFlight) return;
+    this.clearRecoveryTimer();
+    const delay22 = this.reconnectionPolicy.nextDelay(this.recoveryAttempt);
+    this.log("info", `Recovery attempt #${this.recoveryAttempt + 1} in ${Math.round(delay22)}ms`);
+    this.recoveryTimer = setTimeout(() => {
+      this.recoveryTimer = null;
+      this.recoveryAttempt++;
+      this.executeRecovery();
+    }, delay22);
+  }
+  /**
+   * Single execution gate — prevents concurrent onRecoveryNeeded() calls.
+   * On completion, re-schedules if still exhausted.
+   */
+  executeRecovery() {
+    if (this.recoveryInFlight) return;
+    this.recoveryInFlight = true;
+    this.log("info", `Executing recovery attempt #${this.recoveryAttempt}`);
+    this.onRecoveryNeeded().then(
+      () => {
+        this.log("info", `Recovery attempt #${this.recoveryAttempt} completed (success path)`);
+      },
+      (err) => {
+        this.log("warn", `Recovery attempt #${this.recoveryAttempt} failed: ${err.message}`);
+      }
+    ).finally(() => {
+      this.recoveryInFlight = false;
+      if (this._isExhausted) {
+        this.log("debug", "Still exhausted after recovery attempt \u2014 scheduling next");
+        this.scheduleRecovery();
+      } else {
+        this.log("debug", "No longer exhausted \u2014 recovery loop idle");
+      }
+    });
+  }
+  clearRecoveryTimer() {
+    if (this.recoveryTimer !== null) {
+      clearTimeout(this.recoveryTimer);
+      this.recoveryTimer = null;
+    }
+  }
+};
+function createEventSource() {
+  const handlers = [];
+  return {
+    on(handler) {
+      handlers.push(handler);
+      return {
+        dispose: () => {
+          const idx = handlers.indexOf(handler);
+          if (idx !== -1) handlers.splice(idx, 1);
+        }
+      };
+    },
+    fire(...args) {
+      for (const h of handlers) {
+        try {
+          h(...args);
+        } catch {
+        }
+      }
+    },
+    dispose() {
+      handlers.length = 0;
+    }
+  };
+}
+var DEFAULT_MAX_RECOVERY_DELAY_MS = 15e3;
+var DEFAULT_STABILITY_THRESHOLD_MS = 5e3;
+var MIN_RETRY_DELAY_MS = 1e3;
+var ConnectionGuard = class {
+  reconnectionPolicy;
+  shouldRetryFn;
+  recoveryLoop;
+  stabilityThreshold;
+  log;
+  _status = "disconnected";
+  _retryAttempt = 0;
+  _disconnectedSince = null;
+  isNetworkAvailable = true;
+  // Set when transitioning to connected after recovery. The SDK may fire
+  // a spurious disconnected event as its internal state settles (e.g.,
+  // "Already connected." from a connectTunnelSession() race). This flag
+  // absorbs exactly one such event — if the stream is actually dead,
+  // heartbeat will catch it.
+  _settlingAfterRecovery = false;
+  uptimeTimer = null;
+  connectivitySubs = [];
+  _statusChanged = createEventSource();
+  constructor(config) {
+    this.reconnectionPolicy = new ReconnectionPolicy({
+      maxDelay: DEFAULT_MAX_RECOVERY_DELAY_MS,
+      ...config.reconnection
+    });
+    this.shouldRetryFn = config.shouldRetry ?? (() => true);
+    this.recoveryLoop = config.onRecoveryNeeded ? new RecoveryLoop({
+      onRecoveryNeeded: config.onRecoveryNeeded,
+      reconnectionPolicy: this.reconnectionPolicy,
+      onLog: config.onLog
+    }) : null;
+    this.stabilityThreshold = config.stabilityThreshold ?? DEFAULT_STABILITY_THRESHOLD_MS;
+    this.log = config.onLog ?? (() => {
+    });
+    config.onSdkStatusChanged((e) => this.handleSdkStatus(e));
+    config.onSdkRetrying((e) => this.handleSdkRetry(e));
+    this.wireConnectivityMonitor(config.connectivityMonitor);
+  }
+  // ---------------------------------------------------------------------------
+  // Public
+  // ---------------------------------------------------------------------------
+  get status() {
+    return this._status;
+  }
+  get retryAttempt() {
+    return this._retryAttempt;
+  }
+  get disconnectedSince() {
+    return this._disconnectedSince;
+  }
+  onStatusChanged(handler) {
+    return this._statusChanged.on(handler);
+  }
+  /**
+   * Force the guard into reconnecting state from an external signal
+   * (e.g., stream stale detection, keepAlive failure) that the SDK
+   * doesn't know about. Notifies RecoveryLoop to begin scheduling.
+   */
+  forceReconnecting(context) {
+    if (this._status === "disconnected") {
+      this.log("debug", `forceReconnecting(${context}) ignored \u2014 already disconnected (fatal)`);
+      return;
+    }
+    this.log("info", `forceReconnecting: ${context} (was ${this._status})`);
+    this.clearUptimeTimer();
+    if (this._disconnectedSince === null) {
+      this._disconnectedSince = Date.now();
+    }
+    this.setStatus("reconnecting", context);
+    this.recoveryLoop?.notifyExhausted();
+  }
+  /**
+   * Force the guard into disconnected (fatal) state from an external signal
+   * (e.g., permanent auth failure). Stops all retry and recovery.
+   */
+  forceDisconnected(context) {
+    this.log("info", `forceDisconnected: ${context} (was ${this._status})`);
+    this.clearUptimeTimer();
+    this.recoveryLoop?.reset();
+    this._disconnectedSince = null;
+    this.setStatus("disconnected", context);
+  }
+  dispose() {
+    this.clearUptimeTimer();
+    this.recoveryLoop?.dispose();
+    this._statusChanged.dispose();
+    for (const sub of this.connectivitySubs) sub.dispose();
+    this.connectivitySubs = [];
+  }
+  // ---------------------------------------------------------------------------
+  // Private: SDK event handlers
+  // ---------------------------------------------------------------------------
+  handleSdkStatus(e) {
+    this.log("debug", `SDK status: ${e.status}${e.disconnectError ? ` (error: ${e.disconnectError.message})` : ""} | guard=${this._status}`);
+    if (e.status === "connected") {
+      this._retryAttempt = 0;
+      this.isNetworkAvailable = true;
+      this._disconnectedSince = null;
+      this._settlingAfterRecovery = this.recoveryLoop?.isExhausted ?? false;
+      this.recoveryLoop?.reset();
+      this.setStatus("connected");
+      this.startUptimeTimer();
+    } else if (e.status === "disconnected") {
+      if (this._status === "disconnected") {
+        this.log("debug", "SDK disconnected ignored \u2014 guard already in fatal disconnected");
+        return;
+      }
+      if (this._settlingAfterRecovery) {
+        this._settlingAfterRecovery = false;
+        this.log("debug", `SDK disconnected ignored \u2014 settling after recovery (${e.disconnectError?.message ?? "no error"})`);
+        return;
+      }
+      this.clearUptimeTimer();
+      if (this._status === "reconnecting") {
+        this.log("info", "SDK disconnected while guard is reconnecting \u2014 SDK retry exhausted");
+        this.recoveryLoop?.notifyExhausted();
+        return;
+      }
+      if (this._disconnectedSince === null) {
+        this._disconnectedSince = Date.now();
+      }
+      this.setStatus("reconnecting", e.disconnectError?.message);
+    } else if (e.status === "connecting") {
+      if (this._status === "disconnected") {
+        this.setStatus("connecting");
+      } else if (this._status === "connected") {
+        this.clearUptimeTimer();
+        if (this._disconnectedSince === null) {
+          this._disconnectedSince = Date.now();
+        }
+        this.setStatus("reconnecting", "SDK reconnecting");
+      }
+    }
+  }
+  handleSdkRetry(e) {
+    if (!this.shouldRetryFn(e.error)) {
+      e.retry = false;
+      this.clearUptimeTimer();
+      this.recoveryLoop?.reset();
+      this._disconnectedSince = null;
+      this.setStatus("disconnected", `fatal: ${e.error.message}`);
+      this.log("info", `Fatal error, stopping retry: ${e.error.message}`);
+      return;
+    }
+    const jitteredDelay = this.reconnectionPolicy.nextDelay(this._retryAttempt);
+    e.delayMs = jitteredDelay;
+    if (this.isNetworkAvailable && this._retryAttempt === 0) {
+      e.delayMs = Math.min(e.delayMs, MIN_RETRY_DELAY_MS);
+    }
+    this._retryAttempt++;
+    this.log("info", `Retry #${this._retryAttempt} in ${Math.round(e.delayMs)}ms (${e.error.message})`);
+  }
+  // ---------------------------------------------------------------------------
+  // Private: Stability threshold
+  // ---------------------------------------------------------------------------
+  startUptimeTimer() {
+    this.clearUptimeTimer();
+    this.uptimeTimer = setTimeout(() => {
+      if (this._status === "connected") {
+        this._retryAttempt = 0;
+      }
+    }, this.stabilityThreshold);
+  }
+  clearUptimeTimer() {
+    if (this.uptimeTimer !== null) {
+      clearTimeout(this.uptimeTimer);
+      this.uptimeTimer = null;
+    }
+  }
+  // ---------------------------------------------------------------------------
+  // Private: Connectivity monitor
+  // ---------------------------------------------------------------------------
+  wireConnectivityMonitor(monitor) {
+    if (!monitor) return;
+    this.connectivitySubs.push(
+      monitor.onConnectivityChanged((online) => {
+        if (online) {
+          this.isNetworkAvailable = true;
+          this._retryAttempt = 0;
+          this.log("debug", "Network restored \u2014 next retry will be faster");
+          this.recoveryLoop?.triggerImmediate();
+        } else {
+          this.isNetworkAvailable = false;
+        }
+      }),
+      monitor.onWake(() => {
+        if (monitor.isOnline) {
+          this._retryAttempt = 0;
+          this.log("debug", "Wake detected with network \u2014 resetting retry count");
+          this.recoveryLoop?.triggerImmediate();
+        }
+      })
+    );
+  }
+  // ---------------------------------------------------------------------------
+  // Private: Status management
+  // ---------------------------------------------------------------------------
+  setStatus(status, context) {
+    if (this._status === status) return;
+    const prev = this._status;
+    this._status = status;
+    this.log("info", `Status: ${prev} \u2192 ${status}${context ? ` (${context})` : ""}`);
+    this._statusChanged.fire(status, context);
+  }
+};
+function withTimeout(fn, ms, message) {
+  return new Promise((resolve10, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (!settled) {
+        settled = true;
+        reject(new Error(message));
+      }
+    }, ms);
+    fn().then(
+      (val) => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          resolve10(val);
+        }
+      },
+      (err) => {
+        if (!settled) {
+          settled = true;
+          clearTimeout(timer);
+          reject(err);
+        }
+      }
+    );
+  });
+}
+
+// src/connection/socket-byte-stream.ts
+var SocketByteStream = class {
+  socket;
+  constructor(socket) {
+    this.socket = socket;
+  }
+  get isOpen() {
+    return !this.socket.destroyed;
+  }
+  write(data) {
+    if (!this.socket.destroyed) {
+      this.socket.write(data);
+    }
+  }
+  onData(handler) {
+    this.socket.on("data", handler);
+    return { dispose: () => {
+      this.socket.off("data", handler);
+    } };
+  }
+  onClose(handler) {
+    this.socket.on("close", handler);
+    return { dispose: () => {
+      this.socket.off("close", handler);
+    } };
+  }
+  onError(handler) {
+    this.socket.on("error", handler);
+    return { dispose: () => {
+      this.socket.off("error", handler);
+    } };
+  }
+  close() {
+    this.socket.destroy();
+  }
+};
+
+// src/connection/host-relay.ts
+var DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS = 5;
+var DEFAULT_CONNECTION_TIMEOUT_MS = 3e4;
+var RECOVERY_TIMEOUT_MS = 3e4;
+var DEFAULT_SOCKET_TIMEOUT_MS = 6e4;
+var DEFAULT_GRACE_PERIOD_MS = 15e3;
+var HostRelay = class {
+  config;
+  keepAliveSeconds;
+  connectionTimeoutMs;
+  socketTimeoutMs;
+  gracePeriodMs;
+  server = null;
+  host = null;
+  managementClient = null;
+  connectionGuard = null;
+  _isRelayConnected = false;
+  _localPort = null;
+  isDisposed = false;
+  hasEverConnected = false;
+  clientCounter = 0;
+  disconnectedAt;
+  clients = /* @__PURE__ */ new Map();
+  disconnectedClients = /* @__PURE__ */ new Set();
+  graceTimer = null;
+  // Events
+  _clientStream = createEventSource();
+  _clientDisconnected = createEventSource();
+  _relayStatusChanged = createEventSource();
+  constructor(config) {
+    this.config = config;
+    this.keepAliveSeconds = config.keepAliveInterval ?? DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS;
+    this.connectionTimeoutMs = config.connectionTimeout ?? DEFAULT_CONNECTION_TIMEOUT_MS;
+    this.socketTimeoutMs = config.socketTimeout ?? DEFAULT_SOCKET_TIMEOUT_MS;
+    this.gracePeriodMs = config.gracePeriod ?? DEFAULT_GRACE_PERIOD_MS;
+  }
+  get isRelayConnected() {
+    return this._isRelayConnected;
+  }
+  get localPort() {
+    return this._localPort;
+  }
+  // ---------------------------------------------------------------------------
+  // Phase 1: TCP Server
+  // ---------------------------------------------------------------------------
+  async listen(preferredPort) {
+    this.server = await this.createServer(preferredPort);
+    const addr = this.server.address();
+    this._localPort = addr.port;
+    return this._localPort;
+  }
+  // ---------------------------------------------------------------------------
+  // Phase 2: Relay Connection
+  // ---------------------------------------------------------------------------
+  async connectRelay(tunnelId, clusterId) {
+    this.managementClient = new import_dev_tunnels_management2.TunnelManagementHttpClient(
+      "RemoteSdkBridge/1.0",
+      import_dev_tunnels_management2.ManagementApiVersions.Version20230927preview,
+      async () => {
+        const token = await this.config.tokenProvider();
+        return token ? `github ${token}` : null;
+      }
+    );
     this.host = new import_dev_tunnels_connections.TunnelRelayTunnelHost(this.managementClient);
-    this.host.connectionStatusChanged((e) => {
-      const reason = e.disconnectReason;
-      this.handleConnectionStatusChange(e.status, reason);
-    });
-    this.host.refreshingTunnelAccessToken((e) => {
-      this.log("debug", `Token refresh requested (scope: ${e.tunnelAccessScope})`);
-      if (this.currentToken) {
-        e.tunnelAccessToken = Promise.resolve(`github ${this.currentToken}`);
-      }
-    });
-    this.host.retryingTunnelConnection((e) => {
-      this.handleRetryEvent(e);
-    });
-    const connectionOptions = {
-      keepAliveIntervalInSeconds: DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS,
+    this.wireHostEvents();
+    const sdkTunnel = await this.managementClient.getTunnel(
+      { tunnelId, clusterId },
+      { tokenScopes: [import_dev_tunnels_contracts2.TunnelAccessScopes.Host], includePorts: true }
+    );
+    if (!sdkTunnel) {
+      throw new Error(`Tunnel ${tunnelId} not found on cluster ${clusterId}`);
+    }
+    const options = {
+      keepAliveIntervalInSeconds: this.keepAliveSeconds,
       enableRetry: true,
       enableReconnect: true
     };
-    await this.connectWithTimeout(connectionOptions, DEFAULT_CONNECTION_TIMEOUT_MS);
-    this.relayConnected = true;
+    await this.connectWithTimeout(sdkTunnel, options);
+    this._isRelayConnected = true;
     this.setupHostKeepAlive();
   }
-  /**
-   * Workaround for Dev Tunnels SDK bug: manually configure keepAlive on the host's SSH session.
-   * The SDK only configures keepAlive for client→host sessions, not host→relay sessions.
-   */
-  setupHostKeepAlive() {
-    const sshSession = this.host?.sshSession;
-    if (!sshSession?.config || !sshSession.startKeepAliveTimer) {
-      this.log("warn", "Unable to configure host keepAlive - sshSession not accessible");
-      return;
-    }
-    sshSession.config.keepAliveTimeoutInSeconds = DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS;
-    sshSession.onKeepAliveSucceeded?.(() => {
-      this.log("debug", `KeepAlive success (count: ${sshSession.keepAliveSuccessCount})`);
-    });
-    sshSession.onKeepAliveFailed?.(() => {
-      const failureCount = sshSession.keepAliveFailureCount ?? 0;
-      this.log("debug", `KeepAlive failed (count: ${failureCount})`);
-      if (failureCount === 3) {
-        this.log("debug", "Multiple keepAlive failures - connection stale");
-        if (this.clients.size > 0) {
-          this.log("debug", `Closing ${this.clients.size} client connection(s) due to stale tunnel`);
-          for (const [clientId, socket] of this.clients) {
-            if (!this.disconnectedClients.has(clientId)) {
-              this.disconnectedClients.add(clientId);
-              socket.destroy();
-            }
-          }
-        }
-      }
-    });
-    sshSession.startKeepAliveTimer();
-    this.log("debug", `Host keepAlive configured (interval: ${DEFAULT_KEEP_ALIVE_INTERVAL_SECONDS}s)`);
-  }
-  // ===========================================================================
-  // Auth Retry Infrastructure
-  // ===========================================================================
-  /**
-   * Create (or recreate) the tunnel management client.
-   * The token callback reads from this.currentToken so it always uses
-   * the latest token without closure issues.
-   */
-  createManagementClient() {
-    this.log("debug", "Creating tunnel management client...");
-    this.managementClient = new import_dev_tunnels_management.TunnelManagementHttpClient(
-      "RemoteSdkBridge/1.0",
-      import_dev_tunnels_management.ManagementApiVersions.Version20230927preview,
-      () => Promise.resolve(this.currentToken ? `github ${this.currentToken}` : null)
-    );
-  }
-  /**
-   * Check if an error indicates a 401 Unauthorized response from the tunnel service.
-   */
-  isUnauthorizedError(error) {
-    if (error instanceof Error) {
-      const axiosError = error;
-      if (axiosError.isAxiosError && axiosError.response?.status === 401) {
-        this.log("info", `[Auth Debug] isUnauthorizedError: matched AxiosError 401, message="${error.message}", responseData=${JSON.stringify(axiosError.response.data ?? {})}`);
-        return true;
-      }
-      const message = error.message.toLowerCase();
-      if (message.includes("401") || message.includes("unauthorized")) {
-        this.log("info", `[Auth Debug] isUnauthorizedError: matched message pattern, message="${error.message}"`);
-        return true;
-      }
-      this.log("debug", `[Auth Debug] isUnauthorizedError: NOT a 401, message="${error.message}"`);
-    }
-    return false;
-  }
-  /**
-   * Execute a management client operation with automatic 401 retry.
-   *
-   * If the operation fails with 401:
-   * 1. Try refreshing the access token using the stored refresh token
-   * 2. If refresh succeeds, save new tokens, recreate management client, retry
-   * 3. If refresh fails or no refresh token, clear tokens, run device flow, retry
-   *
-   * Only retries ONCE to prevent infinite loops.
-   */
-  async withAuthRetry(operation) {
-    try {
-      return await operation();
-    } catch (error) {
-      if (!this.isUnauthorizedError(error)) {
-        throw error;
-      }
-      this.log("info", "[Auth Debug] Received 401 from tunnel service, attempting token refresh...");
-      this.log("info", `[Auth Debug] 401 original error: ${error instanceof Error ? error.message : String(error)}`);
-      const tokenData = await loadTokenData();
-      const now = Date.now();
-      if (tokenData?.refreshToken) {
-        const refreshExpired = tokenData.refreshExpiresAt < now + 5 * 60 * 1e3;
-        const refreshRemaining = Math.round((tokenData.refreshExpiresAt - now) / 6e4);
-        const accessRemaining = Math.round((tokenData.expiresAt - now) / 6e4);
-        this.log("info", `[Auth Debug] withAuthRetry token state: access=${tokenData.accessToken.slice(0, 8)}... (${accessRemaining}min remaining) refresh=${tokenData.refreshToken.slice(0, 8)}... (${refreshRemaining}min remaining) refreshExpired=${refreshExpired} (buffer=5min)`);
-        if (!refreshExpired) {
-          try {
-            const oldUsername = tokenData.username;
-            this.log("info", `[Auth Debug] Attempting token refresh with refresh_token=${tokenData.refreshToken.slice(0, 8)}...`);
-            const newTokenData2 = await this.refreshAccessToken(tokenData.refreshToken);
-            newTokenData2.username = oldUsername;
-            await saveTokenData(newTokenData2);
-            this.currentToken = newTokenData2.accessToken;
-            this.username = oldUsername;
-            this.createManagementClient();
-            const newAccessRemaining = Math.round((newTokenData2.expiresAt - Date.now()) / 6e4);
-            const newRefreshRemaining = Math.round((newTokenData2.refreshExpiresAt - Date.now()) / 6e4);
-            this.log("info", `[Auth Debug] Token refreshed successfully! newAccess=${newTokenData2.accessToken.slice(0, 8)}... (${newAccessRemaining}min) newRefresh=${newTokenData2.refreshToken.slice(0, 8)}... (${newRefreshRemaining}min) refreshTokenRotated=${newTokenData2.refreshToken !== tokenData.refreshToken}`);
-            return await operation();
-          } catch (refreshErr) {
-            if (refreshErr instanceof RefreshTokenInvalidError) {
-              this.log("warn", `[Auth Debug] Refresh token INVALID (definitive): ${refreshErr.message} \u2014 falling through to device flow`);
-            } else {
-              this.log("warn", `[Auth Debug] Token refresh failed (TRANSIENT, preserving credentials): ${refreshErr instanceof Error ? refreshErr.message : String(refreshErr)}`);
-              throw refreshErr;
-            }
-          }
-        } else {
-          this.log("info", `[Auth Debug] Refresh token expired (${refreshRemaining}min remaining, need >5min), skipping refresh \u2192 device flow`);
-        }
-      } else {
-        this.log("info", `[Auth Debug] No refresh token available (tokenData=${tokenData ? "exists but no refreshToken" : "null"}) \u2192 device flow`);
-      }
-      this.log("info", "[Auth Debug] Clearing credentials and starting device flow...");
-      await clearTokenData();
-      const newTokenData = await this.authenticateWithDeviceFlow();
-      this.username = await this.fetchGitHubUsername(newTokenData.accessToken);
-      newTokenData.username = this.username;
-      await saveTokenData(newTokenData);
-      this.currentToken = newTokenData.accessToken;
-      this.createManagementClient();
-      this.log("info", `Re-authenticated as: ${this.username ?? "unknown"}, retrying operation...`);
-      return await operation();
-    }
-  }
-  async start() {
-    if (this.server) {
-      throw new Error("Tunnel adapter already started");
-    }
-    this.log("debug", "Creating local TCP server...");
-    this.server = await this.createServer();
-    const rpcPort = this.server.address().port;
-    this.log("debug", `Local JSON-RPC server listening on port ${rpcPort}`);
-    this.currentToken = await this.getStoredOrNewToken();
-    this.createManagementClient();
-    const storedConfig = await loadTunnelConfig();
-    if (storedConfig) {
-      this.log("info", `Found stored tunnel: ${storedConfig.tunnelId}`);
-      try {
-        const tunnelRequest = {
-          tunnelId: storedConfig.tunnelId,
-          clusterId: storedConfig.clusterId
-        };
-        this.tunnel = await this.withAuthRetry(
-          () => this.managementClient.getTunnel(tunnelRequest, {
-            tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
-            includePorts: true
-          })
-        );
-        if (this.tunnel) {
-          if (this.tunnel.ports && this.tunnel.ports.length > 0) {
-            for (const port of this.tunnel.ports) {
-              if (port.portNumber) {
-                this.log("debug", `Removing old port ${port.portNumber} from tunnel`);
-                try {
-                  await this.withAuthRetry(
-                    () => this.managementClient.deleteTunnelPort(this.tunnel, port.portNumber)
-                  );
-                } catch {
-                }
-              }
-            }
-          }
-          this.log("debug", `Adding port ${rpcPort} to tunnel`);
-          await this.withAuthRetry(
-            () => this.managementClient.createTunnelPort(this.tunnel, {
-              portNumber: rpcPort,
-              protocol: "auto"
-            })
-          );
-          this.tunnel = await this.withAuthRetry(
-            () => this.managementClient.getTunnel(this.tunnel, {
-              tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
-              includePorts: true
-            })
-          );
-          this.log("debug", "Connecting to existing tunnel...");
-          await this.connectToTunnel(rpcPort);
-          this.log("info", "Connected to existing tunnel");
-          return {
-            tunnelId: this.tunnel.tunnelId,
-            clusterId: this.tunnel.clusterId,
-            port: rpcPort,
-            username: this.username
-          };
-        }
-      } catch (error) {
-        if (this.isTunnelNotFoundError(error)) {
-          this.log("info", "Stored tunnel no longer exists");
-          await clearTunnelConfig();
-        } else {
-          throw error;
-        }
-      }
-    }
-    this.log("info", "Searching for existing tunnel by label...");
-    const labeledTunnels = await this.withAuthRetry(
-      () => this.managementClient.listTunnels(
-        void 0,
-        // global search (no cluster filter)
-        void 0,
-        // default domain
-        { labels: [TUNNEL_LABEL] }
-      )
-    );
-    if (labeledTunnels.length > 0) {
-      labeledTunnels.sort(
-        (a, b) => new Date(b.created ?? 0).getTime() - new Date(a.created ?? 0).getTime()
-      );
-      const foundTunnel = labeledTunnels[0];
-      this.log("info", `Found existing tunnel via label: ${foundTunnel.tunnelId}`);
-      this.tunnel = await this.withAuthRetry(
-        () => this.managementClient.getTunnel(
-          { tunnelId: foundTunnel.tunnelId, clusterId: foundTunnel.clusterId },
-          { tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect], includePorts: true }
-        )
-      );
-      if (!this.tunnel) {
-        throw new Error("Failed to fetch tunnel details");
-      }
-      if (this.tunnel.ports && this.tunnel.ports.length > 0) {
-        for (const port of this.tunnel.ports) {
-          if (port.portNumber) {
-            this.log("debug", `Removing old port ${port.portNumber} from tunnel`);
-            try {
-              await this.withAuthRetry(
-                () => this.managementClient.deleteTunnelPort(this.tunnel, port.portNumber)
-              );
-            } catch {
-            }
-          }
-        }
-      }
-      this.log("debug", `Adding port ${rpcPort} to tunnel`);
-      await this.withAuthRetry(
-        () => this.managementClient.createTunnelPort(this.tunnel, {
-          portNumber: rpcPort,
-          protocol: "auto"
-        })
-      );
-      this.tunnel = await this.withAuthRetry(
-        () => this.managementClient.getTunnel(this.tunnel, {
-          tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
-          includePorts: true
-        })
-      );
-      if (!this.tunnel) {
-        throw new Error("Failed to refresh tunnel details");
-      }
-      await saveTunnelConfig({
-        tunnelId: this.tunnel.tunnelId,
-        clusterId: this.tunnel.clusterId,
-        createdAt: (/* @__PURE__ */ new Date()).toISOString()
-      });
-      this.log("debug", "Tunnel config saved");
-      this.log("debug", "Connecting to existing tunnel...");
-      await this.connectToTunnel(rpcPort);
-      this.log("info", "Connected to existing tunnel");
-      return {
-        tunnelId: this.tunnel.tunnelId,
-        clusterId: this.tunnel.clusterId,
-        port: rpcPort,
-        username: this.username
-      };
-    }
-    this.log("info", "Creating new tunnel...");
-    const tunnelConfig = {
-      labels: [TUNNEL_LABEL],
-      ports: [
-        { portNumber: rpcPort, protocol: "auto" }
-      ]
-    };
-    this.tunnel = await this.withAuthRetry(
-      () => this.managementClient.createTunnel(tunnelConfig, {
-        tokenScopes: [import_dev_tunnels_contracts.TunnelAccessScopes.Host, import_dev_tunnels_contracts.TunnelAccessScopes.Connect],
-        includePorts: true
-      })
-    );
-    this.log("info", `Tunnel created: ${this.tunnel.tunnelId} (cluster: ${this.tunnel.clusterId})`);
-    await saveTunnelConfig({
-      tunnelId: this.tunnel.tunnelId,
-      clusterId: this.tunnel.clusterId,
-      createdAt: (/* @__PURE__ */ new Date()).toISOString()
-    });
-    this.log("debug", "Tunnel config saved");
-    await this.connectToTunnel(rpcPort);
-    this.log("info", "Tunnel connected");
-    return {
-      tunnelId: this.tunnel.tunnelId,
-      clusterId: this.tunnel.clusterId,
-      port: rpcPort,
-      username: this.username
-    };
-  }
-  async stop() {
+  // ---------------------------------------------------------------------------
+  // Disconnect
+  // ---------------------------------------------------------------------------
+  async disconnect() {
     this.isDisposed = true;
-    this.stopNetworkMonitoring();
-    this.stopSleepDetection();
+    this.clearGraceTimer();
+    if (this.connectionGuard) {
+      this.connectionGuard.dispose();
+      this.connectionGuard = null;
+    }
     for (const [clientId, socket] of this.clients) {
       if (!this.disconnectedClients.has(clientId)) {
         this.disconnectedClients.add(clientId);
         socket.destroy();
-        this.disconnectHandlers.forEach((h) => h(clientId));
+        this._clientDisconnected.fire(clientId);
       }
     }
     this.clients.clear();
@@ -49717,393 +53968,1833 @@ var DevTunnelHostAdapter = class {
       await this.host.dispose();
       this.host = null;
     }
-    this.tunnel = null;
     this.managementClient = null;
+    this._isRelayConnected = false;
     if (this.server) {
-      await new Promise((resolve8) => {
-        this.server.close(() => resolve8());
+      await new Promise((resolve10) => {
+        this.server.close(() => resolve10());
       });
       this.server = null;
     }
+    this._localPort = null;
     this.disconnectedClients.clear();
+    this._clientStream.dispose();
+    this._clientDisconnected.dispose();
+    this._relayStatusChanged.dispose();
   }
-  onClientConnected(handler) {
-    this.clientHandlers.push(handler);
-    return () => {
-      const index = this.clientHandlers.indexOf(handler);
-      if (index !== -1) {
-        this.clientHandlers.splice(index, 1);
-      }
-    };
+  // ---------------------------------------------------------------------------
+  // Event registration
+  // ---------------------------------------------------------------------------
+  onClientStream(handler) {
+    return this._clientStream.on(handler);
   }
   onClientDisconnected(handler) {
-    this.disconnectHandlers.push(handler);
-    return () => {
-      const index = this.disconnectHandlers.indexOf(handler);
-      if (index !== -1) {
-        this.disconnectHandlers.splice(index, 1);
-      }
-    };
+    return this._clientDisconnected.on(handler);
   }
-  createServer() {
-    return new Promise((resolve8, reject) => {
+  onRelayStatusChanged(handler) {
+    return this._relayStatusChanged.on(handler);
+  }
+  // ---------------------------------------------------------------------------
+  // Private: TCP Server
+  // ---------------------------------------------------------------------------
+  createServer(preferredPort) {
+    return new Promise((resolve10, reject) => {
       const server = net.createServer((socket) => {
+        this.log("info", `TCP connection accepted from ${socket.remoteAddress}:${socket.remotePort}`);
         if (this.isDisposed) {
+          this.log("warn", "Rejecting client connection: relay is disposed");
           socket.destroy();
           return;
         }
-        if (!this.relayConnected) {
+        if (!this._isRelayConnected) {
           this.log("warn", "Rejecting client connection: relay is not connected");
           socket.destroy();
           return;
         }
         const clientId = `client-${++this.clientCounter}`;
+        this.log("info", `Client socket assigned: ${clientId}`);
         this.clients.set(clientId, socket);
-        this.log("debug", `Client ${clientId} connected (total clients: ${this.clients.size})`);
-        const SOCKET_TIMEOUT_MS = 6e4;
-        socket.setTimeout(SOCKET_TIMEOUT_MS);
+        socket.setTimeout(this.socketTimeoutMs);
         socket.on("timeout", () => {
-          this.log("info", `Client ${clientId} socket timeout (no data in ${SOCKET_TIMEOUT_MS / 1e3}s)`);
+          this.log("info", `Client ${clientId} socket timeout`);
           socket.destroy();
         });
-        this.clientHandlers.forEach((h) => h(socket, clientId));
-        socket.on("close", (hadError) => {
+        const stream = new SocketByteStream(socket);
+        this._clientStream.fire(stream, clientId);
+        socket.on("close", () => {
           if (this.disconnectedClients.has(clientId)) {
-            this.log("debug", `Client ${clientId} already notified, skipping duplicate close event`);
             this.clients.delete(clientId);
+            queueMicrotask(() => this.disconnectedClients.delete(clientId));
             return;
           }
           this.disconnectedClients.add(clientId);
-          const reason = hadError ? "connection_error" : "remote_closed";
-          this.log("debug", `Client ${clientId} disconnected (${reason})`);
           this.clients.delete(clientId);
-          this.disconnectHandlers.forEach((h) => h(clientId));
+          this._clientDisconnected.fire(clientId);
+          queueMicrotask(() => this.disconnectedClients.delete(clientId));
         });
         socket.on("error", (err) => {
-          if (this.disconnectedClients.has(clientId)) {
-            this.log("debug", `Client ${clientId} already notified, skipping duplicate error event`);
-            return;
-          }
+          if (this.disconnectedClients.has(clientId)) return;
           this.disconnectedClients.add(clientId);
           this.log("warn", `Client ${clientId} socket error: ${err.message}`);
           this.clients.delete(clientId);
-          this.disconnectHandlers.forEach((h) => h(clientId));
+          this._clientDisconnected.fire(clientId);
+          queueMicrotask(() => this.disconnectedClients.delete(clientId));
         });
       });
       server.on("error", reject);
-      server.listen(this.config.port || 0, () => {
-        resolve8(server);
-      });
+      server.listen(preferredPort || 0, () => resolve10(server));
     });
   }
-  async connectWithTimeout(options, timeoutMs) {
-    if (!this.host || !this.tunnel) {
-      throw new Error("Host or tunnel not initialized");
-    }
-    const timeoutPromise = new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`Connection timeout after ${timeoutMs}ms`)), timeoutMs);
-    });
-    await Promise.race([this.host.connect(this.tunnel, options), timeoutPromise]);
-  }
-  /**
-   * Get a GitHub token for tunnel management.
-   * Returns the stored access token if one exists (no expiry check — if it's
-   * invalid, withAuthRetry() will handle the 401 and refresh/re-auth).
-   * If no stored token exists, runs device flow to authenticate.
-   * Also sets this.username for display purposes.
-   */
-  async getStoredOrNewToken() {
-    this.log("debug", "Checking for cached GitHub token...");
-    const tokenData = await loadTokenData();
-    if (tokenData?.accessToken) {
-      const now = Date.now();
-      const accessRemaining = Math.round((tokenData.expiresAt - now) / 6e4);
-      const refreshRemaining = Math.round((tokenData.refreshExpiresAt - now) / 6e4);
-      this.log("info", `[Auth Debug] getStoredOrNewToken: found stored token access=${tokenData.accessToken.slice(0, 8)}... (${accessRemaining}min remaining, expires=${new Date(tokenData.expiresAt).toISOString()}) refresh=${tokenData.refreshToken?.slice(0, 8) ?? "none"}... (${refreshRemaining}min remaining, expires=${new Date(tokenData.refreshExpiresAt).toISOString()}) accessExpired=${tokenData.expiresAt < now} refreshExpired=${tokenData.refreshExpiresAt < now}`);
-      if (tokenData.username) {
-        this.username = tokenData.username;
-      } else {
-        this.log("debug", "Fetching username for stored token...");
-        this.username = await this.fetchGitHubUsername(tokenData.accessToken);
-        if (this.username) {
-          tokenData.username = this.username;
-          await saveTokenData(tokenData);
-        }
-      }
-      this.log("debug", "Using stored access token (optimistic, 401 will trigger refresh if needed)");
-      return tokenData.accessToken;
-    }
-    this.log("info", "[Auth Debug] getStoredOrNewToken: no stored credentials found, starting device flow");
-    const newTokenData = await this.authenticateWithDeviceFlow();
-    this.username = await this.fetchGitHubUsername(newTokenData.accessToken);
-    newTokenData.username = this.username;
-    this.log("debug", "Saving token data to secure storage...");
-    await saveTokenData(newTokenData);
-    this.log("info", `Authenticated as: ${this.username ?? "unknown"}`);
-    return newTokenData.accessToken;
-  }
-  /**
-   * Refresh an access token using a refresh token.
-   */
-  async refreshAccessToken(refreshToken) {
-    this.log("info", `[Auth Debug] refreshAccessToken: sending refresh request to GitHub, refresh_token=${refreshToken.slice(0, 8)}...`);
-    let response;
-    try {
-      const params = new URLSearchParams();
-      params.append("client_id", GITHUB_CLIENT_ID);
-      params.append("refresh_token", refreshToken);
-      params.append("grant_type", "refresh_token");
-      response = await fetch(GITHUB_TOKEN_URL, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: params.toString()
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Unknown error";
-      this.log("warn", `[Auth Debug] refreshAccessToken: NETWORK ERROR (transient): ${message}`);
-      throw new Error(`Network error during token refresh: ${message}`);
-    }
-    this.log("info", `[Auth Debug] refreshAccessToken: GitHub response status=${response.status} ${response.statusText}`);
-    if (!response.ok) {
-      this.log("warn", `[Auth Debug] refreshAccessToken: non-OK response ${response.status}, treating as transient`);
-      throw new Error(`Failed to refresh token: ${response.statusText}`);
-    }
-    let token;
-    try {
-      token = await response.json();
-    } catch {
-      this.log("warn", "[Auth Debug] refreshAccessToken: failed to parse JSON response");
-      throw new Error("Token refresh failed: invalid response from server");
-    }
-    this.log("info", `[Auth Debug] refreshAccessToken: parsed response: ${JSON.stringify(maskTokenResponse(token))}`);
-    if (token.error) {
-      const errorCode = token.error;
-      const errorDesc = token.error_description || errorCode;
-      const errorDescLower = errorDesc.toLowerCase();
-      const isDefinitiveAuthFailure = errorCode === "bad_refresh_token" || errorCode === "invalid_grant" || errorCode === "incorrect_client_credentials" || errorDescLower.includes("client_id") || errorDescLower.includes("client_secret");
-      this.log("warn", `[Auth Debug] refreshAccessToken: GitHub returned error="${errorCode}" desc="${errorDesc}" isDefinitive=${isDefinitiveAuthFailure}`);
-      if (isDefinitiveAuthFailure) {
-        throw new RefreshTokenInvalidError(errorDesc);
-      }
-      throw new Error(`Token refresh failed: ${errorDesc}`);
-    }
-    if (!token.access_token) {
-      this.log("warn", "[Auth Debug] refreshAccessToken: no access_token in success response");
-      throw new Error("Token refresh failed: no access token in response");
-    }
-    const now = Date.now();
-    const newRefreshToken = token.refresh_token || refreshToken;
-    const result = {
-      accessToken: token.access_token,
-      refreshToken: newRefreshToken,
-      expiresAt: now + (token.expires_in || 28800) * 1e3,
-      refreshExpiresAt: now + (token.refresh_token_expires_in || 15638400) * 1e3
-    };
-    this.log("info", `[Auth Debug] refreshAccessToken: SUCCESS newAccess=${result.accessToken.slice(0, 8)}... newRefresh=${result.refreshToken.slice(0, 8)}... refreshTokenRotated=${newRefreshToken !== refreshToken} accessExpiresIn=${token.expires_in ?? "28800(default)"}s refreshExpiresIn=${token.refresh_token_expires_in ?? "15638400(default)"}s`);
-    return result;
-  }
-  /**
-   * Fetch the GitHub username for the given token.
-   * Returns undefined if the fetch fails.
-   */
-  async fetchGitHubUsername(token) {
-    try {
-      const response = await fetch("https://api.github.com/user", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Accept: "application/vnd.github.v3+json",
-          "User-Agent": "AgentTunnels/1.0"
-        }
-      });
-      if (response.ok) {
-        const user = await response.json();
-        return user.login;
-      }
-      return void 0;
-    } catch {
-      return void 0;
-    }
-  }
-  /**
-   * Clear the stored token. Call this when the server reports an auth error.
-   */
-  async clearStoredToken() {
-    this.log("info", "Clearing stored token due to auth error");
-    await clearTokenData();
-  }
-  /**
-   * Authenticate using GitHub device code flow.
-   * This allows users to authenticate without providing a token upfront.
-   */
-  async authenticateWithDeviceFlow() {
-    this.log("debug", "Requesting device code from GitHub...");
-    const deviceCodeParams = new URLSearchParams();
-    deviceCodeParams.append("client_id", GITHUB_CLIENT_ID);
-    deviceCodeParams.append("scope", GITHUB_SCOPES);
-    const deviceCodeResponse = await fetch(GITHUB_DEVICE_CODE_URL, {
-      method: "POST",
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      body: deviceCodeParams.toString()
-    });
-    if (!deviceCodeResponse.ok) {
-      throw new Error(`Failed to get device code: ${deviceCodeResponse.statusText}`);
-    }
-    const deviceCode = await deviceCodeResponse.json();
-    this.log("debug", `Device code received, user code: ${deviceCode.user_code}`);
-    this.config.onAuth?.(
-      "GitHub authentication required",
-      deviceCode.verification_uri,
-      deviceCode.user_code
+  // ---------------------------------------------------------------------------
+  // Private: Relay connection
+  // ---------------------------------------------------------------------------
+  connectWithTimeout(tunnel, options) {
+    return withTimeout(
+      () => this.host.connect(tunnel, options),
+      this.connectionTimeoutMs,
+      `Connection timeout after ${this.connectionTimeoutMs}ms`
     );
-    this.log("debug", "Waiting for user to complete authentication...");
-    const pollInterval = Math.max(deviceCode.interval * 1e3, DEVICE_CODE_POLL_INTERVAL_MS);
-    const pollExpiresAt = Date.now() + deviceCode.expires_in * 1e3;
-    while (Date.now() < pollExpiresAt) {
-      await this.sleep(pollInterval);
-      const tokenParams = new URLSearchParams();
-      tokenParams.append("client_id", GITHUB_CLIENT_ID);
-      tokenParams.append("device_code", deviceCode.device_code);
-      tokenParams.append("grant_type", "urn:ietf:params:oauth:grant-type:device_code");
-      const tokenResponse = await fetch(GITHUB_TOKEN_URL, {
-        method: "POST",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/x-www-form-urlencoded"
-        },
-        body: tokenParams.toString()
-      });
-      if (!tokenResponse.ok) {
-        throw new Error(`Failed to poll for token: ${tokenResponse.statusText}`);
-      }
-      const token = await tokenResponse.json();
-      if (token.access_token) {
-        this.log("debug", "GitHub authentication completed successfully");
-        const now = Date.now();
-        return {
-          accessToken: token.access_token,
-          refreshToken: token.refresh_token || "",
-          expiresAt: now + (token.expires_in || 28800) * 1e3,
-          refreshExpiresAt: now + (token.refresh_token_expires_in || 15638400) * 1e3
-        };
-      }
-      if (token.error === "authorization_pending") {
-        this.log("debug", "Authorization pending, continuing to poll...");
-        continue;
-      }
-      if (token.error === "slow_down") {
-        this.log("debug", "Rate limited, slowing down polling...");
-        await this.sleep(5e3);
-        continue;
-      }
-      if (token.error === "expired_token") {
-        throw new Error("Device code expired. Please try again.");
-      }
-      if (token.error === "access_denied") {
-        throw new Error("Authentication was denied.");
-      }
-      if (token.error) {
-        throw new Error(`Authentication error: ${token.error_description || token.error}`);
-      }
-    }
-    throw new Error("Device code expired before authentication completed.");
   }
-  sleep(ms) {
-    return new Promise((resolve8) => setTimeout(resolve8, ms));
+  wireHostEvents() {
+    if (!this.host) return;
+    this.host.refreshingTunnelAccessToken(async (e) => {
+      try {
+        const token = await this.config.tokenProvider();
+        if (token) {
+          e.tunnelAccessToken = Promise.resolve(`github ${token}`);
+        }
+      } catch (err) {
+        if (err instanceof AuthRequiredError) {
+          this.log("warn", "Token permanently invalid \u2014 stopping connection");
+          this.connectionGuard?.forceDisconnected("auth_required");
+          return;
+        }
+        this.log("warn", `Token refresh failed: ${err.message}`);
+      }
+    });
+    this.connectionGuard = new ConnectionGuard({
+      onSdkStatusChanged: (handler) => this.host.connectionStatusChanged(handler),
+      onSdkRetrying: (handler) => this.host.retryingTunnelConnection(handler),
+      connectivityMonitor: this.config.connectivityMonitor,
+      shouldRetry: this.config.shouldRetry,
+      onRecoveryNeeded: () => this.attemptRecovery(),
+      onLog: this.config.onLog
+    });
+    this.connectionGuard.onStatusChanged((status, context) => {
+      this.handleGuardStatusChange(status, context);
+    });
+  }
+  handleGuardStatusChange(status, context) {
+    const wasConnected = this._isRelayConnected;
+    this._isRelayConnected = status === "connected";
+    if (status === "connected") {
+      if (this.hasEverConnected && this.disconnectedAt) {
+        const downtime = Math.round((Date.now() - this.disconnectedAt) / 1e3);
+        this.log("info", `Tunnel reconnected after ${downtime}s${context ? ` (${context})` : ""}`);
+      }
+      this.hasEverConnected = true;
+      this.clearGraceTimer();
+      this.disconnectedClients.clear();
+      this.disconnectedAt = void 0;
+    } else if (status === "reconnecting") {
+      if (wasConnected) {
+        this.log("info", `Tunnel disconnected${context ? ` (${context})` : ""}`);
+        this.log("info", "Reconnecting...");
+        this.disconnectedAt = Date.now();
+        this.startGraceTimer();
+      }
+    } else if (status === "disconnected") {
+      this.log("info", `Tunnel disconnected${context ? ` (${context})` : ""}`);
+    }
+    this._relayStatusChanged.fire(status, context);
+  }
+  startGraceTimer() {
+    this.clearGraceTimer();
+    if (this.clients.size === 0) return;
+    this.log("info", `Starting ${this.gracePeriodMs / 1e3}s grace period for ${this.clients.size} client(s)`);
+    this.graceTimer = setTimeout(() => {
+      this.graceTimer = null;
+      if (this._isRelayConnected) return;
+      this.log("info", "Grace period expired \u2014 destroying client connections");
+      for (const [clientId, socket] of this.clients) {
+        if (!this.disconnectedClients.has(clientId)) {
+          this.disconnectedClients.add(clientId);
+          socket.destroy();
+          this._clientDisconnected.fire(clientId);
+        }
+      }
+    }, this.gracePeriodMs);
+  }
+  clearGraceTimer() {
+    if (this.graceTimer !== null) {
+      clearTimeout(this.graceTimer);
+      this.graceTimer = null;
+    }
+  }
+  // ---------------------------------------------------------------------------
+  // Private: SDK exhaustion recovery
+  // ---------------------------------------------------------------------------
+  async attemptRecovery() {
+    if (this.isDisposed || !this.host) return;
+    this.log("info", "Attempting recovery from SDK retry exhaustion");
+    try {
+      await withTimeout(
+        () => this.host.connectTunnelSession(),
+        RECOVERY_TIMEOUT_MS,
+        `Recovery timeout after ${RECOVERY_TIMEOUT_MS}ms`
+      );
+    } catch (err) {
+      this.log("warn", `Recovery attempt failed: ${err.message}`);
+    }
+  }
+  // ---------------------------------------------------------------------------
+  // Private: KeepAlive workaround
+  // ---------------------------------------------------------------------------
+  setupHostKeepAlive() {
+    const sshSession = this.host?.sshSession;
+    if (!sshSession?.config || !sshSession.startKeepAliveTimer) {
+      this.log("warn", "Unable to configure host keepAlive - sshSession not accessible");
+      return;
+    }
+    sshSession.config.keepAliveTimeoutInSeconds = this.keepAliveSeconds;
+    sshSession.onKeepAliveFailed?.(() => {
+      const failureCount = sshSession.keepAliveFailureCount ?? 0;
+      if (failureCount === 3) {
+        this.log("warn", "Multiple keepAlive failures \u2014 connection stale, triggering recovery");
+        if (this.clients.size > 0) {
+          for (const [clientId, socket] of this.clients) {
+            if (!this.disconnectedClients.has(clientId)) {
+              this.disconnectedClients.add(clientId);
+              socket.destroy();
+              this._clientDisconnected.fire(clientId);
+            }
+          }
+        }
+        this.connectionGuard?.forceReconnecting("keepAlive failure");
+      }
+    });
+    sshSession.startKeepAliveTimer();
+  }
+  // ---------------------------------------------------------------------------
+  // Private: logging
+  // ---------------------------------------------------------------------------
+  log(level, message) {
+    this.config.onLog?.(level, message);
   }
 };
-function createTunnelHostAdapter(config) {
-  return new DevTunnelHostAdapter(config);
+
+// src/connection/client-session.ts
+var DEFAULT_HEARTBEAT_INTERVAL = 15e3;
+var DEFAULT_HEARTBEAT_TIMEOUT = 5e3;
+var DEFAULT_HEARTBEAT_THRESHOLD = 2;
+var ClientSession = class {
+  clientId;
+  channel;
+  heartbeat;
+  userRequestHandler = null;
+  constructor(stream, clientId, config) {
+    this.clientId = clientId;
+    this.channel = new RpcChannel(stream);
+    this.channel.onRequest((method, params) => {
+      if (method === "ping") {
+        if (this.userRequestHandler) {
+          return this.userRequestHandler(method, params);
+        }
+        return Promise.resolve({ timestamp: Date.now() });
+      }
+      if (this.userRequestHandler) {
+        return this.userRequestHandler(method, params);
+      }
+      return Promise.reject(new Error(`Method not found: ${method}`));
+    });
+    this.heartbeat = new Heartbeat({
+      channel: this.channel,
+      interval: config?.heartbeatInterval ?? DEFAULT_HEARTBEAT_INTERVAL,
+      failureThreshold: config?.heartbeatThreshold ?? DEFAULT_HEARTBEAT_THRESHOLD,
+      timeout: config?.heartbeatTimeout ?? DEFAULT_HEARTBEAT_TIMEOUT
+    });
+    this.heartbeat.onStale(() => {
+      this.channel.close();
+    });
+    this.channel.onClose(() => {
+      this.heartbeat.stop();
+    });
+    this.heartbeat.start();
+  }
+  // ---------------------------------------------------------------------------
+  // RPC interface
+  // ---------------------------------------------------------------------------
+  request(method, params, timeout) {
+    return this.channel.request(method, params, timeout);
+  }
+  notify(method, params) {
+    this.channel.notify(method, params);
+  }
+  onRequest(handler) {
+    this.userRequestHandler = handler;
+    return {
+      dispose: () => {
+        if (this.userRequestHandler === handler) {
+          this.userRequestHandler = null;
+        }
+      }
+    };
+  }
+  onNotification(handler) {
+    return this.channel.onNotification(handler);
+  }
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
+  get isClosed() {
+    return this.channel.isClosed;
+  }
+  close() {
+    this.heartbeat.stop();
+    this.channel.close();
+  }
+  onClose(handler) {
+    return this.channel.onClose(handler);
+  }
+};
+
+// src/tunnel-host.ts
+var TunnelHost = class {
+  tokenManager;
+  tunnelResolver;
+  hostRelay;
+  sessionConfig;
+  preferredPort;
+  log;
+  subscriptions = [];
+  sessions = /* @__PURE__ */ new Map();
+  // Stored after initial registration for re-registration on reconnect
+  registeredTunnelId = null;
+  registeredClusterId = null;
+  registeredPort = null;
+  /** Tracks whether the initial relay connection has been established. */
+  initialConnectDone = false;
+  _clientConnected = createEventSource();
+  _clientDisconnected = createEventSource();
+  _statusChanged = createEventSource();
+  constructor(config) {
+    this.tokenManager = config.tokenManager;
+    this.tunnelResolver = config.tunnelResolver;
+    this.hostRelay = config.hostRelay;
+    this.preferredPort = config.preferredPort;
+    this.sessionConfig = config.clientSession;
+    this.log = config.onLog ?? (() => {
+    });
+  }
+  async start() {
+    const tokenResult = await this.tokenManager.getValidToken();
+    if (!tokenResult.success) {
+      await this.tokenManager.authenticate();
+    }
+    const port = await this.hostRelay.listen(this.preferredPort);
+    try {
+      const tunnel = await this.tokenManager.withAuth(
+        (token) => this.tunnelResolver.findOrCreateTunnel(token)
+      );
+      await this.tokenManager.withAuth(
+        (token) => this.tunnelResolver.registerPort(tunnel, port, token)
+      );
+      this.registeredTunnelId = tunnel.tunnelId;
+      this.registeredClusterId = tunnel.clusterId;
+      this.registeredPort = port;
+      this.wireRelayEvents();
+      await this.hostRelay.connectRelay(tunnel.tunnelId, tunnel.clusterId);
+      return {
+        tunnelId: tunnel.tunnelId,
+        clusterId: tunnel.clusterId,
+        port
+      };
+    } catch (err) {
+      await this.hostRelay.disconnect();
+      throw err;
+    }
+  }
+  async stop() {
+    for (const [, session] of this.sessions) {
+      session.close();
+    }
+    this.sessions.clear();
+    for (const sub of this.subscriptions) {
+      sub.dispose();
+    }
+    this.subscriptions.length = 0;
+    await this.hostRelay.disconnect();
+  }
+  onClientConnected(handler) {
+    return this._clientConnected.on(handler);
+  }
+  onClientDisconnected(handler) {
+    return this._clientDisconnected.on(handler);
+  }
+  onStatusChanged(handler) {
+    return this._statusChanged.on(handler);
+  }
+  // ---------------------------------------------------------------------------
+  // Private
+  // ---------------------------------------------------------------------------
+  wireRelayEvents() {
+    this.subscriptions.push(
+      this.hostRelay.onClientStream((stream, clientId) => {
+        const session = new ClientSession(stream, clientId, this.sessionConfig);
+        this.sessions.set(clientId, session);
+        session.onClose(() => {
+          this.sessions.delete(clientId);
+          this._clientDisconnected.fire(clientId);
+        });
+        this._clientConnected.fire(session);
+      })
+    );
+    this.subscriptions.push(
+      this.hostRelay.onClientDisconnected((clientId) => {
+        const session = this.sessions.get(clientId);
+        if (session && !session.isClosed) {
+          session.close();
+        }
+      })
+    );
+    this.subscriptions.push(
+      this.hostRelay.onRelayStatusChanged((status, context) => {
+        if (status === "connected" && this.registeredTunnelId) {
+          if (!this.initialConnectDone) {
+            this.initialConnectDone = true;
+          } else {
+            this.reRegisterPort().catch((err) => {
+              this.log("warn", `Port re-registration failed: ${err.message}`);
+            });
+          }
+        }
+        this._statusChanged.fire(status, context);
+      })
+    );
+  }
+  async reRegisterPort() {
+    if (!this.registeredTunnelId || !this.registeredPort) return;
+    this.log("info", "Re-registering port after relay reconnect");
+    try {
+      const resolved = await this.tokenManager.withAuth(
+        (token) => this.tunnelResolver.findTunnel(token)
+      );
+      await this.tokenManager.withAuth(
+        (token) => this.tunnelResolver.registerPort(resolved.tunnel, this.registeredPort, token)
+      );
+      this.log("info", "Port re-registration successful");
+    } catch (err) {
+      if (err instanceof TunnelNotFoundError) {
+        this.log("error", "Tunnel no longer exists \u2014 emitting fatal disconnect");
+        this._statusChanged.fire("disconnected", "fatal: tunnel_deleted");
+        return;
+      }
+      throw err;
+    }
+  }
+};
+
+// src/infra/method-router.ts
+var MethodNotFoundError = class extends Error {
+  constructor(method) {
+    super(`Method not found: ${method}`);
+    this.name = "MethodNotFoundError";
+  }
+};
+var MethodRouter = class {
+  handlers = /* @__PURE__ */ new Map();
+  /**
+   * Register a handler for a specific method name.
+   * Throws if a handler is already registered for this method.
+   */
+  register(method, handler) {
+    if (this.handlers.has(method)) {
+      throw new Error(`Handler already registered for method: ${method}`);
+    }
+    this.handlers.set(method, handler);
+  }
+  /**
+   * Register multiple handlers under a namespace prefix.
+   * e.g. registerNamespace('fs', { readFile, stat }) registers 'fs.readFile', 'fs.stat'.
+   */
+  registerNamespace(prefix, handlers) {
+    for (const [name, handler] of Object.entries(handlers)) {
+      this.register(`${prefix}.${name}`, handler);
+    }
+  }
+  /**
+   * Dispatch a method call to the registered handler.
+   * Throws MethodNotFoundError if no handler is registered.
+   */
+  async dispatch(method, params, context) {
+    const handler = this.handlers.get(method);
+    if (!handler) {
+      throw new MethodNotFoundError(method);
+    }
+    return handler(params, context);
+  }
+  /** Returns the set of registered method names. */
+  methods() {
+    return Array.from(this.handlers.keys());
+  }
+  /** Returns true if a handler is registered for the given method. */
+  has(method) {
+    return this.handlers.has(method);
+  }
+};
+
+// src/infra/callback-channel.ts
+var CallbackChannel = class {
+  send;
+  _notify;
+  disposed = false;
+  pending = /* @__PURE__ */ new Set();
+  constructor(config) {
+    this.send = config.send;
+    this._notify = config.notify;
+  }
+  /**
+   * Send a request to the tunnel client and await a response.
+   * Rejects if the channel is disposed or the timeout expires.
+   */
+  async request(method, params, timeoutMs) {
+    if (this.disposed) {
+      throw new Error("CallbackChannel is disposed");
+    }
+    let timer;
+    let entry;
+    try {
+      const result = await Promise.race([
+        this.send(method, params).then((res) => {
+          return res;
+        }),
+        new Promise((_, reject) => {
+          entry = { reject };
+          this.pending.add(entry);
+          timer = setTimeout(() => {
+            reject(new Error(`Callback timeout: ${method} (${timeoutMs}ms)`));
+          }, timeoutMs);
+        })
+      ]);
+      return result;
+    } finally {
+      if (timer) clearTimeout(timer);
+      if (entry) this.pending.delete(entry);
+    }
+  }
+  /**
+   * Send a fire-and-forget notification to the tunnel client.
+   * No response is awaited. Silently drops if disposed or no notify function configured.
+   */
+  notify(method, params) {
+    if (this.disposed || !this._notify) return;
+    this._notify(method, params);
+  }
+  /** Reject all in-flight requests and prevent new ones. */
+  dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
+    const error = new Error("CallbackChannel disposed");
+    for (const entry of this.pending) {
+      try {
+        entry.reject(error);
+      } catch {
+      }
+    }
+    this.pending.clear();
+  }
+  get isDisposed() {
+    return this.disposed;
+  }
+};
+
+// src/infra/subscription-set.ts
+var SubscriptionSet = class {
+  subscriptions = /* @__PURE__ */ new Map();
+  nextId = 1;
+  /**
+   * Add a subscription. Returns the generated subscription ID.
+   */
+  add(type, cleanup) {
+    const id = String(this.nextId++);
+    this.subscriptions.set(id, { id, type, cleanup });
+    return id;
+  }
+  /**
+   * Remove a subscription by ID. Calls cleanup(), returns true if found.
+   */
+  remove(id) {
+    const sub = this.subscriptions.get(id);
+    if (!sub) return false;
+    this.subscriptions.delete(id);
+    sub.cleanup();
+    return true;
+  }
+  /**
+   * Remove and clean up all subscriptions.
+   */
+  dispose() {
+    for (const sub of this.subscriptions.values()) {
+      try {
+        sub.cleanup();
+      } catch {
+      }
+    }
+    this.subscriptions.clear();
+  }
+  /** Number of active subscriptions. */
+  get size() {
+    return this.subscriptions.size;
+  }
+  /** Get a subscription by ID. */
+  get(id) {
+    return this.subscriptions.get(id);
+  }
+  /** List all subscriptions of a given type. */
+  byType(type) {
+    return Array.from(this.subscriptions.values()).filter((s) => s.type === type);
+  }
+};
+
+// src/session/session-tracker.ts
+var SessionTracker = class {
+  sessions = /* @__PURE__ */ new Map();
+  copilotService;
+  log;
+  constructor(config) {
+    this.copilotService = config.copilotService;
+    this.log = config.onLog ?? (() => {
+    });
+  }
+  /**
+   * Track a new session. Called after session.create / session.resume.
+   */
+  trackSession(sessionId, cwd, client, session, unsubscribeEvents) {
+    if (this.sessions.has(sessionId)) {
+      this.log("warn", `Session ${sessionId} already tracked, replacing`);
+      this.untrackSession(sessionId);
+    }
+    this.sessions.set(sessionId, { sessionId, cwd, client, session, unsubscribeEvents });
+    this.log("info", `Tracking session ${sessionId} (cwd: ${cwd})`);
+  }
+  /**
+   * Stop tracking a session. Unsubscribes events but does NOT destroy
+   * the session or release the CopilotClient — that's the handler's job.
+   */
+  untrackSession(sessionId) {
+    const entry = this.sessions.get(sessionId);
+    if (!entry) return;
+    if (entry.unsubscribeEvents) {
+      entry.unsubscribeEvents();
+    }
+    this.sessions.delete(sessionId);
+    this.log("info", `Untracked session ${sessionId}`);
+  }
+  /** Get the CopilotClient for a session. */
+  getClientForSession(sessionId) {
+    return this.sessions.get(sessionId)?.client;
+  }
+  /** Get the CopilotSession for a session. */
+  getSessionForId(sessionId) {
+    return this.sessions.get(sessionId)?.session;
+  }
+  /** Get the cwd for a session. */
+  getCwdForSession(sessionId) {
+    return this.sessions.get(sessionId)?.cwd;
+  }
+  /** All currently tracked session IDs. */
+  get sessionIds() {
+    return new Set(this.sessions.keys());
+  }
+  /** Number of tracked sessions. */
+  get size() {
+    return this.sessions.size;
+  }
+  /**
+   * Dispose all tracked sessions.
+   * Destroys each session, releases CopilotClient references,
+   * and clears the tracker.
+   */
+  async dispose() {
+    const entries = Array.from(this.sessions.values());
+    this.sessions.clear();
+    for (const entry of entries) {
+      if (entry.unsubscribeEvents) {
+        try {
+          entry.unsubscribeEvents();
+        } catch {
+        }
+      }
+      try {
+        await entry.session.destroy();
+      } catch (err) {
+        this.log("debug", `Error destroying session ${entry.sessionId}: ${err}`);
+      }
+      try {
+        this.copilotService.release(entry.cwd);
+      } catch (err) {
+        this.log("debug", `Error releasing client for ${entry.cwd}: ${err}`);
+      }
+    }
+    this.log("info", `Disposed ${entries.length} session(s)`);
+  }
+};
+
+// src/infra/lifecycle-throttle.ts
+var LifecycleThrottle = class {
+  constructor(flush, windowMs = 1e3) {
+    this.flush = flush;
+    this.windowMs = windowMs;
+  }
+  pending = /* @__PURE__ */ new Map();
+  disposed = false;
+  push(event) {
+    if (this.disposed) return;
+    const key = `${event.sessionId}:${event.type}`;
+    const existing = this.pending.get(key);
+    if (existing) {
+      existing.event = event;
+      return;
+    }
+    const timer = setTimeout(() => {
+      const entry = this.pending.get(key);
+      if (entry) {
+        this.pending.delete(key);
+        this.flush(entry.event);
+      }
+    }, this.windowMs);
+    this.pending.set(key, { timer, event });
+  }
+  dispose() {
+    this.disposed = true;
+    for (const entry of this.pending.values()) {
+      clearTimeout(entry.timer);
+    }
+    this.pending.clear();
+  }
+};
+
+// src/application-host.ts
+var ApplicationHost = class {
+  tunnelHost;
+  services;
+  router;
+  log;
+  clients = /* @__PURE__ */ new Map();
+  hostDisposables = [];
+  _tunnelInfo = null;
+  constructor(config) {
+    this.tunnelHost = config.tunnelHost;
+    this.services = config.services;
+    this.router = config.router;
+    this.log = config.onLog ?? (() => {
+    });
+  }
+  get tunnelInfo() {
+    return this._tunnelInfo;
+  }
+  async start() {
+    this.hostDisposables.push(
+      this.tunnelHost.onClientConnected((clientSession) => {
+        this.handleClientConnected(clientSession);
+      })
+    );
+    this.hostDisposables.push(
+      this.tunnelHost.onClientDisconnected((clientId) => {
+        this.handleClientDisconnected(clientId);
+      })
+    );
+    this._tunnelInfo = await this.tunnelHost.start();
+    this.log("info", `Tunnel started: ${this._tunnelInfo.tunnelId}`);
+    return this._tunnelInfo;
+  }
+  async stop() {
+    const clientIds = Array.from(this.clients.keys());
+    for (const clientId of clientIds) {
+      await this.disposeClient(clientId);
+    }
+    for (const d of this.hostDisposables) {
+      d.dispose();
+    }
+    this.hostDisposables.length = 0;
+    await this.services.copilot.dispose();
+    await this.services.fileSystem.dispose();
+    await this.services.git.dispose();
+    await this.tunnelHost.stop();
+    this._tunnelInfo = null;
+    this.log("debug", "ApplicationHost stopped");
+  }
+  // ---------------------------------------------------------------------------
+  // Per-client lifecycle
+  // ---------------------------------------------------------------------------
+  handleClientConnected(clientSession) {
+    const clientId = clientSession.clientId;
+    this.log("info", `Client connected: ${clientId}`);
+    const sessionTracker = new SessionTracker({
+      copilotService: this.services.copilot,
+      onLog: this.log
+    });
+    const subscriptions = new SubscriptionSet();
+    const callbacks = new CallbackChannel({
+      send: (method, params) => clientSession.request(method, params),
+      notify: (method, params) => clientSession.notify(method, params)
+    });
+    const disposables = [];
+    const clientState = {
+      clientLabel: clientId,
+      session: sessionTracker,
+      subscriptions,
+      callbacks,
+      disposables
+    };
+    disposables.push(
+      clientSession.onRequest((method, params) => {
+        const context = {
+          clientId,
+          clientLabel: clientState.clientLabel,
+          session: sessionTracker,
+          subscriptions,
+          callbacks,
+          services: this.services,
+          log: this.log
+        };
+        return this.router.dispatch(method, params, context).catch((err) => {
+          if (err instanceof MethodNotFoundError) {
+            throw err;
+          }
+          throw err;
+        });
+      })
+    );
+    disposables.push(
+      clientSession.onNotification((method, params) => {
+        if (method === "client.identify") {
+          this.handleClientIdentify(clientId, params);
+        }
+      })
+    );
+    this.wireLifecycleEvents(callbacks, disposables, this.services.copilot);
+    this.clients.set(clientId, clientState);
+  }
+  handleClientDisconnected(clientId) {
+    const state = this.clients.get(clientId);
+    const label = state?.clientLabel ?? clientId;
+    this.log("info", `Client disconnected: ${label}`);
+    this.disposeClient(clientId).catch((err) => {
+      this.log("error", `Error disposing client ${clientId}: ${err}`);
+    });
+  }
+  handleClientIdentify(clientId, params) {
+    const state = this.clients.get(clientId);
+    if (!state) return;
+    const name = params.username || "??{UNKNOWN}??";
+    const label = params.device ? `${name} (${params.device})` : name;
+    state.clientLabel = label;
+    const version = params.clientVersion ? ` [v${params.clientVersion}]` : "";
+    this.log("info", `Client identified: ${label}${version} (${clientId})`);
+  }
+  /**
+   * Subscribe to lifecycle events on the first retained CopilotClient and
+   * forward them (throttled) to the tunnel client via callbacks.notify.
+   *
+   * Deduplication: only one CopilotClient carries the lifecycle subscription
+   * per tunnel client. If the subscribed client's cwd is fully released,
+   * the subscription migrates to another active client in the pool.
+   */
+  wireLifecycleEvents(callbacks, disposables, copilotService) {
+    const throttle = new LifecycleThrottle((event) => {
+      callbacks.notify("session.lifecycle", event);
+    });
+    disposables.push({ dispose: () => throttle.dispose() });
+    let lifecycleUnsub = null;
+    let subscribedCwd = null;
+    let disposed = false;
+    const cwdRefCounts = /* @__PURE__ */ new Map();
+    const subscribe = (client, cwd) => {
+      if (disposed) return;
+      if (client.on) {
+        lifecycleUnsub = client.on((event) => throttle.push(event));
+        subscribedCwd = cwd;
+        this.log("debug", `Lifecycle subscription attached to CopilotClient (cwd: ${cwd})`);
+      }
+    };
+    const unsubscribe = () => {
+      if (lifecycleUnsub) {
+        lifecycleUnsub();
+        lifecycleUnsub = null;
+      }
+      subscribedCwd = null;
+    };
+    const originalRetain = copilotService.retain.bind(copilotService);
+    const wrappedRetain = async (cwd) => {
+      const client = await originalRetain(cwd);
+      cwdRefCounts.set(cwd, (cwdRefCounts.get(cwd) ?? 0) + 1);
+      if (!lifecycleUnsub) {
+        subscribe(client, cwd);
+      }
+      return client;
+    };
+    copilotService.retain = wrappedRetain;
+    const originalRelease = copilotService.release.bind(copilotService);
+    const wrappedRelease = (cwd) => {
+      originalRelease(cwd);
+      const count = cwdRefCounts.get(cwd) ?? 0;
+      if (count <= 1) {
+        cwdRefCounts.delete(cwd);
+      } else {
+        cwdRefCounts.set(cwd, count - 1);
+      }
+      if (cwd === subscribedCwd && !cwdRefCounts.has(cwd)) {
+        unsubscribe();
+        for (const activeCwd of cwdRefCounts.keys()) {
+          const activeClient = copilotService.get(activeCwd);
+          if (activeClient) {
+            subscribe(activeClient, activeCwd);
+            break;
+          }
+        }
+      }
+    };
+    copilotService.release = wrappedRelease;
+    disposables.push({
+      dispose: () => {
+        disposed = true;
+        unsubscribe();
+        cwdRefCounts.clear();
+        copilotService.retain = originalRetain;
+        copilotService.release = originalRelease;
+      }
+    });
+  }
+  async disposeClient(clientId) {
+    const state = this.clients.get(clientId);
+    if (!state) return;
+    this.clients.delete(clientId);
+    state.callbacks.dispose();
+    state.subscriptions.dispose();
+    await state.session.dispose();
+    for (const d of state.disposables) {
+      d.dispose();
+    }
+    this.log("debug", `Client state cleaned up: ${clientId}`);
+  }
+};
+
+// src/session/discover-cwd.ts
+var import_promises = require("fs/promises");
+var import_node_path = require("path");
+var import_node_os = require("os");
+async function discoverSessionCwd(sessionId) {
+  const sessionDir = (0, import_node_path.join)((0, import_node_os.homedir)(), ".copilot", "session-state", sessionId);
+  try {
+    const yaml = await (0, import_promises.readFile)((0, import_node_path.join)(sessionDir, "workspace.yaml"), "utf-8");
+    const match = yaml.match(/^cwd:\s*(.+)$/m);
+    if (match) {
+      return match[1].trim();
+    }
+  } catch {
+  }
+  try {
+    const content = await (0, import_promises.readFile)((0, import_node_path.join)(sessionDir, "events.jsonl"), "utf-8");
+    const firstLine = content.slice(0, content.indexOf("\n"));
+    if (firstLine.startsWith('{"type":"session.start"')) {
+      const cwdMatch = firstLine.match(/"cwd":"([^"]+)"/);
+      if (cwdMatch) {
+        return cwdMatch[1];
+      }
+    }
+  } catch {
+  }
+  return void 0;
 }
 
-// ../remote-sdk-protocol/dist/index.js
-function isRequest(message) {
-  return "method" in message && "id" in message && !("result" in message) && !("error" in message);
-}
-function isResponse(message) {
-  return "id" in message && ("result" in message || "error" in message);
-}
-function isNotification(message) {
-  return !("id" in message) && "method" in message;
-}
-var CONTENT_LENGTH_HEADER = "Content-Length: ";
-var HEADER_DELIMITER = "\r\n\r\n";
-function encodeJsonRpcMessageToBuffer(message) {
-  const json = JSON.stringify(message);
-  const header = `${CONTENT_LENGTH_HEADER}${Buffer.byteLength(json, "utf-8")}${HEADER_DELIMITER}`;
-  return Buffer.from(header + json, "utf-8");
-}
-var JsonRpcDecoder = class {
-  buffer = new Uint8Array(0);
-  expectedLength = null;
-  /**
-   * Feed data into the decoder and return any complete messages.
-   */
-  decode(data) {
-    const inputData = data instanceof Uint8Array ? data : new Uint8Array(data);
-    const newBuffer = new Uint8Array(this.buffer.length + inputData.length);
-    newBuffer.set(this.buffer, 0);
-    newBuffer.set(inputData, this.buffer.length);
-    this.buffer = newBuffer;
-    const messages = [];
-    const decoder = new TextDecoder();
-    const headerDelimiterBytes = new TextEncoder().encode(HEADER_DELIMITER);
-    while (true) {
-      if (this.expectedLength === null) {
-        const headerEndIndex = this.findSequence(this.buffer, headerDelimiterBytes);
-        if (headerEndIndex === -1) {
-          break;
-        }
-        const headerSection = decoder.decode(this.buffer.slice(0, headerEndIndex));
-        const contentLengthMatch = headerSection.match(/Content-Length:\s*(\d+)/i);
-        if (!contentLengthMatch) {
-          this.buffer = this.buffer.slice(headerEndIndex + headerDelimiterBytes.length);
-          continue;
-        }
-        this.expectedLength = parseInt(contentLengthMatch[1], 10);
-        this.buffer = this.buffer.slice(headerEndIndex + headerDelimiterBytes.length);
-      }
-      if (this.buffer.length < this.expectedLength) {
-        break;
-      }
-      const bodyBytes = this.buffer.slice(0, this.expectedLength);
-      this.buffer = this.buffer.slice(this.expectedLength);
-      this.expectedLength = null;
-      try {
-        const body = decoder.decode(bodyBytes);
-        const message = JSON.parse(body);
-        messages.push(message);
-      } catch (err) {
-        console.error("Failed to parse JSON-RPC message:", err);
-      }
+// src/handlers/session.ts
+async function buildBridgedConfig(ctx, cwd, params) {
+  let skillDirectories = params.skillDirectories;
+  if (!skillDirectories) {
+    try {
+      const dirs = await ctx.services.skills.getSkillDirectories(cwd);
+      if (dirs.length > 0) skillDirectories = dirs;
+    } catch {
     }
-    return messages;
   }
-  /**
-   * Find the index of a byte sequence in a buffer.
-   */
-  findSequence(buffer, sequence) {
-    outer: for (let i = 0; i <= buffer.length - sequence.length; i++) {
-      for (let j = 0; j < sequence.length; j++) {
-        if (buffer[i + j] !== sequence[j]) {
-          continue outer;
-        }
-      }
-      return i;
+  const bridgedTools = (params.tools || []).map((tool) => ({
+    name: tool.name,
+    description: tool.description,
+    parameters: tool.parameters,
+    handler: async (args, invocation) => {
+      return ctx.callbacks.request("tool.call", {
+        sessionId: invocation.sessionId,
+        toolCallId: invocation.toolCallId,
+        toolName: invocation.toolName,
+        arguments: args
+      }, 3e5);
     }
-    return -1;
+  }));
+  return {
+    ...params,
+    tools: bridgedTools,
+    skillDirectories,
+    onPermissionRequest: async (req) => {
+      return ctx.callbacks.request("permission.request", req, 6e4);
+    },
+    onUserInputRequest: async (req) => {
+      return ctx.callbacks.request("userInput.request", req, 6e4);
+    }
+  };
+}
+function subscribeSessionEvents(ctx, session, sessionId) {
+  if (typeof session.on !== "function") return void 0;
+  return session.on((event) => {
+    ctx.callbacks.notify("session.event", { sessionId, event });
+  });
+}
+var createSession = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const cwd = p.cwd;
+  if (!cwd) throw new Error("session.create requires cwd");
+  ctx.log?.("info", `[${ctx.clientLabel}] session.create: cwd=${cwd}, model=${JSON.stringify(p.model)}, paramKeys=${Object.keys(p).join(",")}`);
+  const client = await ctx.services.copilot.retain(cwd);
+  try {
+    const config = await buildBridgedConfig(ctx, cwd, p);
+    ctx.log?.("info", `[${ctx.clientLabel}] session.create: calling SDK createSession, configKeys=${Object.keys(config).join(",")}, model=${JSON.stringify(config.model)}`);
+    const session = await client.createSession(config);
+    const sessionId = session.sessionId ?? session.id ?? `session-${Date.now()}`;
+    const unsubscribeEvents = subscribeSessionEvents(ctx, session, sessionId);
+    ctx.session.trackSession(sessionId, cwd, client, session, unsubscribeEvents);
+    return { sessionId };
+  } catch (err) {
+    ctx.services.copilot.release(cwd);
+    throw err;
   }
-  /**
-   * Reset the decoder state.
-   */
-  reset() {
-    this.buffer = new Uint8Array(0);
-    this.expectedLength = null;
+};
+var resumeSession = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.sessionId) throw new Error("session.resume requires sessionId");
+  if (ctx.session.getSessionForId(p.sessionId)) {
+    return { sessionId: p.sessionId };
+  }
+  const cwd = p.cwd || ctx.session.getCwdForSession(p.sessionId) || await discoverSessionCwd(p.sessionId) || process.cwd();
+  const client = await ctx.services.copilot.retain(cwd);
+  try {
+    if (!client.resumeSession) {
+      throw new Error("CopilotClient does not support resumeSession");
+    }
+    const config = await buildBridgedConfig(ctx, cwd, p);
+    delete config.sessionId;
+    delete config.cwd;
+    const session = await client.resumeSession(p.sessionId, config);
+    const sessionId = session.sessionId ?? session.id ?? p.sessionId;
+    const unsubscribeEvents = subscribeSessionEvents(ctx, session, sessionId);
+    ctx.session.trackSession(sessionId, cwd, client, session, unsubscribeEvents);
+    return { sessionId };
+  } catch (err) {
+    ctx.services.copilot.release(cwd);
+    throw err;
+  }
+};
+var sendMessage = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const session = ctx.session.getSessionForId(p.sessionId);
+  if (!session) throw new Error(`Unknown session: ${p.sessionId}`);
+  const cwd = ctx.session.getCwdForSession(p.sessionId);
+  const truncated = p.prompt.length > 50 ? `${p.prompt.substring(0, 50)}...` : p.prompt;
+  ctx.log?.("info", `[${ctx.clientLabel}] Prompt received: "${truncated}" (cwd: ${cwd ?? "unknown"})`);
+  const messageId = await session.send({
+    prompt: p.prompt,
+    attachments: p.attachments,
+    mode: p.mode
+  });
+  return { messageId };
+};
+var sendAndWait = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const session = ctx.session.getSessionForId(p.sessionId);
+  if (!session) throw new Error(`Unknown session: ${p.sessionId}`);
+  const cwd = ctx.session.getCwdForSession(p.sessionId);
+  const truncated = p.prompt.length > 50 ? `${p.prompt.substring(0, 50)}...` : p.prompt;
+  ctx.log?.("info", `[${ctx.clientLabel}] Prompt received (sendAndWait): "${truncated}" (cwd: ${cwd ?? "unknown"})`);
+  return session.sendAndWait(
+    { prompt: p.prompt, attachments: p.attachments, mode: p.mode },
+    p.timeout
+  );
+};
+var getMessages = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const session = ctx.session.getSessionForId(p.sessionId);
+  if (!session) throw new Error(`Unknown session: ${p.sessionId}`);
+  const messages = await session.getMessages();
+  return { messages };
+};
+var abortSession = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const session = ctx.session.getSessionForId(p.sessionId);
+  if (!session) throw new Error(`Unknown session: ${p.sessionId}`);
+  await session.abort();
+  return null;
+};
+var destroySession = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const session = ctx.session.getSessionForId(p.sessionId);
+  if (!session) throw new Error(`Unknown session: ${p.sessionId}`);
+  const cwd = ctx.session.getCwdForSession(p.sessionId);
+  const client = ctx.session.getClientForSession(p.sessionId);
+  await session.destroy();
+  ctx.session.untrackSession(p.sessionId);
+  if (client?.deleteSession) {
+    try {
+      await client.deleteSession(p.sessionId);
+    } catch {
+    }
+  }
+  if (cwd) {
+    ctx.services.copilot.release(cwd);
+  }
+  return null;
+};
+var deleteSession = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.sessionId) throw new Error("session.delete requires sessionId");
+  const cwd = ctx.session.getCwdForSession(p.sessionId);
+  ctx.session.untrackSession(p.sessionId);
+  if (cwd) {
+    ctx.services.copilot.release(cwd);
+  }
+  const anyCwd = cwd || process.cwd();
+  try {
+    const client = await ctx.services.copilot.retain(anyCwd);
+    try {
+      if (client.deleteSession) {
+        await client.deleteSession(p.sessionId);
+      }
+    } finally {
+      ctx.services.copilot.release(anyCwd);
+    }
+  } catch {
+  }
+  return null;
+};
+var listSessions = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const cwd = p?.cwd || process.cwd();
+  ctx.log?.("debug", `[${ctx.clientLabel}] session.list (cwd=${cwd})`);
+  let client;
+  try {
+    client = await ctx.services.copilot.retain(cwd);
+    ctx.log?.("info", `[${ctx.clientLabel}] session.list: retained client (state=${client.getState()}), hasListSessions=${!!client.listSessions}`);
+  } catch (err) {
+    ctx.log?.("warn", `[${ctx.clientLabel}] session.list: failed to get CopilotClient: ${err.message}`);
+    return { sessions: [] };
+  }
+  try {
+    if (!client.listSessions) {
+      ctx.log?.("warn", `[${ctx.clientLabel}] session.list: client.listSessions is falsy \u2014 returning empty`);
+      return { sessions: [] };
+    }
+    ctx.log?.("info", `[${ctx.clientLabel}] session.list: calling client.listSessions()...`);
+    const sdkSessions = await client.listSessions();
+    const results = await Promise.allSettled(
+      sdkSessions.map(async (meta) => {
+        const trackedCwd = ctx.session.getCwdForSession(meta.sessionId);
+        const metaCwd = meta.cwd ?? meta.context?.cwd;
+        const cwd2 = trackedCwd ?? metaCwd ?? await discoverSessionCwd(meta.sessionId);
+        ctx.log?.("debug", `[${ctx.clientLabel}] session.list: session ${meta.sessionId} trackedCwd=${trackedCwd} meta.cwd=${meta.cwd} context.cwd=${meta.context?.cwd} resolved=${cwd2}`);
+        return { ...meta, cwd: cwd2 };
+      })
+    );
+    const enriched = results.filter((r) => r.status === "fulfilled").map((r) => r.value);
+    ctx.log?.("info", `[${ctx.clientLabel}] session.list: returning ${enriched.length} enriched session(s)`);
+    return { sessions: enriched };
+  } catch (err) {
+    ctx.log?.("warn", `[${ctx.clientLabel}] session.list: SDK query failed: ${err.message}
+${err.stack}`);
+    return { sessions: [] };
+  } finally {
+    ctx.services.copilot.release(cwd);
+  }
+};
+var modelGetCurrent = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const session = ctx.session.getSessionForId(p.sessionId);
+  if (!session) throw new Error(`Unknown session: ${p.sessionId}`);
+  if (!session.rpc?.model?.getCurrent) {
+    throw new Error("session.model.getCurrent is not supported by this session");
+  }
+  return session.rpc.model.getCurrent();
+};
+var modelSwitchTo = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const session = ctx.session.getSessionForId(p.sessionId);
+  if (!session) throw new Error(`Unknown session: ${p.sessionId}`);
+  if (!session.rpc?.model?.switchTo) {
+    throw new Error("session.model.switchTo is not supported by this session");
+  }
+  return session.rpc.model.switchTo({ modelId: p.modelId });
+};
+var sessionHandlers = {
+  create: createSession,
+  send: sendMessage,
+  sendAndWait,
+  getMessages,
+  abort: abortSession,
+  destroy: destroySession,
+  list: listSessions,
+  resume: resumeSession,
+  delete: deleteSession,
+  "model.getCurrent": modelGetCurrent,
+  "model.switchTo": modelSwitchTo
+};
+
+// src/handlers/filesystem.ts
+var import_node_path2 = require("path");
+function getCtx(context) {
+  return context;
+}
+function safePath(cwd, filePath) {
+  const base = (0, import_node_path2.resolve)(cwd);
+  const resolved = (0, import_node_path2.resolve)(cwd, filePath);
+  if (resolved !== base && !resolved.startsWith(base + "/")) {
+    throw new Error("Path traversal blocked: path escapes working directory");
+  }
+  return resolved;
+}
+var fsReadDirectory = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.dirPath) throw new Error("Missing cwd or dirPath parameter");
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    const entries = await provider.readDirectory(safePath(p.cwd, p.dirPath));
+    return { entries };
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsReadFile = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.filePath) throw new Error("Missing cwd or filePath parameter");
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    const content = await provider.readFile(safePath(p.cwd, p.filePath));
+    const base64Content = Buffer.from(content).toString("base64");
+    return { content: base64Content };
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsReadTextFile = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.filePath) throw new Error("Missing cwd or filePath parameter");
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    const content = await provider.readTextFile(safePath(p.cwd, p.filePath));
+    return { content };
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsStat = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.path) throw new Error("Missing cwd or path parameter");
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    const stat3 = await provider.stat(safePath(p.cwd, p.path));
+    return { stat: stat3 };
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsExists = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.path) throw new Error("Missing cwd or path parameter");
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    const exists2 = await provider.exists(safePath(p.cwd, p.path));
+    return { exists: exists2 };
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsWriteFile = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.filePath || p?.content === void 0) {
+    throw new Error("Missing cwd, filePath, or content parameter");
+  }
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    const content = new Uint8Array(Buffer.from(p.content, "base64"));
+    await provider.writeFile(safePath(p.cwd, p.filePath), content);
+    return null;
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsWriteTextFile = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.filePath || p?.content === void 0) {
+    throw new Error("Missing cwd, filePath, or content parameter");
+  }
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    const content = new TextEncoder().encode(p.content);
+    await provider.writeFile(safePath(p.cwd, p.filePath), content);
+    return null;
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsDelete = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.path) throw new Error("Missing cwd or path parameter");
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    await provider.delete(safePath(p.cwd, p.path), { recursive: p.recursive ?? false });
+    return null;
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsRename = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.oldPath || !p?.newPath) {
+    throw new Error("Missing cwd, oldPath, or newPath parameter");
+  }
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    await provider.rename(safePath(p.cwd, p.oldPath), safePath(p.cwd, p.newPath));
+    return null;
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsCreateDirectory = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.cwd || !p?.dirPath) throw new Error("Missing cwd or dirPath parameter");
+  const provider = await ctx.services.fileSystem.retain(p.cwd);
+  try {
+    await provider.createDirectory(safePath(p.cwd, p.dirPath));
+    return null;
+  } finally {
+    ctx.services.fileSystem.release(p.cwd);
+  }
+};
+var fsSubscribe = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  const cwd = p?.cwd;
+  if (!cwd) throw new Error("Missing cwd parameter");
+  const type = p?.type ?? "all";
+  const filterPath = p?.path;
+  const provider = await ctx.services.fileSystem.retain(cwd);
+  const forwardEvent = (eventType, event) => {
+    if (type === "directory" && eventType !== "directoryChanged") return;
+    if (type === "file" && eventType === "directoryChanged") return;
+    if (filterPath) {
+      const eventPath = event.path ?? event.oldPath ?? event.newPath ?? "";
+      if (!eventPath.startsWith(filterPath) && eventPath !== filterPath) return;
+    }
+    try {
+      ctx.callbacks.request(`fs.${eventType}`, {
+        subscriptionId,
+        type: eventType,
+        ...event
+      }, 1e4).catch(() => {
+      });
+    } catch {
+    }
+  };
+  const disposables = [
+    provider.onDirectoryListingChanged((e) => forwardEvent("directoryChanged", e)),
+    provider.onFileContentChanged((e) => forwardEvent("fileChanged", e)),
+    provider.onFileRenamed((e) => forwardEvent("fileRenamed", e)),
+    provider.onFileDeleted((e) => forwardEvent("fileDeleted", e))
+  ];
+  const cleanup = () => {
+    for (const d of disposables) d.dispose();
+    ctx.services.fileSystem.release(cwd);
+  };
+  const subscriptionId = ctx.subscriptions.add("fs", cleanup);
+  return { subscriptionId };
+};
+var fsUnsubscribe = async (params, context) => {
+  const ctx = getCtx(context);
+  const p = params;
+  if (!p?.subscriptionId) throw new Error("Missing subscriptionId parameter");
+  const removed = ctx.subscriptions.remove(p.subscriptionId);
+  if (!removed) throw new Error(`Unknown subscription: ${p.subscriptionId}`);
+  return null;
+};
+var filesystemHandlers = {
+  readDirectory: fsReadDirectory,
+  readFile: fsReadFile,
+  readTextFile: fsReadTextFile,
+  stat: fsStat,
+  exists: fsExists,
+  writeFile: fsWriteFile,
+  writeTextFile: fsWriteTextFile,
+  delete: fsDelete,
+  rename: fsRename,
+  createDirectory: fsCreateDirectory,
+  subscribe: fsSubscribe,
+  unsubscribe: fsUnsubscribe
+};
+
+// src/git/types.ts
+function serializeGitStatus(status) {
+  const files = {};
+  for (const [path14, fileStatus] of status.files) {
+    files[path14] = fileStatus;
+  }
+  return {
+    branch: status.branch,
+    upstream: status.upstream,
+    ahead: status.ahead,
+    behind: status.behind,
+    files
+  };
+}
+
+// src/handlers/git.ts
+function getCtx2(context) {
+  return context;
+}
+function serializePerFileDiffStats(stats) {
+  const staged = {};
+  for (const [k, v] of stats.staged) staged[k] = v;
+  const unstaged = {};
+  for (const [k, v] of stats.unstaged) unstaged[k] = v;
+  return { staged, unstaged };
+}
+var gitStatus = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { status: null };
+  }
+  try {
+    const status = await result.provider.getStatus();
+    return { status: serializeGitStatus(status) };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitFileStatus = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.filePath) throw new Error("Missing cwd or filePath parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { status: null };
+  }
+  try {
+    const status = await result.provider.getFileStatus(p.filePath);
+    return { status };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitBranch = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { branch: null };
+  }
+  try {
+    const branch = await result.provider.getCurrentBranch();
+    return { branch };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitBranches = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { branches: [] };
+  }
+  try {
+    const branches = await result.provider.getBranches();
+    return { branches };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitFileDiff = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.filePath) throw new Error("Missing cwd or filePath parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { diff: null };
+  }
+  try {
+    const diff = await result.provider.getFileDiff(p.filePath, p.staged);
+    return { diff };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitFileAtRef = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.filePath || !p?.ref) throw new Error("Missing cwd, filePath, or ref parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { content: null };
+  }
+  try {
+    const content = await result.provider.getFileAtRef(p.filePath, p.ref);
+    return { content };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitHasUncommittedChanges = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { hasChanges: false };
+  }
+  try {
+    const hasChanges = await result.provider.hasUncommittedChanges();
+    return { hasChanges };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitHasUnpushedCommits = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { hasUnpushed: false };
+  }
+  try {
+    const hasUnpushed = await result.provider.hasUnpushedCommits();
+    return { hasUnpushed };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitUncommittedDiffStats = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { stats: null };
+  }
+  try {
+    const stats = await result.provider.getUncommittedDiffStats();
+    return { stats };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitPerFileDiffStats = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { staged: {}, unstaged: {} };
+  }
+  try {
+    const stats = await result.provider.getPerFileDiffStats();
+    return serializePerFileDiffStats(stats);
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
+var gitFindRoot = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  const gitRoot = await ctx.services.git.findGitRoot(p.cwd);
+  return { gitRoot };
+};
+var gitIsAvailable = async (_params, context) => {
+  const ctx = getCtx2(context);
+  const available = await ctx.services.git.isAvailable();
+  return { available };
+};
+var gitStage = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.files) throw new Error("Missing cwd or files parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.stage(p.files);
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitUnstage = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.files) throw new Error("Missing cwd or files parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.unstage(p.files);
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitRevert = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.files) throw new Error("Missing cwd or files parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.revert(p.files);
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitCommit = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.message) throw new Error("Missing cwd or message parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    const commit = await provider.commit(p.message, p.options);
+    return {
+      hash: commit.hash,
+      shortHash: commit.shortHash,
+      author: commit.author,
+      email: commit.email,
+      date: commit.date.getTime(),
+      message: commit.message
+    };
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitCheckout = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.ref) throw new Error("Missing cwd or ref parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.checkout(p.ref, { force: p.force });
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitCreateBranch = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd || !p?.branchName) throw new Error("Missing cwd or branchName parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.createBranch(p.branchName, p.checkout, p.startPoint);
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitPush = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.push(p.force, p.setUpstream);
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitPull = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.pull(p.rebase);
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitStash = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.stash(p.message);
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitStashPop = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  const { provider, gitRoot } = await ctx.services.git.retain(p.cwd);
+  try {
+    await provider.stashPop();
+    return null;
+  } finally {
+    ctx.services.git.release(gitRoot);
+  }
+};
+var gitSubscribe = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { subscriptionId: null, gitRoot: null };
+  }
+  const { provider, gitRoot } = result;
+  const forwardEvent = (eventType, event) => {
+    try {
+      ctx.callbacks.request(`git.${eventType}`, {
+        subscriptionId,
+        gitRoot,
+        ...event
+      }, 1e4).catch(() => {
+      });
+    } catch {
+    }
+  };
+  const disposables = [
+    provider.onStatusChanged((e) => {
+      forwardEvent("statusChanged", {
+        status: serializeGitStatus(e.status),
+        added: e.added,
+        modified: e.modified,
+        removed: e.removed
+      });
+    }),
+    provider.onBranchChanged((e) => forwardEvent("branchChanged", e)),
+    provider.onCommitCreated((e) => forwardEvent("commitCreated", e)),
+    provider.onHeadChanged((e) => forwardEvent("headChanged", e))
+  ];
+  const cleanup = () => {
+    for (const d of disposables) d.dispose();
+    ctx.services.git.release(gitRoot);
+  };
+  const subscriptionId = ctx.subscriptions.add("git", cleanup);
+  return { subscriptionId, gitRoot };
+};
+var gitUnsubscribe = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.subscriptionId) throw new Error("Missing subscriptionId parameter");
+  const removed = ctx.subscriptions.remove(p.subscriptionId);
+  if (!removed) throw new Error(`Unknown subscription: ${p.subscriptionId}`);
+  return null;
+};
+var gitHandlers = {
+  status: gitStatus,
+  fileStatus: gitFileStatus,
+  branch: gitBranch,
+  branches: gitBranches,
+  fileDiff: gitFileDiff,
+  fileAtRef: gitFileAtRef,
+  hasUncommittedChanges: gitHasUncommittedChanges,
+  hasUnpushedCommits: gitHasUnpushedCommits,
+  uncommittedDiffStats: gitUncommittedDiffStats,
+  perFileDiffStats: gitPerFileDiffStats,
+  findRoot: gitFindRoot,
+  isAvailable: gitIsAvailable,
+  stage: gitStage,
+  unstage: gitUnstage,
+  revert: gitRevert,
+  commit: gitCommit,
+  checkout: gitCheckout,
+  createBranch: gitCreateBranch,
+  push: gitPush,
+  pull: gitPull,
+  stash: gitStash,
+  stashPop: gitStashPop,
+  subscribe: gitSubscribe,
+  unsubscribe: gitUnsubscribe
+};
+
+// src/version.ts
+var CURRENT_VERSION = "0.5.0";
+
+// src/handlers/misc.ts
+var pingHandler = async (_params, context) => {
+  return { timestamp: (/* @__PURE__ */ new Date()).toISOString(), version: CURRENT_VERSION };
+};
+var getStateHandler = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const cwd = p?.cwd || process.cwd();
+  let client;
+  try {
+    client = await ctx.services.copilot.retain(cwd);
+  } catch {
+    return { state: "disconnected" };
+  }
+  try {
+    await client.ping();
+    return { state: "connected" };
+  } catch {
+    return { state: "disconnected" };
+  } finally {
+    ctx.services.copilot.release(cwd);
   }
 };
 var SUPPORTED_MODELS = [
@@ -50120,1012 +55811,2014 @@ var SUPPORTED_MODELS = [
   { id: "gemini-3-pro-preview", label: "Gemini 3 Pro Preview", multiplier: 1, isAvailable: true }
 ];
 var DEFAULT_MODEL = "claude-sonnet-4.5";
-
-// src/cli-process.ts
-var import_node_child_process = require("child_process");
-var import_node_events = require("events");
-var import_node_os = require("os");
-var import_node_path = require("path");
-var import_node_fs = require("fs");
-var activeChildProcesses = /* @__PURE__ */ new Set();
-process.on("exit", () => {
-  for (const child of activeChildProcesses) {
-    try {
-      child.kill("SIGTERM");
-    } catch {
+var modelsListHandler = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const cwd = p?.cwd || process.cwd();
+  let client;
+  try {
+    client = await ctx.services.copilot.retain(cwd);
+    ctx.log?.("info", `[models.list] retained client for cwd=${cwd}, hasRpc=${!!client.rpc}, hasRpcModels=${!!client.rpc?.models?.list}`);
+  } catch (err) {
+    ctx.log?.("warn", `[models.list] failed to retain client: ${err.message}`);
+    return { models: SUPPORTED_MODELS, defaultModel: DEFAULT_MODEL };
+  }
+  try {
+    if (client.rpc?.models?.list) {
+      const result = await client.rpc.models.list();
+      ctx.log?.("info", `[models.list] SDK RPC returned ${result?.models?.length ?? "unknown"} model(s)`);
+      return result;
     }
+    ctx.log?.("info", `[models.list] RPC not available, returning static fallback`);
+    return { models: SUPPORTED_MODELS, defaultModel: DEFAULT_MODEL };
+  } catch (err) {
+    ctx.log?.("warn", `[models.list] RPC call failed: ${err.message}, returning static fallback`);
+    return { models: SUPPORTED_MODELS, defaultModel: DEFAULT_MODEL };
+  } finally {
+    ctx.services.copilot.release(cwd);
   }
-});
-function getCopilotExecutableNames() {
-  if (process.platform === "win32") {
-    return ["copilot.exe", "copilot.cmd", "copilot.bat"];
+};
+var authStatusHandler = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const cwd = p?.cwd || process.cwd();
+  let client;
+  try {
+    client = await ctx.services.copilot.retain(cwd);
+  } catch {
+    return { isAuthenticated: false };
   }
-  return ["copilot"];
-}
-function findCopilotInDir(dir) {
-  if (!dir) return void 0;
-  for (const name of getCopilotExecutableNames()) {
-    const candidate = (0, import_node_path.join)(dir, name);
-    if ((0, import_node_fs.existsSync)(candidate)) {
-      return candidate;
+  try {
+    if (client.getAuthStatus) {
+      return client.getAuthStatus();
     }
+    return { isAuthenticated: false };
+  } catch {
+    return { isAuthenticated: false };
+  } finally {
+    ctx.services.copilot.release(cwd);
   }
-  return void 0;
-}
-function collectSearchPaths() {
-  const paths = [];
-  const pathEnv = process.env.PATH || "";
-  paths.push(...pathEnv.split(process.platform === "win32" ? ";" : ":"));
-  const home = (0, import_node_os.homedir)();
-  paths.push((0, import_node_path.join)(home, ".local", "bin"));
-  paths.push((0, import_node_path.join)(home, ".npm-global", "bin"));
-  paths.push((0, import_node_path.join)(home, ".yarn", "bin"));
-  paths.push((0, import_node_path.join)(home, ".volta", "bin"));
-  paths.push((0, import_node_path.join)(home, ".asdf", "shims"));
-  paths.push((0, import_node_path.join)(home, "bin"));
-  if (process.platform === "darwin") {
-    paths.push("/opt/homebrew/bin");
-    paths.push("/usr/local/bin");
-    paths.push("/usr/bin");
-    paths.push("/bin");
-    paths.push("/usr/sbin");
-    paths.push("/sbin");
-  } else if (process.platform === "linux") {
-    paths.push("/usr/local/bin");
-    paths.push("/usr/bin");
-    paths.push("/bin");
-    paths.push("/snap/bin");
-  } else if (process.platform === "win32") {
-    const appdata = process.env.APPDATA;
-    const localAppdata = process.env.LOCALAPPDATA;
-    if (appdata) paths.push((0, import_node_path.join)(appdata, "npm"));
-    if (localAppdata) paths.push((0, import_node_path.join)(localAppdata, "Programs"));
+};
+var getLastSessionIdHandler = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const cwd = p?.cwd || process.cwd();
+  let client;
+  try {
+    client = await ctx.services.copilot.retain(cwd);
+  } catch {
+    return null;
   }
-  const unique = [];
-  const seen = /* @__PURE__ */ new Set();
-  for (const p of paths) {
-    if (p && !seen.has(p)) {
-      seen.add(p);
-      unique.push(p);
+  try {
+    if (client.getLastSessionId) {
+      const lastId = await client.getLastSessionId();
+      return lastId ?? null;
     }
-  }
-  return unique;
-}
-function resolveCopilotBinary(explicitPath) {
-  if (explicitPath) {
-    if ((0, import_node_fs.existsSync)(explicitPath)) {
-      return explicitPath;
-    }
-    const found = findCopilotInDir(explicitPath);
-    if (found) return found;
-  }
-  const envPath = process.env.COPILOT_CLI_PATH;
-  if (envPath) {
-    if ((0, import_node_fs.existsSync)(envPath)) {
-      return envPath;
-    }
-    const found = findCopilotInDir(envPath);
-    if (found) return found;
-  }
-  for (const dir of collectSearchPaths()) {
-    const found = findCopilotInDir(dir);
-    if (found) return found;
-  }
-  throw new Error(
-    "Copilot CLI not found. Ensure `copilot` is installed and on PATH, or set COPILOT_CLI_PATH."
-  );
-}
-var CliProcess = class extends import_node_events.EventEmitter {
-  constructor(options) {
-    super();
-    this.options = options;
-    this.cwd = options.cwd;
-    this.log = options.log ?? ((level, message) => {
-      if (level === "error") {
-        console.error(message);
-      } else if (level === "warn") {
-        console.warn(message);
-      } else {
-        console.log(message);
+    if (client.listSessions) {
+      const sessions = await client.listSessions();
+      if (Array.isArray(sessions) && sessions.length > 0) {
+        const typed = sessions;
+        const sorted2 = [...typed].sort((a, b) => {
+          const timeA = new Date(a.modifiedTime ?? 0).getTime();
+          const timeB = new Date(b.modifiedTime ?? 0).getTime();
+          return timeB - timeA;
+        });
+        return sorted2[0].sessionId ?? null;
       }
-    });
+    }
+    return null;
+  } catch {
+    return null;
+  } finally {
+    ctx.services.copilot.release(cwd);
   }
-  child = null;
-  decoder = new JsonRpcDecoder();
-  requestId = 0;
-  pendingRequests = /* @__PURE__ */ new Map();
-  _isAlive = false;
+};
+var searchFilesHandler = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p?.cwd || !p.query && p.query !== "") {
+    throw new Error("searchFiles requires { cwd, query }");
+  }
+  return ctx.services.fileSearch.search(p);
+};
+var listSlashCommandsHandler = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  const cwd = p?.cwd || "";
+  const commands = await ctx.services.skills.getSlashCommands(cwd);
+  return { commands };
+};
+var executeSlashCommandHandler = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p?.command) {
+    throw new Error("executeSlashCommand requires { command }");
+  }
+  const cwd = p.cwd || "";
+  return ctx.services.skills.executeSlashCommand(p.command, cwd, p.sessionId);
+};
+
+// src/handlers/index.ts
+function registerAllHandlers(router) {
+  router.register("ping", pingHandler);
+  router.register("getState", getStateHandler);
+  router.register("models.list", modelsListHandler);
+  router.register("auth.getStatus", authStatusHandler);
+  router.register("searchFiles", searchFilesHandler);
+  router.register("listSlashCommands", listSlashCommandsHandler);
+  router.register("executeSlashCommand", executeSlashCommandHandler);
+  router.registerNamespace("session", sessionHandlers);
+  router.registerNamespace("fs", filesystemHandlers);
+  router.registerNamespace("git", gitHandlers);
+  router.register("getLastSessionId", getLastSessionIdHandler);
+  router.register("getModels", modelsListHandler);
+  router.register("createSession", sessionHandlers.create);
+  router.register("listSessions", sessionHandlers.list);
+  router.register("resumeSession", sessionHandlers.resume);
+  router.register("deleteSession", sessionHandlers.delete);
+}
+
+// src/infra/resource-pool.ts
+var ResourcePool = class {
+  factory;
+  gracePeriodMs;
+  keyToString;
   log;
-  cwd;
+  pool = /* @__PURE__ */ new Map();
+  pendingCreations = /* @__PURE__ */ new Map();
+  disposed = false;
+  constructor(config) {
+    this.factory = config.factory;
+    this.gracePeriodMs = config.gracePeriodMs ?? 5e3;
+    this.keyToString = config.keyToString ?? ((k) => String(k));
+    this.log = config.onLog ?? (() => {
+    });
+  }
   /**
-   * Spawn the copilot CLI process.
+   * Acquire a reference to a resource for the given key.
+   * Creates the resource if it doesn't exist. Increments refCount.
    */
-  async spawn() {
-    const cliPath = resolveCopilotBinary(this.options.cliPath);
-    this.log("debug", `[CliProcess] Spawning CLI for: ${this.cwd}`);
-    const args = ["--server", "--stdio", "--log-level", this.options.logLevel ?? "info"];
-    this.child = (0, import_node_child_process.spawn)(cliPath, args, {
-      cwd: this.cwd,
-      env: {
-        ...process.env,
-        ...this.options.env,
-        // Enable background agents + unified task tool for sub-agent orchestration
-        COPILOT_SWE_AGENT_UNIFIED_TASK_TOOL: "true",
-        COPILOT_SWE_AGENT_BACKGROUND_AGENTS: "true"
-      },
-      stdio: ["pipe", "pipe", "pipe"]
-    });
-    if (!this.child.stdin || !this.child.stdout) {
-      throw new Error("Failed to capture stdin/stdout");
+  async retain(key) {
+    if (this.disposed) {
+      throw new Error("ResourcePool is disposed");
     }
-    activeChildProcesses.add(this.child);
-    this.child.stdout.on("data", (data) => {
-      this.handleStdout(data);
-    });
-    this.child.stderr?.on("data", (data) => {
-      const lines = data.toString().split("\n").filter(Boolean);
-      for (const line of lines) {
-        console.debug(`[CLI stderr] ${line}`);
+    const keyStr = this.keyToString(key);
+    const existing = this.pool.get(keyStr);
+    if (existing) {
+      if (existing.graceTimer) {
+        clearTimeout(existing.graceTimer);
+        existing.graceTimer = null;
+        this.log("debug", `Cancelled grace timer for ${keyStr}`);
       }
-    });
-    this.child.on("exit", (code) => {
-      console.log(`[CliProcess] Process exited with code ${code}`);
-      activeChildProcesses.delete(this.child);
-      this._isAlive = false;
-      this.rejectAllPending(new Error(`CLI process exited with code ${code}`));
-      this.emit("exit", code);
-    });
-    this.child.on("error", (err) => {
-      console.error(`[CliProcess] Process error:`, err);
-      activeChildProcesses.delete(this.child);
-      this._isAlive = false;
-      this.rejectAllPending(err);
-      this.emit("error", err);
-    });
-    this._isAlive = true;
-  }
-  /**
-   * Check if the CLI process is alive.
-   */
-  get isAlive() {
-    return this._isAlive;
-  }
-  /**
-   * Send a JSON-RPC request and wait for response.
-   * @param method - The JSON-RPC method name
-   * @param params - Optional parameters for the method
-   * @param timeoutMs - Request timeout in milliseconds (default: 30000, use 0 for no timeout)
-   */
-  async sendRequest(method, params, timeoutMs = 3e4) {
-    if (!this.child?.stdin || !this._isAlive) {
-      throw new Error("CLI process not running");
-    }
-    const id = ++this.requestId;
-    const request = {
-      jsonrpc: "2.0",
-      id,
-      method,
-      params
-    };
-    return new Promise((resolve8, reject) => {
-      let timeoutId;
-      const cleanup = () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
+      if (this.factory.isHealthy && !this.factory.isHealthy(existing.resource)) {
+        this.log("info", `Resource unhealthy for ${keyStr}, recreating`);
+        this.pool.delete(keyStr);
+        try {
+          await this.factory.destroy(existing.resource);
+        } catch (err) {
+          this.log("debug", `Error destroying unhealthy resource for ${keyStr}: ${err}`);
         }
-        this.pendingRequests.delete(id);
-      };
-      if (timeoutMs > 0) {
-        timeoutId = setTimeout(() => {
-          cleanup();
-          reject(new Error(`Request timeout after ${timeoutMs}ms: ${method} (id: ${id})`));
-        }, timeoutMs);
-      }
-      this.pendingRequests.set(id, {
-        resolve: (response) => {
-          cleanup();
-          if (response.error) {
-            reject(new Error(response.error.message));
-          } else {
-            resolve8(response.result);
-          }
-        },
-        reject: (err) => {
-          cleanup();
-          reject(err);
-        }
-      });
-      this.writeMessage(request);
-    });
-  }
-  /**
-   * Send a JSON-RPC response (for incoming requests like tool.call).
-   */
-  async sendResponse(id, result, error) {
-    if (!this.child?.stdin || !this._isAlive) {
-      throw new Error("CLI process not running");
-    }
-    const response = {
-      jsonrpc: "2.0",
-      id,
-      ...error ? { error } : { result }
-    };
-    this.writeMessage(response);
-  }
-  /**
-   * Ping the CLI to check if it's responsive.
-   */
-  async ping() {
-    try {
-      await this.sendRequest("ping", {});
-      return true;
-    } catch {
-      return false;
-    }
-  }
-  /**
-   * Kill the CLI process.
-   */
-  async kill() {
-    if (this.child) {
-      console.log(`[CliProcess] Killing CLI process for: ${this.cwd}`);
-      activeChildProcesses.delete(this.child);
-      this.child.kill();
-      this.child = null;
-      this._isAlive = false;
-    }
-  }
-  /**
-   * Write a JSON-RPC message to stdin with LSP framing.
-   */
-  writeMessage(message) {
-    if (!this.child?.stdin) return;
-    const buffer = encodeJsonRpcMessageToBuffer(message);
-    this.child.stdin.write(buffer);
-  }
-  /**
-   * Handle data from stdout - decode and route messages.
-   */
-  handleStdout(data) {
-    const messages = this.decoder.decode(data);
-    for (const message of messages) {
-      this.routeMessage(message);
-    }
-  }
-  /**
-   * Route a decoded message to the appropriate handler.
-   */
-  routeMessage(message) {
-    if (isResponse(message)) {
-      const pending = this.pendingRequests.get(message.id);
-      if (pending) {
-        this.pendingRequests.delete(message.id);
-        pending.resolve(message);
       } else {
-        console.warn(`[CliProcess] Received response for unknown request id: ${message.id}`);
+        existing.refCount++;
+        this.log("debug", `Reusing resource for ${keyStr} (refCount: ${existing.refCount})`);
+        return existing.resource;
       }
-    } else if (isNotification(message)) {
-      this.emit("notification", message);
-    } else if (isRequest(message)) {
-      this.emit("request", message);
+    }
+    const pending = this.pendingCreations.get(keyStr);
+    if (pending) {
+      this.log("debug", `Awaiting pending creation for ${keyStr}`);
+      const resource = await pending;
+      const entry = this.pool.get(keyStr);
+      if (entry) {
+        entry.refCount++;
+        this.log("debug", `Joined pending creation for ${keyStr} (refCount: ${entry.refCount})`);
+      }
+      return resource;
+    }
+    const creationPromise = this.factory.create(key);
+    this.pendingCreations.set(keyStr, creationPromise);
+    try {
+      const resource = await creationPromise;
+      this.pool.set(keyStr, { resource, refCount: 1, graceTimer: null });
+      this.log("info", `Created resource for ${keyStr}`);
+      return resource;
+    } finally {
+      this.pendingCreations.delete(keyStr);
     }
   }
   /**
-   * Reject all pending requests (on process exit/error).
+   * Release a reference to a resource. When refCount reaches 0,
+   * starts a grace period timer before destroying.
    */
-  rejectAllPending(error) {
-    const entries = [...this.pendingRequests.entries()];
-    this.pendingRequests.clear();
-    for (const [, pending] of entries) {
-      pending.reject(error);
+  release(key) {
+    const keyStr = this.keyToString(key);
+    const entry = this.pool.get(keyStr);
+    if (!entry) {
+      this.log("warn", `Release called for unknown key: ${keyStr}`);
+      return;
+    }
+    entry.refCount = Math.max(0, entry.refCount - 1);
+    this.log("debug", `Released resource for ${keyStr} (refCount: ${entry.refCount})`);
+    if (entry.refCount === 0) {
+      this.log("info", `Starting ${this.gracePeriodMs}ms grace period for ${keyStr}`);
+      entry.graceTimer = setTimeout(() => {
+        this.destroyEntry(keyStr);
+      }, this.gracePeriodMs);
     }
   }
-};
-
-// src/file-search-service.ts
-var import_promises = require("fs/promises");
-var import_node_path2 = require("path");
-
-// ../../node_modules/fdir/dist/index.mjs
-var import_module = require("module");
-var import_path = require("path");
-var nativeFs = __toESM(require("fs"), 1);
-var __require = /* @__PURE__ */ (0, import_module.createRequire)(__bundled_import_meta_url);
-function cleanPath(path11) {
-  let normalized = (0, import_path.normalize)(path11);
-  if (normalized.length > 1 && normalized[normalized.length - 1] === import_path.sep) normalized = normalized.substring(0, normalized.length - 1);
-  return normalized;
-}
-var SLASHES_REGEX = /[\\/]/g;
-function convertSlashes(path11, separator) {
-  return path11.replace(SLASHES_REGEX, separator);
-}
-var WINDOWS_ROOT_DIR_REGEX = /^[a-z]:[\\/]$/i;
-function isRootDirectory(path11) {
-  return path11 === "/" || WINDOWS_ROOT_DIR_REGEX.test(path11);
-}
-function normalizePath(path11, options) {
-  const { resolvePaths, normalizePath: normalizePath$1, pathSeparator } = options;
-  const pathNeedsCleaning = process.platform === "win32" && path11.includes("/") || path11.startsWith(".");
-  if (resolvePaths) path11 = (0, import_path.resolve)(path11);
-  if (normalizePath$1 || pathNeedsCleaning) path11 = cleanPath(path11);
-  if (path11 === ".") return "";
-  const needsSeperator = path11[path11.length - 1] !== pathSeparator;
-  return convertSlashes(needsSeperator ? path11 + pathSeparator : path11, pathSeparator);
-}
-function joinPathWithBasePath(filename, directoryPath) {
-  return directoryPath + filename;
-}
-function joinPathWithRelativePath(root, options) {
-  return function(filename, directoryPath) {
-    const sameRoot = directoryPath.startsWith(root);
-    if (sameRoot) return directoryPath.slice(root.length) + filename;
-    else return convertSlashes((0, import_path.relative)(root, directoryPath), options.pathSeparator) + options.pathSeparator + filename;
-  };
-}
-function joinPath(filename) {
-  return filename;
-}
-function joinDirectoryPath(filename, directoryPath, separator) {
-  return directoryPath + filename + separator;
-}
-function build$7(root, options) {
-  const { relativePaths, includeBasePath } = options;
-  return relativePaths && root ? joinPathWithRelativePath(root, options) : includeBasePath ? joinPathWithBasePath : joinPath;
-}
-function pushDirectoryWithRelativePath(root) {
-  return function(directoryPath, paths) {
-    paths.push(directoryPath.substring(root.length) || ".");
-  };
-}
-function pushDirectoryFilterWithRelativePath(root) {
-  return function(directoryPath, paths, filters) {
-    const relativePath = directoryPath.substring(root.length) || ".";
-    if (filters.every((filter) => filter(relativePath, true))) paths.push(relativePath);
-  };
-}
-var pushDirectory = (directoryPath, paths) => {
-  paths.push(directoryPath || ".");
-};
-var pushDirectoryFilter = (directoryPath, paths, filters) => {
-  const path11 = directoryPath || ".";
-  if (filters.every((filter) => filter(path11, true))) paths.push(path11);
-};
-var empty$2 = () => {
-};
-function build$6(root, options) {
-  const { includeDirs, filters, relativePaths } = options;
-  if (!includeDirs) return empty$2;
-  if (relativePaths) return filters && filters.length ? pushDirectoryFilterWithRelativePath(root) : pushDirectoryWithRelativePath(root);
-  return filters && filters.length ? pushDirectoryFilter : pushDirectory;
-}
-var pushFileFilterAndCount = (filename, _paths, counts, filters) => {
-  if (filters.every((filter) => filter(filename, false))) counts.files++;
-};
-var pushFileFilter = (filename, paths, _counts, filters) => {
-  if (filters.every((filter) => filter(filename, false))) paths.push(filename);
-};
-var pushFileCount = (_filename, _paths, counts, _filters) => {
-  counts.files++;
-};
-var pushFile = (filename, paths) => {
-  paths.push(filename);
-};
-var empty$1 = () => {
-};
-function build$5(options) {
-  const { excludeFiles, filters, onlyCounts } = options;
-  if (excludeFiles) return empty$1;
-  if (filters && filters.length) return onlyCounts ? pushFileFilterAndCount : pushFileFilter;
-  else if (onlyCounts) return pushFileCount;
-  else return pushFile;
-}
-var getArray = (paths) => {
-  return paths;
-};
-var getArrayGroup = () => {
-  return [""].slice(0, 0);
-};
-function build$4(options) {
-  return options.group ? getArrayGroup : getArray;
-}
-var groupFiles = (groups, directory, files) => {
-  groups.push({
-    directory,
-    files,
-    dir: directory
-  });
-};
-var empty = () => {
-};
-function build$3(options) {
-  return options.group ? groupFiles : empty;
-}
-var resolveSymlinksAsync = function(path11, state, callback$1) {
-  const { queue, fs: fs10, options: { suppressErrors } } = state;
-  queue.enqueue();
-  fs10.realpath(path11, (error, resolvedPath) => {
-    if (error) return queue.dequeue(suppressErrors ? null : error, state);
-    fs10.stat(resolvedPath, (error$1, stat3) => {
-      if (error$1) return queue.dequeue(suppressErrors ? null : error$1, state);
-      if (stat3.isDirectory() && isRecursive(path11, resolvedPath, state)) return queue.dequeue(null, state);
-      callback$1(stat3, resolvedPath);
-      queue.dequeue(null, state);
-    });
-  });
-};
-var resolveSymlinks = function(path11, state, callback$1) {
-  const { queue, fs: fs10, options: { suppressErrors } } = state;
-  queue.enqueue();
-  try {
-    const resolvedPath = fs10.realpathSync(path11);
-    const stat3 = fs10.statSync(resolvedPath);
-    if (stat3.isDirectory() && isRecursive(path11, resolvedPath, state)) return;
-    callback$1(stat3, resolvedPath);
-  } catch (e) {
-    if (!suppressErrors) throw e;
+  /** Read-only access to a resource without affecting refCount. */
+  get(key) {
+    const keyStr = this.keyToString(key);
+    return this.pool.get(keyStr)?.resource;
   }
-};
-function build$2(options, isSynchronous) {
-  if (!options.resolveSymlinks || options.excludeSymlinks) return null;
-  return isSynchronous ? resolveSymlinks : resolveSymlinksAsync;
-}
-function isRecursive(path11, resolved, state) {
-  if (state.options.useRealPaths) return isRecursiveUsingRealPaths(resolved, state);
-  let parent = (0, import_path.dirname)(path11);
-  let depth = 1;
-  while (parent !== state.root && depth < 2) {
-    const resolvedPath = state.symlinks.get(parent);
-    const isSameRoot = !!resolvedPath && (resolvedPath === resolved || resolvedPath.startsWith(resolved) || resolved.startsWith(resolvedPath));
-    if (isSameRoot) depth++;
-    else parent = (0, import_path.dirname)(parent);
-  }
-  state.symlinks.set(path11, resolved);
-  return depth > 1;
-}
-function isRecursiveUsingRealPaths(resolved, state) {
-  return state.visited.includes(resolved + state.options.pathSeparator);
-}
-var onlyCountsSync = (state) => {
-  return state.counts;
-};
-var groupsSync = (state) => {
-  return state.groups;
-};
-var defaultSync = (state) => {
-  return state.paths;
-};
-var limitFilesSync = (state) => {
-  return state.paths.slice(0, state.options.maxFiles);
-};
-var onlyCountsAsync = (state, error, callback$1) => {
-  report(error, callback$1, state.counts, state.options.suppressErrors);
-  return null;
-};
-var defaultAsync = (state, error, callback$1) => {
-  report(error, callback$1, state.paths, state.options.suppressErrors);
-  return null;
-};
-var limitFilesAsync = (state, error, callback$1) => {
-  report(error, callback$1, state.paths.slice(0, state.options.maxFiles), state.options.suppressErrors);
-  return null;
-};
-var groupsAsync = (state, error, callback$1) => {
-  report(error, callback$1, state.groups, state.options.suppressErrors);
-  return null;
-};
-function report(error, callback$1, output, suppressErrors) {
-  if (error && !suppressErrors) callback$1(error, output);
-  else callback$1(null, output);
-}
-function build$1(options, isSynchronous) {
-  const { onlyCounts, group, maxFiles } = options;
-  if (onlyCounts) return isSynchronous ? onlyCountsSync : onlyCountsAsync;
-  else if (group) return isSynchronous ? groupsSync : groupsAsync;
-  else if (maxFiles) return isSynchronous ? limitFilesSync : limitFilesAsync;
-  else return isSynchronous ? defaultSync : defaultAsync;
-}
-var readdirOpts = { withFileTypes: true };
-var walkAsync = (state, crawlPath, directoryPath, currentDepth, callback$1) => {
-  state.queue.enqueue();
-  if (currentDepth < 0) return state.queue.dequeue(null, state);
-  const { fs: fs10 } = state;
-  state.visited.push(crawlPath);
-  state.counts.directories++;
-  fs10.readdir(crawlPath || ".", readdirOpts, (error, entries = []) => {
-    callback$1(entries, directoryPath, currentDepth);
-    state.queue.dequeue(state.options.suppressErrors ? null : error, state);
-  });
-};
-var walkSync = (state, crawlPath, directoryPath, currentDepth, callback$1) => {
-  const { fs: fs10 } = state;
-  if (currentDepth < 0) return;
-  state.visited.push(crawlPath);
-  state.counts.directories++;
-  let entries = [];
-  try {
-    entries = fs10.readdirSync(crawlPath || ".", readdirOpts);
-  } catch (e) {
-    if (!state.options.suppressErrors) throw e;
-  }
-  callback$1(entries, directoryPath, currentDepth);
-};
-function build(isSynchronous) {
-  return isSynchronous ? walkSync : walkAsync;
-}
-var Queue = class {
-  count = 0;
-  constructor(onQueueEmpty) {
-    this.onQueueEmpty = onQueueEmpty;
-  }
-  enqueue() {
-    this.count++;
-    return this.count;
-  }
-  dequeue(error, output) {
-    if (this.onQueueEmpty && (--this.count <= 0 || error)) {
-      this.onQueueEmpty(error, output);
-      if (error) {
-        output.controller.abort();
-        this.onQueueEmpty = void 0;
+  /** Destroy all resources immediately, cancel all timers. */
+  async dispose() {
+    this.disposed = true;
+    const entries = Array.from(this.pool.entries());
+    this.pool.clear();
+    this.pendingCreations.clear();
+    for (const [keyStr, entry] of entries) {
+      if (entry.graceTimer) {
+        clearTimeout(entry.graceTimer);
+      }
+      try {
+        await this.factory.destroy(entry.resource);
+      } catch (err) {
+        this.log("error", `Error destroying resource for ${keyStr}: ${err}`);
       }
     }
   }
+  /** Returns pool statistics for monitoring/debugging. */
+  getStats() {
+    const entries = /* @__PURE__ */ new Map();
+    for (const [keyStr, entry] of this.pool) {
+      entries.set(keyStr, {
+        key: keyStr,
+        refCount: entry.refCount,
+        hasGraceTimer: entry.graceTimer !== null
+      });
+    }
+    return { entries };
+  }
+  async destroyEntry(keyStr) {
+    const entry = this.pool.get(keyStr);
+    if (!entry) return;
+    if (entry.refCount > 0) {
+      this.log("debug", `Skipping destroy for ${keyStr} (refCount: ${entry.refCount})`);
+      return;
+    }
+    this.pool.delete(keyStr);
+    if (entry.graceTimer) {
+      clearTimeout(entry.graceTimer);
+    }
+    try {
+      await this.factory.destroy(entry.resource);
+      this.log("info", `Destroyed resource for ${keyStr}`);
+    } catch (err) {
+      this.log("error", `Error destroying resource for ${keyStr}: ${err}`);
+    }
+  }
 };
-var Counter = class {
-  _files = 0;
-  _directories = 0;
-  set files(num) {
-    this._files = num;
+
+// src/copilot/copilot-service.ts
+var CopilotService = class {
+  pool;
+  constructor(config) {
+    const log = config.onLog;
+    const MAX_ATTEMPTS = 3;
+    const factory = {
+      async create(cwd) {
+        let lastError;
+        for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+          const client = config.createClient(cwd);
+          try {
+            log?.("debug", `[copilot] Starting CopilotClient for ${cwd} (attempt ${attempt}/${MAX_ATTEMPTS})`);
+            await client.start();
+            const state = client.getState();
+            log?.("debug", `[copilot] CopilotClient started (state=${state})`);
+            await client.ping();
+            return client;
+          } catch (err) {
+            lastError = err;
+            log?.("warn", `[copilot] CopilotClient attempt ${attempt}/${MAX_ATTEMPTS} failed: ${lastError.message}`);
+            try {
+              await client.stop();
+            } catch {
+            }
+            if (attempt < MAX_ATTEMPTS) {
+              await new Promise((r) => setTimeout(r, 1e3 * attempt));
+            }
+          }
+        }
+        throw lastError ?? new Error("CopilotClient failed to start");
+      },
+      async destroy(client) {
+        await client.stop();
+      },
+      isHealthy(client) {
+        return client.getState() === "connected";
+      }
+    };
+    this.pool = new ResourcePool({
+      factory,
+      gracePeriodMs: config.gracePeriodMs ?? 5 * 60 * 1e3,
+      onLog: config.onLog
+    });
   }
-  get files() {
-    return this._files;
+  /** Acquire a reference to a CopilotClient for the given cwd. */
+  async retain(cwd) {
+    return this.pool.retain(cwd);
   }
-  set directories(num) {
-    this._directories = num;
+  /** Release a reference. When refCount hits 0, grace period starts. */
+  release(cwd) {
+    this.pool.release(cwd);
   }
-  get directories() {
-    return this._directories;
+  /** Read-only access without affecting refCount. */
+  get(cwd) {
+    return this.pool.get(cwd);
+  }
+  /** Stop all clients immediately. */
+  async dispose() {
+    return this.pool.dispose();
+  }
+};
+
+// src/copilot/copilot-token-resolver.ts
+var import_node_child_process = require("child_process");
+var DefaultCopilotTokenResolver = class {
+  explicitToken;
+  constructor(options) {
+    this.explicitToken = options?.explicitToken;
+  }
+  async resolve() {
+    if (this.explicitToken) return this.explicitToken;
+    if (process.env.COPILOT_GITHUB_TOKEN) return process.env.COPILOT_GITHUB_TOKEN;
+    return tryGhCliToken();
+  }
+};
+function tryGhCliToken() {
+  try {
+    return (0, import_node_child_process.execSync)("gh auth token", {
+      encoding: "utf-8",
+      timeout: 5e3,
+      stdio: ["pipe", "pipe", "pipe"]
+    }).trim() || void 0;
+  } catch {
+    return void 0;
+  }
+}
+
+// ../../node_modules/@github/copilot-sdk/dist/client.js
+var import_node_child_process2 = require("child_process");
+var import_node_fs = require("fs");
+var import_node_net = require("net");
+var import_node_path3 = require("path");
+var import_node_url = require("url");
+var import_node = __toESM(require_node3(), 1);
+
+// ../../node_modules/@github/copilot-sdk/dist/generated/rpc.js
+function createServerRpc(connection) {
+  return {
+    ping: async (params) => connection.sendRequest("ping", params),
+    models: {
+      list: async () => connection.sendRequest("models.list", {})
+    },
+    tools: {
+      list: async (params) => connection.sendRequest("tools.list", params)
+    },
+    account: {
+      getQuota: async () => connection.sendRequest("account.getQuota", {})
+    }
+  };
+}
+function createSessionRpc(connection, sessionId) {
+  return {
+    model: {
+      getCurrent: async () => connection.sendRequest("session.model.getCurrent", { sessionId }),
+      switchTo: async (params) => connection.sendRequest("session.model.switchTo", { sessionId, ...params })
+    },
+    mode: {
+      get: async () => connection.sendRequest("session.mode.get", { sessionId }),
+      set: async (params) => connection.sendRequest("session.mode.set", { sessionId, ...params })
+    },
+    plan: {
+      read: async () => connection.sendRequest("session.plan.read", { sessionId }),
+      update: async (params) => connection.sendRequest("session.plan.update", { sessionId, ...params }),
+      delete: async () => connection.sendRequest("session.plan.delete", { sessionId })
+    },
+    workspace: {
+      listFiles: async () => connection.sendRequest("session.workspace.listFiles", { sessionId }),
+      readFile: async (params) => connection.sendRequest("session.workspace.readFile", { sessionId, ...params }),
+      createFile: async (params) => connection.sendRequest("session.workspace.createFile", { sessionId, ...params })
+    },
+    fleet: {
+      start: async (params) => connection.sendRequest("session.fleet.start", { sessionId, ...params })
+    }
+  };
+}
+
+// ../../node_modules/@github/copilot-sdk/dist/sdkProtocolVersion.js
+var SDK_PROTOCOL_VERSION = 2;
+function getSdkProtocolVersion() {
+  return SDK_PROTOCOL_VERSION;
+}
+
+// ../../node_modules/@github/copilot-sdk/dist/session.js
+var CopilotSession = class {
+  /**
+   * Creates a new CopilotSession instance.
+   *
+   * @param sessionId - The unique identifier for this session
+   * @param connection - The JSON-RPC message connection to the Copilot CLI
+   * @param workspacePath - Path to the session workspace directory (when infinite sessions enabled)
+   * @internal This constructor is internal. Use {@link CopilotClient.createSession} to create sessions.
+   */
+  constructor(sessionId, connection, _workspacePath) {
+    this.sessionId = sessionId;
+    this.connection = connection;
+    this._workspacePath = _workspacePath;
+  }
+  eventHandlers = /* @__PURE__ */ new Set();
+  typedEventHandlers = /* @__PURE__ */ new Map();
+  toolHandlers = /* @__PURE__ */ new Map();
+  permissionHandler;
+  userInputHandler;
+  hooks;
+  _rpc = null;
+  /**
+   * Typed session-scoped RPC methods.
+   */
+  get rpc() {
+    if (!this._rpc) {
+      this._rpc = createSessionRpc(this.connection, this.sessionId);
+    }
+    return this._rpc;
   }
   /**
-  * @deprecated use `directories` instead
-  */
-  /* c8 ignore next 3 */
-  get dirs() {
-    return this._directories;
+   * Path to the session workspace directory when infinite sessions are enabled.
+   * Contains checkpoints/, plan.md, and files/ subdirectories.
+   * Undefined if infinite sessions are disabled.
+   */
+  get workspacePath() {
+    return this._workspacePath;
   }
-};
-var Aborter = class {
-  aborted = false;
-  abort() {
-    this.aborted = true;
+  /**
+   * Sends a message to this session and waits for the response.
+   *
+   * The message is processed asynchronously. Subscribe to events via {@link on}
+   * to receive streaming responses and other session events.
+   *
+   * @param options - The message options including the prompt and optional attachments
+   * @returns A promise that resolves with the message ID of the response
+   * @throws Error if the session has been destroyed or the connection fails
+   *
+   * @example
+   * ```typescript
+   * const messageId = await session.send({
+   *   prompt: "Explain this code",
+   *   attachments: [{ type: "file", path: "./src/index.ts" }]
+   * });
+   * ```
+   */
+  async send(options) {
+    const response = await this.connection.sendRequest("session.send", {
+      sessionId: this.sessionId,
+      prompt: options.prompt,
+      attachments: options.attachments,
+      mode: options.mode
+    });
+    return response.messageId;
   }
-};
-var Walker = class {
-  root;
-  isSynchronous;
-  state;
-  joinPath;
-  pushDirectory;
-  pushFile;
-  getArray;
-  groupFiles;
-  resolveSymlink;
-  walkDirectory;
-  callbackInvoker;
-  constructor(root, options, callback$1) {
-    this.isSynchronous = !callback$1;
-    this.callbackInvoker = build$1(options, this.isSynchronous);
-    this.root = normalizePath(root, options);
-    this.state = {
-      root: isRootDirectory(this.root) ? this.root : this.root.slice(0, -1),
-      paths: [""].slice(0, 0),
-      groups: [],
-      counts: new Counter(),
-      options,
-      queue: new Queue((error, state) => this.callbackInvoker(state, error, callback$1)),
-      symlinks: /* @__PURE__ */ new Map(),
-      visited: [""].slice(0, 0),
-      controller: new Aborter(),
-      fs: options.fs || nativeFs
+  /**
+   * Sends a message to this session and waits until the session becomes idle.
+   *
+   * This is a convenience method that combines {@link send} with waiting for
+   * the `session.idle` event. Use this when you want to block until the
+   * assistant has finished processing the message.
+   *
+   * Events are still delivered to handlers registered via {@link on} while waiting.
+   *
+   * @param options - The message options including the prompt and optional attachments
+   * @param timeout - Timeout in milliseconds (default: 60000). Controls how long to wait; does not abort in-flight agent work.
+   * @returns A promise that resolves with the final assistant message when the session becomes idle,
+   *          or undefined if no assistant message was received
+   * @throws Error if the timeout is reached before the session becomes idle
+   * @throws Error if the session has been destroyed or the connection fails
+   *
+   * @example
+   * ```typescript
+   * // Send and wait for completion with default 60s timeout
+   * const response = await session.sendAndWait({ prompt: "What is 2+2?" });
+   * console.log(response?.data.content); // "4"
+   * ```
+   */
+  async sendAndWait(options, timeout) {
+    const effectiveTimeout = timeout ?? 6e4;
+    let resolveIdle;
+    let rejectWithError;
+    const idlePromise = new Promise((resolve10, reject) => {
+      resolveIdle = resolve10;
+      rejectWithError = reject;
+    });
+    let lastAssistantMessage;
+    const unsubscribe = this.on((event) => {
+      if (event.type === "assistant.message") {
+        lastAssistantMessage = event;
+      } else if (event.type === "session.idle") {
+        resolveIdle();
+      } else if (event.type === "session.error") {
+        const error = new Error(event.data.message);
+        error.stack = event.data.stack;
+        rejectWithError(error);
+      }
+    });
+    let timeoutId;
+    try {
+      await this.send(options);
+      const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = setTimeout(
+          () => reject(
+            new Error(
+              `Timeout after ${effectiveTimeout}ms waiting for session.idle`
+            )
+          ),
+          effectiveTimeout
+        );
+      });
+      await Promise.race([idlePromise, timeoutPromise]);
+      return lastAssistantMessage;
+    } finally {
+      if (timeoutId !== void 0) {
+        clearTimeout(timeoutId);
+      }
+      unsubscribe();
+    }
+  }
+  on(eventTypeOrHandler, handler) {
+    if (typeof eventTypeOrHandler === "string" && handler) {
+      const eventType = eventTypeOrHandler;
+      if (!this.typedEventHandlers.has(eventType)) {
+        this.typedEventHandlers.set(eventType, /* @__PURE__ */ new Set());
+      }
+      const storedHandler = handler;
+      this.typedEventHandlers.get(eventType).add(storedHandler);
+      return () => {
+        const handlers = this.typedEventHandlers.get(eventType);
+        if (handlers) {
+          handlers.delete(storedHandler);
+        }
+      };
+    }
+    const wildcardHandler = eventTypeOrHandler;
+    this.eventHandlers.add(wildcardHandler);
+    return () => {
+      this.eventHandlers.delete(wildcardHandler);
     };
-    this.joinPath = build$7(this.root, options);
-    this.pushDirectory = build$6(this.root, options);
-    this.pushFile = build$5(options);
-    this.getArray = build$4(options);
-    this.groupFiles = build$3(options);
-    this.resolveSymlink = build$2(options, this.isSynchronous);
-    this.walkDirectory = build(this.isSynchronous);
   }
-  start() {
-    this.pushDirectory(this.root, this.state.paths, this.state.options.filters);
-    this.walkDirectory(this.state, this.root, this.root, this.state.options.maxDepth, this.walk);
-    return this.isSynchronous ? this.callbackInvoker(this.state, null) : null;
+  /**
+   * Dispatches an event to all registered handlers.
+   *
+   * @param event - The session event to dispatch
+   * @internal This method is for internal use by the SDK.
+   */
+  _dispatchEvent(event) {
+    const typedHandlers = this.typedEventHandlers.get(event.type);
+    if (typedHandlers) {
+      for (const handler of typedHandlers) {
+        try {
+          handler(event);
+        } catch (_error) {
+        }
+      }
+    }
+    for (const handler of this.eventHandlers) {
+      try {
+        handler(event);
+      } catch (_error) {
+      }
+    }
   }
-  walk = (entries, directoryPath, depth) => {
-    const { paths, options: { filters, resolveSymlinks: resolveSymlinks$1, excludeSymlinks, exclude, maxFiles, signal, useRealPaths, pathSeparator }, controller } = this.state;
-    if (controller.aborted || signal && signal.aborted || maxFiles && paths.length > maxFiles) return;
-    const files = this.getArray(this.state.paths);
-    for (let i = 0; i < entries.length; ++i) {
-      const entry = entries[i];
-      if (entry.isFile() || entry.isSymbolicLink() && !resolveSymlinks$1 && !excludeSymlinks) {
-        const filename = this.joinPath(entry.name, directoryPath);
-        this.pushFile(filename, files, this.state.counts, filters);
-      } else if (entry.isDirectory()) {
-        let path11 = joinDirectoryPath(entry.name, directoryPath, this.state.options.pathSeparator);
-        if (exclude && exclude(entry.name, path11)) continue;
-        this.pushDirectory(path11, paths, filters);
-        this.walkDirectory(this.state, path11, path11, depth - 1, this.walk);
-      } else if (this.resolveSymlink && entry.isSymbolicLink()) {
-        let path11 = joinPathWithBasePath(entry.name, directoryPath);
-        this.resolveSymlink(path11, this.state, (stat3, resolvedPath) => {
-          if (stat3.isDirectory()) {
-            resolvedPath = normalizePath(resolvedPath, this.state.options);
-            if (exclude && exclude(entry.name, useRealPaths ? resolvedPath : path11 + pathSeparator)) return;
-            this.walkDirectory(this.state, resolvedPath, useRealPaths ? resolvedPath : path11 + pathSeparator, depth - 1, this.walk);
-          } else {
-            resolvedPath = useRealPaths ? resolvedPath : path11;
-            const filename = (0, import_path.basename)(resolvedPath);
-            const directoryPath$1 = normalizePath((0, import_path.dirname)(resolvedPath), this.state.options);
-            resolvedPath = this.joinPath(filename, directoryPath$1);
-            this.pushFile(resolvedPath, files, this.state.counts, filters);
+  /**
+   * Registers custom tool handlers for this session.
+   *
+   * Tools allow the assistant to execute custom functions. When the assistant
+   * invokes a tool, the corresponding handler is called with the tool arguments.
+   *
+   * @param tools - An array of tool definitions with their handlers, or undefined to clear all tools
+   * @internal This method is typically called internally when creating a session with tools.
+   */
+  registerTools(tools) {
+    this.toolHandlers.clear();
+    if (!tools) {
+      return;
+    }
+    for (const tool of tools) {
+      this.toolHandlers.set(tool.name, tool.handler);
+    }
+  }
+  /**
+   * Retrieves a registered tool handler by name.
+   *
+   * @param name - The name of the tool to retrieve
+   * @returns The tool handler if found, or undefined
+   * @internal This method is for internal use by the SDK.
+   */
+  getToolHandler(name) {
+    return this.toolHandlers.get(name);
+  }
+  /**
+   * Registers a handler for permission requests.
+   *
+   * When the assistant needs permission to perform certain actions (e.g., file operations),
+   * this handler is called to approve or deny the request.
+   *
+   * @param handler - The permission handler function, or undefined to remove the handler
+   * @internal This method is typically called internally when creating a session.
+   */
+  registerPermissionHandler(handler) {
+    this.permissionHandler = handler;
+  }
+  /**
+   * Registers a user input handler for ask_user requests.
+   *
+   * When the agent needs input from the user (via ask_user tool),
+   * this handler is called to provide the response.
+   *
+   * @param handler - The user input handler function, or undefined to remove the handler
+   * @internal This method is typically called internally when creating a session.
+   */
+  registerUserInputHandler(handler) {
+    this.userInputHandler = handler;
+  }
+  /**
+   * Registers hook handlers for session lifecycle events.
+   *
+   * Hooks allow custom logic to be executed at various points during
+   * the session lifecycle (before/after tool use, session start/end, etc.).
+   *
+   * @param hooks - The hook handlers object, or undefined to remove all hooks
+   * @internal This method is typically called internally when creating a session.
+   */
+  registerHooks(hooks) {
+    this.hooks = hooks;
+  }
+  /**
+   * Handles a permission request from the Copilot CLI.
+   *
+   * @param request - The permission request data from the CLI
+   * @returns A promise that resolves with the permission decision
+   * @internal This method is for internal use by the SDK.
+   */
+  async _handlePermissionRequest(request) {
+    if (!this.permissionHandler) {
+      return { kind: "denied-no-approval-rule-and-could-not-request-from-user" };
+    }
+    try {
+      const result = await this.permissionHandler(request, {
+        sessionId: this.sessionId
+      });
+      return result;
+    } catch (_error) {
+      return { kind: "denied-no-approval-rule-and-could-not-request-from-user" };
+    }
+  }
+  /**
+   * Handles a user input request from the Copilot CLI.
+   *
+   * @param request - The user input request data from the CLI
+   * @returns A promise that resolves with the user's response
+   * @internal This method is for internal use by the SDK.
+   */
+  async _handleUserInputRequest(request) {
+    if (!this.userInputHandler) {
+      throw new Error("User input requested but no handler registered");
+    }
+    try {
+      const result = await this.userInputHandler(request, {
+        sessionId: this.sessionId
+      });
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+  /**
+   * Handles a hooks invocation from the Copilot CLI.
+   *
+   * @param hookType - The type of hook being invoked
+   * @param input - The input data for the hook
+   * @returns A promise that resolves with the hook output, or undefined
+   * @internal This method is for internal use by the SDK.
+   */
+  async _handleHooksInvoke(hookType, input) {
+    if (!this.hooks) {
+      return void 0;
+    }
+    const handlerMap = {
+      preToolUse: this.hooks.onPreToolUse,
+      postToolUse: this.hooks.onPostToolUse,
+      userPromptSubmitted: this.hooks.onUserPromptSubmitted,
+      sessionStart: this.hooks.onSessionStart,
+      sessionEnd: this.hooks.onSessionEnd,
+      errorOccurred: this.hooks.onErrorOccurred
+    };
+    const handler = handlerMap[hookType];
+    if (!handler) {
+      return void 0;
+    }
+    try {
+      const result = await handler(input, { sessionId: this.sessionId });
+      return result;
+    } catch (_error) {
+      return void 0;
+    }
+  }
+  /**
+   * Retrieves all events and messages from this session's history.
+   *
+   * This returns the complete conversation history including user messages,
+   * assistant responses, tool executions, and other session events.
+   *
+   * @returns A promise that resolves with an array of all session events
+   * @throws Error if the session has been destroyed or the connection fails
+   *
+   * @example
+   * ```typescript
+   * const events = await session.getMessages();
+   * for (const event of events) {
+   *   if (event.type === "assistant.message") {
+   *     console.log("Assistant:", event.data.content);
+   *   }
+   * }
+   * ```
+   */
+  async getMessages() {
+    const response = await this.connection.sendRequest("session.getMessages", {
+      sessionId: this.sessionId
+    });
+    return response.events;
+  }
+  /**
+   * Destroys this session and releases all associated resources.
+   *
+   * After calling this method, the session can no longer be used. All event
+   * handlers and tool handlers are cleared. To continue the conversation,
+   * use {@link CopilotClient.resumeSession} with the session ID.
+   *
+   * @returns A promise that resolves when the session is destroyed
+   * @throws Error if the connection fails
+   *
+   * @example
+   * ```typescript
+   * // Clean up when done
+   * await session.destroy();
+   * ```
+   */
+  async destroy() {
+    await this.connection.sendRequest("session.destroy", {
+      sessionId: this.sessionId
+    });
+    this.eventHandlers.clear();
+    this.typedEventHandlers.clear();
+    this.toolHandlers.clear();
+    this.permissionHandler = void 0;
+  }
+  /**
+   * Aborts the currently processing message in this session.
+   *
+   * Use this to cancel a long-running request. The session remains valid
+   * and can continue to be used for new messages.
+   *
+   * @returns A promise that resolves when the abort request is acknowledged
+   * @throws Error if the session has been destroyed or the connection fails
+   *
+   * @example
+   * ```typescript
+   * // Start a long-running request
+   * const messagePromise = session.send({ prompt: "Write a very long story..." });
+   *
+   * // Abort after 5 seconds
+   * setTimeout(async () => {
+   *   await session.abort();
+   * }, 5000);
+   * ```
+   */
+  async abort() {
+    await this.connection.sendRequest("session.abort", {
+      sessionId: this.sessionId
+    });
+  }
+};
+
+// ../../node_modules/@github/copilot-sdk/dist/client.js
+function isZodSchema(value) {
+  return value != null && typeof value === "object" && "toJSONSchema" in value && typeof value.toJSONSchema === "function";
+}
+function toJsonSchema(parameters) {
+  if (!parameters) return void 0;
+  if (isZodSchema(parameters)) {
+    return parameters.toJSONSchema();
+  }
+  return parameters;
+}
+function getBundledCliPath() {
+  const sdkUrl = __bundled_import_meta_resolve("@github/copilot/sdk");
+  const sdkPath = (0, import_node_url.fileURLToPath)(sdkUrl);
+  return (0, import_node_path3.join)((0, import_node_path3.dirname)((0, import_node_path3.dirname)(sdkPath)), "index.js");
+}
+var CopilotClient = class {
+  cliProcess = null;
+  connection = null;
+  socket = null;
+  actualPort = null;
+  actualHost = "localhost";
+  state = "disconnected";
+  sessions = /* @__PURE__ */ new Map();
+  stderrBuffer = "";
+  // Captures CLI stderr for error messages
+  options;
+  isExternalServer = false;
+  forceStopping = false;
+  modelsCache = null;
+  modelsCacheLock = Promise.resolve();
+  sessionLifecycleHandlers = /* @__PURE__ */ new Set();
+  typedLifecycleHandlers = /* @__PURE__ */ new Map();
+  _rpc = null;
+  processExitPromise = null;
+  // Rejects when CLI process exits
+  /**
+   * Typed server-scoped RPC methods.
+   * @throws Error if the client is not connected
+   */
+  get rpc() {
+    if (!this.connection) {
+      throw new Error("Client is not connected. Call start() first.");
+    }
+    if (!this._rpc) {
+      this._rpc = createServerRpc(this.connection);
+    }
+    return this._rpc;
+  }
+  /**
+   * Creates a new CopilotClient instance.
+   *
+   * @param options - Configuration options for the client
+   * @throws Error if mutually exclusive options are provided (e.g., cliUrl with useStdio or cliPath)
+   *
+   * @example
+   * ```typescript
+   * // Default options - spawns CLI server using stdio
+   * const client = new CopilotClient();
+   *
+   * // Connect to an existing server
+   * const client = new CopilotClient({ cliUrl: "localhost:3000" });
+   *
+   * // Custom CLI path with specific log level
+   * const client = new CopilotClient({
+   *   cliPath: "/usr/local/bin/copilot",
+   *   logLevel: "debug"
+   * });
+   * ```
+   */
+  constructor(options = {}) {
+    if (options.cliUrl && (options.useStdio === true || options.cliPath)) {
+      throw new Error("cliUrl is mutually exclusive with useStdio and cliPath");
+    }
+    if (options.cliUrl && (options.githubToken || options.useLoggedInUser !== void 0)) {
+      throw new Error(
+        "githubToken and useLoggedInUser cannot be used with cliUrl (external server manages its own auth)"
+      );
+    }
+    if (options.cliUrl) {
+      const { host, port } = this.parseCliUrl(options.cliUrl);
+      this.actualHost = host;
+      this.actualPort = port;
+      this.isExternalServer = true;
+    }
+    this.options = {
+      cliPath: options.cliPath || getBundledCliPath(),
+      cliArgs: options.cliArgs ?? [],
+      cwd: options.cwd ?? process.cwd(),
+      port: options.port || 0,
+      useStdio: options.cliUrl ? false : options.useStdio ?? true,
+      // Default to stdio unless cliUrl is provided
+      cliUrl: options.cliUrl,
+      logLevel: options.logLevel || "debug",
+      autoStart: options.autoStart ?? true,
+      autoRestart: options.autoRestart ?? true,
+      env: options.env ?? process.env,
+      githubToken: options.githubToken,
+      // Default useLoggedInUser to false when githubToken is provided, otherwise true
+      useLoggedInUser: options.useLoggedInUser ?? (options.githubToken ? false : true)
+    };
+  }
+  /**
+   * Parse CLI URL into host and port
+   * Supports formats: "host:port", "http://host:port", "https://host:port", or just "port"
+   */
+  parseCliUrl(url) {
+    let cleanUrl = url.replace(/^https?:\/\//, "");
+    if (/^\d+$/.test(cleanUrl)) {
+      return { host: "localhost", port: parseInt(cleanUrl, 10) };
+    }
+    const parts = cleanUrl.split(":");
+    if (parts.length !== 2) {
+      throw new Error(
+        `Invalid cliUrl format: ${url}. Expected "host:port", "http://host:port", or "port"`
+      );
+    }
+    const host = parts[0] || "localhost";
+    const port = parseInt(parts[1], 10);
+    if (isNaN(port) || port <= 0 || port > 65535) {
+      throw new Error(`Invalid port in cliUrl: ${url}`);
+    }
+    return { host, port };
+  }
+  /**
+   * Starts the CLI server and establishes a connection.
+   *
+   * If connecting to an external server (via cliUrl), only establishes the connection.
+   * Otherwise, spawns the CLI server process and then connects.
+   *
+   * This method is called automatically when creating a session if `autoStart` is true (default).
+   *
+   * @returns A promise that resolves when the connection is established
+   * @throws Error if the server fails to start or the connection fails
+   *
+   * @example
+   * ```typescript
+   * const client = new CopilotClient({ autoStart: false });
+   * await client.start();
+   * // Now ready to create sessions
+   * ```
+   */
+  async start() {
+    if (this.state === "connected") {
+      return;
+    }
+    this.state = "connecting";
+    try {
+      if (!this.isExternalServer) {
+        await this.startCLIServer();
+      }
+      await this.connectToServer();
+      await this.verifyProtocolVersion();
+      this.state = "connected";
+    } catch (error) {
+      this.state = "error";
+      throw error;
+    }
+  }
+  /**
+   * Stops the CLI server and closes all active sessions.
+   *
+   * This method performs graceful cleanup:
+   * 1. Destroys all active sessions with retry logic
+   * 2. Closes the JSON-RPC connection
+   * 3. Terminates the CLI server process (if spawned by this client)
+   *
+   * @returns A promise that resolves with an array of errors encountered during cleanup.
+   *          An empty array indicates all cleanup succeeded.
+   *
+   * @example
+   * ```typescript
+   * const errors = await client.stop();
+   * if (errors.length > 0) {
+   *   console.error("Cleanup errors:", errors);
+   * }
+   * ```
+   */
+  async stop() {
+    const errors = [];
+    for (const session of this.sessions.values()) {
+      const sessionId = session.sessionId;
+      let lastError = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+          await session.destroy();
+          lastError = null;
+          break;
+        } catch (error) {
+          lastError = error instanceof Error ? error : new Error(String(error));
+          if (attempt < 3) {
+            const delay3 = 100 * Math.pow(2, attempt - 1);
+            await new Promise((resolve10) => setTimeout(resolve10, delay3));
+          }
+        }
+      }
+      if (lastError) {
+        errors.push(
+          new Error(
+            `Failed to destroy session ${sessionId} after 3 attempts: ${lastError.message}`
+          )
+        );
+      }
+    }
+    this.sessions.clear();
+    if (this.connection) {
+      try {
+        this.connection.dispose();
+      } catch (error) {
+        errors.push(
+          new Error(
+            `Failed to dispose connection: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
+      }
+      this.connection = null;
+      this._rpc = null;
+    }
+    this.modelsCache = null;
+    if (this.socket) {
+      try {
+        this.socket.end();
+      } catch (error) {
+        errors.push(
+          new Error(
+            `Failed to close socket: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
+      }
+      this.socket = null;
+    }
+    if (this.cliProcess && !this.isExternalServer) {
+      try {
+        this.cliProcess.kill();
+      } catch (error) {
+        errors.push(
+          new Error(
+            `Failed to kill CLI process: ${error instanceof Error ? error.message : String(error)}`
+          )
+        );
+      }
+      this.cliProcess = null;
+    }
+    this.state = "disconnected";
+    this.actualPort = null;
+    this.stderrBuffer = "";
+    this.processExitPromise = null;
+    return errors;
+  }
+  /**
+   * Forcefully stops the CLI server without graceful cleanup.
+   *
+   * Use this when {@link stop} fails or takes too long. This method:
+   * - Clears all sessions immediately without destroying them
+   * - Force closes the connection
+   * - Sends SIGKILL to the CLI process (if spawned by this client)
+   *
+   * @returns A promise that resolves when the force stop is complete
+   *
+   * @example
+   * ```typescript
+   * // If normal stop hangs, force stop
+   * const stopPromise = client.stop();
+   * const timeout = new Promise((_, reject) =>
+   *   setTimeout(() => reject(new Error("Timeout")), 5000)
+   * );
+   *
+   * try {
+   *   await Promise.race([stopPromise, timeout]);
+   * } catch {
+   *   await client.forceStop();
+   * }
+   * ```
+   */
+  async forceStop() {
+    this.forceStopping = true;
+    this.sessions.clear();
+    if (this.connection) {
+      try {
+        this.connection.dispose();
+      } catch {
+      }
+      this.connection = null;
+      this._rpc = null;
+    }
+    this.modelsCache = null;
+    if (this.socket) {
+      try {
+        this.socket.destroy();
+      } catch {
+      }
+      this.socket = null;
+    }
+    if (this.cliProcess && !this.isExternalServer) {
+      try {
+        this.cliProcess.kill("SIGKILL");
+      } catch {
+      }
+      this.cliProcess = null;
+    }
+    this.state = "disconnected";
+    this.actualPort = null;
+    this.stderrBuffer = "";
+    this.processExitPromise = null;
+  }
+  /**
+   * Creates a new conversation session with the Copilot CLI.
+   *
+   * Sessions maintain conversation state, handle events, and manage tool execution.
+   * If the client is not connected and `autoStart` is enabled, this will automatically
+   * start the connection.
+   *
+   * @param config - Optional configuration for the session
+   * @returns A promise that resolves with the created session
+   * @throws Error if the client is not connected and autoStart is disabled
+   *
+   * @example
+   * ```typescript
+   * // Basic session
+   * const session = await client.createSession();
+   *
+   * // Session with model and tools
+   * const session = await client.createSession({
+   *   model: "gpt-4",
+   *   tools: [{
+   *     name: "get_weather",
+   *     description: "Get weather for a location",
+   *     parameters: { type: "object", properties: { location: { type: "string" } } },
+   *     handler: async (args) => ({ temperature: 72 })
+   *   }]
+   * });
+   * ```
+   */
+  async createSession(config = {}) {
+    if (!this.connection) {
+      if (this.options.autoStart) {
+        await this.start();
+      } else {
+        throw new Error("Client not connected. Call start() first.");
+      }
+    }
+    const response = await this.connection.sendRequest("session.create", {
+      model: config.model,
+      sessionId: config.sessionId,
+      reasoningEffort: config.reasoningEffort,
+      tools: config.tools?.map((tool) => ({
+        name: tool.name,
+        description: tool.description,
+        parameters: toJsonSchema(tool.parameters)
+      })),
+      systemMessage: config.systemMessage,
+      availableTools: config.availableTools,
+      excludedTools: config.excludedTools,
+      provider: config.provider,
+      requestPermission: !!config.onPermissionRequest,
+      requestUserInput: !!config.onUserInputRequest,
+      hooks: !!(config.hooks && Object.values(config.hooks).some(Boolean)),
+      workingDirectory: config.workingDirectory,
+      streaming: config.streaming,
+      mcpServers: config.mcpServers,
+      envValueMode: "direct",
+      customAgents: config.customAgents,
+      configDir: config.configDir,
+      skillDirectories: config.skillDirectories,
+      disabledSkills: config.disabledSkills,
+      infiniteSessions: config.infiniteSessions
+    });
+    const { sessionId, workspacePath } = response;
+    const session = new CopilotSession(sessionId, this.connection, workspacePath);
+    session.registerTools(config.tools);
+    if (config.onPermissionRequest) {
+      session.registerPermissionHandler(config.onPermissionRequest);
+    }
+    if (config.onUserInputRequest) {
+      session.registerUserInputHandler(config.onUserInputRequest);
+    }
+    if (config.hooks) {
+      session.registerHooks(config.hooks);
+    }
+    this.sessions.set(sessionId, session);
+    return session;
+  }
+  /**
+   * Resumes an existing conversation session by its ID.
+   *
+   * This allows you to continue a previous conversation, maintaining all
+   * conversation history. The session must have been previously created
+   * and not deleted.
+   *
+   * @param sessionId - The ID of the session to resume
+   * @param config - Optional configuration for the resumed session
+   * @returns A promise that resolves with the resumed session
+   * @throws Error if the session does not exist or the client is not connected
+   *
+   * @example
+   * ```typescript
+   * // Resume a previous session
+   * const session = await client.resumeSession("session-123");
+   *
+   * // Resume with new tools
+   * const session = await client.resumeSession("session-123", {
+   *   tools: [myNewTool]
+   * });
+   * ```
+   */
+  async resumeSession(sessionId, config = {}) {
+    if (!this.connection) {
+      if (this.options.autoStart) {
+        await this.start();
+      } else {
+        throw new Error("Client not connected. Call start() first.");
+      }
+    }
+    const response = await this.connection.sendRequest("session.resume", {
+      sessionId,
+      model: config.model,
+      reasoningEffort: config.reasoningEffort,
+      systemMessage: config.systemMessage,
+      availableTools: config.availableTools,
+      excludedTools: config.excludedTools,
+      tools: config.tools?.map((tool) => ({
+        name: tool.name,
+        description: tool.description,
+        parameters: toJsonSchema(tool.parameters)
+      })),
+      provider: config.provider,
+      requestPermission: !!config.onPermissionRequest,
+      requestUserInput: !!config.onUserInputRequest,
+      hooks: !!(config.hooks && Object.values(config.hooks).some(Boolean)),
+      workingDirectory: config.workingDirectory,
+      configDir: config.configDir,
+      streaming: config.streaming,
+      mcpServers: config.mcpServers,
+      envValueMode: "direct",
+      customAgents: config.customAgents,
+      skillDirectories: config.skillDirectories,
+      disabledSkills: config.disabledSkills,
+      infiniteSessions: config.infiniteSessions,
+      disableResume: config.disableResume
+    });
+    const { sessionId: resumedSessionId, workspacePath } = response;
+    const session = new CopilotSession(resumedSessionId, this.connection, workspacePath);
+    session.registerTools(config.tools);
+    if (config.onPermissionRequest) {
+      session.registerPermissionHandler(config.onPermissionRequest);
+    }
+    if (config.onUserInputRequest) {
+      session.registerUserInputHandler(config.onUserInputRequest);
+    }
+    if (config.hooks) {
+      session.registerHooks(config.hooks);
+    }
+    this.sessions.set(resumedSessionId, session);
+    return session;
+  }
+  /**
+   * Gets the current connection state of the client.
+   *
+   * @returns The current connection state: "disconnected", "connecting", "connected", or "error"
+   *
+   * @example
+   * ```typescript
+   * if (client.getState() === "connected") {
+   *   const session = await client.createSession();
+   * }
+   * ```
+   */
+  getState() {
+    return this.state;
+  }
+  /**
+   * Sends a ping request to the server to verify connectivity.
+   *
+   * @param message - Optional message to include in the ping
+   * @returns A promise that resolves with the ping response containing the message and timestamp
+   * @throws Error if the client is not connected
+   *
+   * @example
+   * ```typescript
+   * const response = await client.ping("health check");
+   * console.log(`Server responded at ${new Date(response.timestamp)}`);
+   * ```
+   */
+  async ping(message) {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    const result = await this.connection.sendRequest("ping", { message });
+    return result;
+  }
+  /**
+   * Get CLI status including version and protocol information
+   */
+  async getStatus() {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    const result = await this.connection.sendRequest("status.get", {});
+    return result;
+  }
+  /**
+   * Get current authentication status
+   */
+  async getAuthStatus() {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    const result = await this.connection.sendRequest("auth.getStatus", {});
+    return result;
+  }
+  /**
+   * List available models with their metadata.
+   *
+   * Results are cached after the first successful call to avoid rate limiting.
+   * The cache is cleared when the client disconnects.
+   *
+   * @throws Error if not authenticated
+   */
+  async listModels() {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    await this.modelsCacheLock;
+    let resolveLock;
+    this.modelsCacheLock = new Promise((resolve10) => {
+      resolveLock = resolve10;
+    });
+    try {
+      if (this.modelsCache !== null) {
+        return [...this.modelsCache];
+      }
+      const result = await this.connection.sendRequest("models.list", {});
+      const response = result;
+      const models = response.models;
+      this.modelsCache = models;
+      return [...models];
+    } finally {
+      resolveLock();
+    }
+  }
+  /**
+   * Verify that the server's protocol version matches the SDK's expected version
+   */
+  async verifyProtocolVersion() {
+    const expectedVersion = getSdkProtocolVersion();
+    let pingResult;
+    if (this.processExitPromise) {
+      pingResult = await Promise.race([this.ping(), this.processExitPromise]);
+    } else {
+      pingResult = await this.ping();
+    }
+    const serverVersion = pingResult.protocolVersion;
+    if (serverVersion === void 0) {
+      throw new Error(
+        `SDK protocol version mismatch: SDK expects version ${expectedVersion}, but server does not report a protocol version. Please update your server to ensure compatibility.`
+      );
+    }
+    if (serverVersion !== expectedVersion) {
+      throw new Error(
+        `SDK protocol version mismatch: SDK expects version ${expectedVersion}, but server reports version ${serverVersion}. Please update your SDK or server to ensure compatibility.`
+      );
+    }
+  }
+  /**
+   * Gets the ID of the most recently updated session.
+   *
+   * This is useful for resuming the last conversation when the session ID
+   * was not stored.
+   *
+   * @returns A promise that resolves with the session ID, or undefined if no sessions exist
+   * @throws Error if the client is not connected
+   *
+   * @example
+   * ```typescript
+   * const lastId = await client.getLastSessionId();
+   * if (lastId) {
+   *   const session = await client.resumeSession(lastId);
+   * }
+   * ```
+   */
+  async getLastSessionId() {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    const response = await this.connection.sendRequest("session.getLastId", {});
+    return response.sessionId;
+  }
+  /**
+   * Deletes a session and its data from disk.
+   *
+   * This permanently removes the session and all its conversation history.
+   * The session cannot be resumed after deletion.
+   *
+   * @param sessionId - The ID of the session to delete
+   * @returns A promise that resolves when the session is deleted
+   * @throws Error if the session does not exist or deletion fails
+   *
+   * @example
+   * ```typescript
+   * await client.deleteSession("session-123");
+   * ```
+   */
+  async deleteSession(sessionId) {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    const response = await this.connection.sendRequest("session.delete", {
+      sessionId
+    });
+    const { success, error } = response;
+    if (!success) {
+      throw new Error(`Failed to delete session ${sessionId}: ${error || "Unknown error"}`);
+    }
+    this.sessions.delete(sessionId);
+  }
+  /**
+   * List all available sessions.
+   *
+   * @param filter - Optional filter to limit returned sessions by context fields
+   *
+   * @example
+   * // List all sessions
+   * const sessions = await client.listSessions();
+   *
+   * @example
+   * // List sessions for a specific repository
+   * const sessions = await client.listSessions({ repository: "owner/repo" });
+   */
+  async listSessions(filter) {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    const response = await this.connection.sendRequest("session.list", { filter });
+    const { sessions } = response;
+    return sessions.map((s) => ({
+      sessionId: s.sessionId,
+      startTime: new Date(s.startTime),
+      modifiedTime: new Date(s.modifiedTime),
+      summary: s.summary,
+      isRemote: s.isRemote,
+      context: s.context
+    }));
+  }
+  /**
+   * Gets the foreground session ID in TUI+server mode.
+   *
+   * This returns the ID of the session currently displayed in the TUI.
+   * Only available when connecting to a server running in TUI+server mode (--ui-server).
+   *
+   * @returns A promise that resolves with the foreground session ID, or undefined if none
+   * @throws Error if the client is not connected
+   *
+   * @example
+   * ```typescript
+   * const sessionId = await client.getForegroundSessionId();
+   * if (sessionId) {
+   *   console.log(`TUI is displaying session: ${sessionId}`);
+   * }
+   * ```
+   */
+  async getForegroundSessionId() {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    const response = await this.connection.sendRequest("session.getForeground", {});
+    return response.sessionId;
+  }
+  /**
+   * Sets the foreground session in TUI+server mode.
+   *
+   * This requests the TUI to switch to displaying the specified session.
+   * Only available when connecting to a server running in TUI+server mode (--ui-server).
+   *
+   * @param sessionId - The ID of the session to display in the TUI
+   * @returns A promise that resolves when the session is switched
+   * @throws Error if the client is not connected or if the operation fails
+   *
+   * @example
+   * ```typescript
+   * // Switch the TUI to display a specific session
+   * await client.setForegroundSessionId("session-123");
+   * ```
+   */
+  async setForegroundSessionId(sessionId) {
+    if (!this.connection) {
+      throw new Error("Client not connected");
+    }
+    const response = await this.connection.sendRequest("session.setForeground", { sessionId });
+    const result = response;
+    if (!result.success) {
+      throw new Error(result.error || "Failed to set foreground session");
+    }
+  }
+  on(eventTypeOrHandler, handler) {
+    if (typeof eventTypeOrHandler === "string" && handler) {
+      const eventType = eventTypeOrHandler;
+      if (!this.typedLifecycleHandlers.has(eventType)) {
+        this.typedLifecycleHandlers.set(eventType, /* @__PURE__ */ new Set());
+      }
+      const storedHandler = handler;
+      this.typedLifecycleHandlers.get(eventType).add(storedHandler);
+      return () => {
+        const handlers = this.typedLifecycleHandlers.get(eventType);
+        if (handlers) {
+          handlers.delete(storedHandler);
+        }
+      };
+    }
+    const wildcardHandler = eventTypeOrHandler;
+    this.sessionLifecycleHandlers.add(wildcardHandler);
+    return () => {
+      this.sessionLifecycleHandlers.delete(wildcardHandler);
+    };
+  }
+  /**
+   * Start the CLI server process
+   */
+  async startCLIServer() {
+    return new Promise((resolve10, reject) => {
+      this.stderrBuffer = "";
+      const args = [
+        ...this.options.cliArgs,
+        "--headless",
+        "--no-auto-update",
+        "--log-level",
+        this.options.logLevel
+      ];
+      if (this.options.useStdio) {
+        args.push("--stdio");
+      } else if (this.options.port > 0) {
+        args.push("--port", this.options.port.toString());
+      }
+      if (this.options.githubToken) {
+        args.push("--auth-token-env", "COPILOT_SDK_AUTH_TOKEN");
+      }
+      if (!this.options.useLoggedInUser) {
+        args.push("--no-auto-login");
+      }
+      const envWithoutNodeDebug = { ...this.options.env };
+      delete envWithoutNodeDebug.NODE_DEBUG;
+      if (this.options.githubToken) {
+        envWithoutNodeDebug.COPILOT_SDK_AUTH_TOKEN = this.options.githubToken;
+      }
+      if (!(0, import_node_fs.existsSync)(this.options.cliPath)) {
+        throw new Error(
+          `Copilot CLI not found at ${this.options.cliPath}. Ensure @github/copilot is installed.`
+        );
+      }
+      const stdioConfig = this.options.useStdio ? ["pipe", "pipe", "pipe"] : ["ignore", "pipe", "pipe"];
+      const isJsFile = this.options.cliPath.endsWith(".js");
+      if (isJsFile) {
+        this.cliProcess = (0, import_node_child_process2.spawn)(process.execPath, [this.options.cliPath, ...args], {
+          stdio: stdioConfig,
+          cwd: this.options.cwd,
+          env: envWithoutNodeDebug,
+          windowsHide: true
+        });
+      } else {
+        this.cliProcess = (0, import_node_child_process2.spawn)(this.options.cliPath, args, {
+          stdio: stdioConfig,
+          cwd: this.options.cwd,
+          env: envWithoutNodeDebug,
+          windowsHide: true
+        });
+      }
+      let stdout = "";
+      let resolved = false;
+      if (this.options.useStdio) {
+        resolved = true;
+        resolve10();
+      } else {
+        this.cliProcess.stdout?.on("data", (data) => {
+          stdout += data.toString();
+          const match = stdout.match(/listening on port (\d+)/i);
+          if (match && !resolved) {
+            this.actualPort = parseInt(match[1], 10);
+            resolved = true;
+            resolve10();
           }
         });
       }
-    }
-    this.groupFiles(this.state.groups, directoryPath, files);
-  };
-};
-function promise(root, options) {
-  return new Promise((resolve$1, reject) => {
-    callback(root, options, (err, output) => {
-      if (err) return reject(err);
-      resolve$1(output);
+      this.cliProcess.stderr?.on("data", (data) => {
+        this.stderrBuffer += data.toString();
+        const lines = data.toString().split("\n");
+        for (const line of lines) {
+          if (line.trim()) {
+            process.stderr.write(`[CLI subprocess] ${line}
+`);
+          }
+        }
+      });
+      this.cliProcess.on("error", (error) => {
+        if (!resolved) {
+          resolved = true;
+          const stderrOutput = this.stderrBuffer.trim();
+          if (stderrOutput) {
+            reject(
+              new Error(
+                `Failed to start CLI server: ${error.message}
+stderr: ${stderrOutput}`
+              )
+            );
+          } else {
+            reject(new Error(`Failed to start CLI server: ${error.message}`));
+          }
+        }
+      });
+      this.processExitPromise = new Promise((_, rejectProcessExit) => {
+        this.cliProcess.on("exit", (code) => {
+          setTimeout(() => {
+            const stderrOutput = this.stderrBuffer.trim();
+            if (stderrOutput) {
+              rejectProcessExit(
+                new Error(
+                  `CLI server exited with code ${code}
+stderr: ${stderrOutput}`
+                )
+              );
+            } else {
+              rejectProcessExit(
+                new Error(`CLI server exited unexpectedly with code ${code}`)
+              );
+            }
+          }, 50);
+        });
+      });
+      this.processExitPromise.catch(() => {
+      });
+      this.cliProcess.on("exit", (code) => {
+        if (!resolved) {
+          resolved = true;
+          const stderrOutput = this.stderrBuffer.trim();
+          if (stderrOutput) {
+            reject(
+              new Error(
+                `CLI server exited with code ${code}
+stderr: ${stderrOutput}`
+              )
+            );
+          } else {
+            reject(new Error(`CLI server exited with code ${code}`));
+          }
+        } else if (this.options.autoRestart && this.state === "connected") {
+          void this.reconnect();
+        }
+      });
+      setTimeout(() => {
+        if (!resolved) {
+          resolved = true;
+          reject(new Error("Timeout waiting for CLI server to start"));
+        }
+      }, 1e4);
     });
-  });
-}
-function callback(root, options, callback$1) {
-  let walker = new Walker(root, options, callback$1);
-  walker.start();
-}
-function sync(root, options) {
-  const walker = new Walker(root, options);
-  return walker.start();
-}
-var APIBuilder = class {
-  constructor(root, options) {
-    this.root = root;
-    this.options = options;
-  }
-  withPromise() {
-    return promise(this.root, this.options);
-  }
-  withCallback(cb) {
-    callback(this.root, this.options, cb);
-  }
-  sync() {
-    return sync(this.root, this.options);
-  }
-};
-var pm = null;
-try {
-  __require.resolve("picomatch");
-  pm = __require("picomatch");
-} catch {
-}
-var Builder = class {
-  globCache = {};
-  options = {
-    maxDepth: Infinity,
-    suppressErrors: true,
-    pathSeparator: import_path.sep,
-    filters: []
-  };
-  globFunction;
-  constructor(options) {
-    this.options = {
-      ...this.options,
-      ...options
-    };
-    this.globFunction = this.options.globFunction;
-  }
-  group() {
-    this.options.group = true;
-    return this;
-  }
-  withPathSeparator(separator) {
-    this.options.pathSeparator = separator;
-    return this;
-  }
-  withBasePath() {
-    this.options.includeBasePath = true;
-    return this;
-  }
-  withRelativePaths() {
-    this.options.relativePaths = true;
-    return this;
-  }
-  withDirs() {
-    this.options.includeDirs = true;
-    return this;
-  }
-  withMaxDepth(depth) {
-    this.options.maxDepth = depth;
-    return this;
-  }
-  withMaxFiles(limit) {
-    this.options.maxFiles = limit;
-    return this;
-  }
-  withFullPaths() {
-    this.options.resolvePaths = true;
-    this.options.includeBasePath = true;
-    return this;
-  }
-  withErrors() {
-    this.options.suppressErrors = false;
-    return this;
-  }
-  withSymlinks({ resolvePaths = true } = {}) {
-    this.options.resolveSymlinks = true;
-    this.options.useRealPaths = resolvePaths;
-    return this.withFullPaths();
-  }
-  withAbortSignal(signal) {
-    this.options.signal = signal;
-    return this;
-  }
-  normalize() {
-    this.options.normalizePath = true;
-    return this;
-  }
-  filter(predicate) {
-    this.options.filters.push(predicate);
-    return this;
-  }
-  onlyDirs() {
-    this.options.excludeFiles = true;
-    this.options.includeDirs = true;
-    return this;
-  }
-  exclude(predicate) {
-    this.options.exclude = predicate;
-    return this;
-  }
-  onlyCounts() {
-    this.options.onlyCounts = true;
-    return this;
-  }
-  crawl(root) {
-    return new APIBuilder(root || ".", this.options);
-  }
-  withGlobFunction(fn) {
-    this.globFunction = fn;
-    return this;
   }
   /**
-  * @deprecated Pass options using the constructor instead:
-  * ```ts
-  * new fdir(options).crawl("/path/to/root");
-  * ```
-  * This method will be removed in v7.0
-  */
-  /* c8 ignore next 4 */
-  crawlWithOptions(root, options) {
-    this.options = {
-      ...this.options,
-      ...options
-    };
-    return new APIBuilder(root || ".", this.options);
-  }
-  glob(...patterns) {
-    if (this.globFunction) return this.globWithOptions(patterns);
-    return this.globWithOptions(patterns, ...[{ dot: true }]);
-  }
-  globWithOptions(patterns, ...options) {
-    const globFn = this.globFunction || pm;
-    if (!globFn) throw new Error("Please specify a glob function to use glob matching.");
-    var isMatch = this.globCache[patterns.join("\0")];
-    if (!isMatch) {
-      isMatch = globFn(patterns, ...options);
-      this.globCache[patterns.join("\0")] = isMatch;
+   * Connect to the CLI server (via socket or stdio)
+   */
+  async connectToServer() {
+    if (this.options.useStdio) {
+      return this.connectViaStdio();
+    } else {
+      return this.connectViaTcp();
     }
-    this.options.filters.push((path11) => isMatch(path11));
-    return this;
+  }
+  /**
+   * Connect via stdio pipes
+   */
+  async connectViaStdio() {
+    if (!this.cliProcess) {
+      throw new Error("CLI process not started");
+    }
+    this.cliProcess.stdin?.on("error", (err) => {
+      if (!this.forceStopping) {
+        throw err;
+      }
+    });
+    this.connection = (0, import_node.createMessageConnection)(
+      new import_node.StreamMessageReader(this.cliProcess.stdout),
+      new import_node.StreamMessageWriter(this.cliProcess.stdin)
+    );
+    this.attachConnectionHandlers();
+    this.connection.listen();
+  }
+  /**
+   * Connect to the CLI server via TCP socket
+   */
+  async connectViaTcp() {
+    if (!this.actualPort) {
+      throw new Error("Server port not available");
+    }
+    return new Promise((resolve10, reject) => {
+      this.socket = new import_node_net.Socket();
+      this.socket.connect(this.actualPort, this.actualHost, () => {
+        this.connection = (0, import_node.createMessageConnection)(
+          new import_node.StreamMessageReader(this.socket),
+          new import_node.StreamMessageWriter(this.socket)
+        );
+        this.attachConnectionHandlers();
+        this.connection.listen();
+        resolve10();
+      });
+      this.socket.on("error", (error) => {
+        reject(new Error(`Failed to connect to CLI server: ${error.message}`));
+      });
+    });
+  }
+  attachConnectionHandlers() {
+    if (!this.connection) {
+      return;
+    }
+    this.connection.onNotification("session.event", (notification) => {
+      this.handleSessionEventNotification(notification);
+    });
+    this.connection.onNotification("session.lifecycle", (notification) => {
+      this.handleSessionLifecycleNotification(notification);
+    });
+    this.connection.onRequest(
+      "tool.call",
+      async (params) => await this.handleToolCallRequest(params)
+    );
+    this.connection.onRequest(
+      "permission.request",
+      async (params) => await this.handlePermissionRequest(params)
+    );
+    this.connection.onRequest(
+      "userInput.request",
+      async (params) => await this.handleUserInputRequest(params)
+    );
+    this.connection.onRequest(
+      "hooks.invoke",
+      async (params) => await this.handleHooksInvoke(params)
+    );
+    this.connection.onClose(() => {
+      if (this.state === "connected" && this.options.autoRestart) {
+        void this.reconnect();
+      }
+    });
+    this.connection.onError((_error) => {
+    });
+  }
+  handleSessionEventNotification(notification) {
+    if (typeof notification !== "object" || !notification || !("sessionId" in notification) || typeof notification.sessionId !== "string" || !("event" in notification)) {
+      return;
+    }
+    const session = this.sessions.get(notification.sessionId);
+    if (session) {
+      session._dispatchEvent(notification.event);
+    }
+  }
+  handleSessionLifecycleNotification(notification) {
+    if (typeof notification !== "object" || !notification || !("type" in notification) || typeof notification.type !== "string" || !("sessionId" in notification) || typeof notification.sessionId !== "string") {
+      return;
+    }
+    const event = notification;
+    const typedHandlers = this.typedLifecycleHandlers.get(event.type);
+    if (typedHandlers) {
+      for (const handler of typedHandlers) {
+        try {
+          handler(event);
+        } catch {
+        }
+      }
+    }
+    for (const handler of this.sessionLifecycleHandlers) {
+      try {
+        handler(event);
+      } catch {
+      }
+    }
+  }
+  async handleToolCallRequest(params) {
+    if (!params || typeof params.sessionId !== "string" || typeof params.toolCallId !== "string" || typeof params.toolName !== "string") {
+      throw new Error("Invalid tool call payload");
+    }
+    const session = this.sessions.get(params.sessionId);
+    if (!session) {
+      throw new Error(`Unknown session ${params.sessionId}`);
+    }
+    const handler = session.getToolHandler(params.toolName);
+    if (!handler) {
+      return { result: this.buildUnsupportedToolResult(params.toolName) };
+    }
+    return await this.executeToolCall(handler, params);
+  }
+  async executeToolCall(handler, request) {
+    try {
+      const invocation = {
+        sessionId: request.sessionId,
+        toolCallId: request.toolCallId,
+        toolName: request.toolName,
+        arguments: request.arguments
+      };
+      const result = await handler(request.arguments, invocation);
+      return { result: this.normalizeToolResult(result) };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        result: {
+          // Don't expose detailed error information to the LLM for security reasons
+          textResultForLlm: "Invoking this tool produced an error. Detailed information is not available.",
+          resultType: "failure",
+          error: message,
+          toolTelemetry: {}
+        }
+      };
+    }
+  }
+  async handlePermissionRequest(params) {
+    if (!params || typeof params.sessionId !== "string" || !params.permissionRequest) {
+      throw new Error("Invalid permission request payload");
+    }
+    const session = this.sessions.get(params.sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${params.sessionId}`);
+    }
+    try {
+      const result = await session._handlePermissionRequest(params.permissionRequest);
+      return { result };
+    } catch (_error) {
+      return {
+        result: {
+          kind: "denied-no-approval-rule-and-could-not-request-from-user"
+        }
+      };
+    }
+  }
+  async handleUserInputRequest(params) {
+    if (!params || typeof params.sessionId !== "string" || typeof params.question !== "string") {
+      throw new Error("Invalid user input request payload");
+    }
+    const session = this.sessions.get(params.sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${params.sessionId}`);
+    }
+    const result = await session._handleUserInputRequest({
+      question: params.question,
+      choices: params.choices,
+      allowFreeform: params.allowFreeform
+    });
+    return result;
+  }
+  async handleHooksInvoke(params) {
+    if (!params || typeof params.sessionId !== "string" || typeof params.hookType !== "string") {
+      throw new Error("Invalid hooks invoke payload");
+    }
+    const session = this.sessions.get(params.sessionId);
+    if (!session) {
+      throw new Error(`Session not found: ${params.sessionId}`);
+    }
+    const output = await session._handleHooksInvoke(params.hookType, params.input);
+    return { output };
+  }
+  normalizeToolResult(result) {
+    if (result === void 0 || result === null) {
+      return {
+        textResultForLlm: "Tool returned no result",
+        resultType: "failure",
+        error: "tool returned no result",
+        toolTelemetry: {}
+      };
+    }
+    if (this.isToolResultObject(result)) {
+      return result;
+    }
+    const textResult = typeof result === "string" ? result : JSON.stringify(result);
+    return {
+      textResultForLlm: textResult,
+      resultType: "success",
+      toolTelemetry: {}
+    };
+  }
+  isToolResultObject(value) {
+    return typeof value === "object" && value !== null && "textResultForLlm" in value && typeof value.textResultForLlm === "string" && "resultType" in value;
+  }
+  buildUnsupportedToolResult(toolName) {
+    return {
+      textResultForLlm: `Tool '${toolName}' is not supported by this client instance.`,
+      resultType: "failure",
+      error: `tool '${toolName}' not supported`,
+      toolTelemetry: {}
+    };
+  }
+  /**
+   * Attempt to reconnect to the server
+   */
+  async reconnect() {
+    this.state = "disconnected";
+    try {
+      await this.stop();
+      await this.start();
+    } catch (_error) {
+    }
   }
 };
 
-// src/file-search-service.ts
-var import_picomatch = __toESM(require_picomatch2(), 1);
-var ALWAYS_IGNORED_DIRS = [
-  "node_modules",
-  ".git",
-  "dist",
-  "build",
-  ".next",
-  "coverage",
-  "__pycache__",
-  ".cache",
-  ".turbo",
-  ".parcel-cache",
-  "out",
-  ".svn",
-  ".hg",
-  "vendor",
-  ".venv",
-  "venv",
-  ".tox"
-];
-var ALWAYS_IGNORED_PATTERNS = [
-  "*.pyc",
-  "*.pyo",
-  "*.class",
-  "*.o",
-  "*.obj",
-  "*.swp",
-  "*.swo",
-  "*~",
-  ".DS_Store",
-  "Thumbs.db",
-  "*.log",
-  "*.tmp",
-  "*.lock",
-  "package-lock.json",
-  "yarn.lock",
-  "pnpm-lock.yaml"
-];
-function fuzzyMatch(query, target) {
-  const lowerQuery = query.toLowerCase();
-  const lowerTarget = target.toLowerCase();
-  let queryIdx = 0;
-  let score = 0;
-  let consecutiveMatches = 0;
-  let lastMatchIdx = -1;
-  for (let i = 0; i < lowerTarget.length && queryIdx < lowerQuery.length; i++) {
-    if (lowerTarget[i] === lowerQuery[queryIdx]) {
-      if (lastMatchIdx === i - 1) {
-        consecutiveMatches++;
-        score += consecutiveMatches * 2;
-      } else {
-        consecutiveMatches = 1;
-        score += 1;
-      }
-      if (i === 0 || lowerTarget[i - 1] === "/" || lowerTarget[i - 1] === "-" || lowerTarget[i - 1] === "_" || lowerTarget[i - 1] === ".") {
-        score += 5;
-      }
-      lastMatchIdx = i;
-      queryIdx++;
-    }
+// src/copilot/sdk-copilot-client.ts
+var SdkCopilotClient = class {
+  client;
+  constructor(config) {
+    this.client = new CopilotClient({
+      cwd: config.cwd,
+      useStdio: true,
+      autoStart: false,
+      autoRestart: true,
+      logLevel: config.logLevel ?? "error",
+      githubToken: config.githubToken,
+      // The SDK passes env directly to child_process.spawn(), replacing
+      // process.env entirely. We must merge to preserve PATH, HOME, etc.
+      env: config.env ? { ...process.env, ...config.env } : void 0
+    });
   }
-  return {
-    match: queryIdx === lowerQuery.length,
-    score
-  };
+  async start() {
+    return this.client.start();
+  }
+  async stop() {
+    await this.client.stop();
+  }
+  ping(message) {
+    return this.client.ping(message);
+  }
+  getState() {
+    return this.client.getState();
+  }
+  createSession(config) {
+    return this.client.createSession(config);
+  }
+  async resumeSession(id, config) {
+    return this.client.resumeSession(id, config);
+  }
+  async listSessions() {
+    return this.client.listSessions();
+  }
+  async deleteSession(id) {
+    return this.client.deleteSession(id);
+  }
+  async getLastSessionId() {
+    return this.client.getLastSessionId();
+  }
+  async getAuthStatus() {
+    return this.client.getAuthStatus();
+  }
+  async getStatus() {
+    return this.client.getStatus();
+  }
+  async listModels() {
+    return this.client.listModels();
+  }
+  get rpc() {
+    return this.client.rpc;
+  }
+  on(handler) {
+    return this.client.on(handler);
+  }
+};
+
+// src/fs/filesystem-service.ts
+var path2 = __toESM(require("path"), 1);
+var isCaseInsensitiveFS = process.platform === "darwin" || process.platform === "win32";
+function normalizePath(p) {
+  const resolved = path2.resolve(p);
+  return isCaseInsensitiveFS ? resolved.toLowerCase() : resolved;
 }
-var FileSearchService = class {
-  indexes = /* @__PURE__ */ new Map();
-  cacheTtl;
-  constructor(options = {}) {
-    this.cacheTtl = options.cacheTtl ?? 5 * 60 * 1e3;
-  }
-  /**
-   * Search for files matching a query.
-   */
-  async search(request) {
-    const { query, cwd, maxResults = 50, includeDirs = false } = request;
-    const { files, freshIndex } = await this.getIndex(cwd, includeDirs);
-    const results = await this.performSearch(files, query, maxResults);
-    return {
-      results,
-      totalIndexed: files.length,
-      freshIndex
+var FileSystemService = class {
+  pool;
+  constructor(config) {
+    const onFileChanged = config.onFileChanged;
+    const factory = {
+      async create(cwd) {
+        const provider = config.createProvider(cwd);
+        await provider.startWatching();
+        const subscription = provider.onFileContentChanged((event) => {
+          try {
+            onFileChanged?.(event.path);
+          } catch {
+          }
+        });
+        return { provider, subscription };
+      },
+      async destroy(entry) {
+        entry.subscription.dispose();
+        await entry.provider.dispose();
+      }
     };
+    this.pool = new ResourcePool({
+      factory,
+      gracePeriodMs: config.gracePeriodMs ?? 5e3,
+      keyToString: normalizePath,
+      onLog: config.onLog
+    });
   }
   /**
-   * Force refresh index for a working directory.
+   * Acquire a filesystem provider for the given cwd.
+   * Creates the provider and starts watching if it doesn't exist.
    */
-  invalidate(cwd) {
-    for (const key of this.indexes.keys()) {
-      if (key.startsWith(cwd)) {
-        this.indexes.delete(key);
-      }
-    }
+  async retain(cwd) {
+    const entry = await this.pool.retain(cwd);
+    return entry.provider;
   }
-  // ===========================================================================
-  // Private Methods
-  // ===========================================================================
-  async getIndex(cwd, includeDirs) {
-    const key = `${cwd}:${includeDirs}`;
-    const cached = this.indexes.get(key);
-    if (cached && Date.now() - cached.createdAt < this.cacheTtl) {
-      return { files: cached.files, freshIndex: false };
-    }
-    const files = await this.buildIndex(cwd, includeDirs);
-    this.indexes.set(key, { files, createdAt: Date.now() });
-    return { files, freshIndex: true };
+  /** Release a reference. When refCount hits 0, grace period starts. */
+  release(cwd) {
+    this.pool.release(cwd);
   }
-  async buildIndex(cwd, includeDirs) {
-    const ignorePatterns = await this.loadIgnorePatterns(cwd);
-    const allIgnorePatterns = [...ALWAYS_IGNORED_PATTERNS, ...ignorePatterns];
-    const isIgnoredFile = (0, import_picomatch.default)(allIgnorePatterns, { dot: true });
-    const ignoredDirSet = new Set(ALWAYS_IGNORED_DIRS);
-    const crawler = new Builder().withRelativePaths().exclude((dirName) => {
-      return ignoredDirSet.has(dirName);
-    });
-    if (includeDirs) {
-      crawler.withDirs();
-    }
-    const allPaths = await crawler.crawl(cwd).withPromise();
-    const filteredFiles = allPaths.filter((filePath) => {
-      const fileName = (0, import_node_path2.basename)(filePath);
-      return !isIgnoredFile(fileName);
-    });
-    return filteredFiles;
+  /** Read-only access without affecting refCount. */
+  get(cwd) {
+    return this.pool.get(cwd)?.provider;
   }
-  async loadIgnorePatterns(cwd) {
-    const patterns = [];
-    try {
-      const gitignorePath = (0, import_node_path2.join)(cwd, ".gitignore");
-      const content = await (0, import_promises.readFile)(gitignorePath, "utf-8");
-      const lines = content.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
-      patterns.push(...lines);
-    } catch {
-    }
-    return patterns;
-  }
-  async performSearch(files, query, maxResults) {
-    if (!query) {
-      return files.slice().sort((a, b) => a.length - b.length).slice(0, maxResults).map((path11) => ({
-        path: path11,
-        type: this.getType(path11),
-        score: 0
-      }));
-    }
-    if (query.includes("*") || query.includes("?")) {
-      const matcher = (0, import_picomatch.default)(query, { nocase: true, dot: true });
-      return files.filter((f) => matcher(f)).slice(0, maxResults).map((path11) => ({
-        path: path11,
-        type: this.getType(path11),
-        score: 1
-      }));
-    }
-    const results = [];
-    for (const filePath of files) {
-      const { match, score: fuzzyScore } = fuzzyMatch(query, filePath);
-      if (match) {
-        const totalScore = this.calculateScore(filePath, query, fuzzyScore);
-        results.push({ path: filePath, score: totalScore });
-      }
-    }
-    return results.sort((a, b) => b.score - a.score).slice(0, maxResults).map(({ path: path11, score }) => ({
-      path: path11,
-      type: this.getType(path11),
-      score
-    }));
-  }
-  calculateScore(filePath, query, fuzzyScore) {
-    const lowerPath = filePath.toLowerCase();
-    const lowerQuery = query.toLowerCase();
-    const filename = (0, import_node_path2.basename)(filePath).toLowerCase();
-    if (lowerPath === lowerQuery) {
-      return 1e3 + fuzzyScore;
-    }
-    if (filename === lowerQuery) {
-      return 800 + fuzzyScore;
-    }
-    if (filename.startsWith(lowerQuery)) {
-      return 600 + fuzzyScore;
-    }
-    if (lowerPath.includes("/" + lowerQuery) || lowerPath.includes(lowerQuery + "/")) {
-      return 500 + fuzzyScore;
-    }
-    if (lowerPath.includes(lowerQuery)) {
-      return 400 + fuzzyScore;
-    }
-    return fuzzyScore;
-  }
-  getType(filePath) {
-    return filePath.endsWith("/") ? "directory" : "file";
+  /** Stop all providers and clean up. */
+  async dispose() {
+    return this.pool.dispose();
   }
 };
 
@@ -51134,34 +57827,11 @@ var fs4 = __toESM(require("fs/promises"), 1);
 var nodePath = __toESM(require("path"), 1);
 
 // src/shared/event-emitter.ts
-var EventEmitter2 = class {
-  /**
-   * Set of registered listeners.
-   *
-   * Using a Set ensures:
-   * - O(1) add/remove operations
-   * - No duplicate listeners
-   * - Iteration order matches insertion order
-   */
+var EventEmitter = class {
   listeners = /* @__PURE__ */ new Set();
-  /**
-   * Whether this emitter has been disposed.
-   *
-   * Once disposed, no new listeners can be added and fire() is a no-op.
-   */
   disposed = false;
   /**
    * The public event property for subscribing.
-   *
-   * This is a function that takes a listener and returns a disposable.
-   * Consumers use this to subscribe to events.
-   *
-   * @example
-   * ```typescript
-   * const subscription = emitter.event((data) => {
-   *   console.log('Received:', data);
-   * });
-   * ```
    */
   event = (listener) => {
     if (this.disposed) {
@@ -51179,10 +57849,7 @@ var EventEmitter2 = class {
    * Fire the event, notifying all listeners.
    *
    * Listeners are called synchronously in insertion order.
-   * Errors in listeners are caught and logged to prevent one
-   * bad listener from breaking others.
-   *
-   * @param data - The event data to pass to listeners
+   * Errors in listeners are caught to prevent one bad listener from breaking others.
    */
   fire(data) {
     if (this.disposed) {
@@ -51197,32 +57864,17 @@ var EventEmitter2 = class {
       }
     }
   }
-  /**
-   * Check if there are any registered listeners.
-   *
-   * Useful for optimization - skip work if no one is listening.
-   */
+  /** Check if there are any registered listeners. */
   hasListeners() {
     return this.listeners.size > 0;
   }
-  /**
-   * Get the number of registered listeners.
-   *
-   * Useful for debugging and testing.
-   */
+  /** Get the number of registered listeners. */
   get listenerCount() {
     return this.listeners.size;
   }
   /**
    * Dispose the emitter, clearing all listeners.
-   *
-   * After disposal:
-   * - All existing listeners are removed
-   * - New subscriptions return no-op disposables
-   * - fire() becomes a no-op
-   *
-   * This should be called when the owning object is disposed
-   * to prevent memory leaks.
+   * After disposal, new subscriptions return no-op disposables and fire() is a no-op.
    */
   dispose() {
     this.disposed = true;
@@ -51231,10 +57883,10 @@ var EventEmitter2 = class {
 };
 
 // src/fs/path-utils.ts
-var path2 = __toESM(require("path"), 1);
-var isCaseInsensitiveFS = process.platform === "darwin" || process.platform === "win32";
+var path3 = __toESM(require("path"), 1);
+var isCaseInsensitiveFS2 = process.platform === "darwin" || process.platform === "win32";
 function normalizePathForComparison(filePath) {
-  return isCaseInsensitiveFS ? filePath.toLowerCase() : filePath;
+  return isCaseInsensitiveFS2 ? filePath.toLowerCase() : filePath;
 }
 function pathStartsWith(filePath, prefix) {
   const normalizedPath = normalizePathForComparison(filePath);
@@ -51242,12 +57894,12 @@ function pathStartsWith(filePath, prefix) {
   if (normalizedPath === normalizedPrefix) {
     return true;
   }
-  return normalizedPath.startsWith(normalizedPrefix + path2.sep);
+  return normalizedPath.startsWith(normalizedPrefix + path3.sep);
 }
 function safeRelativePath(from, to) {
   const normalizedFrom = normalizePathForComparison(from);
   const normalizedTo = normalizePathForComparison(to);
-  return path2.relative(normalizedFrom, normalizedTo);
+  return path3.relative(normalizedFrom, normalizedTo);
 }
 function isPathOutside(relativePath) {
   return relativePath.startsWith("..");
@@ -51255,39 +57907,11 @@ function isPathOutside(relativePath) {
 
 // src/fs/directory-cache.ts
 var DirectoryCacheImpl = class {
-  /**
-   * The main cache storage.
-   * Key: normalized absolute path
-   * Value: CacheEntry with entries, version, and timestamp
-   */
   cache = /* @__PURE__ */ new Map();
-  /**
-   * Listeners for cache changes.
-   * Key: path pattern (or '*' for all)
-   * Value: Set of listener callbacks
-   */
   listeners = /* @__PURE__ */ new Map();
-  /**
-   * Tracks access order for LRU eviction.
-   * Most recently accessed paths are at the end.
-   */
   accessOrder = [];
-  /**
-   * Maximum number of entries before LRU eviction kicks in.
-   * Can be configured via setMaxSize() for testing.
-   */
   maxSize = 500;
-  // -------------------------------------------------------------------------
   // Core Operations
-  // -------------------------------------------------------------------------
-  /**
-   * Get a cached directory entry.
-   *
-   * Updates access order for LRU tracking (this path becomes most-recently-used).
-   *
-   * @param dirPath - Absolute path to the directory
-   * @returns CacheEntry if found, undefined if not cached
-   */
   get(dirPath) {
     const normalizedPath = this.normalizePath(dirPath);
     const entry = this.cache.get(normalizedPath);
@@ -51296,15 +57920,6 @@ var DirectoryCacheImpl = class {
     }
     return entry;
   }
-  /**
-   * Cache a directory listing.
-   *
-   * If an entry already exists, its version is incremented.
-   * If the cache is full, the least-recently-used entry is evicted.
-   *
-   * @param dirPath - Absolute path to the directory
-   * @param entries - Directory entries to cache
-   */
   set(dirPath, entries) {
     const normalizedPath = this.normalizePath(dirPath);
     const existing = this.cache.get(normalizedPath);
@@ -51320,56 +57935,23 @@ var DirectoryCacheImpl = class {
     this.updateAccessOrder(normalizedPath);
     this.notifyListeners(normalizedPath, newEntry);
   }
-  /**
-   * Check if a directory is cached.
-   *
-   * Does NOT update access order (peek operation).
-   *
-   * @param dirPath - Absolute path to the directory
-   * @returns true if the directory is in the cache
-   */
   has(dirPath) {
-    const normalizedPath = this.normalizePath(dirPath);
-    return this.cache.has(normalizedPath);
+    return this.cache.has(this.normalizePath(dirPath));
   }
-  /**
-   * Get the version number of a cached entry.
-   *
-   * Useful for comparing if data has changed since last read.
-   *
-   * @param dirPath - Absolute path to the directory
-   * @returns Version number, or 0 if not cached
-   */
   getVersion(dirPath) {
-    const normalizedPath = this.normalizePath(dirPath);
-    return this.cache.get(normalizedPath)?.version ?? 0;
+    return this.cache.get(this.normalizePath(dirPath))?.version ?? 0;
   }
-  // -------------------------------------------------------------------------
   // In-Place Updates
-  // -------------------------------------------------------------------------
-  /**
-   * Add a single entry to a cached directory listing.
-   *
-   * If the directory is not cached, this is a no-op.
-   * If an entry with the same name already exists, it is replaced.
-   *
-   * @param dirPath - Absolute path to the directory
-   * @param entry - The entry to add
-   */
   addEntry(dirPath, entry) {
     const normalizedPath = this.normalizePath(dirPath);
     const cached = this.cache.get(normalizedPath);
-    if (!cached) {
-      return;
-    }
+    if (!cached) return;
     const entries = cached.entries.filter(
       (e) => !this.entryNamesMatch(e.name, entry.name)
     );
     entries.push(entry);
     entries.sort((a, b) => {
-      if (a.type !== b.type) {
-        return a.type === "directory" ? -1 : 1;
-      }
+      if (a.type !== b.type) return a.type === "directory" ? -1 : 1;
       return a.name.localeCompare(b.name);
     });
     cached.entries = entries;
@@ -51377,20 +57959,10 @@ var DirectoryCacheImpl = class {
     cached.timestamp = Date.now();
     this.notifyListeners(normalizedPath, cached);
   }
-  /**
-   * Remove a single entry from a cached directory listing.
-   *
-   * If the directory is not cached or the entry doesn't exist, this is a no-op.
-   *
-   * @param dirPath - Absolute path to the directory
-   * @param entryName - Name of the entry to remove
-   */
   removeEntry(dirPath, entryName) {
     const normalizedPath = this.normalizePath(dirPath);
     const cached = this.cache.get(normalizedPath);
-    if (!cached) {
-      return;
-    }
+    if (!cached) return;
     const originalLength = cached.entries.length;
     cached.entries = cached.entries.filter(
       (e) => !this.entryNamesMatch(e.name, entryName)
@@ -51401,18 +57973,7 @@ var DirectoryCacheImpl = class {
       this.notifyListeners(normalizedPath, cached);
     }
   }
-  // -------------------------------------------------------------------------
   // Invalidation
-  // -------------------------------------------------------------------------
-  /**
-   * Invalidate a cached entry without removing it.
-   *
-   * This increments the version number, signaling that the data may be stale.
-   * The entry remains in cache so stale data can be returned immediately
-   * while fresh data is fetched in the background.
-   *
-   * @param dirPath - Absolute path to the directory
-   */
   invalidate(dirPath) {
     const normalizedPath = this.normalizePath(dirPath);
     const entry = this.cache.get(normalizedPath);
@@ -51422,14 +57983,6 @@ var DirectoryCacheImpl = class {
       this.notifyListeners(normalizedPath, entry);
     }
   }
-  /**
-   * Remove a cached entry completely.
-   *
-   * Use this when a directory is deleted or you want to force a fresh read.
-   * For normal invalidation (file changed), prefer `invalidate()`.
-   *
-   * @param dirPath - Absolute path to the directory
-   */
   delete(dirPath) {
     const normalizedPath = this.normalizePath(dirPath);
     if (this.cache.delete(normalizedPath)) {
@@ -51440,29 +57993,15 @@ var DirectoryCacheImpl = class {
       this.notifyListeners(normalizedPath, null);
     }
   }
-  /**
-   * Clear the entire cache.
-   *
-   * Use sparingly - typically only needed for testing or major CWD changes.
-   */
   clear() {
     const paths = [...this.cache.keys()];
     this.cache.clear();
     this.accessOrder = [];
-    for (const path11 of paths) {
-      this.notifyListeners(path11, null);
+    for (const path14 of paths) {
+      this.notifyListeners(path14, null);
     }
   }
-  // -------------------------------------------------------------------------
   // Subscription
-  // -------------------------------------------------------------------------
-  /**
-   * Subscribe to cache changes for a specific path.
-   *
-   * @param dirPath - Path to watch, or '*' for all changes
-   * @param listener - Callback when cache changes
-   * @returns Disposable to unsubscribe
-   */
   subscribe(dirPath, listener) {
     const normalizedPath = dirPath === "*" ? "*" : this.normalizePath(dirPath);
     let pathListeners = this.listeners.get(normalizedPath);
@@ -51483,38 +58022,16 @@ var DirectoryCacheImpl = class {
       }
     };
   }
-  // -------------------------------------------------------------------------
   // Configuration
-  // -------------------------------------------------------------------------
-  /**
-   * Set the maximum cache size.
-   *
-   * If the new size is smaller than current cache size,
-   * LRU entries will be evicted immediately.
-   *
-   * @param size - Maximum number of entries
-   */
   setMaxSize(size) {
     this.maxSize = size;
     while (this.cache.size > this.maxSize) {
       this.evictLRU();
     }
   }
-  /**
-   * Get the current cache size (number of entries).
-   */
   get size() {
     return this.cache.size;
   }
-  /**
-   * Get all cached directory paths under a given prefix.
-   *
-   * Used for bulk operations like refreshing gitignore status.
-   * Does NOT update access order (peek operation).
-   *
-   * @param prefix - Path prefix to filter by (e.g., git root)
-   * @returns Array of cached paths that start with the prefix
-   */
   getPathsUnder(prefix) {
     const normalizedPrefix = this.normalizePath(prefix);
     const paths = [];
@@ -51527,16 +58044,7 @@ var DirectoryCacheImpl = class {
     }
     return paths;
   }
-  // -------------------------------------------------------------------------
   // Internal Helpers
-  // -------------------------------------------------------------------------
-  /**
-   * Normalize a path for consistent cache keys.
-   *
-   * - Removes trailing slashes (except for root '/')
-   * - Lowercases on case-insensitive filesystems (macOS/Windows)
-   * - Ensures consistent format
-   */
   normalizePath(dirPath) {
     let normalized = dirPath;
     if (normalized.length > 1 && normalized.endsWith("/")) {
@@ -51544,24 +58052,12 @@ var DirectoryCacheImpl = class {
     }
     return normalizePathForComparison(normalized);
   }
-  /**
-   * Check if two entry names match, handling case sensitivity correctly.
-   *
-   * On case-insensitive filesystems (macOS/Windows), comparison is case-insensitive.
-   * This ensures that when a watcher reports a file with different casing than
-   * what's in the cache, we still match correctly.
-   */
   entryNamesMatch(name1, name2) {
-    if (isCaseInsensitiveFS) {
+    if (isCaseInsensitiveFS2) {
       return name1.toLowerCase() === name2.toLowerCase();
     }
     return name1 === name2;
   }
-  /**
-   * Update access order for LRU tracking.
-   *
-   * Moves the path to the end of accessOrder (most recently used).
-   */
   updateAccessOrder(normalizedPath) {
     const index = this.accessOrder.indexOf(normalizedPath);
     if (index !== -1) {
@@ -51569,28 +58065,20 @@ var DirectoryCacheImpl = class {
     }
     this.accessOrder.push(normalizedPath);
   }
-  /**
-   * Evict the least-recently-used entry.
-   */
   evictLRU() {
-    if (this.accessOrder.length === 0) {
-      return;
-    }
+    if (this.accessOrder.length === 0) return;
     const lruPath = this.accessOrder.shift();
     if (lruPath) {
       this.cache.delete(lruPath);
       this.notifyListeners(lruPath, null);
     }
   }
-  /**
-   * Notify listeners about a cache change.
-   */
-  notifyListeners(path11, entry) {
-    const pathListeners = this.listeners.get(path11);
+  notifyListeners(path14, entry) {
+    const pathListeners = this.listeners.get(path14);
     if (pathListeners) {
       for (const listener of pathListeners) {
         try {
-          listener(path11, entry);
+          listener(path14, entry);
         } catch (error) {
           console.error("[DirectoryCache] Listener threw an error:", error);
         }
@@ -51600,7 +58088,7 @@ var DirectoryCacheImpl = class {
     if (wildcardListeners) {
       for (const listener of wildcardListeners) {
         try {
-          listener(path11, entry);
+          listener(path14, entry);
         } catch (error) {
           console.error("[DirectoryCache] Listener threw an error:", error);
         }
@@ -51612,50 +58100,30 @@ var DirectoryCache = new DirectoryCacheImpl();
 
 // src/fs/gitignore-cache.ts
 var import_ignore = __toESM(require_ignore(), 1);
-var import_node_child_process2 = require("child_process");
+var import_node_child_process3 = require("child_process");
 var fs2 = __toESM(require("fs"), 1);
-var path3 = __toESM(require("path"), 1);
+var path4 = __toESM(require("path"), 1);
 var GitIgnoreCacheImpl = class {
-  /**
-   * Cache of directory path -> git root path (or null if not in a repo).
-   * This rarely changes, so we cache indefinitely.
-   */
   gitRootCache = /* @__PURE__ */ new Map();
-  /**
-   * Cache of git root -> ignore matcher instance.
-   * The matcher contains all rules from .gitignore files in that repo.
-   */
   matcherCache = /* @__PURE__ */ new Map();
-  /**
-   * Tracks which .gitignore files have been loaded for each git root.
-   * Key: gitRoot, Value: Set of .gitignore file paths that have been loaded.
-   */
   loadedGitignoreFiles = /* @__PURE__ */ new Map();
-  // -------------------------------------------------------------------------
   // Git Root Lookup
-  // -------------------------------------------------------------------------
-  /**
-   * Normalize a path for cache key (case-insensitive on macOS/Windows).
-   */
   normalizeCacheKey(filePath) {
-    return normalizePathForComparison(path3.resolve(filePath));
+    return normalizePathForComparison(path4.resolve(filePath));
   }
-  /**
-   * Find the git root for a directory, with caching.
-   */
   async getGitRoot(dirPath) {
     const cacheKey = this.normalizeCacheKey(dirPath);
     if (this.gitRootCache.has(cacheKey)) {
       return this.gitRootCache.get(cacheKey) ?? null;
     }
-    const resolved = path3.resolve(dirPath);
+    const resolved = path4.resolve(dirPath);
     const gitRoot = await this.findGitRoot(resolved);
     this.gitRootCache.set(cacheKey, gitRoot);
     if (gitRoot) {
-      let current = path3.dirname(resolved);
+      let current = path4.dirname(resolved);
       while (current.length >= gitRoot.length) {
         this.gitRootCache.set(this.normalizeCacheKey(current), gitRoot);
-        const parent = path3.dirname(current);
+        const parent = path4.dirname(current);
         if (parent === current) break;
         current = parent;
       }
@@ -51663,9 +58131,9 @@ var GitIgnoreCacheImpl = class {
     return gitRoot;
   }
   findGitRoot(dirPath) {
-    return new Promise((resolve8) => {
+    return new Promise((resolve10) => {
       try {
-        const child = (0, import_node_child_process2.spawn)("git", ["rev-parse", "--show-toplevel"], {
+        const child = (0, import_node_child_process3.spawn)("git", ["rev-parse", "--show-toplevel"], {
           cwd: dirPath,
           stdio: ["ignore", "pipe", "ignore"]
         });
@@ -51674,27 +58142,21 @@ var GitIgnoreCacheImpl = class {
           output += chunk.toString();
         });
         child.once("error", () => {
-          resolve8(null);
+          resolve10(null);
         });
         child.once("close", (code) => {
           if (code === 0 && output.trim()) {
-            resolve8(output.trim());
+            resolve10(output.trim());
           } else {
-            resolve8(null);
+            resolve10(null);
           }
         });
       } catch {
-        resolve8(null);
+        resolve10(null);
       }
     });
   }
-  // -------------------------------------------------------------------------
   // Ignore Matcher Management
-  // -------------------------------------------------------------------------
-  /**
-   * Get or create the ignore matcher for a git root.
-   * Automatically loads the root .gitignore if not already loaded.
-   */
   getOrCreateMatcher(gitRoot) {
     const normalizedRoot = normalizePathForComparison(gitRoot);
     let matcher = this.matcherCache.get(normalizedRoot);
@@ -51705,33 +58167,21 @@ var GitIgnoreCacheImpl = class {
       this.loadGitignoreFile(
         normalizedRoot,
         gitRoot,
-        path3.join(gitRoot, ".gitignore")
+        path4.join(gitRoot, ".gitignore")
       );
     }
     return matcher;
   }
-  /**
-   * Load a .gitignore file and add its rules to the matcher.
-   * Rules are prefixed with the relative directory path to handle nested .gitignore files.
-   *
-   * @param normalizedRoot - Normalized cache key for lookups (case-insensitive on macOS/Windows)
-   * @param originalGitRoot - Original git root path for filesystem operations
-   * @param gitignorePath - Path to the .gitignore file to load
-   */
   loadGitignoreFile(normalizedRoot, originalGitRoot, gitignorePath) {
     const loadedFiles = this.loadedGitignoreFiles.get(normalizedRoot);
-    if (!loadedFiles || loadedFiles.has(gitignorePath)) {
-      return;
-    }
-    if (!fs2.existsSync(gitignorePath)) {
-      return;
-    }
+    if (!loadedFiles || loadedFiles.has(gitignorePath)) return;
+    if (!fs2.existsSync(gitignorePath)) return;
     try {
       const content = fs2.readFileSync(gitignorePath, "utf-8");
       const matcher = this.matcherCache.get(normalizedRoot);
       if (!matcher) return;
-      const gitignoreDir = path3.dirname(gitignorePath);
-      const relativeDir = path3.relative(originalGitRoot, gitignoreDir);
+      const gitignoreDir = path4.dirname(gitignorePath);
+      const relativeDir = path4.relative(originalGitRoot, gitignoreDir);
       const rules = content.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
       if (relativeDir) {
         const prefixedRules = rules.map((rule) => {
@@ -51749,17 +58199,7 @@ var GitIgnoreCacheImpl = class {
     } catch {
     }
   }
-  // -------------------------------------------------------------------------
   // Gitignore Checking
-  // -------------------------------------------------------------------------
-  /**
-   * Check if entries are gitignored using the ignore package (no git spawning).
-   * Returns a Set of entry names that are ignored.
-   *
-   * @param dirPath - Directory containing the entries
-   * @param entries - Entries to check, with name and whether they're directories
-   * @param gitRoot - Optional pre-resolved git root (avoids lookup if provided)
-   */
   async getIgnoredEntries(dirPath, entries, gitRoot) {
     const resolvedGitRoot = gitRoot !== void 0 ? gitRoot : await this.getGitRoot(dirPath);
     if (!resolvedGitRoot) {
@@ -51771,7 +58211,7 @@ var GitIgnoreCacheImpl = class {
     }
     const matcher = this.getOrCreateMatcher(resolvedGitRoot);
     const normalizedRoot = normalizePathForComparison(resolvedGitRoot);
-    const localGitignore = path3.join(dirPath, ".gitignore");
+    const localGitignore = path4.join(dirPath, ".gitignore");
     this.loadGitignoreFile(normalizedRoot, resolvedGitRoot, localGitignore);
     const ignored = /* @__PURE__ */ new Set();
     for (const { name, isDirectory } of entries) {
@@ -51786,16 +58226,6 @@ var GitIgnoreCacheImpl = class {
   /**
    * Check if a single path is ignored (synchronous, for watcher filtering).
    * Requires git root to be pre-resolved.
-   *
-   * Note: This uses only the currently loaded .gitignore rules. If the file
-   * is in a directory that hasn't been traversed yet, nested .gitignore files
-   * for that directory won't be loaded. This is acceptable for watcher filtering
-   * since we err on the side of not filtering (showing events for potentially
-   * ignored files is better than missing events for non-ignored files).
-   *
-   * @param gitRoot - The git root directory
-   * @param filePath - Absolute path to check
-   * @returns true if the path is ignored
    */
   isIgnored(gitRoot, filePath) {
     const relativePath = safeRelativePath(gitRoot, filePath);
@@ -51805,17 +58235,9 @@ var GitIgnoreCacheImpl = class {
     const matcher = this.getOrCreateMatcher(gitRoot);
     return matcher.ignores(relativePath);
   }
-  // -------------------------------------------------------------------------
   // Cache Invalidation
-  // -------------------------------------------------------------------------
-  /**
-   * Invalidate gitignore cache when .gitignore changes (created/modified/deleted).
-   * Rebuilds the matcher for the affected git root.
-   *
-   * @param gitignorePath - Path to the .gitignore file that changed
-   */
   invalidateForGitignore(gitignorePath) {
-    const gitignoreDir = path3.dirname(gitignorePath);
+    const gitignoreDir = path4.dirname(gitignorePath);
     const cacheKey = this.normalizeCacheKey(gitignoreDir);
     const gitRoot = this.gitRootCache.get(cacheKey);
     if (gitRoot) {
@@ -51827,17 +58249,11 @@ var GitIgnoreCacheImpl = class {
       this.loadedGitignoreFiles.clear();
     }
   }
-  /**
-   * Clear all caches.
-   */
   clear() {
     this.gitRootCache.clear();
     this.matcherCache.clear();
     this.loadedGitignoreFiles.clear();
   }
-  /**
-   * Get cache statistics for debugging.
-   */
   getStats() {
     let totalLoadedFiles = 0;
     for (const files of this.loadedGitignoreFiles.values()) {
@@ -51855,7 +58271,7 @@ var GitIgnoreCache = new GitIgnoreCacheImpl();
 // src/fs/parcel-file-watcher.ts
 var import_watcher = __toESM(require("@parcel/watcher"), 1);
 var import_node_fs2 = __toESM(require("fs"), 1);
-var import_node_path3 = __toESM(require("path"), 1);
+var import_node_path4 = __toESM(require("path"), 1);
 var DEFAULT_IGNORED_PATTERNS = [
   "**/node_modules/**",
   "**/.git/**",
@@ -51868,21 +58284,12 @@ var DEFAULT_IGNORED_PATTERNS = [
   "**/.DS_Store"
 ];
 var RenameDetector = class {
-  /** Pending DELETE events: normalized path → { originalPath, timestamp } */
   pendingDeletes = /* @__PURE__ */ new Map();
-  /** Pending CREATE events: normalized path → { originalPath, timestamp } */
   pendingCreates = /* @__PURE__ */ new Map();
-  /** Time window for correlating events (ms) */
   correlationWindow = 500;
-  /**
-   * Normalize a path for case-insensitive comparison on macOS/Windows.
-   */
   normalizePath(filePath) {
     return normalizePathForComparison(filePath);
   }
-  /**
-   * Record a DELETE event for potential rename detection.
-   */
   recordDelete(filePath) {
     const normalized = this.normalizePath(filePath);
     this.pendingDeletes.set(normalized, {
@@ -51893,9 +58300,6 @@ var RenameDetector = class {
       this.pendingDeletes.delete(normalized);
     }, this.correlationWindow);
   }
-  /**
-   * Record a CREATE event for potential rename detection.
-   */
   recordCreate(filePath) {
     const normalized = this.normalizePath(filePath);
     this.pendingCreates.set(normalized, {
@@ -51906,130 +58310,71 @@ var RenameDetector = class {
       this.pendingCreates.delete(normalized);
     }, this.correlationWindow);
   }
-  /**
-   * Check if a CREATE event is actually a rename (DELETE came first).
-   *
-   * @param newPath - The path of the created file
-   * @returns The old path if this is a rename, null otherwise
-   */
   matchCreateWithDelete(newPath) {
-    const newDirNormalized = this.normalizePath(import_node_path3.default.dirname(newPath));
+    const newDirNormalized = this.normalizePath(import_node_path4.default.dirname(newPath));
     const newPathNormalized = this.normalizePath(newPath);
     const now = Date.now();
     for (const [oldPathNormalized, entry] of this.pendingDeletes.entries()) {
-      if (now - entry.timestamp > this.correlationWindow) {
-        continue;
-      }
+      if (now - entry.timestamp > this.correlationWindow) continue;
       const oldDirNormalized = this.normalizePath(
-        import_node_path3.default.dirname(entry.originalPath)
+        import_node_path4.default.dirname(entry.originalPath)
       );
-      if (oldDirNormalized !== newDirNormalized) {
-        continue;
-      }
-      if (oldPathNormalized === newPathNormalized) {
-        continue;
-      }
+      if (oldDirNormalized !== newDirNormalized) continue;
+      if (oldPathNormalized === newPathNormalized) continue;
       this.pendingDeletes.delete(oldPathNormalized);
       return entry.originalPath;
     }
     return null;
   }
-  /**
-   * Check if a DELETE event is actually a rename (CREATE came first).
-   *
-   * @param oldPath - The path of the deleted file
-   * @returns The new path if this is a rename, null otherwise
-   */
   matchDeleteWithCreate(oldPath) {
-    const oldDirNormalized = this.normalizePath(import_node_path3.default.dirname(oldPath));
+    const oldDirNormalized = this.normalizePath(import_node_path4.default.dirname(oldPath));
     const oldPathNormalized = this.normalizePath(oldPath);
     const now = Date.now();
     for (const [newPathNormalized, entry] of this.pendingCreates.entries()) {
-      if (now - entry.timestamp > this.correlationWindow) {
-        continue;
-      }
+      if (now - entry.timestamp > this.correlationWindow) continue;
       const newDirNormalized = this.normalizePath(
-        import_node_path3.default.dirname(entry.originalPath)
+        import_node_path4.default.dirname(entry.originalPath)
       );
-      if (newDirNormalized !== oldDirNormalized) {
-        continue;
-      }
-      if (oldPathNormalized === newPathNormalized) {
-        continue;
-      }
+      if (newDirNormalized !== oldDirNormalized) continue;
+      if (oldPathNormalized === newPathNormalized) continue;
       this.pendingCreates.delete(newPathNormalized);
       return entry.originalPath;
     }
     return null;
   }
-  /**
-   * Clear all pending events.
-   */
   clear() {
     this.pendingDeletes.clear();
     this.pendingCreates.clear();
   }
 };
 var ParcelFileWatcher = class {
-  /** The directory being watched */
   path;
-  /** Resolved real path (handles symlinks) */
   realPath;
-  /** Ignore patterns */
   ignored;
-  /** The @parcel/watcher subscription */
   subscription = null;
-  /** Whether currently watching */
   watching = false;
-  /** Rename detection helper */
   renameDetector = new RenameDetector();
-  /** Debounce timers */
   debounceTimers = /* @__PURE__ */ new Map();
-  // -------------------------------------------------------------------------
   // Event Emitters
-  // -------------------------------------------------------------------------
-  _onCreated = new EventEmitter2();
-  _onModified = new EventEmitter2();
-  _onDeleted = new EventEmitter2();
-  _onRenamed = new EventEmitter2();
-  /** Fired when a file or directory is created */
+  _onCreated = new EventEmitter();
+  _onModified = new EventEmitter();
+  _onDeleted = new EventEmitter();
+  _onRenamed = new EventEmitter();
   onCreated = this._onCreated.event;
-  /** Fired when a file's content is modified */
   onModified = this._onModified.event;
-  /** Fired when a file or directory is deleted */
   onDeleted = this._onDeleted.event;
-  /** Fired when a file or directory is renamed */
   onRenamed = this._onRenamed.event;
-  // -------------------------------------------------------------------------
-  // Constructor
-  // -------------------------------------------------------------------------
-  /**
-   * Create a new file watcher.
-   *
-   * @param watchPath - Directory to watch
-   * @param options - Watcher configuration
-   */
   constructor(watchPath, options = {}) {
     this.path = watchPath;
     this.ignored = options.ignored ?? DEFAULT_IGNORED_PATTERNS;
     try {
       this.realPath = import_node_fs2.default.realpathSync(watchPath);
     } catch {
-      this.realPath = import_node_path3.default.resolve(watchPath);
+      this.realPath = import_node_path4.default.resolve(watchPath);
     }
   }
-  // -------------------------------------------------------------------------
-  // Public Methods
-  // -------------------------------------------------------------------------
-  /**
-   * Start watching for file changes.
-   *
-   * @throws If watching fails to start
-   */
   async watch() {
-    if (this.watching) {
-      return;
-    }
+    if (this.watching) return;
     const backend = this.getBackend();
     this.subscription = await import_watcher.default.subscribe(
       this.path,
@@ -52047,30 +58392,17 @@ var ParcelFileWatcher = class {
     );
     this.watching = true;
   }
-  /**
-   * Stop watching for file changes.
-   */
   async unwatch() {
-    if (!this.watching || !this.subscription) {
-      return;
-    }
+    if (!this.watching || !this.subscription) return;
     await this.subscription.unsubscribe();
     this.subscription = null;
     this.watching = false;
     this.clearDebounceTimers();
     this.renameDetector.clear();
   }
-  /**
-   * Check if currently watching.
-   */
   isWatching() {
     return this.watching;
   }
-  /**
-   * Clean up all resources.
-   *
-   * Stops watching and disposes all event emitters.
-   */
   async dispose() {
     await this.unwatch();
     this._onCreated.dispose();
@@ -52078,12 +58410,7 @@ var ParcelFileWatcher = class {
     this._onDeleted.dispose();
     this._onRenamed.dispose();
   }
-  // -------------------------------------------------------------------------
   // Private Methods
-  // -------------------------------------------------------------------------
-  /**
-   * Get the appropriate watcher backend for the current platform.
-   */
   getBackend() {
     switch (process.platform) {
       case "darwin":
@@ -52094,14 +58421,9 @@ var ParcelFileWatcher = class {
         return "windows";
     }
   }
-  /**
-   * Handle a batch of events from @parcel/watcher.
-   */
   handleEvents(events) {
     for (const event of events) {
-      if (this.shouldIgnore(event.path)) {
-        continue;
-      }
+      if (this.shouldIgnore(event.path)) continue;
       switch (event.type) {
         case "create":
           this.handleCreate(event.path);
@@ -52115,33 +58437,16 @@ var ParcelFileWatcher = class {
       }
     }
   }
-  /**
-   * Check if a path matches any ignore pattern.
-   *
-   * Uses simple pattern matching for common glob patterns.
-   */
   shouldIgnore(filePath) {
     const normalizedPath = filePath.replace(/\\/g, "/");
     for (const pattern of this.ignored) {
-      if (this.matchPattern(normalizedPath, pattern)) {
-        return true;
-      }
+      if (this.matchPattern(normalizedPath, pattern)) return true;
     }
     return false;
   }
-  /**
-   * Match a path against a glob-like pattern.
-   *
-   * Supports common patterns:
-   * - Double-star/name/double-star: contains /name/ anywhere
-   * - Double-star/*.ext: ends with .ext
-   * - Double-star/name: ends with /name or equals name
-   *
-   * On case-insensitive filesystems (macOS/Windows), matching is case-insensitive.
-   */
   matchPattern(filePath, pattern) {
-    const normalizedPath = isCaseInsensitiveFS ? filePath.toLowerCase() : filePath;
-    const normalizedPattern = isCaseInsensitiveFS ? pattern.toLowerCase() : pattern;
+    const normalizedPath = isCaseInsensitiveFS2 ? filePath.toLowerCase() : filePath;
+    const normalizedPattern = isCaseInsensitiveFS2 ? pattern.toLowerCase() : pattern;
     const dirMatch = normalizedPattern.match(/^\*\*\/(.+)\/\*\*$/);
     if (dirMatch) {
       const dirName = dirMatch[1];
@@ -52158,9 +58463,6 @@ var ParcelFileWatcher = class {
     }
     return normalizedPath.includes(normalizedPattern);
   }
-  /**
-   * Handle a CREATE event.
-   */
   handleCreate(filePath) {
     const oldPath = this.renameDetector.matchCreateWithDelete(filePath);
     if (oldPath) {
@@ -52180,17 +58482,11 @@ var ParcelFileWatcher = class {
       });
     }
   }
-  /**
-   * Handle an UPDATE event.
-   */
   handleUpdate(filePath) {
     this.debounce(`update:${filePath}`, 50, () => {
       this._onModified.fire({ path: filePath });
     });
   }
-  /**
-   * Handle a DELETE event.
-   */
   handleDelete(filePath) {
     const newPath = this.renameDetector.matchDeleteWithCreate(filePath);
     if (newPath) {
@@ -52204,25 +58500,15 @@ var ParcelFileWatcher = class {
           this.cancelDebounce(`create:${matchedNewPath}`);
           this.emitRename(filePath, matchedNewPath);
         } else {
-          this._onDeleted.fire({
-            path: filePath,
-            isDirectory: false
-            // Can't determine for deleted files
-          });
+          this._onDeleted.fire({ path: filePath, isDirectory: false });
         }
       });
     }
   }
-  /**
-   * Emit a rename event.
-   */
   emitRename(oldPath, newPath) {
     const isDirectory = this.isDirectory(newPath);
     this._onRenamed.fire({ oldPath, newPath, isDirectory });
   }
-  /**
-   * Check if a path is a directory.
-   */
   isDirectory(filePath) {
     try {
       return import_node_fs2.default.statSync(filePath).isDirectory();
@@ -52230,23 +58516,15 @@ var ParcelFileWatcher = class {
       return false;
     }
   }
-  /**
-   * Debounce a callback with the given key and delay.
-   */
-  debounce(key, delay2, callback2) {
+  debounce(key, delay3, callback2) {
     const existingTimer = this.debounceTimers.get(key);
-    if (existingTimer) {
-      clearTimeout(existingTimer);
-    }
+    if (existingTimer) clearTimeout(existingTimer);
     const timer = setTimeout(() => {
       this.debounceTimers.delete(key);
       callback2();
-    }, delay2);
+    }, delay3);
     this.debounceTimers.set(key, timer);
   }
-  /**
-   * Cancel a pending debounced callback.
-   */
   cancelDebounce(key) {
     const timer = this.debounceTimers.get(key);
     if (timer) {
@@ -52254,9 +58532,6 @@ var ParcelFileWatcher = class {
       this.debounceTimers.delete(key);
     }
   }
-  /**
-   * Clear all debounce timers.
-   */
   clearDebounceTimers() {
     for (const timer of this.debounceTimers.values()) {
       clearTimeout(timer);
@@ -52274,49 +58549,27 @@ var MAX_CONCURRENT_PREFETCH = 10;
 var VERIFY_CACHE_COOLDOWN_MS = 2e3;
 var DiskFileSystemProvider = class {
   cwd;
-  // -------------------------------------------------------------------------
-  // Internal Components
-  // -------------------------------------------------------------------------
   watcher;
   disposed = false;
-  /** Pending directory refresh timers (debouncing) */
   refreshTimers = /* @__PURE__ */ new Map();
-  /** Currently running prefetch operations */
   activePrefetches = /* @__PURE__ */ new Set();
-  /** Last verification time per directory (for cooldown) */
   lastVerifyTime = /* @__PURE__ */ new Map();
-  /** Cached git root for this cwd (null if not in repo, undefined if not yet checked) */
   gitRoot = void 0;
-  // -------------------------------------------------------------------------
   // Event Emitters
-  // -------------------------------------------------------------------------
-  _onDirectoryListingChanged = new EventEmitter2();
-  _onFileContentChanged = new EventEmitter2();
-  _onFileRenamed = new EventEmitter2();
-  _onFileDeleted = new EventEmitter2();
+  _onDirectoryListingChanged = new EventEmitter();
+  _onFileContentChanged = new EventEmitter();
+  _onFileRenamed = new EventEmitter();
+  _onFileDeleted = new EventEmitter();
   onDirectoryListingChanged = this._onDirectoryListingChanged.event;
   onFileContentChanged = this._onFileContentChanged.event;
   onFileRenamed = this._onFileRenamed.event;
   onFileDeleted = this._onFileDeleted.event;
-  // -------------------------------------------------------------------------
-  // Constructor
-  // -------------------------------------------------------------------------
-  /**
-   * Create a new disk filesystem provider.
-   *
-   * @param cwd - The working directory to scope this provider to
-   * @param watcherOptions - Optional configuration for the file watcher
-   */
   constructor(cwd, watcherOptions) {
     this.cwd = nodePath.resolve(cwd);
     this.watcher = new ParcelFileWatcher(this.cwd, watcherOptions);
     this.setupWatcherEvents();
     this.initializeGitRoot();
   }
-  /**
-   * Initialize git root asynchronously.
-   * Called from constructor to ensure gitRoot is available for watcher filtering.
-   */
   initializeGitRoot() {
     GitIgnoreCache.getGitRoot(this.cwd).then((root) => {
       this.gitRoot = root;
@@ -52325,11 +58578,8 @@ var DiskFileSystemProvider = class {
   // -------------------------------------------------------------------------
   // File Operations
   // -------------------------------------------------------------------------
-  /**
-   * Get metadata for a file or directory.
-   */
-  async stat(path11) {
-    const stats = await fs4.stat(path11);
+  async stat(path14) {
+    const stats = await fs4.stat(path14);
     return {
       type: stats.isDirectory() ? "directory" : "file",
       size: stats.size,
@@ -52338,14 +58588,6 @@ var DiskFileSystemProvider = class {
       readonly: this.isReadonly(stats)
     };
   }
-  /**
-   * List contents of a directory.
-   *
-   * Uses cache-first strategy:
-   * 1. Return cached entries immediately if available
-   * 2. Fetch from disk in background and update cache
-   * 3. Emit event if entries changed
-   */
   async readDirectory(dirPath) {
     const normalizedPath = nodePath.resolve(dirPath);
     const cached = DirectoryCache.get(normalizedPath);
@@ -52358,30 +58600,13 @@ var DiskFileSystemProvider = class {
     this.prefetchChildren(normalizedPath, entries);
     return entries;
   }
-  /**
-   * Read complete file contents as binary.
-   */
   async readFile(filePath) {
     const buffer = await fs4.readFile(filePath);
     return new Uint8Array(buffer);
   }
-  /**
-   * Read complete file contents as text (UTF-8).
-   *
-   * Convenience method that returns a string directly, avoiding the need
-   * for TextDecoder on the caller side.
-   *
-   * Note: Binary files will have invalid UTF-8 bytes replaced with U+FFFD.
-   */
   async readTextFile(filePath) {
     return fs4.readFile(filePath, "utf-8");
   }
-  /**
-   * Write content to a file.
-   *
-   * Creates parent directories if they don't exist.
-   * Updates the directory cache in-place for immediate consistency.
-   */
   async writeFile(filePath, content) {
     const parentDir = nodePath.dirname(filePath);
     await fs4.mkdir(parentDir, { recursive: true });
@@ -52392,34 +58617,24 @@ var DiskFileSystemProvider = class {
       this.buildCacheEntry(fileName, "file", filePath)
     );
   }
-  /**
-   * Delete a file or directory.
-   *
-   * Updates the directory cache in-place for immediate consistency.
-   */
-  async delete(path11, options) {
+  async delete(path14, options) {
     let isDirectory = false;
     try {
-      const stats = await fs4.stat(path11);
+      const stats = await fs4.stat(path14);
       isDirectory = stats.isDirectory();
     } catch {
     }
-    await fs4.rm(path11, {
+    await fs4.rm(path14, {
       recursive: options?.recursive ?? false,
       force: false
     });
-    const parentDir = nodePath.dirname(path11);
-    const fileName = nodePath.basename(path11);
+    const parentDir = nodePath.dirname(path14);
+    const fileName = nodePath.basename(path14);
     DirectoryCache.removeEntry(parentDir, fileName);
     if (isDirectory) {
-      DirectoryCache.delete(path11);
+      DirectoryCache.delete(path14);
     }
   }
-  /**
-   * Rename or move a file/directory.
-   *
-   * Updates the directory cache in-place for immediate consistency.
-   */
   async rename(oldPath, newPath) {
     const stats = await fs4.lstat(oldPath);
     const entryType = stats.isDirectory() ? "directory" : "file";
@@ -52443,12 +58658,6 @@ var DiskFileSystemProvider = class {
       }
     }
   }
-  /**
-   * Create a directory.
-   *
-   * Creates parent directories if they don't exist (like `mkdir -p`).
-   * Updates the directory cache in-place for immediate consistency.
-   */
   async createDirectory(dirPath) {
     await fs4.mkdir(dirPath, { recursive: true });
     const parentDir = nodePath.dirname(dirPath);
@@ -52459,12 +58668,9 @@ var DiskFileSystemProvider = class {
     );
     DirectoryCache.set(dirPath, []);
   }
-  /**
-   * Check if a path exists.
-   */
-  async exists(path11) {
+  async exists(path14) {
     try {
-      await fs4.access(path11);
+      await fs4.access(path14);
       return true;
     } catch {
       return false;
@@ -52473,29 +58679,16 @@ var DiskFileSystemProvider = class {
   // -------------------------------------------------------------------------
   // Lifecycle
   // -------------------------------------------------------------------------
-  /**
-   * Start watching for file changes.
-   *
-   * Call this after setting up event listeners.
-   */
   async startWatching() {
     if (!this.disposed) {
       await this.watcher.watch();
     }
   }
-  /**
-   * Check if currently watching for changes.
-   */
   isWatching() {
     return this.watcher.isWatching();
   }
-  /**
-   * Clean up all resources.
-   */
   async dispose() {
-    if (this.disposed) {
-      return;
-    }
+    if (this.disposed) return;
     this.disposed = true;
     for (const timer of this.refreshTimers.values()) {
       clearTimeout(timer);
@@ -52510,26 +58703,11 @@ var DiskFileSystemProvider = class {
   // -------------------------------------------------------------------------
   // Internal: Watcher Event Handling
   // -------------------------------------------------------------------------
-  /**
-   * Check if a path should be ignored (gitignored).
-   * Returns false if git root is not yet known (conservative - don't filter).
-   */
   isPathIgnored(filePath) {
-    if (nodePath.basename(filePath) === ".gitignore") {
-      return false;
-    }
-    if (!this.gitRoot) {
-      return false;
-    }
+    if (nodePath.basename(filePath) === ".gitignore") return false;
+    if (!this.gitRoot) return false;
     return GitIgnoreCache.isIgnored(this.gitRoot, filePath);
   }
-  /**
-   * Build a DirectoryEntry for cache updates.
-   *
-   * Uses cached git root (if available) to set isGitignored synchronously.
-   * If git root isn't cached yet, isGitignored is omitted and will be set
-   * correctly when the watcher triggers a full directory refresh.
-   */
   buildCacheEntry(name, type, fullPath, isSymlink = false) {
     const entry = { name, type, isSymlink };
     if (this.gitRoot) {
@@ -52537,28 +58715,14 @@ var DiskFileSystemProvider = class {
     }
     return entry;
   }
-  /**
-   * Refresh isGitignored status for all cached directories under the git root.
-   *
-   * Called when .gitignore changes. This is efficient because:
-   * 1. Only processes directories already in cache (no disk I/O)
-   * 2. Only fires events for directories where status actually changed
-   * 3. Recalculates in-place without re-reading directory contents
-   */
   async refreshGitignoreAffectedDirectories() {
     const gitRoot = await this.getGitRoot();
-    if (!gitRoot) {
-      return;
-    }
+    if (!gitRoot) return;
     const cachedPaths = DirectoryCache.getPathsUnder(gitRoot);
-    if (cachedPaths.length === 0) {
-      return;
-    }
+    if (cachedPaths.length === 0) return;
     for (const dirPath of cachedPaths) {
       const cached = DirectoryCache.get(dirPath);
-      if (!cached || cached.entries.length === 0) {
-        continue;
-      }
+      if (!cached || cached.entries.length === 0) continue;
       const gitIgnored = await GitIgnoreCache.getIgnoredEntries(
         dirPath,
         cached.entries.map((e) => ({
@@ -52585,9 +58749,6 @@ var DiskFileSystemProvider = class {
       }
     }
   }
-  /**
-   * Wire up watcher events to provider events.
-   */
   setupWatcherEvents() {
     this.watcher.onCreated((event) => {
       if (nodePath.basename(event.path) === ".gitignore") {
@@ -52635,25 +58796,12 @@ var DiskFileSystemProvider = class {
   // -------------------------------------------------------------------------
   // Internal: Directory Reading
   // -------------------------------------------------------------------------
-  /**
-   * Get the git root for this provider's cwd (lazy initialization).
-   * Cached after first lookup - only one git process spawn per provider lifetime.
-   */
   async getGitRoot() {
     if (this.gitRoot === void 0) {
       this.gitRoot = await GitIgnoreCache.getGitRoot(this.cwd);
     }
     return this.gitRoot;
   }
-  /**
-   * Read directory contents from disk.
-   *
-   * Filters out:
-   * - Always-hidden entries (.git, node_modules)
-   *
-   * Marks with isGitignored:
-   * - Gitignored files (via .gitignore)
-   */
   async readDirectoryFromDisk(dirPath) {
     const dirents = await fs4.readdir(dirPath, { withFileTypes: true });
     let entries = dirents.filter((dirent) => !ALWAYS_HIDDEN.has(dirent.name)).map((dirent) => ({
@@ -52678,47 +58826,27 @@ var DiskFileSystemProvider = class {
     }
     return this.sortEntries(entries);
   }
-  /**
-   * Sort directory entries: directories first, then files, alphabetically.
-   */
   sortEntries(entries) {
     return entries.sort((a, b) => {
-      if (a.type !== b.type) {
-        return a.type === "directory" ? -1 : 1;
-      }
+      if (a.type !== b.type) return a.type === "directory" ? -1 : 1;
       return a.name.localeCompare(b.name, void 0, { sensitivity: "base" });
     });
   }
   // -------------------------------------------------------------------------
   // Internal: Refresh Scheduling
   // -------------------------------------------------------------------------
-  /**
-   * Schedule a directory refresh with debouncing.
-   *
-   * Multiple changes to the same directory within REFRESH_DEBOUNCE_MS
-   * are coalesced into a single refresh.
-   */
   scheduleRefresh(dirPath) {
-    if (this.disposed) {
-      return;
-    }
+    if (this.disposed) return;
     const existingTimer = this.refreshTimers.get(dirPath);
-    if (existingTimer) {
-      clearTimeout(existingTimer);
-    }
+    if (existingTimer) clearTimeout(existingTimer);
     const timer = setTimeout(() => {
       this.refreshTimers.delete(dirPath);
       this.refreshDirectory(dirPath);
     }, REFRESH_DEBOUNCE_MS);
     this.refreshTimers.set(dirPath, timer);
   }
-  /**
-   * Actually refresh a directory and emit event if changed.
-   */
   async refreshDirectory(dirPath) {
-    if (this.disposed) {
-      return;
-    }
+    if (this.disposed) return;
     const normalizedPath = nodePath.resolve(dirPath);
     try {
       const exists2 = await this.exists(normalizedPath);
@@ -52734,9 +58862,7 @@ var DiskFileSystemProvider = class {
       });
     } catch (error) {
       const code = error.code;
-      if (code === "EPERM" || code === "EACCES") {
-        return;
-      }
+      if (code === "EPERM" || code === "EACCES") return;
       console.error(
         `[DiskFileSystemProvider] Failed to refresh directory ${normalizedPath}:`,
         error
@@ -52746,42 +58872,25 @@ var DiskFileSystemProvider = class {
   // -------------------------------------------------------------------------
   // Internal: Cache Verification
   // -------------------------------------------------------------------------
-  /**
-   * Schedule cache verification with cooldown.
-   *
-   * This ensures we don't hammer the disk when rapidly reading
-   * the same directory.
-   */
   scheduleVerifyCache(dirPath) {
     const now = Date.now();
     const lastVerify = this.lastVerifyTime.get(dirPath) ?? 0;
-    if (now - lastVerify < VERIFY_CACHE_COOLDOWN_MS) {
-      return;
-    }
+    if (now - lastVerify < VERIFY_CACHE_COOLDOWN_MS) return;
     this.lastVerifyTime.set(dirPath, now);
     this.verifyCache(dirPath).catch((error) => {
       const code = error.code;
-      if (code === "EPERM" || code === "EACCES") {
-        return;
-      }
+      if (code === "EPERM" || code === "EACCES") return;
       console.error(
         `[DiskFileSystemProvider] Cache verification failed for ${dirPath}:`,
         error
       );
     });
   }
-  /**
-   * Verify cache matches disk and update if stale.
-   */
   async verifyCache(dirPath) {
-    if (this.disposed) {
-      return;
-    }
+    if (this.disposed) return;
     try {
       const cached = DirectoryCache.get(dirPath);
-      if (!cached) {
-        return;
-      }
+      if (!cached) return;
       const freshEntries = await this.readDirectoryFromDisk(dirPath);
       const hasChanged = cached.entries.length !== freshEntries.length || cached.entries.some(
         (entry, i) => entry.name !== freshEntries[i].name || entry.type !== freshEntries[i].type
@@ -52800,16 +58909,8 @@ var DiskFileSystemProvider = class {
   // -------------------------------------------------------------------------
   // Internal: Prefetching
   // -------------------------------------------------------------------------
-  /**
-   * Prefetch child directories in the background.
-   *
-   * This makes expanding folders in the UI instant because
-   * the data is already cached.
-   */
   prefetchChildren(parentPath, entries) {
-    if (this.disposed) {
-      return;
-    }
+    if (this.disposed) return;
     const directories = entries.filter((e) => e.type === "directory").map((e) => nodePath.join(parentPath, e.name)).filter((p) => !DirectoryCache.has(p));
     const available = MAX_CONCURRENT_PREFETCH - this.activePrefetches.size;
     const toPrefetch = directories.slice(0, available);
@@ -52817,13 +58918,8 @@ var DiskFileSystemProvider = class {
       this.prefetchDirectory(dirPath);
     }
   }
-  /**
-   * Prefetch a single directory.
-   */
   async prefetchDirectory(dirPath) {
-    if (this.disposed || this.activePrefetches.has(dirPath)) {
-      return;
-    }
+    if (this.disposed || this.activePrefetches.has(dirPath)) return;
     this.activePrefetches.add(dirPath);
     try {
       const entries = await this.readDirectoryFromDisk(dirPath);
@@ -52836,21 +58932,155 @@ var DiskFileSystemProvider = class {
   // -------------------------------------------------------------------------
   // Internal: Helpers
   // -------------------------------------------------------------------------
-  /**
-   * Check if a file is readonly based on its stats.
-   */
   isReadonly(stats) {
     return (stats.mode & 128) === 0;
   }
 };
 
-// src/fs/fs-provider-service.ts
-var fs7 = __toESM(require("fs"), 1);
-var path7 = __toESM(require("path"), 1);
-
-// src/git/git-provider-service.ts
-var fs6 = __toESM(require("fs"), 1);
+// src/git/git-service.ts
 var path6 = __toESM(require("path"), 1);
+var fs5 = __toESM(require("fs"), 1);
+var isCaseInsensitiveFS3 = process.platform === "darwin" || process.platform === "win32";
+function normalizePath2(p) {
+  const resolved = path6.resolve(p);
+  return isCaseInsensitiveFS3 ? resolved.toLowerCase() : resolved;
+}
+var GitService = class _GitService {
+  pool;
+  log;
+  findGitRootFn;
+  checkGitAvailableFn;
+  /** Cached result of isAvailable(). */
+  gitAvailableCache;
+  /** Cache: normalized cwd → normalized git root (avoids re-walking for same cwd). */
+  gitRootCache = /* @__PURE__ */ new Map();
+  constructor(config) {
+    this.log = config.onLog ?? (() => {
+    });
+    this.findGitRootFn = config.findGitRoot ?? _GitService.defaultFindGitRoot;
+    this.checkGitAvailableFn = config.checkGitAvailable ?? (async () => true);
+    const factory = {
+      async create(gitRoot) {
+        const provider = config.createProvider(gitRoot);
+        await provider.startWatching();
+        return provider;
+      },
+      async destroy(provider) {
+        await provider.dispose();
+      }
+    };
+    this.pool = new ResourcePool({
+      factory,
+      gracePeriodMs: config.gracePeriodMs ?? 5e3,
+      onLog: config.onLog
+    });
+  }
+  /**
+   * Acquire a git provider for the repository containing `cwd`.
+   *
+   * Discovers the git root for the given path, then retains by git root.
+   * Multiple cwds in the same repo share one provider.
+   *
+   * @returns The provider and the normalized git root path.
+   * @throws If the path is not within a git repository.
+   */
+  async retain(cwd) {
+    const gitRoot = await this.findGitRoot(cwd);
+    if (!gitRoot) {
+      throw new Error(`Not a git repository: ${cwd}`);
+    }
+    const provider = await this.pool.retain(gitRoot);
+    return { provider, gitRoot };
+  }
+  /**
+   * Release a reference to a git provider.
+   * @param gitRoot - The normalized git root (as returned by retain()).
+   */
+  release(gitRoot) {
+    this.pool.release(normalizePath2(gitRoot));
+  }
+  /**
+   * Notify that a file changed, triggering a git status refresh.
+   *
+   * Fire-and-forget: errors are silently swallowed.
+   * If the file is not in a git repo or no provider exists, this is a no-op.
+   */
+  async notifyFileChanged(filePath) {
+    try {
+      const gitRoot = await this.findGitRoot(filePath);
+      if (!gitRoot) return;
+      const provider = this.pool.get(gitRoot);
+      if (provider) {
+        provider.triggerStatusRefresh();
+      }
+    } catch {
+    }
+  }
+  /**
+   * Find the git root for a path. Results are cached per normalized path.
+   * Returns the normalized git root, or null if not in a git repo.
+   */
+  async findGitRoot(startPath) {
+    const normalizedStart = normalizePath2(startPath);
+    const cached = this.gitRootCache.get(normalizedStart);
+    if (cached !== void 0) {
+      return cached;
+    }
+    const result = await this.findGitRootFn(startPath);
+    const normalizedResult = result ? normalizePath2(result) : null;
+    this.gitRootCache.set(normalizedStart, normalizedResult);
+    return normalizedResult;
+  }
+  /**
+   * Check if git is available on the system. Result is cached.
+   */
+  async isAvailable() {
+    if (this.gitAvailableCache !== void 0) {
+      return this.gitAvailableCache;
+    }
+    try {
+      this.gitAvailableCache = await this.checkGitAvailableFn();
+    } catch {
+      this.gitAvailableCache = false;
+    }
+    return this.gitAvailableCache;
+  }
+  /** Dispose all providers and clear caches. */
+  async dispose() {
+    this.gitRootCache.clear();
+    return this.pool.dispose();
+  }
+  // ---------------------------------------------------------------------------
+  // Default git root discovery
+  // ---------------------------------------------------------------------------
+  /**
+   * Walk up the directory tree looking for a .git directory or file.
+   * Handles both regular repos (.git is a directory) and worktrees (.git is a file).
+   */
+  static async defaultFindGitRoot(startPath) {
+    let currentPath = path6.resolve(startPath);
+    const root = path6.parse(currentPath).root;
+    while (currentPath !== root) {
+      const gitPath = path6.join(currentPath, ".git");
+      try {
+        await fs5.promises.access(gitPath);
+        return currentPath;
+      } catch {
+        currentPath = path6.dirname(currentPath);
+      }
+    }
+    try {
+      await fs5.promises.access(path6.join(root, ".git"));
+      return root;
+    } catch {
+      return null;
+    }
+  }
+};
+
+// src/git/disk-git-provider.ts
+var fs7 = __toESM(require("fs"), 1);
+var path10 = __toESM(require("path"), 1);
 
 // ../../node_modules/simple-git/dist/esm/index.js
 var import_node_buffer = require("buffer");
@@ -52858,9 +59088,9 @@ var import_file_exists = __toESM(require_dist(), 1);
 var import_debug = __toESM(require_src(), 1);
 var import_child_process = require("child_process");
 var import_promise_deferred = __toESM(require_dist2(), 1);
-var import_node_path4 = require("path");
+var import_node_path5 = require("path");
 var import_promise_deferred2 = __toESM(require_dist2(), 1);
-var import_node_events2 = require("events");
+var import_node_events = require("events");
 var __defProp2 = Object.defineProperty;
 var __getOwnPropDesc2 = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames2 = Object.getOwnPropertyNames;
@@ -52889,8 +59119,8 @@ function pathspec(...paths) {
   cache.set(key, paths);
   return key;
 }
-function isPathSpec(path11) {
-  return path11 instanceof String && cache.has(path11);
+function isPathSpec(path14) {
+  return path14 instanceof String && cache.has(path14);
 }
 function toPaths(pathSpec) {
   return cache.get(pathSpec) || [];
@@ -52979,8 +59209,8 @@ function toLinesWithContent(input = "", trimmed2 = true, separator = "\n") {
 function forEachLineWithContent(input, callback2) {
   return toLinesWithContent(input, true).map((line) => callback2(line));
 }
-function folderExists(path11) {
-  return (0, import_file_exists.exists)(path11, import_file_exists.FOLDER);
+function folderExists(path14) {
+  return (0, import_file_exists.exists)(path14, import_file_exists.FOLDER);
 }
 function append(target, item) {
   if (Array.isArray(target)) {
@@ -53048,7 +59278,7 @@ function pick(source, properties) {
   });
   return out;
 }
-function delay(duration = 0) {
+function delay2(duration = 0) {
   return new Promise((done) => setTimeout(done, duration));
 }
 function orVoid(input) {
@@ -53315,7 +59545,7 @@ __export2(utils_exports, {
   bufferToString: () => bufferToString,
   callTaskParser: () => callTaskParser,
   createInstanceConfig: () => createInstanceConfig,
-  delay: () => delay,
+  delay: () => delay2,
   filterArray: () => filterArray,
   filterFunction: () => filterFunction,
   filterHasLength: () => filterHasLength,
@@ -53384,8 +59614,8 @@ function checkIsRepoRootTask() {
     commands,
     format: "utf-8",
     onError,
-    parser(path11) {
-      return /^\.(git)?$/.test(path11.trim());
+    parser(path14) {
+      return /^\.(git)?$/.test(path14.trim());
     }
   };
 }
@@ -53819,11 +60049,11 @@ function parseGrep(grep) {
   const paths = /* @__PURE__ */ new Set();
   const results = {};
   forEachLineWithContent(grep, (input) => {
-    const [path11, line, preview] = input.split(NULL);
-    paths.add(path11);
-    (results[path11] = results[path11] || []).push({
+    const [path14, line, preview] = input.split(NULL);
+    paths.add(path14);
+    (results[path14] = results[path14] || []).push({
       line: asNumber(line),
-      path: path11,
+      path: path14,
       preview
     });
   });
@@ -54588,14 +60818,14 @@ var init_hash_object = __esm({
     init_task();
   }
 });
-function parseInit(bare, path11, text) {
+function parseInit(bare, path14, text) {
   const response = String(text).trim();
   let result;
   if (result = initResponseRegex.exec(response)) {
-    return new InitSummary(bare, path11, false, result[1]);
+    return new InitSummary(bare, path14, false, result[1]);
   }
   if (result = reInitResponseRegex.exec(response)) {
-    return new InitSummary(bare, path11, true, result[1]);
+    return new InitSummary(bare, path14, true, result[1]);
   }
   let gitDir = "";
   const tokens = response.split(" ");
@@ -54606,7 +60836,7 @@ function parseInit(bare, path11, text) {
       break;
     }
   }
-  return new InitSummary(bare, path11, /^re/i.test(response), gitDir);
+  return new InitSummary(bare, path14, /^re/i.test(response), gitDir);
 }
 var InitSummary;
 var initResponseRegex;
@@ -54615,9 +60845,9 @@ var init_InitSummary = __esm({
   "src/lib/responses/InitSummary.ts"() {
     "use strict";
     InitSummary = class {
-      constructor(bare, path11, existing, gitDir) {
+      constructor(bare, path14, existing, gitDir) {
         this.bare = bare;
-        this.path = path11;
+        this.path = path14;
         this.existing = existing;
         this.gitDir = gitDir;
       }
@@ -54629,7 +60859,7 @@ var init_InitSummary = __esm({
 function hasBareCommand(command) {
   return command.includes(bareCommand);
 }
-function initTask(bare = false, path11, customArgs) {
+function initTask(bare = false, path14, customArgs) {
   const commands = ["init", ...customArgs];
   if (bare && !hasBareCommand(commands)) {
     commands.splice(1, 0, bareCommand);
@@ -54638,7 +60868,7 @@ function initTask(bare = false, path11, customArgs) {
     commands,
     format: "utf-8",
     parser(text) {
-      return parseInit(commands.includes("--bare"), path11, text);
+      return parseInit(commands.includes("--bare"), path14, text);
     }
   };
 }
@@ -55454,12 +61684,12 @@ var init_FileStatusSummary = __esm({
     "use strict";
     fromPathRegex = /^(.+)\0(.+)$/;
     FileStatusSummary = class {
-      constructor(path11, index, working_dir) {
-        this.path = path11;
+      constructor(path14, index, working_dir) {
+        this.path = path14;
         this.index = index;
         this.working_dir = working_dir;
         if (index === "R" || working_dir === "R") {
-          const detail = fromPathRegex.exec(path11) || [null, path11, path11];
+          const detail = fromPathRegex.exec(path14) || [null, path14, path14];
           this.from = detail[2] || "";
           this.path = detail[1] || "";
         }
@@ -55490,14 +61720,14 @@ function splitLine(result, lineStr) {
     default:
       return;
   }
-  function data(index, workingDir, path11) {
+  function data(index, workingDir, path14) {
     const raw = `${index}${workingDir}`;
     const handler = parsers6.get(raw);
     if (handler) {
-      handler(result, path11);
+      handler(result, path14);
     }
     if (raw !== "##" && raw !== "!!") {
-      result.files.push(new FileStatusSummary(path11, index, workingDir));
+      result.files.push(new FileStatusSummary(path14, index, workingDir));
     }
   }
 }
@@ -55810,9 +62040,9 @@ var init_simple_git_api = __esm({
           next
         );
       }
-      hashObject(path11, write) {
+      hashObject(path14, write) {
         return this._runTask(
-          hashObjectTask(path11, write === true),
+          hashObjectTask(path14, write === true),
           trailingFunctionArgument(arguments)
         );
       }
@@ -56165,8 +62395,8 @@ var init_branch = __esm({
   }
 });
 function toPath(input) {
-  const path11 = input.trim().replace(/^["']|["']$/g, "");
-  return path11 && (0, import_node_path4.normalize)(path11);
+  const path14 = input.trim().replace(/^["']|["']$/g, "");
+  return path14 && (0, import_node_path5.normalize)(path14);
 }
 var parseCheckIgnore;
 var init_CheckIgnore = __esm({
@@ -56480,8 +62710,8 @@ __export2(sub_module_exports, {
   subModuleTask: () => subModuleTask,
   updateSubModuleTask: () => updateSubModuleTask
 });
-function addSubModuleTask(repo, path11) {
-  return subModuleTask(["add", repo, path11]);
+function addSubModuleTask(repo, path14) {
+  return subModuleTask(["add", repo, path14]);
 }
 function initSubModuleTask(customArgs) {
   return subModuleTask(["init", ...customArgs]);
@@ -56811,8 +63041,8 @@ var require_git = __commonJS2({
       }
       return this._runTask(straightThroughStringTask2(command, this._trimmed), next);
     };
-    Git2.prototype.submoduleAdd = function(repo, path11, then) {
-      return this._runTask(addSubModuleTask2(repo, path11), trailingFunctionArgument2(arguments));
+    Git2.prototype.submoduleAdd = function(repo, path14, then) {
+      return this._runTask(addSubModuleTask2(repo, path14), trailingFunctionArgument2(arguments));
     };
     Git2.prototype.submoduleUpdate = function(args, then) {
       return this._runTask(
@@ -57128,7 +63358,7 @@ function completionDetectionPlugin({
     if (flag === false) {
       return;
     }
-    (flag === true ? event.promise : event.promise.then(() => delay(flag))).then(timeout.done);
+    (flag === true ? event.promise : event.promise.then(() => delay2(flag))).then(timeout.done);
   }
   return {
     type: "spawn.after",
@@ -57144,7 +63374,7 @@ function completionDetectionPlugin({
       try {
         await events.result;
         if (deferClose) {
-          await delay(50);
+          await delay2(50);
         }
         close(events.exitCode);
       } catch (err) {
@@ -57226,7 +63456,7 @@ init_utils();
 var PluginStore = class {
   constructor() {
     this.plugins = /* @__PURE__ */ new Set();
-    this.events = new import_node_events2.EventEmitter();
+    this.events = new import_node_events.EventEmitter();
   }
   on(type, listener) {
     this.events.on(type, listener);
@@ -57399,11 +63629,9 @@ function gitInstanceFactory(baseDir, options) {
 init_git_response_error();
 var simpleGit = gitInstanceFactory;
 
-// src/git/disk-git-provider.ts
-var fs5 = __toESM(require("fs"), 1);
-var fsPromises = __toESM(require("fs/promises"), 1);
-var path5 = __toESM(require("path"), 1);
-var import_node_events3 = require("events");
+// src/git/git-utils.ts
+var fs6 = __toESM(require("fs"), 1);
+var path7 = __toESM(require("path"), 1);
 var STATUS_REFRESH_DEBOUNCE_MS = 100;
 var UNSTAGED_KEY_SUFFIX = "\0unstaged";
 var IGNORED_GIT_PATHS = [
@@ -57428,6 +63656,935 @@ var IGNORED_GIT_PATHS = [
   "**/commondir",
   "**/gitdir"
 ];
+function toRelativePath(filePath, gitRoot, cwd) {
+  const absolutePath = path7.isAbsolute(filePath) ? filePath : path7.resolve(cwd, filePath);
+  let relativePath = path7.relative(gitRoot, absolutePath);
+  if (relativePath.startsWith("..") && (process.platform === "darwin" || process.platform === "win32")) {
+    const gitRootLower = gitRoot.toLowerCase();
+    const absolutePathLower = absolutePath.toLowerCase();
+    if (absolutePathLower.startsWith(gitRootLower)) {
+      const relativePortion = absolutePath.slice(gitRoot.length);
+      relativePath = relativePortion.replace(/^[/\\]/, "");
+    }
+  }
+  return relativePath.split(path7.sep).join("/");
+}
+function resolveGitDir(gitFile) {
+  try {
+    const content = fs6.readFileSync(gitFile, "utf8");
+    const match = content.match(/gitdir:\s*(.+)/);
+    if (match) {
+      const gitDir = match[1].trim();
+      return path7.isAbsolute(gitDir) ? gitDir : path7.resolve(path7.dirname(gitFile), gitDir);
+    }
+  } catch {
+  }
+  return gitFile;
+}
+
+// src/git/git-status-parser.ts
+function parseStatus(statusResult, branch) {
+  const files = /* @__PURE__ */ new Map();
+  for (const file of statusResult.files) {
+    const entries = parseFileStatuses(file);
+    for (const entry of entries) {
+      const key = entry.staged || !entry.hasIndexChanges ? entry.path : entry.path + UNSTAGED_KEY_SUFFIX;
+      files.set(key, entry);
+    }
+  }
+  return {
+    branch: branch || "HEAD",
+    upstream: statusResult.tracking || void 0,
+    ahead: statusResult.ahead,
+    behind: statusResult.behind,
+    files
+  };
+}
+function parseFileStatuses(file) {
+  const { path: filePath, index, working_dir } = file;
+  const entries = [];
+  if (index === "?" && working_dir === "?") {
+    entries.push({
+      path: filePath,
+      status: "untracked",
+      staged: false
+    });
+    return entries;
+  }
+  if (index === "!" && working_dir === "!") {
+    entries.push({
+      path: filePath,
+      status: "ignored",
+      staged: false
+    });
+    return entries;
+  }
+  if (index === "U" || working_dir === "U" || index === "A" && working_dir === "A" || index === "D" && working_dir === "D") {
+    entries.push({
+      path: filePath,
+      status: "unmerged",
+      staged: false
+    });
+    return entries;
+  }
+  const hasIndexChange = index !== " " && index !== "?";
+  const hasWorkingDirChange = working_dir !== " " && working_dir !== "?";
+  if (hasIndexChange) {
+    entries.push({
+      path: filePath,
+      status: codeToStatus(index),
+      staged: true,
+      hasIndexChanges: true
+    });
+  }
+  if (hasWorkingDirChange) {
+    entries.push({
+      path: filePath,
+      status: codeToStatus(working_dir),
+      staged: false,
+      // hasIndexChanges indicates the diff should be Index → Working Dir
+      // instead of HEAD → Working Dir
+      hasIndexChanges: hasIndexChange
+    });
+  }
+  return entries;
+}
+function codeToStatus(code) {
+  switch (code) {
+    case "M":
+      return "modified";
+    case "A":
+      return "added";
+    case "D":
+      return "deleted";
+    case "R":
+      return "renamed";
+    case "C":
+      return "copied";
+    default:
+      return "modified";
+  }
+}
+function statusCodeToFileStatus(code) {
+  switch (code) {
+    case "A":
+      return "added";
+    case "D":
+      return "deleted";
+    case "M":
+      return "modified";
+    case "R":
+      return "renamed";
+    case "C":
+      return "copied";
+    case "U":
+      return "unmerged";
+    default:
+      return "modified";
+  }
+}
+function calculateStatusDelta(previous, current) {
+  const added = [];
+  const modified = [];
+  const removed = [];
+  for (const [filePath, currentFile] of current.files) {
+    const previousFile = previous.files.get(filePath);
+    if (!previousFile) {
+      added.push(filePath);
+    } else if (previousFile.status !== currentFile.status || previousFile.staged !== currentFile.staged) {
+      modified.push(filePath);
+    }
+  }
+  for (const filePath of previous.files.keys()) {
+    if (!current.files.has(filePath)) {
+      removed.push(filePath);
+    }
+  }
+  return { added, modified, removed };
+}
+
+// src/git/git-queries.ts
+var path8 = __toESM(require("path"), 1);
+var fsPromises = __toESM(require("fs/promises"), 1);
+async function queryStatus(git) {
+  const [statusResult, branchSummary] = await Promise.all([
+    git.status(),
+    git.branch()
+  ]);
+  return parseStatus(statusResult, branchSummary.current);
+}
+async function queryFileStatus(git, filePath, gitRoot, cwd) {
+  const status = await queryStatus(git);
+  const relativePath = toRelativePath(filePath, gitRoot, cwd);
+  const exactMatch = status.files.get(relativePath);
+  if (exactMatch) {
+    return exactMatch;
+  }
+  if (isCaseInsensitiveFS2) {
+    const normalizedLookup = relativePath.toLowerCase();
+    for (const [key, value] of status.files) {
+      if (key.toLowerCase() === normalizedLookup) {
+        return value;
+      }
+    }
+  }
+  return null;
+}
+async function queryCurrentBranch(git) {
+  const result = await git.raw(["rev-parse", "--abbrev-ref", "HEAD"]);
+  return result.trim() || "HEAD";
+}
+async function queryBranches(git) {
+  const result = await git.raw([
+    "for-each-ref",
+    "--sort=-committerdate",
+    "--format=%(refname:short)|%(refname)|%(committerdate:iso8601)|%(objectname:short)|%(subject)|%(HEAD)",
+    "refs/heads/",
+    "refs/remotes/"
+  ]);
+  const branches = [];
+  const lines = result.split("\n").filter(Boolean);
+  for (const line of lines) {
+    const parts = line.split("|");
+    if (parts.length < 5) continue;
+    const name = parts[0]?.trim() || "";
+    const fullRefname = parts[1]?.trim() || "";
+    const dateStr = parts[2]?.trim() || "";
+    const commit = parts[3]?.trim() || "";
+    const message = parts[4]?.trim() || "";
+    const isCurrentMarker = parts[5]?.trim() || "";
+    if (!name) continue;
+    if (name === "HEAD" || name.includes("HEAD")) {
+      continue;
+    }
+    const isRemote = fullRefname.startsWith("refs/remotes/");
+    const isCurrent = isCurrentMarker === "*";
+    branches.push({
+      name,
+      isRemote,
+      isCurrent,
+      commit,
+      upstream: void 0,
+      lastCommitDate: dateStr ? new Date(dateStr) : void 0,
+      lastCommitMessage: message || void 0
+    });
+  }
+  return branches;
+}
+async function queryFileDiff(git, filePath, gitRoot, cwd, staged = false) {
+  const relativePath = toRelativePath(filePath, gitRoot, cwd);
+  if (staged) {
+    return git.diff(["--cached", "--", relativePath]);
+  }
+  return git.diff(["--", relativePath]);
+}
+async function queryFileAtRef(git, filePath, ref, gitRoot, cwd) {
+  const relativePath = toRelativePath(filePath, gitRoot, cwd);
+  return git.show([`${ref}:${relativePath}`]);
+}
+async function queryHasUncommittedChanges(git) {
+  const status = await git.status();
+  return !status.isClean();
+}
+async function queryHasUnpushedCommits(git) {
+  const status = await git.status();
+  return status.ahead > 0;
+}
+async function queryHasUpstream(git) {
+  try {
+    const result = await git.raw([
+      "rev-parse",
+      "--abbrev-ref",
+      "--symbolic-full-name",
+      "@{u}"
+    ]);
+    return result.trim().length > 0;
+  } catch {
+    return false;
+  }
+}
+async function queryChangedFilesFromBranch(git, baseBranch, log) {
+  try {
+    const mergeBase = await git.raw(["merge-base", "HEAD", baseBranch]);
+    const result = await git.diff([
+      "--name-only",
+      mergeBase.trim(),
+      "HEAD"
+    ]);
+    return result.split("\n").map((line) => line.trim()).filter(Boolean);
+  } catch (error) {
+    log?.("error", "[git-queries] Failed to get files changed since branch:", error);
+    return [];
+  }
+}
+async function queryStatusFromBranch(git, baseBranch, log) {
+  const statusMap = /* @__PURE__ */ new Map();
+  try {
+    const result = await git.diff(["--name-status", baseBranch]);
+    const lines = result.split("\n");
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const parts = line.split("	");
+      if (parts.length < 2) continue;
+      const statusCode = parts[0]?.trim();
+      const filePath = parts.length >= 3 ? parts[2]?.trim() : parts[1]?.trim();
+      if (!statusCode || !filePath) continue;
+      let status = "modified";
+      if (statusCode.startsWith("A")) {
+        status = "added";
+      } else if (statusCode.startsWith("D")) {
+        status = "deleted";
+      } else if (statusCode.startsWith("M")) {
+        status = "modified";
+      } else if (statusCode.startsWith("R")) {
+        status = "renamed";
+      } else if (statusCode.startsWith("C")) {
+        status = "copied";
+      }
+      statusMap.set(filePath, {
+        status,
+        staged: false,
+        path: filePath
+      });
+    }
+  } catch (error) {
+    log?.("error", "[git-queries] Failed to get status from branch:", error);
+  }
+  return statusMap;
+}
+function parseDiffNumstat(output) {
+  const result = /* @__PURE__ */ new Map();
+  const lines = output.trim().split("\n").filter(Boolean);
+  for (const line of lines) {
+    const [addedStr, removedStr, ...filenameParts] = line.split("	");
+    const filename = filenameParts.join("	");
+    if (!filename) continue;
+    const added = addedStr === "-" ? 0 : parseInt(addedStr, 10) || 0;
+    const removed = removedStr === "-" ? 0 : parseInt(removedStr, 10) || 0;
+    result.set(filename, { added, removed });
+  }
+  return result;
+}
+async function queryPerFileDiffStats(git, gitRoot, log) {
+  const staged = /* @__PURE__ */ new Map();
+  const unstaged = /* @__PURE__ */ new Map();
+  try {
+    const stagedOutput = await git.diff(["--numstat", "--cached"]);
+    for (const [k, v] of parseDiffNumstat(stagedOutput)) {
+      staged.set(k, v);
+    }
+    const unstagedOutput = await git.diff(["--numstat"]);
+    for (const [k, v] of parseDiffNumstat(unstagedOutput)) {
+      unstaged.set(k, v);
+    }
+    const status = await queryStatus(git);
+    const untrackedFiles = Array.from(status.files.entries()).filter(
+      ([, fileStatus]) => fileStatus.status === "untracked"
+    );
+    const untrackedStats = await Promise.all(
+      untrackedFiles.map(async ([filePath]) => {
+        try {
+          const fullPath = path8.join(gitRoot, filePath);
+          const content = await fsPromises.readFile(fullPath, "utf-8");
+          const lines = content.split("\n");
+          const added = lines.length > 0 && lines[lines.length - 1] === "" ? lines.length - 1 : lines.length;
+          return { filePath, added };
+        } catch {
+          return null;
+        }
+      })
+    );
+    for (const stat3 of untrackedStats) {
+      if (stat3) {
+        unstaged.set(stat3.filePath, { added: stat3.added, removed: 0 });
+      }
+    }
+    return { staged, unstaged };
+  } catch (error) {
+    log?.("error", "[git-queries] Failed to get per-file diff stats:", error);
+    return { staged, unstaged };
+  }
+}
+async function queryMostRecentDirtyFile(git, gitRoot, log) {
+  try {
+    const status = await git.status();
+    if (status.files.length === 0) {
+      return null;
+    }
+    const dirtyFiles = status.files.map((f) => f.path);
+    let mostRecent = null;
+    for (const filePath of dirtyFiles) {
+      const absolutePath = path8.join(gitRoot, filePath);
+      try {
+        const stats = await fsPromises.stat(absolutePath);
+        if (!mostRecent || stats.mtimeMs > mostRecent.mtime) {
+          mostRecent = { path: filePath, mtime: stats.mtimeMs };
+        }
+      } catch {
+      }
+    }
+    return mostRecent?.path ?? null;
+  } catch (error) {
+    log?.("error", "[git-queries] Failed to get most recent dirty file:", error);
+    return null;
+  }
+}
+async function queryDirtyFilesWithTimes(git, gitRoot, log) {
+  try {
+    const status = await git.status();
+    if (status.files.length === 0) {
+      return [];
+    }
+    const filesWithTimes = [];
+    for (const file of status.files) {
+      const absolutePath = path8.join(gitRoot, file.path);
+      try {
+        const stats = await fsPromises.stat(absolutePath);
+        filesWithTimes.push({
+          path: file.path,
+          mtime: stats.mtimeMs
+        });
+      } catch {
+      }
+    }
+    filesWithTimes.sort((a, b) => b.mtime - a.mtime);
+    return filesWithTimes;
+  } catch (error) {
+    log?.("error", "[git-queries] Failed to get dirty files with times:", error);
+    return [];
+  }
+}
+async function queryMostRecentCommittedFile(git, gitRoot, log, commitLimit = 10) {
+  try {
+    const gitLog = await git.log({
+      maxCount: commitLimit,
+      "--name-only": null
+    });
+    const filesSet = /* @__PURE__ */ new Set();
+    for (const commit of gitLog.all) {
+      const diff = commit.diff;
+      if (diff?.files && Array.isArray(diff.files)) {
+        for (const fileEntry of diff.files) {
+          if (fileEntry.file) {
+            filesSet.add(fileEntry.file);
+          }
+        }
+      }
+    }
+    if (filesSet.size === 0) {
+      return null;
+    }
+    let mostRecent = null;
+    for (const filePath of filesSet) {
+      const absolutePath = path8.join(gitRoot, filePath);
+      try {
+        const stats = await fsPromises.stat(absolutePath);
+        if (!mostRecent || stats.mtimeMs > mostRecent.mtime) {
+          mostRecent = { path: filePath, mtime: stats.mtimeMs };
+        }
+      } catch {
+      }
+    }
+    return mostRecent?.path ?? null;
+  } catch (error) {
+    log?.("error", "[git-queries] Failed to get most recent committed file:", error);
+    return null;
+  }
+}
+
+// src/git/git-commit-history.ts
+async function queryCommitHistory(git, options = {}, log) {
+  const { limit = 50, skip = 0, ref } = options;
+  try {
+    const requestLimit = limit + 1;
+    const format = "%H|%h|%s|%an|%ae|%at|%P|%D";
+    const args = [
+      "log",
+      `--format=${format}`,
+      "--topo-order",
+      `-n`,
+      String(requestLimit),
+      `--skip=${skip}`
+    ];
+    if (ref) {
+      args.push(ref);
+    }
+    const result = await git.raw(args);
+    const lines = result.trim().split("\n").filter(Boolean);
+    const hasMore = lines.length > limit;
+    const commitLines = hasMore ? lines.slice(0, limit) : lines;
+    const commits = commitLines.map((line) => {
+      const parts = line.split("|");
+      const [
+        hash,
+        shortHash,
+        subject,
+        author,
+        email,
+        timestamp,
+        parents,
+        refs
+      ] = parts;
+      return {
+        id: hash || "",
+        shortId: shortHash || "",
+        subject: subject || "",
+        message: subject || "",
+        author: author || "",
+        authorEmail: email || "",
+        timestamp: parseInt(timestamp || "0", 10) * 1e3,
+        parentIds: parents ? parents.split(" ").filter(Boolean) : [],
+        refs: refs ? refs.split(", ").filter(Boolean) : void 0
+      };
+    });
+    return { commits, hasMore };
+  } catch (error) {
+    log?.("error", "[git-commit-history] Failed to get commit history:", error);
+    return { commits: [], hasMore: false };
+  }
+}
+async function queryCommit(git, commitId) {
+  try {
+    const format = "%H%x00%h%x00%s%x00%b%x00%an%x00%ae%x00%at%x00%P%x00%D";
+    const result = await git.raw([
+      "log",
+      `-1`,
+      `--format=${format}`,
+      commitId
+    ]);
+    if (!result.trim()) {
+      return null;
+    }
+    const parts = result.split("\0");
+    if (parts.length < 8) {
+      return null;
+    }
+    const [
+      hash,
+      shortHash,
+      subject,
+      body,
+      author,
+      email,
+      timestamp,
+      parents,
+      refs
+    ] = parts;
+    const cleanBody = body?.trim() || "";
+    const fullMessage = cleanBody ? `${subject}
+
+${cleanBody}` : subject || "";
+    return {
+      id: hash || "",
+      shortId: shortHash || "",
+      subject: subject || "",
+      message: fullMessage,
+      author: author || "",
+      authorEmail: email || "",
+      timestamp: parseInt(timestamp || "0", 10) * 1e3,
+      parentIds: parents ? parents.split(" ").filter(Boolean) : [],
+      refs: refs ? refs.split(", ").filter(Boolean) : void 0
+    };
+  } catch {
+    return null;
+  }
+}
+async function queryCommitFiles(git, commitId, log) {
+  try {
+    let result;
+    let numstatResult;
+    try {
+      result = await git.raw([
+        "diff-tree",
+        "--no-commit-id",
+        "--name-status",
+        "-r",
+        "--find-renames",
+        "-M",
+        `${commitId}^1`,
+        commitId
+      ]);
+      numstatResult = await git.raw([
+        "diff-tree",
+        "--no-commit-id",
+        "--numstat",
+        "-r",
+        "--find-renames",
+        "-M",
+        `${commitId}^1`,
+        commitId
+      ]);
+    } catch {
+      result = await git.raw([
+        "diff-tree",
+        "--no-commit-id",
+        "--name-status",
+        "-r",
+        "--find-renames",
+        "-M",
+        commitId
+      ]);
+      numstatResult = await git.raw([
+        "diff-tree",
+        "--no-commit-id",
+        "--numstat",
+        "-r",
+        "--find-renames",
+        "-M",
+        commitId
+      ]);
+    }
+    const statsMap = /* @__PURE__ */ new Map();
+    const numstatLines = numstatResult.trim().split("\n").filter(Boolean);
+    for (const line of numstatLines) {
+      const [additions, deletions, ...pathParts] = line.split("	");
+      const filePath = pathParts.join("	");
+      const isBinary = additions === "-" || deletions === "-";
+      statsMap.set(filePath, {
+        additions: isBinary ? 0 : parseInt(additions || "0", 10),
+        deletions: isBinary ? 0 : parseInt(deletions || "0", 10),
+        isBinary
+      });
+    }
+    const files = [];
+    const statusLines = result.trim().split("\n").filter(Boolean);
+    for (const line of statusLines) {
+      const parts = line.split("	");
+      if (parts.length < 2) continue;
+      const statusCode = parts[0]?.charAt(0) || "M";
+      let filePath;
+      let originalPath;
+      if (statusCode === "R" || statusCode === "C") {
+        originalPath = parts[1];
+        filePath = parts[2] || parts[1] || "";
+      } else {
+        filePath = parts[1] || "";
+      }
+      const stats = statsMap.get(filePath) || {
+        additions: 0,
+        deletions: 0,
+        isBinary: false
+      };
+      files.push({
+        path: filePath,
+        status: statusCodeToFileStatus(statusCode),
+        originalPath,
+        additions: stats.additions,
+        deletions: stats.deletions,
+        isBinary: stats.isBinary
+      });
+    }
+    return files;
+  } catch (error) {
+    log?.("error", "[git-commit-history] Failed to get commit files:", error);
+    return [];
+  }
+}
+async function queryFileAtCommit(git, commitId, filePath, gitRoot, cwd) {
+  try {
+    const relativePath = toRelativePath(filePath, gitRoot, cwd);
+    const result = await git.show([`${commitId}:${relativePath}`]);
+    return result;
+  } catch {
+    return null;
+  }
+}
+async function queryTrackedBranches(git, log) {
+  try {
+    const currentBranchName = await queryCurrentBranch(git);
+    if (currentBranchName === "HEAD") {
+      return { current: null, upstream: null, base: null };
+    }
+    const [currentCommitId, upstreamInfo, baseInfo] = await Promise.all([
+      resolveRef(git, "HEAD"),
+      getUpstreamInfo(git, currentBranchName),
+      getBaseBranchInfo(git, currentBranchName, log)
+    ]);
+    const current = currentCommitId ? {
+      name: currentBranchName,
+      displayName: currentBranchName,
+      type: "current",
+      commitId: currentCommitId
+    } : null;
+    return { current, upstream: upstreamInfo, base: baseInfo };
+  } catch (error) {
+    log?.("error", "[git-commit-history] Failed to get tracked branches:", error);
+    return { current: null, upstream: null, base: null };
+  }
+}
+async function resolveRef(git, ref) {
+  try {
+    const result = await git.revparse([ref]);
+    return result.trim();
+  } catch {
+    return null;
+  }
+}
+async function getUpstreamInfo(git, branchName) {
+  try {
+    const upstreamRef = await git.revparse([
+      "--abbrev-ref",
+      `${branchName}@{upstream}`
+    ]);
+    const upstreamName = upstreamRef.trim();
+    if (!upstreamName) {
+      return null;
+    }
+    const commitId = await resolveRef(git, upstreamName);
+    if (!commitId) {
+      return null;
+    }
+    const slashIndex = upstreamName.indexOf("/");
+    const remote = slashIndex > 0 ? upstreamName.slice(0, slashIndex) : void 0;
+    return {
+      name: upstreamName,
+      displayName: upstreamName,
+      type: "upstream",
+      commitId,
+      remote
+    };
+  } catch {
+    return null;
+  }
+}
+async function getBaseBranchInfo(git, branchName, log) {
+  try {
+    const configKey = `branch.${branchName}.vscode-merge-base`;
+    try {
+      const cachedBase = await git.raw(["config", "--get", configKey]);
+      const baseName = cachedBase.trim();
+      if (baseName) {
+        const commitId = await resolveRef(git, baseName);
+        if (commitId) {
+          const slashIndex = baseName.indexOf("/");
+          return {
+            name: baseName,
+            displayName: baseName,
+            type: "base",
+            commitId,
+            remote: slashIndex > 0 ? baseName.slice(0, slashIndex) : void 0
+          };
+        }
+      }
+    } catch {
+    }
+    const baseBranch = await getBaseBranchFromReflog(git, branchName);
+    if (baseBranch) {
+      try {
+        await git.raw(["config", configKey, baseBranch.name]);
+      } catch {
+      }
+      return baseBranch;
+    }
+    const defaultBranch = await getDefaultBranch(git);
+    if (defaultBranch) {
+      try {
+        await git.raw(["config", configKey, defaultBranch.name]);
+      } catch {
+      }
+      return defaultBranch;
+    }
+    return null;
+  } catch (error) {
+    log?.("error", "[git-commit-history] Failed to get base branch:", error);
+    return null;
+  }
+}
+async function getBaseBranchFromReflog(git, branchName) {
+  try {
+    const reflog = await git.raw([
+      "reflog",
+      "show",
+      branchName,
+      "--format=%gs"
+    ]);
+    const lines = reflog.trim().split("\n");
+    for (const line of lines) {
+      const match = line.match(/branch: Created from (.+)$/);
+      if (match && match[1] && match[1] !== "HEAD") {
+        const sourceBranch = match[1];
+        try {
+          const upstreamRef = await git.revparse([
+            "--abbrev-ref",
+            `${sourceBranch}@{upstream}`
+          ]);
+          const upstreamName = upstreamRef.trim();
+          if (upstreamName) {
+            const commitId = await resolveRef(git, upstreamName);
+            if (commitId) {
+              const slashIndex = upstreamName.indexOf("/");
+              return {
+                name: upstreamName,
+                displayName: upstreamName,
+                type: "base",
+                commitId,
+                remote: slashIndex > 0 ? upstreamName.slice(0, slashIndex) : void 0
+              };
+            }
+          }
+        } catch {
+          if (sourceBranch.includes("/")) {
+            const commitId = await resolveRef(git, sourceBranch);
+            if (commitId) {
+              const slashIndex = sourceBranch.indexOf("/");
+              return {
+                name: sourceBranch,
+                displayName: sourceBranch,
+                type: "base",
+                commitId,
+                remote: slashIndex > 0 ? sourceBranch.slice(0, slashIndex) : void 0
+              };
+            }
+          }
+        }
+      }
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+async function getDefaultBranch(git) {
+  for (const branchName of ["origin/main", "origin/master"]) {
+    try {
+      const commitId = await resolveRef(git, branchName);
+      if (commitId) {
+        return {
+          name: branchName,
+          displayName: branchName,
+          type: "base",
+          commitId,
+          remote: "origin"
+        };
+      }
+    } catch {
+    }
+  }
+  return null;
+}
+
+// src/git/git-operations.ts
+var fsPromises2 = __toESM(require("fs/promises"), 1);
+var path9 = __toESM(require("path"), 1);
+async function performStage(git, files, gitRoot, cwd) {
+  const relativePaths = files.map((f) => toRelativePath(f, gitRoot, cwd));
+  await git.add(relativePaths);
+}
+async function performUnstage(git, files, gitRoot, cwd) {
+  const relativePaths = files.map((f) => toRelativePath(f, gitRoot, cwd));
+  await git.reset(["HEAD", "--", ...relativePaths]);
+}
+async function performCommit(git, message, options, gitRoot, cwd) {
+  const commitOpts = {};
+  if (options?.amend) {
+    commitOpts["--amend"] = null;
+  }
+  if (options?.signoff) {
+    commitOpts["--signoff"] = null;
+  }
+  if (options?.files && options.files.length > 0) {
+    const relativePaths = options.files.map(
+      (f) => toRelativePath(f, gitRoot, cwd)
+    );
+    await git.commit(message, relativePaths, commitOpts);
+  } else {
+    await git.commit(message, commitOpts);
+  }
+  const log = await git.log({ maxCount: 1 });
+  const latestCommit = log.latest;
+  if (!latestCommit) {
+    throw new Error("Failed to get commit after creation");
+  }
+  return {
+    hash: latestCommit.hash,
+    shortHash: latestCommit.hash.substring(0, 7),
+    author: latestCommit.author_name,
+    email: latestCommit.author_email,
+    date: new Date(latestCommit.date),
+    message: latestCommit.message,
+    parents: latestCommit.refs ? latestCommit.refs.split(", ") : []
+  };
+}
+async function performRevert(git, files, status, gitRoot, cwd) {
+  const relativePaths = files.map((f) => toRelativePath(f, gitRoot, cwd));
+  const filesToCheckout = [];
+  const filesToDelete = [];
+  for (const relPath of relativePaths) {
+    const fileStatus = status.files.get(relPath);
+    if (fileStatus?.status === "untracked") {
+      filesToDelete.push(relPath);
+    } else {
+      filesToCheckout.push(relPath);
+    }
+  }
+  await Promise.all(
+    filesToDelete.map(async (relPath) => {
+      const fullPath = path9.join(gitRoot, relPath);
+      try {
+        await fsPromises2.unlink(fullPath);
+      } catch {
+      }
+    })
+  );
+  if (filesToCheckout.length > 0) {
+    await git.checkout(["--", ...filesToCheckout]);
+  }
+}
+async function performCheckout(git, ref, options) {
+  const checkoutOptions = [];
+  if (options?.force) {
+    checkoutOptions.push("--force");
+  }
+  if (checkoutOptions.length > 0) {
+    await git.checkout([...checkoutOptions, ref]);
+  } else {
+    await git.checkout(ref);
+  }
+}
+async function performCreateBranch(git, branchName, checkout = true, startPoint) {
+  if (checkout) {
+    const args = ["-b", branchName];
+    if (startPoint) {
+      args.push(startPoint);
+    }
+    await git.checkout(args);
+  } else {
+    const args = [branchName];
+    if (startPoint) {
+      args.push(startPoint);
+    }
+    await git.branch(args);
+  }
+}
+async function performStash(git, message) {
+  if (message) {
+    await git.stash(["push", "-m", message]);
+  } else {
+    await git.stash(["push"]);
+  }
+}
+async function performStashPop(git) {
+  await git.stash(["pop"]);
+}
+async function performPush(git, force = false, setUpstream = false) {
+  const options = [];
+  if (force) {
+    options.push("--force-with-lease");
+  }
+  if (setUpstream) {
+    options.push("--set-upstream", "origin", "HEAD");
+  }
+  await git.push(options);
+}
+async function performPull(git, rebase = false) {
+  if (rebase) {
+    await git.pull(["--rebase"]);
+  } else {
+    await git.pull();
+  }
+}
+
+// src/git/disk-git-provider.ts
 var DiskGitProvider = class _DiskGitProvider {
   gitRoot;
   cwd;
@@ -57438,6 +64595,7 @@ var DiskGitProvider = class _DiskGitProvider {
   watcher = null;
   watcherSubscriptions = [];
   disposed = false;
+  log;
   /** Count of active git operations (don't refresh while > 0) */
   activeOperations = 0;
   /** Pending status refresh timer (debouncing) */
@@ -57448,62 +64606,46 @@ var DiskGitProvider = class _DiskGitProvider {
   lastBranch = null;
   /** Last known HEAD commit (for head change detection) */
   lastHead = null;
-  /** Cached per-file diff stats (single source of truth for all diff stat queries) */
+  /** Cached per-file diff stats */
   perFileDiffStatsCache = null;
-  /** Cache TTL for diff stats (ms) - short window to deduplicate concurrent calls */
+  /** Cache TTL for diff stats (ms) */
   static DIFF_STATS_CACHE_TTL_MS = 100;
   // -------------------------------------------------------------------------
   // Event Emitters
   // -------------------------------------------------------------------------
-  _onStatusChanged = new EventEmitter2();
-  _onBranchChanged = new EventEmitter2();
-  _onCommitCreated = new EventEmitter2();
-  _onHeadChanged = new EventEmitter2();
+  _onStatusChanged = new EventEmitter();
+  _onBranchChanged = new EventEmitter();
+  _onCommitCreated = new EventEmitter();
+  _onHeadChanged = new EventEmitter();
   onStatusChanged = this._onStatusChanged.event;
   onBranchChanged = this._onBranchChanged.event;
   onCommitCreated = this._onCommitCreated.event;
   onHeadChanged = this._onHeadChanged.event;
   // -------------------------------------------------------------------------
-  // Node.js-style Event Emitter (for jsonrpc-proxy compatibility)
-  // -------------------------------------------------------------------------
-  /**
-   * Generic event emitter for all git events.
-   * Used by jsonrpc-proxy to subscribe to all events via .on('event', handler).
-   */
-  _nodeEventEmitter = new import_node_events3.EventEmitter();
-  /** Internal subscriptions to forward events to the generic emitter */
-  _eventForwarders = [];
-  // -------------------------------------------------------------------------
   // Constructor
   // -------------------------------------------------------------------------
-  /**
-   * Create a new git provider.
-   *
-   * @param gitRoot - The git repository root directory (contains .git/)
-   * @param cwd - The working directory for relative path resolution
-   */
-  constructor(gitRoot, cwd) {
-    this.gitRoot = path5.resolve(gitRoot);
-    this.cwd = path5.resolve(cwd);
+  constructor(gitRoot, cwd, logger) {
+    this.gitRoot = path10.resolve(gitRoot);
+    this.cwd = path10.resolve(cwd);
+    this.log = logger ?? ((level, msg, ...args) => {
+      if (level === "error" || level === "warn") {
+        console.error(msg, ...args);
+      }
+    });
     this.git = simpleGit(this.gitRoot);
   }
   // -------------------------------------------------------------------------
   // Lifecycle
   // -------------------------------------------------------------------------
-  /**
-   * Start watching the .git directory for changes.
-   *
-   * This should be called after setting up event listeners.
-   */
   async startWatching() {
     if (this.disposed || this.watcher) {
       return;
     }
-    const gitDir = path5.join(this.gitRoot, ".git");
+    const gitDir = path10.join(this.gitRoot, ".git");
     let watchPath;
     try {
-      const gitStat = fs5.statSync(gitDir);
-      watchPath = gitStat.isFile() ? this.resolveGitDir(gitDir) : gitDir;
+      const gitStat = fs7.statSync(gitDir);
+      watchPath = gitStat.isFile() ? resolveGitDir(gitDir) : gitDir;
     } catch {
       return;
     }
@@ -57527,24 +64669,12 @@ var DiskGitProvider = class _DiskGitProvider {
     await this.watcher.watch();
     await this.initializeState();
   }
-  /**
-   * Check if currently watching for changes.
-   */
   isWatching() {
     return this.watcher !== null && !this.disposed;
   }
-  /**
-   * Trigger a status refresh.
-   *
-   * This is called when working directory files change (detected by FileSystemV2).
-   * Uses the same debouncing as internal .git directory changes.
-   */
   triggerStatusRefresh() {
     this.scheduleStatusRefresh();
   }
-  /**
-   * Clean up all resources.
-   */
   dispose() {
     if (this.disposed) {
       return;
@@ -57560,7 +64690,7 @@ var DiskGitProvider = class _DiskGitProvider {
     this.watcherSubscriptions = [];
     if (this.watcher) {
       this.watcher.dispose().catch((error) => {
-        console.error("[DiskGitProvider] Error disposing watcher:", error);
+        this.log("error", "[DiskGitProvider] Error disposing watcher:", error);
       });
       this.watcher = null;
     }
@@ -57570,196 +64700,44 @@ var DiskGitProvider = class _DiskGitProvider {
     this._onHeadChanged.dispose();
   }
   // -------------------------------------------------------------------------
-  // State Queries
+  // State Queries — delegate to git-queries.ts
   // -------------------------------------------------------------------------
-  /**
-   * Get complete repository status.
-   */
   async getStatus() {
-    const [statusResult, branchSummary] = await Promise.all([
-      this.git.status(),
-      this.git.branch()
-    ]);
-    return this.parseStatus(statusResult, branchSummary.current);
+    return queryStatus(this.git);
   }
-  /**
-   * Get status for a specific file.
-   */
   async getFileStatus(filePath) {
-    const status = await this.getStatus();
-    const relativePath = this.toRelativePath(filePath);
-    const exactMatch = status.files.get(relativePath);
-    if (exactMatch) {
-      return exactMatch;
-    }
-    if (isCaseInsensitiveFS) {
-      const normalizedLookup = relativePath.toLowerCase();
-      for (const [key, value] of status.files) {
-        if (key.toLowerCase() === normalizedLookup) {
-          return value;
-        }
-      }
-    }
-    return null;
+    return queryFileStatus(this.git, filePath, this.gitRoot, this.cwd);
   }
-  /**
-   * Get current branch name.
-   *
-   * Note: Uses raw git command instead of simple-git's branch() method
-   * because rev-parse is ~35% faster (benchmarked at 40ms vs 65ms avg).
-   */
   async getCurrentBranch() {
-    const result = await this.git.raw(["rev-parse", "--abbrev-ref", "HEAD"]);
-    return result.trim() || "HEAD";
+    return queryCurrentBranch(this.git);
   }
-  /**
-   * Get all branches (local and remote).
-   */
   async getBranches() {
-    const result = await this.git.raw([
-      "for-each-ref",
-      "--sort=-committerdate",
-      "--format=%(refname:short)|%(refname)|%(committerdate:iso8601)|%(objectname:short)|%(subject)|%(HEAD)",
-      "refs/heads/",
-      "refs/remotes/"
-    ]);
-    const branches = [];
-    const lines = result.split("\n").filter(Boolean);
-    for (const line of lines) {
-      const parts = line.split("|");
-      if (parts.length < 5) continue;
-      const name = parts[0]?.trim() || "";
-      const fullRefname = parts[1]?.trim() || "";
-      const dateStr = parts[2]?.trim() || "";
-      const commit = parts[3]?.trim() || "";
-      const message = parts[4]?.trim() || "";
-      const isCurrentMarker = parts[5]?.trim() || "";
-      if (!name) continue;
-      if (name === "HEAD" || name.includes("HEAD")) {
-        continue;
-      }
-      const isRemote = fullRefname.startsWith("refs/remotes/");
-      const isCurrent = isCurrentMarker === "*";
-      branches.push({
-        name,
-        isRemote,
-        isCurrent,
-        commit,
-        upstream: void 0,
-        lastCommitDate: dateStr ? new Date(dateStr) : void 0,
-        lastCommitMessage: message || void 0
-      });
-    }
-    return branches;
+    return queryBranches(this.git);
   }
-  /**
-   * Get diff for a specific file.
-   */
   async getFileDiff(filePath, staged = false) {
-    const relativePath = this.toRelativePath(filePath);
-    if (staged) {
-      return this.git.diff(["--cached", "--", relativePath]);
-    }
-    return this.git.diff(["--", relativePath]);
+    return queryFileDiff(this.git, filePath, this.gitRoot, this.cwd, staged);
   }
-  /**
-   * Get file content at a specific ref.
-   */
   async getFileAtRef(filePath, ref) {
-    const relativePath = this.toRelativePath(filePath);
-    return this.git.show([`${ref}:${relativePath}`]);
+    return queryFileAtRef(this.git, filePath, ref, this.gitRoot, this.cwd);
   }
-  /**
-   * Check if there are uncommitted changes.
-   */
   async hasUncommittedChanges() {
-    const status = await this.git.status();
-    return !status.isClean();
+    return queryHasUncommittedChanges(this.git);
   }
-  /**
-   * Check if there are commits not pushed to upstream.
-   */
   async hasUnpushedCommits() {
-    const status = await this.git.status();
-    return status.ahead > 0;
+    return queryHasUnpushedCommits(this.git);
   }
-  /**
-   * Get files changed between current HEAD and a base branch.
-   *
-   * Returns files that have been added, modified, or deleted
-   * in the current branch compared to the base branch.
-   */
+  async hasUpstream() {
+    return queryHasUpstream(this.git);
+  }
   async getChangedFilesFromBranch(baseBranch) {
-    try {
-      const mergeBase = await this.git.raw(["merge-base", "HEAD", baseBranch]);
-      const result = await this.git.diff([
-        "--name-only",
-        mergeBase.trim(),
-        "HEAD"
-      ]);
-      return result.split("\n").map((line) => line.trim()).filter(Boolean);
-    } catch (error) {
-      console.error(
-        "[DiskGitProvider] Failed to get files changed since branch:",
-        error
-      );
-      return [];
-    }
+    return queryChangedFilesFromBranch(this.git, baseBranch, this.log);
   }
-  /**
-   * Get git status relative to a base branch.
-   *
-   * Compares the base branch tip directly to the working directory.
-   * This shows ALL files that differ between the base branch and your
-   * current working state (both committed and uncommitted changes).
-   *
-   * For example, comparing to "main" shows what a PR would contain:
-   * all differences between the tip of main and your working directory.
-   */
   async getStatusFromBranch(baseBranch) {
-    const statusMap = /* @__PURE__ */ new Map();
-    try {
-      const result = await this.git.diff(["--name-status", baseBranch]);
-      const lines = result.split("\n");
-      for (const line of lines) {
-        if (!line.trim()) continue;
-        const parts = line.split("	");
-        if (parts.length < 2) continue;
-        const statusCode = parts[0]?.trim();
-        const filePath = parts.length >= 3 ? parts[2]?.trim() : parts[1]?.trim();
-        if (!statusCode || !filePath) continue;
-        let status = "modified";
-        if (statusCode.startsWith("A")) {
-          status = "added";
-        } else if (statusCode.startsWith("D")) {
-          status = "deleted";
-        } else if (statusCode.startsWith("M")) {
-          status = "modified";
-        } else if (statusCode.startsWith("R")) {
-          status = "renamed";
-        } else if (statusCode.startsWith("C")) {
-          status = "copied";
-        }
-        statusMap.set(filePath, {
-          status,
-          staged: false,
-          // These are differences vs the branch, not staged
-          path: filePath
-        });
-      }
-    } catch (error) {
-      console.error(
-        "[DiskGitProvider] Failed to get status from branch:",
-        error
-      );
-    }
-    return statusMap;
+    return queryStatusFromBranch(this.git, baseBranch, this.log);
   }
   /**
-   * Get diff statistics for uncommitted changes (lines added/removed).
-   *
+   * Get diff statistics for uncommitted changes.
    * Derives aggregated stats from the cached per-file diff stats.
-   * This ensures a single source of truth and avoids redundant git operations.
    */
   async getUncommittedDiffStats() {
     try {
@@ -57783,762 +64761,86 @@ var DiskGitProvider = class _DiskGitProvider {
         files: allFiles.size
       };
     } catch (error) {
-      console.error("[DiskGitProvider] Failed to get diff stats:", error);
+      this.log("error", "[DiskGitProvider] Failed to get diff stats:", error);
       return { added: 0, removed: 0, files: 0 };
     }
   }
   /**
-   * Get per-file diff statistics for uncommitted changes.
-   *
-   * Returns lines added/removed for each changed file, split by staged/unstaged.
-   * - Staged: `git diff --numstat --cached` (index vs HEAD)
-   * - Unstaged: `git diff --numstat` (working tree vs index)
-   *
-   * Results are cached for a short window (100ms) to deduplicate concurrent calls.
-   * This is the single source of truth for all diff stat queries.
+   * Get per-file diff statistics with caching.
    */
   async getPerFileDiffStats() {
     const now = Date.now();
     if (this.perFileDiffStatsCache && now - this.perFileDiffStatsCache.timestamp < _DiskGitProvider.DIFF_STATS_CACHE_TTL_MS) {
       return this.perFileDiffStatsCache.result;
     }
-    const staged = /* @__PURE__ */ new Map();
-    const unstaged = /* @__PURE__ */ new Map();
-    const parseDiffOutput = (output, targetMap) => {
-      const lines = output.trim().split("\n").filter(Boolean);
-      for (const line of lines) {
-        const [addedStr, removedStr, ...filenameParts] = line.split("	");
-        const filename = filenameParts.join("	");
-        if (!filename) continue;
-        const added = addedStr === "-" ? 0 : parseInt(addedStr, 10) || 0;
-        const removed = removedStr === "-" ? 0 : parseInt(removedStr, 10) || 0;
-        targetMap.set(filename, { added, removed });
-      }
-    };
-    try {
-      const stagedOutput = await this.git.diff(["--numstat", "--cached"]);
-      parseDiffOutput(stagedOutput, staged);
-      const unstagedOutput = await this.git.diff(["--numstat"]);
-      parseDiffOutput(unstagedOutput, unstaged);
-      const status = await this.getStatus();
-      const untrackedFiles = Array.from(status.files.entries()).filter(
-        ([, fileStatus]) => fileStatus.status === "untracked"
-      );
-      const untrackedStats = await Promise.all(
-        untrackedFiles.map(async ([filePath]) => {
-          try {
-            const fullPath = path5.join(this.gitRoot, filePath);
-            const content = await fsPromises.readFile(fullPath, "utf-8");
-            const lines = content.split("\n");
-            const added = lines.length > 0 && lines[lines.length - 1] === "" ? lines.length - 1 : lines.length;
-            return { filePath, added };
-          } catch {
-            return null;
-          }
-        })
-      );
-      for (const stat3 of untrackedStats) {
-        if (stat3) {
-          unstaged.set(stat3.filePath, { added: stat3.added, removed: 0 });
-        }
-      }
-      const result = { staged, unstaged };
-      this.perFileDiffStatsCache = { result, timestamp: now };
-      return result;
-    } catch (error) {
-      console.error(
-        "[DiskGitProvider] Failed to get per-file diff stats:",
-        error
-      );
-      return { staged, unstaged };
-    }
+    const result = await queryPerFileDiffStats(this.git, this.gitRoot, this.log);
+    this.perFileDiffStatsCache = { result, timestamp: now };
+    return result;
   }
-  /**
-   * Get the most recently modified dirty file.
-   *
-   * Uses file modification times to find the file the user
-   * was most likely working on.
-   */
   async getMostRecentDirtyFile() {
-    try {
-      const status = await this.git.status();
-      if (status.files.length === 0) {
-        return null;
-      }
-      const dirtyFiles = status.files.map((f) => f.path);
-      let mostRecent = null;
-      for (const filePath of dirtyFiles) {
-        const absolutePath = path5.join(this.gitRoot, filePath);
-        try {
-          const stats = await fsPromises.stat(absolutePath);
-          if (!mostRecent || stats.mtimeMs > mostRecent.mtime) {
-            mostRecent = { path: filePath, mtime: stats.mtimeMs };
-          }
-        } catch {
-        }
-      }
-      return mostRecent?.path ?? null;
-    } catch (error) {
-      console.error(
-        "[DiskGitProvider] Failed to get most recent dirty file:",
-        error
-      );
-      return null;
-    }
+    return queryMostRecentDirtyFile(this.git, this.gitRoot, this.log);
   }
-  /**
-   * Get all dirty files with their modification timestamps.
-   *
-   * Returns files sorted by modification time (most recent first).
-   */
   async getDirtyFilesWithTimes() {
-    try {
-      const status = await this.git.status();
-      if (status.files.length === 0) {
-        return [];
-      }
-      const filesWithTimes = [];
-      for (const file of status.files) {
-        const absolutePath = path5.join(this.gitRoot, file.path);
-        try {
-          const stats = await fsPromises.stat(absolutePath);
-          filesWithTimes.push({
-            path: file.path,
-            mtime: stats.mtimeMs
-          });
-        } catch {
-        }
-      }
-      filesWithTimes.sort((a, b) => b.mtime - a.mtime);
-      return filesWithTimes;
-    } catch (error) {
-      console.error(
-        "[DiskGitProvider] Failed to get dirty files with times:",
-        error
-      );
-      return [];
-    }
+    return queryDirtyFilesWithTimes(this.git, this.gitRoot, this.log);
   }
-  /**
-   * Get the most recently modified file from recent commits.
-   *
-   * Fallback when there are no dirty files.
-   */
   async getMostRecentCommittedFile(commitLimit = 10) {
-    try {
-      const log = await this.git.log({
-        maxCount: commitLimit,
-        "--name-only": null
-      });
-      const filesSet = /* @__PURE__ */ new Set();
-      for (const commit of log.all) {
-        const diff = commit.diff;
-        if (diff?.files && Array.isArray(diff.files)) {
-          for (const fileEntry of diff.files) {
-            if (fileEntry.file) {
-              filesSet.add(fileEntry.file);
-            }
-          }
-        }
-      }
-      if (filesSet.size === 0) {
-        return null;
-      }
-      let mostRecent = null;
-      for (const filePath of filesSet) {
-        const absolutePath = path5.join(this.gitRoot, filePath);
-        try {
-          const stats = await fsPromises.stat(absolutePath);
-          if (!mostRecent || stats.mtimeMs > mostRecent.mtime) {
-            mostRecent = { path: filePath, mtime: stats.mtimeMs };
-          }
-        } catch {
-        }
-      }
-      return mostRecent?.path ?? null;
-    } catch (error) {
-      console.error(
-        "[DiskGitProvider] Failed to get most recent committed file:",
-        error
-      );
-      return null;
-    }
+    return queryMostRecentCommittedFile(this.git, this.gitRoot, this.log, commitLimit);
   }
   // -------------------------------------------------------------------------
-  // Commit History
+  // Commit History — delegate to git-commit-history.ts
   // -------------------------------------------------------------------------
-  /**
-   * Get commit history with pagination support.
-   *
-   * Returns commits in topological order (newest first) for correct
-   * swimlane graph computation.
-   */
   async getCommitHistory(options = {}) {
-    const { limit = 50, skip = 0, ref } = options;
-    try {
-      const requestLimit = limit + 1;
-      const format = "%H|%h|%s|%an|%ae|%at|%P|%D";
-      const args = [
-        "log",
-        `--format=${format}`,
-        "--topo-order",
-        // Topological ordering for swimlane algorithm
-        `-n`,
-        String(requestLimit),
-        `--skip=${skip}`
-      ];
-      if (ref) {
-        args.push(ref);
-      }
-      const result = await this.git.raw(args);
-      const lines = result.trim().split("\n").filter(Boolean);
-      const hasMore = lines.length > limit;
-      const commitLines = hasMore ? lines.slice(0, limit) : lines;
-      const commits = commitLines.map((line) => {
-        const parts = line.split("|");
-        const [
-          hash,
-          shortHash,
-          subject,
-          author,
-          email,
-          timestamp,
-          parents,
-          refs
-        ] = parts;
-        return {
-          id: hash || "",
-          shortId: shortHash || "",
-          subject: subject || "",
-          message: subject || "",
-          // Just subject for now, full message requires separate call
-          author: author || "",
-          authorEmail: email || "",
-          timestamp: parseInt(timestamp || "0", 10) * 1e3,
-          // Convert to milliseconds
-          parentIds: parents ? parents.split(" ").filter(Boolean) : [],
-          refs: refs ? refs.split(", ").filter(Boolean) : void 0
-        };
-      });
-      return {
-        commits,
-        hasMore
-      };
-    } catch (error) {
-      console.error("[DiskGitProvider] Failed to get commit history:", error);
-      return {
-        commits: [],
-        hasMore: false
-      };
-    }
+    return queryCommitHistory(this.git, options, this.log);
   }
-  /**
-   * Get a single commit by its hash.
-   */
   async getCommit(commitId) {
-    try {
-      const format = "%H%x00%h%x00%s%x00%b%x00%an%x00%ae%x00%at%x00%P%x00%D";
-      const result = await this.git.raw([
-        "log",
-        `-1`,
-        `--format=${format}`,
-        commitId
-      ]);
-      if (!result.trim()) {
-        return null;
-      }
-      const parts = result.split("\0");
-      if (parts.length < 8) {
-        return null;
-      }
-      const [
-        hash,
-        shortHash,
-        subject,
-        body,
-        author,
-        email,
-        timestamp,
-        parents,
-        refs
-      ] = parts;
-      const cleanBody = body?.trim() || "";
-      const fullMessage = cleanBody ? `${subject}
-
-${cleanBody}` : subject || "";
-      return {
-        id: hash || "",
-        shortId: shortHash || "",
-        subject: subject || "",
-        message: fullMessage,
-        author: author || "",
-        authorEmail: email || "",
-        timestamp: parseInt(timestamp || "0", 10) * 1e3,
-        parentIds: parents ? parents.split(" ").filter(Boolean) : [],
-        refs: refs ? refs.split(", ").filter(Boolean) : void 0
-      };
-    } catch {
-      return null;
-    }
+    return queryCommit(this.git, commitId);
   }
-  /**
-   * Get files changed in a specific commit.
-   *
-   * For merge commits, git diff-tree with a single commit shows a "combined diff"
-   * (files differing from ALL parents), which is usually empty for clean merges.
-   * To get the actual changes, we explicitly compare to the first parent using
-   * `commit^1 commit` syntax. This works for both regular and merge commits.
-   *
-   * For root commits (no parent), we fall back to the single-commit syntax which
-   * compares against an empty tree.
-   */
   async getCommitFiles(commitId) {
-    try {
-      let result;
-      let numstatResult;
-      try {
-        result = await this.git.raw([
-          "diff-tree",
-          "--no-commit-id",
-          "--name-status",
-          "-r",
-          "--find-renames",
-          "-M",
-          `${commitId}^1`,
-          commitId
-        ]);
-        numstatResult = await this.git.raw([
-          "diff-tree",
-          "--no-commit-id",
-          "--numstat",
-          "-r",
-          "--find-renames",
-          "-M",
-          `${commitId}^1`,
-          commitId
-        ]);
-      } catch {
-        result = await this.git.raw([
-          "diff-tree",
-          "--no-commit-id",
-          "--name-status",
-          "-r",
-          "--find-renames",
-          "-M",
-          commitId
-        ]);
-        numstatResult = await this.git.raw([
-          "diff-tree",
-          "--no-commit-id",
-          "--numstat",
-          "-r",
-          "--find-renames",
-          "-M",
-          commitId
-        ]);
-      }
-      const statsMap = /* @__PURE__ */ new Map();
-      const numstatLines = numstatResult.trim().split("\n").filter(Boolean);
-      for (const line of numstatLines) {
-        const [additions, deletions, ...pathParts] = line.split("	");
-        const filePath = pathParts.join("	");
-        const isBinary = additions === "-" || deletions === "-";
-        statsMap.set(filePath, {
-          additions: isBinary ? 0 : parseInt(additions || "0", 10),
-          deletions: isBinary ? 0 : parseInt(deletions || "0", 10),
-          isBinary
-        });
-      }
-      const files = [];
-      const statusLines = result.trim().split("\n").filter(Boolean);
-      for (const line of statusLines) {
-        const parts = line.split("	");
-        if (parts.length < 2) continue;
-        const statusCode = parts[0]?.charAt(0) || "M";
-        let filePath;
-        let originalPath;
-        if (statusCode === "R" || statusCode === "C") {
-          originalPath = parts[1];
-          filePath = parts[2] || parts[1] || "";
-        } else {
-          filePath = parts[1] || "";
-        }
-        const stats = statsMap.get(filePath) || {
-          additions: 0,
-          deletions: 0,
-          isBinary: false
-        };
-        files.push({
-          path: filePath,
-          status: this.statusCodeToFileStatus(statusCode),
-          originalPath,
-          additions: stats.additions,
-          deletions: stats.deletions,
-          isBinary: stats.isBinary
-        });
-      }
-      return files;
-    } catch (error) {
-      console.error("[DiskGitProvider] Failed to get commit files:", error);
-      return [];
-    }
+    return queryCommitFiles(this.git, commitId, this.log);
   }
-  /**
-   * Get file content at a specific commit.
-   */
   async getFileAtCommit(commitId, filePath) {
-    try {
-      const relativePath = this.toRelativePath(filePath);
-      const result = await this.git.show([`${commitId}:${relativePath}`]);
-      return result;
-    } catch {
-      return null;
-    }
+    return queryFileAtCommit(this.git, commitId, filePath, this.gitRoot, this.cwd);
   }
-  /**
-   * Get tracked branch information for VS Code-style graph coloring.
-   *
-   * Returns information about three special branches:
-   * 1. Current branch - where HEAD points (blue segment)
-   * 2. Upstream - remote tracking branch (purple segment)
-   * 3. Base - branch from which feature was created (orange segment)
-   */
   async getTrackedBranches() {
-    try {
-      const currentBranchName = await this.getCurrentBranch();
-      if (currentBranchName === "HEAD") {
-        return { current: null, upstream: null, base: null };
-      }
-      const [currentCommitId, upstreamInfo, baseInfo] = await Promise.all([
-        this.resolveRef("HEAD"),
-        this.getUpstreamInfo(currentBranchName),
-        this.getBaseBranchInfo(currentBranchName)
-      ]);
-      const current = currentCommitId ? {
-        name: currentBranchName,
-        displayName: currentBranchName,
-        type: "current",
-        commitId: currentCommitId
-      } : null;
-      return {
-        current,
-        upstream: upstreamInfo,
-        base: baseInfo
-      };
-    } catch (error) {
-      console.error("[DiskGitProvider] Failed to get tracked branches:", error);
-      return { current: null, upstream: null, base: null };
-    }
-  }
-  /**
-   * Resolve a ref to its commit ID.
-   */
-  async resolveRef(ref) {
-    try {
-      const result = await this.git.revparse([ref]);
-      return result.trim();
-    } catch {
-      return null;
-    }
-  }
-  /**
-   * Get upstream tracking branch info.
-   */
-  async getUpstreamInfo(branchName) {
-    try {
-      const upstreamRef = await this.git.revparse([
-        "--abbrev-ref",
-        `${branchName}@{upstream}`
-      ]);
-      const upstreamName = upstreamRef.trim();
-      if (!upstreamName) {
-        return null;
-      }
-      const commitId = await this.resolveRef(upstreamName);
-      if (!commitId) {
-        return null;
-      }
-      const slashIndex = upstreamName.indexOf("/");
-      const remote = slashIndex > 0 ? upstreamName.slice(0, slashIndex) : void 0;
-      return {
-        name: upstreamName,
-        displayName: upstreamName,
-        type: "upstream",
-        commitId,
-        remote
-      };
-    } catch {
-      return null;
-    }
-  }
-  /**
-   * Get base branch info (where the feature branch was created from).
-   *
-   * Strategy:
-   * 1. Check git config for cached vscode-merge-base
-   * 2. Parse reflog to find "Created from" entry
-   * 3. Fall back to default branch (origin/main or origin/master)
-   */
-  async getBaseBranchInfo(branchName) {
-    try {
-      const configKey = `branch.${branchName}.vscode-merge-base`;
-      try {
-        const cachedBase = await this.git.raw(["config", "--get", configKey]);
-        const baseName = cachedBase.trim();
-        if (baseName) {
-          const commitId = await this.resolveRef(baseName);
-          if (commitId) {
-            const slashIndex = baseName.indexOf("/");
-            return {
-              name: baseName,
-              displayName: baseName,
-              type: "base",
-              commitId,
-              remote: slashIndex > 0 ? baseName.slice(0, slashIndex) : void 0
-            };
-          }
-        }
-      } catch {
-      }
-      const baseBranch = await this.getBaseBranchFromReflog(branchName);
-      if (baseBranch) {
-        try {
-          await this.git.raw(["config", configKey, baseBranch.name]);
-        } catch {
-        }
-        return baseBranch;
-      }
-      const defaultBranch = await this.getDefaultBranch();
-      if (defaultBranch) {
-        try {
-          await this.git.raw(["config", configKey, defaultBranch.name]);
-        } catch {
-        }
-        return defaultBranch;
-      }
-      return null;
-    } catch (error) {
-      console.error("[DiskGitProvider] Failed to get base branch:", error);
-      return null;
-    }
-  }
-  /**
-   * Try to determine base branch from reflog.
-   */
-  async getBaseBranchFromReflog(branchName) {
-    try {
-      const reflog = await this.git.raw([
-        "reflog",
-        "show",
-        branchName,
-        "--format=%gs"
-      ]);
-      const lines = reflog.trim().split("\n");
-      for (const line of lines) {
-        const match = line.match(/branch: Created from (.+)$/);
-        if (match && match[1] && match[1] !== "HEAD") {
-          const sourceBranch = match[1];
-          try {
-            const upstreamRef = await this.git.revparse([
-              "--abbrev-ref",
-              `${sourceBranch}@{upstream}`
-            ]);
-            const upstreamName = upstreamRef.trim();
-            if (upstreamName) {
-              const commitId = await this.resolveRef(upstreamName);
-              if (commitId) {
-                const slashIndex = upstreamName.indexOf("/");
-                return {
-                  name: upstreamName,
-                  displayName: upstreamName,
-                  type: "base",
-                  commitId,
-                  remote: slashIndex > 0 ? upstreamName.slice(0, slashIndex) : void 0
-                };
-              }
-            }
-          } catch {
-            if (sourceBranch.includes("/")) {
-              const commitId = await this.resolveRef(sourceBranch);
-              if (commitId) {
-                const slashIndex = sourceBranch.indexOf("/");
-                return {
-                  name: sourceBranch,
-                  displayName: sourceBranch,
-                  type: "base",
-                  commitId,
-                  remote: slashIndex > 0 ? sourceBranch.slice(0, slashIndex) : void 0
-                };
-              }
-            }
-          }
-        }
-      }
-      return null;
-    } catch {
-      return null;
-    }
-  }
-  /**
-   * Get the default branch (origin/main or origin/master).
-   */
-  async getDefaultBranch() {
-    for (const branchName of ["origin/main", "origin/master"]) {
-      try {
-        const commitId = await this.resolveRef(branchName);
-        if (commitId) {
-          return {
-            name: branchName,
-            displayName: branchName,
-            type: "base",
-            commitId,
-            remote: "origin"
-          };
-        }
-      } catch {
-      }
-    }
-    return null;
-  }
-  /**
-   * Convert git status code to GitFileStatusCode.
-   */
-  statusCodeToFileStatus(code) {
-    switch (code) {
-      case "A":
-        return "added";
-      case "D":
-        return "deleted";
-      case "M":
-        return "modified";
-      case "R":
-        return "renamed";
-      case "C":
-        return "copied";
-      case "U":
-        return "unmerged";
-      default:
-        return "modified";
-    }
-  }
-  /**
-   * Revert changes to files (discard working tree modifications).
-   *
-   * This discards ONLY working tree changes, preserving any staged changes.
-   * Mirrors VS Code's "Discard Changes" behavior.
-   *
-   * Handles different file types:
-   * - Untracked files: Delete from filesystem
-   * - All other files: Restore from index via `git checkout -- file`
-   *   - If file has staged changes, reverts to staged version
-   *   - If file has no staged changes, reverts to HEAD
-   *
-   * Note: Does NOT unstage files. Use unstage() separately if needed.
-   */
-  async revert(files) {
-    await this.withOperationTracking(async () => {
-      const relativePaths = files.map((f) => this.toRelativePath(f));
-      const status = await this.getStatus();
-      const filesToCheckout = [];
-      const filesToDelete = [];
-      for (const relPath of relativePaths) {
-        const fileStatus = status.files.get(relPath);
-        if (fileStatus?.status === "untracked") {
-          filesToDelete.push(relPath);
-        } else {
-          filesToCheckout.push(relPath);
-        }
-      }
-      await Promise.all(
-        filesToDelete.map(async (relPath) => {
-          const fullPath = path5.join(this.gitRoot, relPath);
-          try {
-            await fsPromises.unlink(fullPath);
-          } catch {
-          }
-        })
-      );
-      if (filesToCheckout.length > 0) {
-        await this.git.checkout(["--", ...filesToCheckout]);
-      }
-    });
+    return queryTrackedBranches(this.git, this.log);
   }
   // -------------------------------------------------------------------------
-  // Operations
+  // Operations — delegate to git-operations.ts + wrap with tracking/events
   // -------------------------------------------------------------------------
-  /**
-   * Stage files for commit.
-   */
   async stage(files) {
     await this.withOperationTracking(async () => {
-      const relativePaths = files.map((f) => this.toRelativePath(f));
-      await this.git.add(relativePaths);
+      await performStage(this.git, files, this.gitRoot, this.cwd);
     });
   }
-  /**
-   * Unstage files (remove from index).
-   */
   async unstage(files) {
     await this.withOperationTracking(async () => {
-      const relativePaths = files.map((f) => this.toRelativePath(f));
-      await this.git.reset(["HEAD", "--", ...relativePaths]);
+      await performUnstage(this.git, files, this.gitRoot, this.cwd);
     });
   }
-  /**
-   * Create a commit.
-   */
   async commit(message, options) {
     return this.withOperationTracking(async () => {
-      const commitOpts = {};
-      if (options?.amend) {
-        commitOpts["--amend"] = null;
-      }
-      if (options?.signoff) {
-        commitOpts["--signoff"] = null;
-      }
-      if (options?.files && options.files.length > 0) {
-        const relativePaths = options.files.map((f) => this.toRelativePath(f));
-        await this.git.commit(message, relativePaths, commitOpts);
-      } else {
-        await this.git.commit(message, commitOpts);
-      }
-      const log = await this.git.log({ maxCount: 1 });
-      const latestCommit = log.latest;
-      if (!latestCommit) {
-        throw new Error("Failed to get commit after creation");
-      }
-      const commit = {
-        hash: latestCommit.hash,
-        shortHash: latestCommit.hash.substring(0, 7),
-        author: latestCommit.author_name,
-        email: latestCommit.author_email,
-        date: new Date(latestCommit.date),
-        message: latestCommit.message,
-        parents: latestCommit.refs ? latestCommit.refs.split(", ") : []
-      };
+      const commit = await performCommit(
+        this.git,
+        message,
+        options,
+        this.gitRoot,
+        this.cwd
+      );
       this._onCommitCreated.fire({ commit });
       return commit;
     });
   }
-  /**
-   * Checkout a branch or ref.
-   *
-   * @param ref - Branch name, tag, or commit hash
-   * @param options - Checkout options (force)
-   */
+  async revert(files) {
+    await this.withOperationTracking(async () => {
+      const status = await this.getStatus();
+      await performRevert(this.git, files, status, this.gitRoot, this.cwd);
+    });
+  }
   async checkout(ref, options) {
     const previousBranch = await this.getCurrentBranch();
     const previousHead = await this.getHeadCommit();
     await this.withOperationTracking(async () => {
-      const checkoutOptions = [];
-      if (options?.force) {
-        checkoutOptions.push("--force");
-      }
-      if (checkoutOptions.length > 0) {
-        await this.git.checkout([...checkoutOptions, ref]);
-      } else {
-        await this.git.checkout(ref);
-      }
+      await performCheckout(this.git, ref, options);
     });
     const currentBranch = await this.getCurrentBranch();
     const currentHead = await this.getHeadCommit();
@@ -58556,29 +64858,10 @@ ${cleanBody}` : subject || "";
       });
     }
   }
-  /**
-   * Create a new branch and optionally switch to it.
-   *
-   * @param branchName - Name for the new branch
-   * @param checkout - Whether to switch to the new branch (default: true)
-   * @param startPoint - Optional ref to start the branch from (default: HEAD)
-   */
   async createBranch(branchName, checkout = true, startPoint) {
     const previousBranch = await this.getCurrentBranch();
     await this.withOperationTracking(async () => {
-      if (checkout) {
-        const args = ["-b", branchName];
-        if (startPoint) {
-          args.push(startPoint);
-        }
-        await this.git.checkout(args);
-      } else {
-        const args = [branchName];
-        if (startPoint) {
-          args.push(startPoint);
-        }
-        await this.git.branch(args);
-      }
+      await performCreateBranch(this.git, branchName, checkout, startPoint);
     });
     if (checkout) {
       const currentBranch = await this.getCurrentBranch();
@@ -58590,100 +64873,38 @@ ${cleanBody}` : subject || "";
       }
     }
   }
-  /**
-   * Stash current uncommitted changes.
-   *
-   * Saves both staged and unstaged changes to the stash.
-   *
-   * @param message - Optional message for the stash entry
-   */
   async stash(message) {
     await this.withOperationTracking(async () => {
-      if (message) {
-        await this.git.stash(["push", "-m", message]);
-      } else {
-        await this.git.stash(["push"]);
-      }
+      await performStash(this.git, message);
     });
   }
-  /**
-   * Apply and remove the most recent stash entry.
-   *
-   * Restores the previously stashed changes to the working directory.
-   */
   async stashPop() {
     await this.withOperationTracking(async () => {
-      await this.git.stash(["pop"]);
+      await performStashPop(this.git);
     });
   }
-  /**
-   * Push commits to remote.
-   *
-   * @param force - If true, use --force-with-lease for safer force push
-   * @param setUpstream - If true, set upstream tracking (for new branches)
-   */
   async push(force = false, setUpstream = false) {
     await this.withOperationTracking(async () => {
-      const options = [];
-      if (force) {
-        options.push("--force-with-lease");
-      }
-      if (setUpstream) {
-        options.push("--set-upstream", "origin", "HEAD");
-      }
-      await this.git.push(options);
+      await performPush(this.git, force, setUpstream);
     });
   }
-  /**
-   * Pull changes from remote.
-   *
-   * @param rebase - If true, use rebase instead of merge
-   */
   async pull(rebase = false) {
     await this.withOperationTracking(async () => {
-      if (rebase) {
-        await this.git.pull(["--rebase"]);
-      } else {
-        await this.git.pull();
-      }
+      await performPull(this.git, rebase);
     });
-  }
-  /**
-   * Check if the current branch has an upstream (tracking) branch configured.
-   *
-   * @returns true if an upstream is configured, false otherwise
-   */
-  async hasUpstream() {
-    try {
-      const result = await this.git.raw([
-        "rev-parse",
-        "--abbrev-ref",
-        "--symbolic-full-name",
-        "@{u}"
-      ]);
-      return result.trim().length > 0;
-    } catch {
-      return false;
-    }
   }
   // -------------------------------------------------------------------------
   // Internal: State Management
   // -------------------------------------------------------------------------
-  /**
-   * Initialize last known state for change detection.
-   */
   async initializeState() {
     try {
       this.lastStatus = await this.getStatus();
       this.lastBranch = await this.getCurrentBranch();
       this.lastHead = await this.getHeadCommit();
     } catch (error) {
-      console.error("[DiskGitProvider] Failed to initialize state:", error);
+      this.log("error", "[DiskGitProvider] Failed to initialize state:", error);
     }
   }
-  /**
-   * Get the current HEAD commit hash.
-   */
   async getHeadCommit() {
     try {
       const result = await this.git.revparse(["HEAD"]);
@@ -58693,109 +64914,8 @@ ${cleanBody}` : subject || "";
     }
   }
   // -------------------------------------------------------------------------
-  // Internal: Status Parsing
-  // -------------------------------------------------------------------------
-  /**
-   * Parse git status result into our GitStatus type.
-   */
-  parseStatus(statusResult, branch) {
-    const files = /* @__PURE__ */ new Map();
-    for (const file of statusResult.files) {
-      const entries = this.parseFileStatuses(file);
-      for (const entry of entries) {
-        const key = entry.staged || !entry.hasIndexChanges ? entry.path : entry.path + UNSTAGED_KEY_SUFFIX;
-        files.set(key, entry);
-      }
-    }
-    return {
-      branch: branch || "HEAD",
-      upstream: statusResult.tracking || void 0,
-      ahead: statusResult.ahead,
-      behind: statusResult.behind,
-      files
-    };
-  }
-  /**
-   * Parse a single file from simple-git into one or two GitFileStatus entries.
-   *
-   * For most files, returns a single entry. For partially staged files
-   * (e.g., "MM" - modified in both index and working directory), returns
-   * two entries: one for staged changes and one for unstaged changes.
-   */
-  parseFileStatuses(file) {
-    const { path: filePath, index, working_dir } = file;
-    const entries = [];
-    if (index === "?" && working_dir === "?") {
-      entries.push({
-        path: filePath,
-        status: "untracked",
-        staged: false
-      });
-      return entries;
-    }
-    if (index === "!" && working_dir === "!") {
-      entries.push({
-        path: filePath,
-        status: "ignored",
-        staged: false
-      });
-      return entries;
-    }
-    if (index === "U" || working_dir === "U" || index === "A" && working_dir === "A" || index === "D" && working_dir === "D") {
-      entries.push({
-        path: filePath,
-        status: "unmerged",
-        staged: false
-      });
-      return entries;
-    }
-    const hasIndexChange = index !== " " && index !== "?";
-    const hasWorkingDirChange = working_dir !== " " && working_dir !== "?";
-    if (hasIndexChange) {
-      entries.push({
-        path: filePath,
-        status: this.codeToStatus(index),
-        staged: true,
-        hasIndexChanges: true
-      });
-    }
-    if (hasWorkingDirChange) {
-      entries.push({
-        path: filePath,
-        status: this.codeToStatus(working_dir),
-        staged: false,
-        // hasIndexChanges indicates the diff should be Index → Working Dir
-        // instead of HEAD → Working Dir
-        hasIndexChanges: hasIndexChange
-      });
-    }
-    return entries;
-  }
-  /**
-   * Convert a single git status code to our status type.
-   */
-  codeToStatus(code) {
-    switch (code) {
-      case "M":
-        return "modified";
-      case "A":
-        return "added";
-      case "D":
-        return "deleted";
-      case "R":
-        return "renamed";
-      case "C":
-        return "copied";
-      default:
-        return "modified";
-    }
-  }
-  // -------------------------------------------------------------------------
   // Internal: Refresh Scheduling
   // -------------------------------------------------------------------------
-  /**
-   * Schedule a status refresh with debouncing.
-   */
   scheduleStatusRefresh() {
     if (this.disposed) {
       return;
@@ -58811,9 +64931,6 @@ ${cleanBody}` : subject || "";
       this.refreshStatus();
     }, STATUS_REFRESH_DEBOUNCE_MS);
   }
-  /**
-   * Actually refresh status and emit events if changed.
-   */
   async refreshStatus() {
     if (this.disposed) {
       return;
@@ -58824,7 +64941,7 @@ ${cleanBody}` : subject || "";
       const currentBranch = currentStatus.branch;
       const currentHead = await this.getHeadCommit();
       if (this.lastStatus) {
-        const delta = this.calculateStatusDelta(this.lastStatus, currentStatus);
+        const delta = calculateStatusDelta(this.lastStatus, currentStatus);
         const aheadBehindChanged = this.lastStatus.ahead !== currentStatus.ahead || this.lastStatus.behind !== currentStatus.behind;
         const headChanged = this.lastHead !== currentHead;
         const upstreamChanged = this.lastStatus.upstream !== currentStatus.upstream;
@@ -58852,40 +64969,12 @@ ${cleanBody}` : subject || "";
       this.lastBranch = currentBranch;
       this.lastHead = currentHead;
     } catch (error) {
-      console.error("[DiskGitProvider] Failed to refresh status:", error);
+      this.log("error", "[DiskGitProvider] Failed to refresh status:", error);
     }
-  }
-  /**
-   * Calculate the delta between two status snapshots.
-   */
-  calculateStatusDelta(previous, current) {
-    const added = [];
-    const modified = [];
-    const removed = [];
-    for (const [filePath, currentFile] of current.files) {
-      const previousFile = previous.files.get(filePath);
-      if (!previousFile) {
-        added.push(filePath);
-      } else if (previousFile.status !== currentFile.status || previousFile.staged !== currentFile.staged) {
-        modified.push(filePath);
-      }
-    }
-    for (const filePath of previous.files.keys()) {
-      if (!current.files.has(filePath)) {
-        removed.push(filePath);
-      }
-    }
-    return { added, modified, removed };
   }
   // -------------------------------------------------------------------------
   // Internal: Operation Tracking
   // -------------------------------------------------------------------------
-  /**
-   * Execute a git operation with tracking.
-   *
-   * While operations are active, status refresh is suppressed
-   * to avoid thrashing.
-   */
   async withOperationTracking(operation) {
     this.activeOperations++;
     try {
@@ -58897,890 +64986,19 @@ ${cleanBody}` : subject || "";
       }
     }
   }
-  // -------------------------------------------------------------------------
-  // Internal: Path Utilities
-  // -------------------------------------------------------------------------
-  /**
-   * Convert a path to be relative to the git root.
-   *
-   * On case-insensitive filesystems (macOS, Windows), handles the case where
-   * the file path and git root have different casings but refer to the same location.
-   *
-   * Always returns paths with forward slashes for Git compatibility.
-   */
-  toRelativePath(filePath) {
-    const absolutePath = path5.isAbsolute(filePath) ? filePath : path5.resolve(this.cwd, filePath);
-    let relativePath = path5.relative(this.gitRoot, absolutePath);
-    if (relativePath.startsWith("..") && (process.platform === "darwin" || process.platform === "win32")) {
-      const gitRootLower = this.gitRoot.toLowerCase();
-      const absolutePathLower = absolutePath.toLowerCase();
-      if (absolutePathLower.startsWith(gitRootLower)) {
-        const relativePortion = absolutePath.slice(this.gitRoot.length);
-        relativePath = relativePortion.replace(/^[/\\]/, "");
-      }
-    }
-    return relativePath.split(path5.sep).join("/");
-  }
-  /**
-   * Resolve the actual .git directory for worktrees.
-   *
-   * When using git worktrees, .git is a file containing:
-   * "gitdir: /path/to/actual/.git/worktrees/name"
-   */
-  resolveGitDir(gitFile) {
-    try {
-      const content = fs5.readFileSync(gitFile, "utf8");
-      const match = content.match(/gitdir:\s*(.+)/);
-      if (match) {
-        const gitDir = match[1].trim();
-        return path5.isAbsolute(gitDir) ? gitDir : path5.resolve(path5.dirname(gitFile), gitDir);
-      }
-    } catch {
-    }
-    return gitFile;
-  }
 };
-async function findGitRoot(cwd) {
-  try {
-    const git = simpleGit(cwd);
-    const root = await git.revparse(["--show-toplevel"]);
-    return root.trim() || null;
-  } catch {
-    return null;
-  }
-}
-async function isGitAvailable() {
-  try {
-    const git = simpleGit();
-    await git.version();
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-// src/git/git-provider-service.ts
-var DISPOSE_GRACE_PERIOD_MS = 5e3;
-var GitProviderService = class _GitProviderService {
-  // -------------------------------------------------------------------------
-  // Singleton
-  // -------------------------------------------------------------------------
-  static instance = null;
-  /**
-   * Get the singleton instance of the service.
-   */
-  static getInstance() {
-    if (!_GitProviderService.instance) {
-      _GitProviderService.instance = new _GitProviderService();
-    }
-    return _GitProviderService.instance;
-  }
-  /**
-   * Reset the singleton instance (for testing only).
-   *
-   * This disposes all providers and clears the singleton.
-   * Should only be used in test cleanup.
-   */
-  static resetInstance() {
-    if (_GitProviderService.instance) {
-      _GitProviderService.instance.disposeAll();
-      _GitProviderService.instance = null;
-    }
-  }
-  // -------------------------------------------------------------------------
-  // Internal State
-  // -------------------------------------------------------------------------
-  /** Map of git roots to provider entries */
-  providers = /* @__PURE__ */ new Map();
-  /** Map of pending provider creation promises to prevent race conditions */
-  pendingCreations = /* @__PURE__ */ new Map();
-  /** Cached result of git availability check */
-  gitAvailableCache = void 0;
-  /** Optional logging function */
-  log;
-  /**
-   * Create a new GitProviderService.
-   *
-   * Can be instantiated directly with options, or accessed via getInstance()
-   * for singleton usage.
-   *
-   * @param options - Configuration options
-   */
-  constructor(options = {}) {
-    this.log = options.log;
-  }
-  // -------------------------------------------------------------------------
-  // Public Methods
-  // -------------------------------------------------------------------------
-  /**
-   * Get a git provider for the specified directory.
-   *
-   * Automatically finds the git repository root containing the directory.
-   * If a provider already exists for this repository, the reference count
-   * is incremented and the existing provider is returned.
-   *
-   * @param cwd - The working directory (any directory within a git repo)
-   * @returns The git provider instance and the git root path
-   * @throws If the directory is not within a git repository
-   */
-  async getProvider(cwd) {
-    const gitRoot = await this.findGitRoot(cwd);
-    if (!gitRoot) {
-      throw new Error(`Not a git repository: ${cwd}`);
-    }
-    const normalizedRoot = this.normalizePath(gitRoot);
-    const existing = this.providers.get(normalizedRoot);
-    if (existing) {
-      if (existing.disposeTimer) {
-        clearTimeout(existing.disposeTimer);
-        existing.disposeTimer = void 0;
-      }
-      existing.refCount++;
-      return { provider: existing.provider, gitRoot: normalizedRoot };
-    }
-    const pendingCreation = this.pendingCreations.get(normalizedRoot);
-    if (pendingCreation) {
-      const result = await pendingCreation;
-      const entry = this.providers.get(normalizedRoot);
-      if (entry) {
-        entry.refCount++;
-      }
-      return result;
-    }
-    const creationPromise = this.createProvider(normalizedRoot, cwd);
-    this.pendingCreations.set(normalizedRoot, creationPromise);
-    try {
-      const result = await creationPromise;
-      return result;
-    } finally {
-      this.pendingCreations.delete(normalizedRoot);
-    }
-  }
-  /**
-   * Internal method to create a new provider.
-   * Separated to support the pending creations pattern.
-   */
-  async createProvider(normalizedRoot, cwd) {
-    const provider = new DiskGitProvider(normalizedRoot, cwd);
-    await provider.startWatching();
-    this.providers.set(normalizedRoot, {
-      provider,
-      refCount: 1
-    });
-    return { provider, gitRoot: normalizedRoot };
-  }
-  /**
-   * Release a reference to a git provider.
-   *
-   * Decrements the reference count for the provider at the specified git root.
-   * When the count reaches zero, a grace period timer is started. If no new
-   * references are acquired within the grace period, the provider is disposed.
-   *
-   * @param gitRoot - The git repository root path
-   */
-  releaseProvider(gitRoot) {
-    const normalizedRoot = this.normalizePath(gitRoot);
-    const entry = this.providers.get(normalizedRoot);
-    if (!entry) {
-      console.warn(
-        `[GitProviderService] Attempted to release unknown provider: ${normalizedRoot}`
-      );
-      return;
-    }
-    entry.refCount--;
-    if (entry.refCount <= 0) {
-      entry.disposeTimer = setTimeout(() => {
-        this.disposeProvider(normalizedRoot);
-      }, DISPOSE_GRACE_PERIOD_MS);
-    }
-  }
-  /**
-   * Immediately dispose a provider without waiting for grace period.
-   *
-   * This is primarily useful for testing or forced cleanup scenarios.
-   *
-   * @param gitRoot - The git repository root path
-   */
-  async forceDispose(gitRoot) {
-    const normalizedRoot = this.normalizePath(gitRoot);
-    await this.disposeProvider(normalizedRoot);
-  }
-  /**
-   * Find the git repository root for a given path.
-   *
-   * Walks up the directory tree looking for a .git directory or file.
-   *
-   * @param startPath - The starting directory path
-   * @returns The git root path, or null if not in a git repository
-   */
-  async findGitRoot(startPath) {
-    let currentPath = path6.resolve(startPath);
-    const root = path6.parse(currentPath).root;
-    while (currentPath !== root) {
-      const gitPath = path6.join(currentPath, ".git");
-      try {
-        await fs6.promises.access(gitPath);
-        return currentPath;
-      } catch {
-        currentPath = path6.dirname(currentPath);
-      }
-    }
-    const rootGitPath = path6.join(root, ".git");
-    try {
-      await fs6.promises.access(rootGitPath);
-      return root;
-    } catch {
-      return null;
-    }
-  }
-  /**
-   * Get the current reference count for a provider.
-   *
-   * Returns 0 if no provider exists for the path.
-   *
-   * @param gitRoot - The git repository root path
-   * @returns The current reference count
-   */
-  getRefCount(gitRoot) {
-    const normalizedRoot = this.normalizePath(gitRoot);
-    const entry = this.providers.get(normalizedRoot);
-    return entry?.refCount ?? 0;
-  }
-  /**
-   * Check if a provider exists for the given git root.
-   *
-   * @param gitRoot - The git repository root path
-   * @returns True if a provider exists (regardless of refCount)
-   */
-  hasProvider(gitRoot) {
-    const normalizedRoot = this.normalizePath(gitRoot);
-    return this.providers.has(normalizedRoot);
-  }
-  /**
-   * Get an existing provider without incrementing reference count.
-   *
-   * Use this for operations that rely on an active subscription holding
-   * the provider reference. Returns null if no provider exists.
-   *
-   * @param gitRoot - The git repository root path
-   * @returns The provider if it exists, null otherwise
-   */
-  getExistingProvider(gitRoot) {
-    const normalizedRoot = this.normalizePath(gitRoot);
-    return this.providers.get(normalizedRoot)?.provider ?? null;
-  }
-  /**
-   * Get an existing provider by cwd without incrementing reference count.
-   *
-   * Finds the git root for the cwd and returns the provider if one exists.
-   * Use this for operations that rely on an active subscription holding
-   * the provider reference.
-   *
-   * @param cwd - The working directory (any directory within a git repo)
-   * @returns The provider and git root if they exist, null otherwise
-   */
-  async getExistingProviderByCwd(cwd) {
-    const gitRoot = await this.findGitRoot(cwd);
-    if (!gitRoot) {
-      return null;
-    }
-    const normalizedRoot = this.normalizePath(gitRoot);
-    const entry = this.providers.get(normalizedRoot);
-    if (!entry) {
-      return null;
-    }
-    return { provider: entry.provider, gitRoot: normalizedRoot };
-  }
-  /**
-   * Get the number of active providers.
-   *
-   * @returns The count of providers currently managed by this service
-   */
-  get providerCount() {
-    return this.providers.size;
-  }
-  /**
-   * Force dispose all providers immediately.
-   *
-   * This is primarily useful for testing or forced cleanup scenarios
-   * such as application shutdown.
-   */
-  forceDisposeAll() {
-    this.disposeAll();
-  }
-  // -------------------------------------------------------------------------
-  // Compatibility Methods (for jsonrpc-proxy)
-  // -------------------------------------------------------------------------
-  /**
-   * Acquire a provider reference for the specified directory.
-   *
-   * Alias for getProvider() - used by jsonrpc-proxy.
-   *
-   * @param cwd - The working directory path
-   * @returns The git provider instance
-   */
-  async retain(cwd) {
-    const result = await this.getProvider(cwd);
-    return result.provider;
-  }
-  /**
-   * Release a provider reference.
-   *
-   * Alias for releaseProvider() - used by jsonrpc-proxy.
-   *
-   * @param gitRoot - The git repository root path
-   */
-  release(gitRoot) {
-    this.releaseProvider(gitRoot);
-  }
-  /**
-   * Dispose the service and all providers.
-   *
-   * Used by jsonrpc-proxy during shutdown.
-   */
-  async dispose() {
-    this.disposeAll();
-  }
-  /**
-   * Get statistics about active providers.
-   *
-   * Useful for debugging and monitoring.
-   *
-   * @returns Object containing provider statistics
-   */
-  getStats() {
-    const stats = /* @__PURE__ */ new Map();
-    for (const [gitRoot, entry] of this.providers) {
-      stats.set(gitRoot, {
-        refCount: entry.refCount,
-        hasPendingDispose: entry.disposeTimer !== null
-      });
-    }
-    return { providers: stats };
-  }
-  /**
-   * Notify that a file has changed in the working directory.
-   *
-   * This is called by FileSystemProviderService when files are modified.
-   * If the file is within a git repository with an active provider,
-   * it will trigger a status refresh.
-   *
-   * @param filePath - The absolute path to the changed file
-   */
-  async notifyFileChanged(filePath) {
-    const gitRoot = await this.findGitRoot(filePath);
-    if (!gitRoot) {
-      return;
-    }
-    const normalizedRoot = this.normalizePath(gitRoot);
-    const entry = this.providers.get(normalizedRoot);
-    if (entry) {
-      entry.provider.triggerStatusRefresh();
-    }
-  }
-  /**
-   * Check if git is available on the system.
-   *
-   * Tests by running `git --version`. Result is cached for performance.
-   *
-   * @returns True if git is installed and accessible
-   */
-  async isGitAvailable() {
-    if (this.gitAvailableCache !== void 0) {
-      return this.gitAvailableCache;
-    }
-    try {
-      const git = simpleGit();
-      await git.version();
-      this.gitAvailableCache = true;
-      return true;
-    } catch {
-      this.gitAvailableCache = false;
-      return false;
-    }
-  }
-  // -------------------------------------------------------------------------
-  // Internal Methods
-  // -------------------------------------------------------------------------
-  /**
-   * Normalize a path for consistent lookup.
-   * Resolves to absolute path and handles case-insensitivity on macOS/Windows.
-   */
-  normalizePath(filePath) {
-    const resolved = path6.resolve(filePath);
-    return normalizePathForComparison(resolved);
-  }
-  /**
-   * Dispose a provider and remove it from the map.
-   */
-  async disposeProvider(normalizedRoot) {
-    const entry = this.providers.get(normalizedRoot);
-    if (!entry) {
-      return;
-    }
-    if (entry.disposeTimer) {
-      clearTimeout(entry.disposeTimer);
-    }
-    this.providers.delete(normalizedRoot);
-    entry.provider.dispose();
-  }
-  /**
-   * Dispose all providers (used during service shutdown/reset).
-   */
-  disposeAll() {
-    for (const [normalizedRoot, entry] of this.providers) {
-      if (entry.disposeTimer) {
-        clearTimeout(entry.disposeTimer);
-      }
-      try {
-        entry.provider.dispose();
-      } catch (error) {
-        console.error(
-          `[GitProviderService] Error disposing provider ${normalizedRoot}:`,
-          error
-        );
-      }
-    }
-    this.providers.clear();
-  }
-};
-
-// src/fs/fs-provider-service.ts
-var DISPOSE_GRACE_PERIOD_MS2 = 5e3;
-var FileSystemProviderService = class _FileSystemProviderService {
-  // -------------------------------------------------------------------------
-  // Singleton
-  // -------------------------------------------------------------------------
-  static instance = null;
-  /**
-   * Get the singleton instance of the service.
-   */
-  static getInstance() {
-    if (!_FileSystemProviderService.instance) {
-      _FileSystemProviderService.instance = new _FileSystemProviderService();
-    }
-    return _FileSystemProviderService.instance;
-  }
-  /**
-   * Reset the singleton instance (for testing only).
-   *
-   * This disposes all providers and clears the singleton.
-   * Should only be used in test cleanup.
-   */
-  static resetInstance() {
-    if (_FileSystemProviderService.instance) {
-      _FileSystemProviderService.instance.disposeAll();
-      _FileSystemProviderService.instance = null;
-    }
-  }
-  // -------------------------------------------------------------------------
-  // Internal State
-  // -------------------------------------------------------------------------
-  /** Map of normalized paths to provider entries */
-  providers = /* @__PURE__ */ new Map();
-  /**
-   * Map of pending provider creation promises to prevent race conditions.
-   *
-   * Even with simplified lifecycle (only subscriptions create providers),
-   * concurrent subscriptions for the same cwd can still occur (multiple
-   * windows, fast component remounts). This ensures only one provider
-   * is created per cwd.
-   */
-  pendingCreations = /* @__PURE__ */ new Map();
-  /** Optional logging function */
-  log;
-  /**
-   * Create a new FileSystemProviderService.
-   *
-   * Can be instantiated directly with options, or accessed via getInstance()
-   * for singleton usage.
-   *
-   * @param options - Configuration options
-   */
-  constructor(options = {}) {
-    this.log = options.log;
-  }
-  // -------------------------------------------------------------------------
-  // Public Methods
-  // -------------------------------------------------------------------------
-  /**
-   * Get a filesystem provider for the specified directory.
-   *
-   * This method is used by subscriptions to acquire provider references.
-   * Operations use `getExistingProvider()` instead since they rely on
-   * an active subscription holding the provider reference.
-   *
-   * If a provider already exists for this path, the reference count is
-   * incremented and the existing provider is returned. If a provider is
-   * in the grace period awaiting disposal, the timer is cancelled and
-   * the provider is reused.
-   *
-   * @param cwd - The working directory path
-   * @returns The filesystem provider instance
-   */
-  async getProvider(cwd) {
-    const normalizedPath = this.normalizePath(cwd);
-    const existing = this.providers.get(normalizedPath);
-    if (existing) {
-      if (existing.disposeTimer) {
-        clearTimeout(existing.disposeTimer);
-        existing.disposeTimer = void 0;
-        if (!existing.fileChangeDisposable) {
-          existing.fileChangeDisposable = existing.provider.onFileContentChanged((event) => {
-            GitProviderService.getInstance().notifyFileChanged(event.path).catch(() => {
-            });
-          });
-        }
-        if (!existing.gitRoot) {
-          GitProviderService.getInstance().getProvider(normalizedPath).then((result) => {
-            existing.gitRoot = result.gitRoot;
-          }).catch(() => {
-          });
-        }
-      }
-      existing.refCount++;
-      return existing.provider;
-    }
-    const pendingCreation = this.pendingCreations.get(normalizedPath);
-    if (pendingCreation) {
-      const provider = await pendingCreation;
-      const entry = this.providers.get(normalizedPath);
-      if (entry) {
-        entry.refCount++;
-      }
-      return provider;
-    }
-    const creationPromise = this.createProvider(normalizedPath);
-    this.pendingCreations.set(normalizedPath, creationPromise);
-    try {
-      const provider = await creationPromise;
-      return provider;
-    } finally {
-      this.pendingCreations.delete(normalizedPath);
-    }
-  }
-  /**
-   * Internal method to create a new provider.
-   * Separated to support the pending creations pattern.
-   */
-  async createProvider(normalizedPath) {
-    if (!fs7.existsSync(normalizedPath)) {
-      throw new Error(
-        `Cannot create local filesystem provider for non-existent path: ${normalizedPath}. If this is a remote/VM path, ensure sandboxId is passed through the component hierarchy.`
-      );
-    }
-    const provider = new DiskFileSystemProvider(normalizedPath);
-    await provider.startWatching();
-    const fileChangeDisposable = provider.onFileContentChanged((event) => {
-      GitProviderService.getInstance().notifyFileChanged(event.path).catch(() => {
-      });
-    });
-    let gitRoot;
-    try {
-      const gitService = GitProviderService.getInstance();
-      const gitResult = await gitService.getProvider(normalizedPath);
-      gitRoot = gitResult.gitRoot;
-    } catch {
-    }
-    this.providers.set(normalizedPath, {
-      provider,
-      refCount: 1,
-      fileChangeDisposable,
-      gitRoot
-    });
-    return provider;
-  }
-  /**
-   * Release a reference to a filesystem provider.
-   *
-   * Decrements the reference count for the provider at the specified path.
-   * When the count reaches zero, a grace period timer is started. If no
-   * new references are acquired within the grace period, the provider
-   * is disposed.
-   *
-   * @param cwd - The working directory path
-   */
-  releaseProvider(cwd) {
-    const normalizedPath = this.normalizePath(cwd);
-    const entry = this.providers.get(normalizedPath);
-    if (!entry) {
-      console.warn(
-        `[FileSystemProviderService] Attempted to release unknown provider: ${normalizedPath}`
-      );
-      return;
-    }
-    entry.refCount--;
-    if (entry.refCount <= 0) {
-      if (entry.fileChangeDisposable) {
-        entry.fileChangeDisposable.dispose();
-        entry.fileChangeDisposable = void 0;
-      }
-      if (entry.gitRoot) {
-        GitProviderService.getInstance().releaseProvider(entry.gitRoot);
-        entry.gitRoot = void 0;
-      }
-      entry.disposeTimer = setTimeout(() => {
-        this.disposeProvider(normalizedPath);
-      }, DISPOSE_GRACE_PERIOD_MS2);
-    }
-  }
-  /**
-   * Immediately dispose a provider without waiting for grace period.
-   *
-   * This is primarily useful for testing or forced cleanup scenarios.
-   *
-   * @param cwd - The working directory path
-   */
-  async forceDispose(cwd) {
-    const normalizedPath = this.normalizePath(cwd);
-    await this.disposeProvider(normalizedPath);
-  }
-  /**
-   * Get the current reference count for a provider.
-   *
-   * Returns 0 if no provider exists for the path.
-   *
-   * @param cwd - The working directory path
-   * @returns The current reference count
-   */
-  getRefCount(cwd) {
-    const normalizedPath = this.normalizePath(cwd);
-    const entry = this.providers.get(normalizedPath);
-    return entry?.refCount ?? 0;
-  }
-  /**
-   * Check if a provider exists for the given path.
-   *
-   * @param cwd - The working directory path
-   * @returns True if a provider exists (regardless of refCount)
-   */
-  hasProvider(cwd) {
-    const normalizedPath = this.normalizePath(cwd);
-    return this.providers.has(normalizedPath);
-  }
-  /**
-   * Get an existing provider without incrementing reference count.
-   *
-   * Use this for operations that rely on an active subscription holding
-   * the provider reference. Returns null if no provider exists.
-   *
-   * @param cwd - The working directory path
-   * @returns The provider if it exists, null otherwise
-   */
-  getExistingProvider(cwd) {
-    const normalizedPath = this.normalizePath(cwd);
-    return this.providers.get(normalizedPath)?.provider ?? null;
-  }
-  /**
-   * Get the number of active providers.
-   *
-   * @returns The count of providers currently managed by this service
-   */
-  get providerCount() {
-    return this.providers.size;
-  }
-  /**
-   * Force dispose all providers immediately.
-   *
-   * This is primarily useful for testing or forced cleanup scenarios
-   * such as application shutdown.
-   */
-  forceDisposeAll() {
-    this.disposeAll();
-  }
-  // -------------------------------------------------------------------------
-  // Compatibility Methods (for jsonrpc-proxy)
-  // -------------------------------------------------------------------------
-  /**
-   * Acquire a provider reference for the specified directory.
-   *
-   * Alias for getProvider() - used by jsonrpc-proxy.
-   *
-   * @param cwd - The working directory path
-   * @returns The filesystem provider instance
-   */
-  async retain(cwd) {
-    return this.getProvider(cwd);
-  }
-  /**
-   * Release a provider reference.
-   *
-   * Alias for releaseProvider() - used by jsonrpc-proxy.
-   *
-   * @param cwd - The working directory path
-   */
-  release(cwd) {
-    this.releaseProvider(cwd);
-  }
-  /**
-   * Dispose the service and all providers.
-   *
-   * Used by jsonrpc-proxy during shutdown.
-   */
-  async dispose() {
-    this.disposeAll();
-  }
-  /**
-   * Get statistics about active providers.
-   *
-   * Useful for debugging and monitoring.
-   *
-   * @returns Object containing provider statistics
-   */
-  getStats() {
-    const stats = /* @__PURE__ */ new Map();
-    for (const [path11, entry] of this.providers) {
-      stats.set(path11, {
-        refCount: entry.refCount,
-        hasPendingDispose: entry.disposeTimer !== null
-      });
-    }
-    return { providers: stats };
-  }
-  // -------------------------------------------------------------------------
-  // Internal Methods
-  // -------------------------------------------------------------------------
-  /**
-   * Normalize a path for consistent lookup.
-   *
-   * Resolves to absolute path and handles platform-specific normalization.
-   * On case-insensitive filesystems (macOS, Windows), also lowercases the path
-   * to ensure consistent Map key lookups regardless of casing.
-   */
-  normalizePath(filePath) {
-    const resolved = path7.resolve(filePath);
-    if (process.platform === "darwin" || process.platform === "win32") {
-      return resolved.toLowerCase();
-    }
-    return resolved;
-  }
-  /**
-   * Dispose a provider and remove it from the map.
-   */
-  async disposeProvider(normalizedPath) {
-    const entry = this.providers.get(normalizedPath);
-    if (!entry) {
-      return;
-    }
-    if (entry.disposeTimer) {
-      clearTimeout(entry.disposeTimer);
-    }
-    if (entry.fileChangeDisposable) {
-      entry.fileChangeDisposable.dispose();
-    }
-    if (entry.gitRoot) {
-      GitProviderService.getInstance().releaseProvider(entry.gitRoot);
-    }
-    this.providers.delete(normalizedPath);
-    entry.provider.dispose();
-  }
-  /**
-   * Dispose all providers (used during service shutdown/reset).
-   */
-  disposeAll() {
-    for (const [normalizedPath, entry] of this.providers) {
-      if (entry.disposeTimer) {
-        clearTimeout(entry.disposeTimer);
-      }
-      if (entry.fileChangeDisposable) {
-        entry.fileChangeDisposable.dispose();
-      }
-      if (entry.gitRoot) {
-        GitProviderService.getInstance().releaseProvider(entry.gitRoot);
-      }
-      try {
-        entry.provider.dispose();
-      } catch (error) {
-        console.error(
-          `[FileSystemProviderService] Error disposing provider ${normalizedPath}:`,
-          error
-        );
-      }
-    }
-    this.providers.clear();
-  }
-};
-
-// src/git/types.ts
-function serializeGitStatus(status) {
-  const files = {};
-  for (const [path11, fileStatus] of status.files) {
-    files[path11] = fileStatus;
-  }
-  return {
-    branch: status.branch,
-    upstream: status.upstream,
-    ahead: status.ahead,
-    behind: status.behind,
-    files
-  };
-}
-
-// src/version-check.ts
-var CURRENT_VERSION = "0.4.3";
-var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
-var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
-var RED = "\x1B[31m";
-var GREEN = "\x1B[32m";
-var YELLOW = "\x1B[33m";
-var DIM = "\x1B[2m";
-var RESET = "\x1B[0m";
-var BOLD = "\x1B[1m";
-function parseSemVer(version) {
-  const [major, minor, patch] = version.split(".").map(Number);
-  return { major, minor, patch };
-}
-function compareSemVer(a, b) {
-  if (a.major !== b.major) return a.major - b.major;
-  if (a.minor !== b.minor) return a.minor - b.minor;
-  return a.patch - b.patch;
-}
-async function fetchLatestVersion() {
-  try {
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 5e3);
-    const response = await fetch(RELEASE_REPO_URL, {
-      signal: controller.signal
-    });
-    clearTimeout(timeout);
-    if (!response.ok) return null;
-    const pkg = await response.json();
-    return pkg.version;
-  } catch {
-    return null;
-  }
-}
-async function checkForUpdates() {
-  if (CURRENT_VERSION.startsWith("__")) {
-    return;
-  }
-  const latestVersion = await fetchLatestVersion();
-  if (!latestVersion) {
-    return;
-  }
-  const current = parseSemVer(CURRENT_VERSION);
-  const latest = parseSemVer(latestVersion);
-  const comparison = compareSemVer(current, latest);
-  if (comparison < 0) {
-    console.log(
-      `  ${BOLD}${YELLOW}Update available:${RESET} ${RED}${CURRENT_VERSION}${RESET} \u2192 ${GREEN}${latestVersion}${RESET}`
-    );
-    console.log(`  ${DIM}Run: ${UPDATE_COMMAND}${RESET}`);
-    console.log();
-  }
-}
 
 // src/skills/loader.ts
 var import_fs2 = require("fs");
 var fs8 = __toESM(require("fs/promises"), 1);
 var os4 = __toESM(require("os"), 1);
-var path9 = __toESM(require("path"), 1);
+var path12 = __toESM(require("path"), 1);
 var import_yaml = __toESM(require_dist3(), 1);
 
 // src/skills/path-helpers.ts
 var import_fs = require("fs");
 var os3 = __toESM(require("os"), 1);
-var path8 = __toESM(require("path"), 1);
+var path11 = __toESM(require("path"), 1);
 var APP_DIRECTORY = ".copilot";
 function getCopilotHome(settings, type) {
   let basePath;
@@ -59789,29 +65007,29 @@ function getCopilotHome(settings, type) {
   } else {
     const xdgHome = type === "config" ? process.env.XDG_CONFIG_HOME : process.env.XDG_STATE_HOME;
     if (xdgHome) {
-      basePath = path8.join(xdgHome, APP_DIRECTORY);
+      basePath = path11.join(xdgHome, APP_DIRECTORY);
     } else {
-      basePath = path8.join(os3.homedir(), APP_DIRECTORY);
+      basePath = path11.join(os3.homedir(), APP_DIRECTORY);
     }
   }
   if (type === "pkg") {
-    return path8.join(basePath, "pkg");
+    return path11.join(basePath, "pkg");
   }
   return basePath;
 }
 function collectParentComponentDirs(startPath, componentType, convention, boundary) {
   const results = [];
-  const normalizedBoundary = path8.normalize(boundary);
-  let currentDir = path8.normalize(startPath);
+  const normalizedBoundary = path11.normalize(boundary);
+  let currentDir = path11.normalize(startPath);
   while (true) {
-    const componentDir = path8.join(currentDir, convention, componentType);
+    const componentDir = path11.join(currentDir, convention, componentType);
     if ((0, import_fs.existsSync)(componentDir)) {
       results.push(componentDir);
     }
     if (currentDir === normalizedBoundary) {
       break;
     }
-    const parentDir = path8.dirname(currentDir);
+    const parentDir = path11.dirname(currentDir);
     if (parentDir === currentDir) {
       break;
     }
@@ -59820,7 +65038,7 @@ function collectParentComponentDirs(startPath, componentType, convention, bounda
   return results;
 }
 function getDisplayPath(filePath, cwd = process.cwd()) {
-  const relativePath = path8.relative(cwd, filePath);
+  const relativePath = path11.relative(cwd, filePath);
   return relativePath.startsWith("..") ? filePath : relativePath;
 }
 
@@ -60302,8 +65520,8 @@ function getErrorMap() {
 
 // ../../node_modules/zod/v3/helpers/parseUtil.js
 var makeIssue = (params) => {
-  const { data, path: path11, errorMaps, issueData } = params;
-  const fullPath = [...path11, ...issueData.path || []];
+  const { data, path: path14, errorMaps, issueData } = params;
+  const fullPath = [...path14, ...issueData.path || []];
   const fullIssue = {
     ...issueData,
     path: fullPath
@@ -60419,11 +65637,11 @@ var errorUtil;
 
 // ../../node_modules/zod/v3/types.js
 var ParseInputLazyPath = class {
-  constructor(parent, value, path11, key) {
+  constructor(parent, value, path14, key) {
     this._cachedPath = [];
     this.parent = parent;
     this.data = value;
-    this._path = path11;
+    this._path = path14;
     this._key = key;
   }
   get path() {
@@ -63893,8 +69111,8 @@ function validateSkillFrontmatter(frontmatter) {
     return { success: true, data: result.data };
   }
   const errors = result.error.errors.map((e) => {
-    const path11 = e.path.join(".");
-    return path11 ? `${path11}: ${e.message}` : e.message;
+    const path14 = e.path.join(".");
+    return path14 ? `${path14}: ${e.message}` : e.message;
   });
   return { success: false, errors };
 }
@@ -63904,8 +69122,8 @@ function validateCommandFrontmatter(frontmatter) {
     return { success: true, data: result.data };
   }
   const errors = result.error.errors.map((e) => {
-    const path11 = e.path.join(".");
-    return path11 ? `${path11}: ${e.message}` : e.message;
+    const path14 = e.path.join(".");
+    return path14 ? `${path14}: ${e.message}` : e.message;
   });
   return { success: false, errors };
 }
@@ -63923,7 +69141,7 @@ function collectProjectDirs(convention, subdir, repoRoot, cwd) {
     }));
   }
   if (repoRoot) {
-    return [{ path: path9.join(repoRoot, convention, subdir), source: "project" }];
+    return [{ path: path12.join(repoRoot, convention, subdir), source: "project" }];
   }
   return [];
 }
@@ -63934,8 +69152,8 @@ function getSkillDirectories(repoRoot, customDirs = [], settings, additionalSour
     ...collectProjectDirs(".claude", "skills", repoRoot, cwd)
   ];
   const personalDirs = [
-    { path: path9.join(getCopilotHome(settings, "config"), "skills"), source: "personal-copilot" },
-    { path: path9.join(os4.homedir(), ".claude", "skills"), source: "personal-claude" }
+    { path: path12.join(getCopilotHome(settings, "config"), "skills"), source: "personal-copilot" },
+    { path: path12.join(os4.homedir(), ".claude", "skills"), source: "personal-claude" }
   ];
   const envDirs = process.env[COPILOT_SKILLS_DIRS_ENV]?.split(",").filter(Boolean) ?? [];
   const customSources = [...envDirs, ...customDirs].map((dir) => dir.trim()).filter(Boolean).map((dir) => ({ path: dir, source: "custom" }));
@@ -63945,7 +69163,7 @@ function getSkillDirectories(repoRoot, customDirs = [], settings, additionalSour
 function getCommandDirectories(repoRoot, cwd) {
   const projectDirs = collectProjectDirs(".claude", "commands", repoRoot, cwd);
   const personalDirs = [
-    { path: path9.join(os4.homedir(), ".claude", "commands"), source: "personal-claude" }
+    { path: path12.join(os4.homedir(), ".claude", "commands"), source: "personal-claude" }
   ];
   const directories = [...projectDirs, ...personalDirs];
   return directories.filter((d) => (0, import_fs2.existsSync)(d.path));
@@ -64015,7 +69233,7 @@ async function parseSkillFile(filePath, source, pluginName) {
       description: frontmatter.description,
       source,
       filePath,
-      baseDir: path9.dirname(filePath),
+      baseDir: path12.dirname(filePath),
       allowedTools,
       content,
       userInvocable,
@@ -64066,7 +69284,7 @@ async function parseCommandFile(filePath, source, derivedName) {
       description: frontmatter.description,
       source,
       filePath,
-      baseDir: path9.dirname(filePath),
+      baseDir: path12.dirname(filePath),
       allowedTools,
       content,
       userInvocable: true,
@@ -64094,7 +69312,7 @@ async function loadSkills(projectRoot, customDirs = [], useCache = true, setting
   const seenNames = /* @__PURE__ */ new Set();
   for (const dir of directories) {
     try {
-      const directSkillMdPath = path9.join(dir.path, "SKILL.md");
+      const directSkillMdPath = path12.join(dir.path, "SKILL.md");
       if ((0, import_fs2.existsSync)(directSkillMdPath)) {
         const canonicalPath = getCanonicalPath(directSkillMdPath);
         if (!canonicalPath || !seenPaths.has(canonicalPath)) {
@@ -64120,7 +69338,7 @@ async function loadSkills(projectRoot, customDirs = [], useCache = true, setting
         if (!entry.isDirectory() && !entry.isSymbolicLink()) {
           continue;
         }
-        const skillMdPath = path9.join(dir.path, entry.name, "SKILL.md");
+        const skillMdPath = path12.join(dir.path, entry.name, "SKILL.md");
         if (!(0, import_fs2.existsSync)(skillMdPath)) {
           continue;
         }
@@ -64162,7 +69380,7 @@ async function loadSkills(projectRoot, customDirs = [], useCache = true, setting
         if (!derivedName) {
           continue;
         }
-        const commandPath = path9.join(dir.path, entry.name);
+        const commandPath = path12.join(dir.path, entry.name);
         const canonicalPath = getCanonicalPath(commandPath);
         if (canonicalPath && seenPaths.has(canonicalPath)) {
           continue;
@@ -64194,15 +69412,18 @@ async function loadSkills(projectRoot, customDirs = [], useCache = true, setting
   skillsCache.set(cacheKey, loadResult);
   return loadResult;
 }
+function clearSkillsCache() {
+  skillsCache = void 0;
+}
 
 // src/skills/plugins.ts
 var import_fs3 = require("fs");
 var fs9 = __toESM(require("fs/promises"), 1);
-var path10 = __toESM(require("path"), 1);
+var path13 = __toESM(require("path"), 1);
 var INSTALLED_PLUGINS_DIR = "installed-plugins";
 async function readInstalledPlugins(settings) {
   const configDir = getCopilotHome(settings, "config");
-  const configPath = path10.join(configDir, "config.json");
+  const configPath = path13.join(configDir, "config.json");
   try {
     const raw = await fs9.readFile(configPath, "utf-8");
     const config = JSON.parse(raw);
@@ -64216,14 +69437,14 @@ async function readInstalledPlugins(settings) {
 async function getPluginSkillSources(settings) {
   const plugins = await readInstalledPlugins(settings);
   const stateDir = getCopilotHome(settings, "state");
-  const pluginsDir = path10.join(stateDir, INSTALLED_PLUGINS_DIR);
+  const pluginsDir = path13.join(stateDir, INSTALLED_PLUGINS_DIR);
   const skillSources = [];
   for (const plugin of plugins) {
     if (!plugin.enabled) {
       continue;
     }
-    const pluginDir = plugin.cache_path || path10.join(pluginsDir, `${plugin.name}@${plugin.marketplace}`);
-    const skillsDir = path10.join(pluginDir, "skills");
+    const pluginDir = plugin.cache_path || path13.join(pluginsDir, `${plugin.name}@${plugin.marketplace}`);
+    const skillsDir = path13.join(pluginDir, "skills");
     if ((0, import_fs3.existsSync)(skillsDir)) {
       skillSources.push({
         path: skillsDir,
@@ -64235,59 +69456,7 @@ async function getPluginSkillSources(settings) {
   return skillSources;
 }
 
-// src/jsonrpc-proxy.ts
-var import_node_child_process3 = require("child_process");
-var import_promises2 = require("fs/promises");
-var import_node_os2 = require("os");
-var import_node_path5 = require("path");
-function getGhCliToken() {
-  try {
-    const token = (0, import_node_child_process3.execSync)("gh auth token", {
-      encoding: "utf-8",
-      stdio: ["pipe", "pipe", "pipe"]
-      // Suppress stderr
-    }).trim();
-    return token || void 0;
-  } catch {
-    return void 0;
-  }
-}
-async function discoverSessionCwd(sessionId) {
-  const sessionDir = (0, import_node_path5.join)((0, import_node_os2.homedir)(), ".copilot", "session-state", sessionId);
-  try {
-    const yaml = await (0, import_promises2.readFile)((0, import_node_path5.join)(sessionDir, "workspace.yaml"), "utf-8");
-    const match = yaml.match(/^cwd:\s*(.+)$/m);
-    if (match) {
-      return match[1].trim();
-    }
-  } catch {
-  }
-  try {
-    const content = await (0, import_promises2.readFile)((0, import_node_path5.join)(sessionDir, "events.jsonl"), "utf-8");
-    const firstLine = content.slice(0, content.indexOf("\n"));
-    if (firstLine.startsWith('{"type":"session.start"')) {
-      const cwdMatch = firstLine.match(/"cwd":"([^"]+)"/);
-      if (cwdMatch) {
-        return cwdMatch[1];
-      }
-    }
-  } catch {
-  }
-  return void 0;
-}
-function resolveCopilotToken(explicitToken) {
-  if (explicitToken) {
-    return explicitToken;
-  }
-  if (process.env.COPILOT_GITHUB_TOKEN) {
-    return process.env.COPILOT_GITHUB_TOKEN;
-  }
-  const ghToken = getGhCliToken();
-  if (ghToken) {
-    return ghToken;
-  }
-  return void 0;
-}
+// src/skills/skill-service.ts
 var BUILT_IN_COMMANDS = [
   {
     name: "/session",
@@ -64295,2435 +69464,926 @@ var BUILT_IN_COMMANDS = [
     category: "info",
     requiresRemote: true,
     opensDialog: "session"
+  },
+  {
+    name: "/model",
+    help: "Switch the active model",
+    category: "session",
+    requiresRemote: true,
+    opensDialog: "model-picker"
   }
 ];
-var DEFAULT_CLI_GRACE_PERIOD_MS = 5 * 60 * 1e3;
-var CliPoolManager = class {
-  pool = /* @__PURE__ */ new Map();
-  cliPath;
-  cliLogLevel;
-  gracePeriodMs;
+var SkillService = class {
+  customDirs;
   log;
-  cliEnv = {};
-  constructor(options = {}) {
-    this.cliPath = options.cliPath ?? "copilot";
-    this.cliLogLevel = options.cliLogLevel ?? "info";
-    this.gracePeriodMs = options.gracePeriodMs ?? DEFAULT_CLI_GRACE_PERIOD_MS;
-    this.log = options.log ?? (() => {
+  constructor(config = {}) {
+    this.customDirs = config.customDirs ?? [];
+    this.log = config.onLog ?? (() => {
     });
-    const resolvedToken = resolveCopilotToken(options.copilotToken);
-    this.cliEnv = resolvedToken ? { ...process.env, COPILOT_GITHUB_TOKEN: resolvedToken } : { ...process.env };
   }
   /**
-   * Get or create a CLI process for the given cwd, incrementing its reference count.
-   * If a grace period timer is pending, it will be cancelled.
+   * Load skills for a working directory.
    */
-  async retain(cwd) {
-    let entry = this.pool.get(cwd);
-    if (entry) {
-      if (entry.graceTimer) {
-        clearTimeout(entry.graceTimer);
-        entry.graceTimer = null;
-        this.log("debug", `[CliPool] Cancelled grace timer for ${cwd}`);
-      }
-      if (entry.cli.isAlive) {
-        try {
-          await entry.cli.ping();
-          entry.refCount++;
-          this.log("info", `[CliPool] Reusing CLI for ${cwd} (refCount: ${entry.refCount})`);
-          return entry.cli;
-        } catch {
-          this.log("debug", `[CliPool] CLI for ${cwd} is dead, recreating`);
-          this.pool.delete(cwd);
-          entry = void 0;
-        }
-      } else {
-        this.pool.delete(cwd);
-        entry = void 0;
-      }
-    }
-    const cli = new CliProcess({
+  async loadSkills(cwd) {
+    const pluginSources = await getPluginSkillSources();
+    return loadSkills(
       cwd,
-      cliPath: this.cliPath,
-      logLevel: this.cliLogLevel,
-      env: this.cliEnv,
-      log: (level, message) => this.log(level, message)
-    });
-    await cli.spawn();
-    try {
-      await cli.ping();
-    } catch (err) {
-      await cli.kill();
-      throw new Error(`CLI process failed to start: ${err}`);
-    }
-    this.pool.set(cwd, {
-      cli,
-      refCount: 1,
-      graceTimer: null
-    });
-    this.log("info", `[CliPool] CLI process created for ${cwd} (refCount: 1)`);
-    return cli;
+      // projectRoot
+      this.customDirs,
+      true,
+      // useCache
+      void 0,
+      // settings
+      pluginSources,
+      cwd
+    );
   }
   /**
-   * Release a CLI process for the given cwd, decrementing its reference count.
-   * When refCount reaches 0, starts a grace period timer before killing the CLI.
+   * Get slash commands (built-in + skills) for the tunnel client UI.
    */
-  release(cwd) {
-    const entry = this.pool.get(cwd);
-    if (!entry) {
-      this.log("warn", `[CliPool] Attempted to release non-existent CLI for ${cwd}`);
-      return;
-    }
-    entry.refCount = Math.max(0, entry.refCount - 1);
-    this.log("info", `[CliPool] Released CLI for ${cwd} (refCount: ${entry.refCount})`);
-    if (entry.refCount === 0) {
-      this.log("info", `[CliPool] Starting ${this.gracePeriodMs}ms grace period for ${cwd}`);
-      entry.graceTimer = setTimeout(() => {
-        this.killCli(cwd);
-      }, this.gracePeriodMs);
-    }
-  }
-  /**
-   * Kill a CLI process immediately (used after grace period or on dispose).
-   */
-  async killCli(cwd) {
-    const entry = this.pool.get(cwd);
-    if (!entry) return;
-    if (entry.refCount > 0) {
-      this.log("debug", `[CliPool] Skipping kill for ${cwd} (refCount: ${entry.refCount})`);
-      return;
-    }
-    this.log("info", `[CliPool] Killing CLI process for ${cwd}`);
-    this.pool.delete(cwd);
-    if (entry.graceTimer) {
-      clearTimeout(entry.graceTimer);
-    }
-    try {
-      await entry.cli.kill();
-    } catch (err) {
-      this.log("debug", `[CliPool] Error killing CLI for ${cwd}: ${err}`);
-    }
-  }
-  /**
-   * Get a CLI for the cwd without incrementing refCount (for read-only operations).
-   * Returns undefined if no CLI exists for this cwd.
-   */
-  get(cwd) {
-    const entry = this.pool.get(cwd);
-    return entry?.cli;
-  }
-  /**
-   * Set up CLI request handler for tool calls and permission requests.
-   * This should be called after retain() to wire up the handlers.
-   */
-  setupCliHandlers(cwd, onRequest, onNotification) {
-    const entry = this.pool.get(cwd);
-    if (!entry) return;
-    entry.cli.on("request", onRequest);
-    entry.cli.on("notification", onNotification);
-  }
-  /**
-   * Dispose of all CLI processes immediately.
-   */
-  async dispose() {
-    this.log("info", `[CliPool] Disposing all CLI processes (${this.pool.size} total)`);
-    const entries = Array.from(this.pool.entries());
-    this.pool.clear();
-    for (const [cwd, entry] of entries) {
-      if (entry.graceTimer) {
-        clearTimeout(entry.graceTimer);
-      }
-      try {
-        await entry.cli.kill();
-      } catch (err) {
-        this.log("debug", `[CliPool] Error killing CLI for ${cwd}: ${err}`);
-      }
-    }
-  }
-  /**
-   * Get current pool statistics (for debugging/monitoring).
-   */
-  getStats() {
-    return Array.from(this.pool.entries()).map(([cwd, entry]) => ({
-      cwd,
-      refCount: entry.refCount,
-      hasGraceTimer: entry.graceTimer !== null
+  async getSlashCommands(cwd) {
+    const { skills } = await this.loadSkills(cwd);
+    const skillCommands = skills.filter((s) => s.userInvocable).map((s) => ({
+      name: `/${s.name}`,
+      help: s.description,
+      category: "skill",
+      requiresRemote: true
     }));
-  }
-};
-var ClientConnection = class {
-  constructor(clientStream, clientId, cliPoolManager, fsService, gitService, options = {}) {
-    this.clientStream = clientStream;
-    this.clientId = clientId;
-    this.cliPoolManager = cliPoolManager;
-    this.fsService = fsService;
-    this.gitService = gitService;
-    this.defaultCwd = options.cwd ?? process.cwd();
-    this.logLevel = options.logLevel ?? "info";
-    this.onLogCallback = options.onLog ?? (() => {
-    });
-  }
-  // Track active sessions by ID (we no longer hold CopilotSession objects)
-  sessionIds = /* @__PURE__ */ new Set();
-  sessionCwds = /* @__PURE__ */ new Map();
-  // Map sessionId -> CliProcess that owns it
-  sessionClis = /* @__PURE__ */ new Map();
-  // Track tools registered for each session (for external tool handling)
-  sessionTools = /* @__PURE__ */ new Map();
-  receiveBuffer = Buffer.alloc(0);
-  defaultCwd;
-  logLevel;
-  onLogCallback;
-  // Shared CLI pool manager (owned by JsonRpcProxyHost)
-  cliPoolManager;
-  // Track which cwds this connection has retained (for cleanup)
-  retainedCwds = /* @__PURE__ */ new Set();
-  // File search service for @-mention file picking
-  fileSearchService = new FileSearchService();
-  // Filesystem provider service (shared across connections)
-  fsService;
-  // Git provider service (shared across connections)
-  gitService;
-  // Pending callback requests from SDK -> client
-  pendingToolCallRequests = /* @__PURE__ */ new Map();
-  pendingPermissionRequests = /* @__PURE__ */ new Map();
-  nextCallbackId = 1;
-  // Subscription tracking
-  nextSubscriptionId = 1;
-  fsSubscriptions = /* @__PURE__ */ new Map();
-  gitSubscriptions = /* @__PURE__ */ new Map();
-  // Track which cwds have fs subscriptions (for provider retain/release)
-  fsSubscriptionCwds = /* @__PURE__ */ new Map();
-  // cwd -> subscription count
-  // Guard against double cleanup
-  isCleanedUp = false;
-  // Cached skill discovery result (loaded lazily on first listSlashCommands call)
-  skillCache = null;
-  log(level, message) {
-    if (level === "debug" && this.logLevel !== "debug") {
-      return;
-    }
-    this.onLogCallback(level, message);
-  }
-  async start() {
-    this.log("debug", `[${this.clientId}] Initializing CLI client...`);
-    await this.getOrCreateCli(this.defaultCwd);
-    this.log("debug", `[${this.clientId}] Default CLI ready (cwd: ${this.defaultCwd})`);
-    this.clientStream.on("data", (data) => {
-      this.handleClientData(data);
-    });
-    this.clientStream.on("close", () => {
-      this.log("info", `Client disconnected: ${this.clientId}`);
-      this.cleanup();
-    });
-    this.clientStream.on("error", (error) => {
-      this.log("error", `[${this.clientId}] Client stream error: ${error.message}`);
-      this.cleanup();
-    });
+    return [...BUILT_IN_COMMANDS, ...skillCommands];
   }
   /**
-   * Get or create a CliProcess for the given working directory.
-   * Uses the shared CLI pool manager with reference counting.
+   * Get skill directory paths for SDK SessionConfig.skillDirectories.
    */
-  async getOrCreateCli(cwd) {
-    if (this.retainedCwds.has(cwd)) {
-      const existingCli = this.cliPoolManager.get(cwd);
-      if (existingCli?.isAlive) {
-        return existingCli;
-      }
-      this.retainedCwds.delete(cwd);
-    }
-    const cli = await this.cliPoolManager.retain(cwd);
-    this.retainedCwds.add(cwd);
-    cli.on("notification", (notification) => {
-      this.handleCliNotification(notification);
-    });
-    cli.on("request", (request) => {
-      this.handleCliRequest(cli, request);
-    });
-    cli.on("exit", (code) => {
-      if (!this.isCleanedUp) {
-        this.log("warn", `[${this.clientId}] CLI process exited with code ${code} (cwd: ${cwd})`);
-      }
-      this.retainedCwds.delete(cwd);
-    });
-    return cli;
-  }
-  /** Get the default CLI (for cwd-agnostic operations like session.list). */
-  async getDefaultCli() {
-    return this.getOrCreateCli(this.defaultCwd);
-  }
-  /**
-   * Handle notifications from CLI (session.event).
-   */
-  handleCliNotification(notification) {
-    if (notification.method === "session.event") {
-      const params = notification.params;
-      this.forwardSessionEvent(params.sessionId, params.event);
-    }
-  }
-  /**
-   * Handle incoming requests from CLI (tool.call, permission.request).
-   */
-  async handleCliRequest(cli, request) {
-    if (request.method === "tool.call") {
-      const params = request.params;
-      try {
-        const result = await this.handleToolCall(
-          params.sessionId,
-          params.toolCallId,
-          params.toolName,
-          params.arguments
-        );
-        const textResult = typeof result === "string" ? result : result.content;
-        const isError = typeof result === "object" && result.isError;
-        const cliResult = {
-          result: {
-            textResultForLlm: textResult,
-            resultType: isError ? "failure" : "success",
-            error: isError ? textResult : null
-          }
-        };
-        await cli.sendResponse(request.id, cliResult);
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        await cli.sendResponse(request.id, {
-          result: {
-            textResultForLlm: errorMessage,
-            resultType: "failure",
-            error: errorMessage
-          }
-        });
-      }
-    } else if (request.method === "permission.request") {
-      const params = request.params;
-      try {
-        const result = await this.handlePermissionRequest(
-          params.permissionRequest,
-          params.sessionId
-        );
-        await cli.sendResponse(request.id, { kind: result.kind, rules: result.rules });
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : String(error);
-        await cli.sendResponse(request.id, void 0, {
-          code: -32603,
-          message: errorMessage
-        });
-      }
-    }
-  }
-  /**
-   * Stop this connection.
-   * @param disposing If true, skip CLI release (pool is being disposed anyway)
-   */
-  stop(disposing = false) {
-    this.cleanup(disposing);
-  }
-  cleanup(disposing = false) {
-    if (this.isCleanedUp) {
-      this.log("debug", `[${this.clientId}] Cleanup already done, skipping`);
-      return;
-    }
-    this.isCleanedUp = true;
-    if (this.sessionIds.size > 0) {
-      this.log("debug", `[${this.clientId}] Clearing ${this.sessionIds.size} session(s)`);
-    }
-    this.sessionIds.clear();
-    this.sessionCwds.clear();
-    this.sessionClis.clear();
-    this.sessionTools.clear();
-    if (this.fsSubscriptions.size > 0) {
-      this.log("debug", `[${this.clientId}] Cleaning up ${this.fsSubscriptions.size} fs subscription(s)`);
-      for (const subscription of this.fsSubscriptions.values()) {
-        try {
-          subscription.cleanup();
-        } catch {
-        }
-      }
-      this.fsSubscriptions.clear();
-      this.fsSubscriptionCwds.clear();
-    }
-    if (this.gitSubscriptions.size > 0) {
-      this.log("debug", `[${this.clientId}] Cleaning up ${this.gitSubscriptions.size} git subscription(s)`);
-      for (const subscription of this.gitSubscriptions.values()) {
-        try {
-          subscription.cleanup();
-        } catch {
-        }
-      }
-      this.gitSubscriptions.clear();
-    }
-    if (!disposing) {
-      this.releaseClis();
-    } else {
-      this.retainedCwds.clear();
-    }
-    if (!this.clientStream.destroyed) {
-      try {
-        this.clientStream.destroy();
-      } catch {
-      }
-    }
-  }
-  /**
-   * Release all CLI processes this connection retained.
-   * The shared pool manager handles the grace period before actually killing them.
-   */
-  releaseClis() {
-    for (const cwd of this.retainedCwds) {
-      this.log("debug", `[${this.clientId}] Releasing CLI for ${cwd}`);
-      this.cliPoolManager.release(cwd);
-    }
-    this.retainedCwds.clear();
-  }
-  handleClientData(data) {
-    this.receiveBuffer = Buffer.concat([this.receiveBuffer, data]);
-    while (true) {
-      const headerDelimiter = Buffer.from(HEADER_DELIMITER);
-      const headerEndIndex = this.findSequence(this.receiveBuffer, headerDelimiter);
-      if (headerEndIndex === -1) break;
-      const headerSection = this.receiveBuffer.subarray(0, headerEndIndex).toString();
-      const contentLengthMatch = headerSection.match(/Content-Length:\s*(\d+)/i);
-      if (!contentLengthMatch) {
-        this.receiveBuffer = this.receiveBuffer.subarray(headerEndIndex + headerDelimiter.length);
-        continue;
-      }
-      const contentLength = parseInt(contentLengthMatch[1], 10);
-      const bodyStart = headerEndIndex + headerDelimiter.length;
-      if (this.receiveBuffer.length < bodyStart + contentLength) break;
-      const body = this.receiveBuffer.subarray(bodyStart, bodyStart + contentLength).toString();
-      this.receiveBuffer = this.receiveBuffer.subarray(bodyStart + contentLength);
-      try {
-        const message = JSON.parse(body);
-        this.handleClientMessage(message);
-      } catch (err) {
-        this.log("error", `[${this.clientId}] Failed to parse client message: ${err}`);
-      }
-    }
-  }
-  findSequence(buffer, sequence) {
-    for (let i = 0; i <= buffer.length - sequence.length; i++) {
-      let found = true;
-      for (let j = 0; j < sequence.length; j++) {
-        if (buffer[i + j] !== sequence[j]) {
-          found = false;
-          break;
-        }
-      }
-      if (found) return i;
-    }
-    return -1;
-  }
-  async handleClientMessage(message) {
-    if ("id" in message && ("result" in message || "error" in message) && !("method" in message)) {
-      const response = message;
-      this.handleCallbackResponse(response);
-      return;
-    }
-    if ("method" in message && "id" in message) {
-      const request = message;
-      try {
-        switch (request.method) {
-          // Client methods
-          case "ping":
-            await this.handlePing(request);
-            break;
-          case "getState":
-            await this.handleGetState(request);
-            break;
-          // Session creation/management (support both old SDK names and new CLI names)
-          case "session.create":
-          case "createSession":
-            await this.handleSessionCreate(request);
-            break;
-          case "session.resume":
-          case "resumeSession":
-            await this.handleSessionResume(request);
-            break;
-          case "session.list":
-          case "listSessions":
-            await this.handleSessionList(request);
-            break;
-          case "getLastSessionId":
-            await this.handleGetLastSessionId(request);
-            break;
-          case "session.delete":
-          case "deleteSession":
-            await this.handleSessionDelete(request);
-            break;
-          // Slash commands
-          case "listSlashCommands":
-            await this.handleListSlashCommands(request);
-            break;
-          case "executeSlashCommand":
-            await this.handleExecuteSlashCommand(request);
-            break;
-          // File search
-          case "searchFiles":
-            await this.handleSearchFiles(request);
-            break;
-          // Model selection (support both names)
-          case "models.list":
-          case "getModels":
-            await this.handleModelsList(request);
-            break;
-          // Session methods
-          case "session.send":
-            await this.handleSessionSend(request);
-            break;
-          case "session.sendAndWait":
-            await this.handleSessionSendAndWait(request);
-            break;
-          case "session.getMessages":
-            await this.handleSessionGetMessages(request);
-            break;
-          case "session.abort":
-            await this.handleSessionAbort(request);
-            break;
-          case "session.destroy":
-            await this.handleSessionDestroy(request);
-            break;
-          // Filesystem methods
-          case "fs.readDirectory":
-            await this.handleFsReadDirectory(request);
-            break;
-          case "fs.readFile":
-            await this.handleFsReadFile(request);
-            break;
-          case "fs.readTextFile":
-            await this.handleFsReadTextFile(request);
-            break;
-          case "fs.stat":
-            await this.handleFsStat(request);
-            break;
-          case "fs.exists":
-            await this.handleFsExists(request);
-            break;
-          // Filesystem write methods
-          case "fs.writeFile":
-            await this.handleFsWriteFile(request);
-            break;
-          case "fs.writeTextFile":
-            await this.handleFsWriteTextFile(request);
-            break;
-          case "fs.delete":
-            await this.handleFsDelete(request);
-            break;
-          case "fs.rename":
-            await this.handleFsRename(request);
-            break;
-          case "fs.createDirectory":
-            await this.handleFsCreateDirectory(request);
-            break;
-          // Git methods
-          case "git.status":
-            await this.handleGitStatus(request);
-            break;
-          case "git.fileStatus":
-            await this.handleGitFileStatus(request);
-            break;
-          case "git.branch":
-            await this.handleGitBranch(request);
-            break;
-          case "git.branches":
-            await this.handleGitBranches(request);
-            break;
-          case "git.fileDiff":
-            await this.handleGitFileDiff(request);
-            break;
-          case "git.fileAtRef":
-            await this.handleGitFileAtRef(request);
-            break;
-          case "git.hasUncommittedChanges":
-            await this.handleGitHasUncommittedChanges(request);
-            break;
-          case "git.hasUnpushedCommits":
-            await this.handleGitHasUnpushedCommits(request);
-            break;
-          case "git.uncommittedDiffStats":
-            await this.handleGitUncommittedDiffStats(request);
-            break;
-          case "git.perFileDiffStats":
-            await this.handleGitPerFileDiffStats(request);
-            break;
-          case "git.findRoot":
-            await this.handleGitFindRoot(request);
-            break;
-          case "git.isAvailable":
-            await this.handleGitIsAvailable(request);
-            break;
-          // Filesystem subscription methods
-          case "fs.subscribe":
-            await this.handleFsSubscribe(request);
-            break;
-          case "fs.unsubscribe":
-            await this.handleFsUnsubscribe(request);
-            break;
-          // Git subscription methods
-          case "git.subscribe":
-            await this.handleGitSubscribe(request);
-            break;
-          case "git.unsubscribe":
-            await this.handleGitUnsubscribe(request);
-            break;
-          // Git write methods
-          case "git.stage":
-            await this.handleGitStage(request);
-            break;
-          case "git.unstage":
-            await this.handleGitUnstage(request);
-            break;
-          case "git.revert":
-            await this.handleGitRevert(request);
-            break;
-          case "git.commit":
-            await this.handleGitCommit(request);
-            break;
-          case "git.checkout":
-            await this.handleGitCheckout(request);
-            break;
-          case "git.createBranch":
-            await this.handleGitCreateBranch(request);
-            break;
-          case "git.push":
-            await this.handleGitPush(request);
-            break;
-          case "git.pull":
-            await this.handleGitPull(request);
-            break;
-          case "git.stash":
-            await this.handleGitStash(request);
-            break;
-          case "git.stashPop":
-            await this.handleGitStashPop(request);
-            break;
-          default:
-            this.sendErrorResponse(request.id, -32601, `Method not found: ${request.method}`);
-        }
-      } catch (err) {
-        this.log("error", `[${this.clientId}] Error handling ${request.method}: ${err}`);
-        this.sendErrorResponse(request.id, -32603, `Internal error: ${err}`);
-      }
-    }
-  }
-  handleCallbackResponse(response) {
-    const id = String(response.id);
-    const toolCallPending = this.pendingToolCallRequests.get(id);
-    if (toolCallPending) {
-      this.pendingToolCallRequests.delete(id);
-      if (response.error) {
-        toolCallPending.reject(new Error(response.error.message));
-      } else {
-        const result = response.result;
-        toolCallPending.resolve(result ?? "");
-      }
-      return;
-    }
-    const permissionPending = this.pendingPermissionRequests.get(id);
-    if (permissionPending) {
-      this.pendingPermissionRequests.delete(id);
-      if (response.error) {
-        permissionPending.reject(new Error(response.error.message));
-      } else {
-        const result = response.result;
-        permissionPending.resolve(result ?? { kind: "denied-interactively-by-user" });
-      }
-      return;
-    }
-    this.log("debug", `[${this.clientId}] Received unexpected response: ${response.id}`);
-  }
-  // ==========================================================================
-  // Client Methods
-  // ==========================================================================
-  async handlePing(request) {
-    const cli = await this.getDefaultCli();
-    await cli.sendRequest("ping", {});
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: {
-        timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-        version: CURRENT_VERSION
-      }
-    });
-  }
-  async handleGetState(request) {
-    const cli = await this.getDefaultCli();
-    try {
-      const isAlive = await cli.ping();
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result: isAlive ? "connected" : "disconnected"
-      });
-    } catch {
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result: "disconnected"
-      });
-    }
-  }
-  async handleSessionCreate(request) {
-    const params = request.params;
-    const cwd = params?.cwd ?? this.defaultCwd;
-    this.log("debug", `[${this.clientId}] RPC -> session.create (model: ${params?.model}, cwd: ${cwd})`);
-    const cli = await this.getOrCreateCli(cwd);
-    const { directories: skillDirectories } = await this.ensureSkillsLoaded();
-    const cliParams = {
-      sessionId: params?.sessionId,
-      model: params?.model,
-      streaming: params?.streaming ?? true,
-      systemMessage: params?.systemMessage,
-      // Pass tool definitions to CLI (no handlers - CLI will send tool.call requests)
-      tools: params?.tools,
-      availableTools: params?.availableTools,
-      excludedTools: params?.excludedTools,
-      // Pass skill directories so the CLI creates the skill tool for the session
-      skillDirectories: skillDirectories.length > 0 ? skillDirectories : void 0
-    };
-    const result = await cli.sendRequest("session.create", cliParams);
-    const sessionId = result.sessionId;
-    this.sessionIds.add(sessionId);
-    this.sessionCwds.set(sessionId, cwd);
-    this.sessionClis.set(sessionId, cli);
-    if (params?.tools) {
-      this.sessionTools.set(sessionId, params.tools);
-    }
-    this.log("info", `Session started: ${sessionId}`);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: {
-        sessionId,
-        model: params?.model
-        // Echo back the requested model
-      }
-    });
-  }
-  async handleSessionResume(request) {
-    const params = request.params;
-    const sessionId = params?.sessionId;
-    if (!sessionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> session.resume: ${sessionId}`);
-    if (this.sessionIds.has(sessionId)) {
-      this.log("debug", `[${this.clientId}] Session ${sessionId} already active`);
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result: { sessionId }
-      });
-      return;
-    }
-    const cwd = await discoverSessionCwd(sessionId);
-    const cli = await this.getOrCreateCli(cwd ?? this.defaultCwd);
-    const { directories: skillDirectories } = await this.ensureSkillsLoaded();
-    const cliParams = {
-      sessionId,
-      streaming: params?.streaming ?? true,
-      disableResume: params?.disableResume ?? true,
-      tools: params?.tools,
-      // Pass skill directories so the CLI creates the skill tool for the session
-      skillDirectories: skillDirectories.length > 0 ? skillDirectories : void 0
-    };
-    await cli.sendRequest("session.resume", cliParams);
-    this.sessionIds.add(sessionId);
-    this.sessionCwds.set(sessionId, cwd ?? this.defaultCwd);
-    this.sessionClis.set(sessionId, cli);
-    if (params?.tools) {
-      this.sessionTools.set(sessionId, params.tools);
-    }
-    this.log("info", `Session resumed: ${sessionId}`);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: { sessionId }
-    });
-  }
-  async handleSessionList(request) {
-    const cli = await this.getDefaultCli();
-    this.log("debug", `[${this.clientId}] RPC -> session.list`);
-    const result = await cli.sendRequest("session.list", {});
-    const sessions = result.sessions || [];
-    this.log("debug", `[${this.clientId}] RPC <- session.list (${sessions.length} sessions)`);
-    const sessionsWithCwd = await Promise.all(
-      sessions.map(async (s) => {
-        const cwd = await discoverSessionCwd(s.sessionId);
-        return {
-          sessionId: s.sessionId,
-          startTime: s.startTime,
-          modifiedTime: s.modifiedTime,
-          summary: s.summary,
-          isRemote: s.isRemote,
-          cwd
-        };
-      })
+  async getSkillDirectories(cwd) {
+    const pluginSources = await getPluginSkillSources();
+    const dirs = getSkillDirectories(
+      cwd,
+      this.customDirs,
+      void 0,
+      pluginSources,
+      cwd
     );
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: { sessions: sessionsWithCwd }
-    });
+    return dirs.map((d) => d.path);
   }
-  async handleGetLastSessionId(request) {
-    const cli = await this.getDefaultCli();
-    this.log("debug", `[${this.clientId}] RPC -> getLastSessionId (via session.list)`);
-    const result = await cli.sendRequest("session.list", {});
-    const sessions = result.sessions || [];
-    const sorted2 = [...sessions].sort((a, b) => {
-      const timeA = new Date(a.modifiedTime).getTime();
-      const timeB = new Date(b.modifiedTime).getTime();
-      return timeB - timeA;
-    });
-    const lastSessionId = sorted2.length > 0 ? sorted2[0].sessionId : void 0;
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: lastSessionId
-    });
-  }
-  async handleSessionDelete(request) {
-    const params = request.params;
-    const sessionId = params?.sessionId;
-    if (!sessionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> session.delete: ${sessionId}`);
-    if (this.sessionIds.has(sessionId)) {
-      this.sessionIds.delete(sessionId);
-      this.sessionCwds.delete(sessionId);
-      this.sessionClis.delete(sessionId);
-      this.sessionTools.delete(sessionId);
-    }
-    const cli = await this.getDefaultCli();
-    await cli.sendRequest("session.delete", { sessionId });
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: null
-    });
-  }
-  // ==========================================================================
-  // Slash Commands
-  // ==========================================================================
   /**
-   * Discovers skills from the filesystem and converts them to SlashCommandInfo entries.
-   * Results are cached — call clearSkillsCache() + set skillCache = null to reload.
+   * Execute a slash command. Parses the command string and dispatches.
    */
-  async ensureSkillsLoaded() {
-    if (this.skillCache) {
-      return this.skillCache;
-    }
-    try {
-      const repoRoot = await findGitRoot(this.defaultCwd);
-      const pluginSources = await getPluginSkillSources();
-      const { skills } = await loadSkills(
-        repoRoot ?? void 0,
-        [],
-        true,
-        void 0,
-        pluginSources,
-        this.defaultCwd
-      );
-      const userInvocable = skills.filter((s) => s.userInvocable);
-      const commands = userInvocable.map((skill) => {
-        const commandName = skill.pluginName ? `/${skill.pluginName}:${skill.name}` : `/${skill.name}`;
-        return {
-          name: commandName,
-          help: skill.description.length > 60 ? skill.description.substring(0, 57) + "..." : skill.description,
-          category: "skill",
-          requiresRemote: true
-        };
-      });
-      const directories = getSkillDirectories(repoRoot ?? void 0, [], void 0, pluginSources, this.defaultCwd).map((d) => d.path);
-      this.skillCache = { commands, skills: userInvocable, directories };
-      if (commands.length > 0) {
-        this.log("debug", `[${this.clientId}] Loaded ${commands.length} skill slash commands from ${directories.length} directories`);
-      }
-      return this.skillCache;
-    } catch (err) {
-      this.log("warn", `[${this.clientId}] Failed to load skills: ${err}`);
-      return { commands: [], skills: [], directories: [] };
-    }
-  }
-  async handleListSlashCommands(request) {
-    this.log("debug", `[${this.clientId}] RPC -> listSlashCommands`);
-    const { commands: skillCommands } = await this.ensureSkillsLoaded();
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: { commands: [...BUILT_IN_COMMANDS, ...skillCommands] }
-    });
-  }
-  async handleExecuteSlashCommand(request) {
-    const params = request.params;
-    const command = params?.command;
-    const sessionId = params?.sessionId;
-    if (!command) {
-      this.sendErrorResponse(request.id, -32602, "Missing command parameter");
-      return;
-    }
-    this.log("info", `[${this.clientId}] RPC -> executeSlashCommand: ${command}`);
+  async executeSlashCommand(command, cwd, _sessionId) {
     const trimmed2 = command.trim();
-    const parts = trimmed2.split(/\s+/);
-    const commandName = parts[0].toLowerCase();
-    const args = parts.slice(1);
-    const result = await this.executeSlashCommandInternal(commandName, args, sessionId);
-    const response = {
-      success: result.kind !== "message" || result.type !== "error",
-      result
-    };
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: response
-    });
-  }
-  async executeSlashCommandInternal(commandName, args, sessionId) {
-    const cmd = BUILT_IN_COMMANDS.find(
-      (c) => c.name === commandName || c.aliases?.includes(commandName)
-    );
-    if (cmd) {
-      switch (cmd.name) {
-        case "/session": {
-          const cwd = sessionId ? this.sessionCwds.get(sessionId) ?? this.defaultCwd : this.defaultCwd;
-          return {
-            kind: "open-dialog",
-            dialog: "session",
-            data: {
-              sessionId: sessionId ?? "No active session",
-              workingDirectory: cwd
-            }
-          };
-        }
-        default:
-          return {
-            kind: "message",
-            type: "error",
-            text: `Unknown command: ${cmd.name}`
-          };
-      }
-    }
-    const { skills } = await this.ensureSkillsLoaded();
-    const skill = skills.find((s) => {
-      const name = s.pluginName ? `/${s.pluginName}:${s.name}` : `/${s.name}`;
-      return name.toLowerCase() === commandName;
-    });
-    if (skill) {
-      const userPrompt = args.join(" ").trim();
-      const displayMessage = userPrompt ? `/${skill.name} ${userPrompt}` : `/${skill.name}`;
-      const agentPrompt = userPrompt ? `Use the skill tool to invoke the "${skill.name}" skill, then follow the skill's instructions to help with: ${userPrompt}` : `Use the skill tool to invoke the "${skill.name}" skill, then follow the skill's instructions.`;
+    if (!trimmed2.startsWith("/")) {
       return {
-        kind: "agent-message",
-        displayMessage,
-        agentPrompt
+        success: false,
+        result: { kind: "message", type: "error", text: "Command must start with /" }
       };
     }
-    return {
-      kind: "message",
-      type: "error",
-      text: `Unknown command: ${commandName}`
+    const spaceIdx = trimmed2.indexOf(" ");
+    const name = spaceIdx === -1 ? trimmed2.slice(1) : trimmed2.slice(1, spaceIdx);
+    const args = spaceIdx === -1 ? "" : trimmed2.slice(spaceIdx + 1).trim();
+    if (!name) {
+      return {
+        success: false,
+        result: { kind: "message", type: "error", text: "Empty command name" }
+      };
+    }
+    const builtIn = BUILT_IN_COMMANDS.find(
+      (cmd) => cmd.name === `/${name}` || cmd.aliases?.includes(`/${name}`)
+    );
+    if (builtIn) {
+      return this.executeBuiltIn(builtIn, args, cwd, _sessionId);
+    }
+    const { skills } = await this.loadSkills(cwd);
+    const skill = skills.find((s) => s.name === name && s.userInvocable);
+    if (!skill) {
+      return {
+        success: false,
+        result: { kind: "message", type: "error", text: `Unknown command: /${name}` }
+      };
+    }
+    return this.executeSkill(skill, args);
+  }
+  /**
+   * Clear the cached skills so they're reloaded on next access.
+   */
+  invalidate() {
+    clearSkillsCache();
+    this.log("info", "Skills cache cleared");
+  }
+  // ---------------------------------------------------------------------------
+  // Private
+  // ---------------------------------------------------------------------------
+  executeBuiltIn(cmd, _args, cwd, sessionId) {
+    if (cmd.opensDialog) {
+      let data;
+      if (cmd.opensDialog === "session") {
+        data = {
+          sessionId: sessionId ?? "No active session",
+          workingDirectory: cwd ?? "Unknown"
+        };
+      }
+      return {
+        success: true,
+        result: { kind: "open-dialog", dialog: cmd.opensDialog, data }
+      };
+    }
+    return { success: true, result: { kind: "noop" } };
+  }
+  executeSkill(skill, args) {
+    const agentPrompt = args ? `${skill.content}
+
+User arguments: ${args}` : skill.content;
+    const displayMessage = args ? `Running /${skill.name} ${args}` : `Running /${skill.name}`;
+    const result = {
+      kind: "agent-message",
+      displayMessage,
+      agentPrompt
     };
-  }
-  // ==========================================================================
-  // File Search
-  // ==========================================================================
-  async handleSearchFiles(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> searchFiles: "${params.query}" in ${params.cwd}`);
-    try {
-      const result = await this.fileSearchService.search(params);
-      this.log("debug", `[${this.clientId}] RPC <- searchFiles: ${result.results.length} results`);
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result
-      });
-    } catch (err) {
-      this.log("error", `[${this.clientId}] File search failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `File search failed: ${err}`);
-    }
-  }
-  // ==========================================================================
-  // Filesystem Methods
-  // ==========================================================================
-  async handleFsReadDirectory(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.dirPath) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or dirPath parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.readDirectory: ${params.dirPath}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        const entries = await provider.readDirectory(params.dirPath);
-        this.log("debug", `[${this.clientId}] RPC <- fs.readDirectory: ${entries.length} entries`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { entries }
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.readDirectory failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.readDirectory failed: ${err}`);
-    }
-  }
-  async handleFsReadFile(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.filePath) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or filePath parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.readFile: ${params.filePath}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        const content = await provider.readFile((0, import_node_path5.join)(params.cwd, params.filePath));
-        const base64Content = Buffer.from(content).toString("base64");
-        this.log("debug", `[${this.clientId}] RPC <- fs.readFile: ${content.length} bytes`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { content: base64Content }
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.readFile failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.readFile failed: ${err}`);
-    }
-  }
-  async handleFsReadTextFile(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.filePath) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or filePath parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.readTextFile: ${params.filePath}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        const content = await provider.readTextFile((0, import_node_path5.join)(params.cwd, params.filePath));
-        this.log("debug", `[${this.clientId}] RPC <- fs.readTextFile: ${content.length} chars`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { content }
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.readTextFile failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.readTextFile failed: ${err}`);
-    }
-  }
-  async handleFsStat(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.path) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or path parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.stat: ${params.path}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        const stat3 = await provider.stat(params.path);
-        this.log("debug", `[${this.clientId}] RPC <- fs.stat: ${stat3.type}, ${stat3.size} bytes`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { stat: stat3 }
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.stat failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.stat failed: ${err}`);
-    }
-  }
-  async handleFsExists(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.path) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or path parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.exists: ${params.path}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        const exists2 = await provider.exists(params.path);
-        this.log("debug", `[${this.clientId}] RPC <- fs.exists: ${exists2}`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { exists: exists2 }
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.exists failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.exists failed: ${err}`);
-    }
-  }
-  // ==========================================================================
-  // Filesystem Write Methods
-  // ==========================================================================
-  async handleFsWriteFile(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.filePath || params?.content === void 0) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd, filePath, or content parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.writeFile: ${params.filePath}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        const content = new Uint8Array(Buffer.from(params.content, "base64"));
-        await provider.writeFile(params.filePath, content);
-        this.log("debug", `[${this.clientId}] RPC <- fs.writeFile: ${content.length} bytes written`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.writeFile failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.writeFile failed: ${err}`);
-    }
-  }
-  async handleFsWriteTextFile(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.filePath || params?.content === void 0) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd, filePath, or content parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.writeTextFile: ${params.filePath}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        const content = new TextEncoder().encode(params.content);
-        await provider.writeFile(params.filePath, content);
-        this.log("debug", `[${this.clientId}] RPC <- fs.writeTextFile: ${params.content.length} chars written`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.writeTextFile failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.writeTextFile failed: ${err}`);
-    }
-  }
-  async handleFsDelete(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.path) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or path parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.delete: ${params.path} (recursive: ${params.recursive ?? false})`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        await provider.delete(params.path, { recursive: params.recursive ?? false });
-        this.log("debug", `[${this.clientId}] RPC <- fs.delete: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.delete failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.delete failed: ${err}`);
-    }
-  }
-  async handleFsRename(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.oldPath || !params?.newPath) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd, oldPath, or newPath parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.rename: ${params.oldPath} -> ${params.newPath}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        await provider.rename(params.oldPath, params.newPath);
-        this.log("debug", `[${this.clientId}] RPC <- fs.rename: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.rename failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.rename failed: ${err}`);
-    }
-  }
-  async handleFsCreateDirectory(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.dirPath) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or dirPath parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> fs.createDirectory: ${params.dirPath}`);
-    try {
-      const provider = await this.fsService.retain(params.cwd);
-      try {
-        await provider.createDirectory(params.dirPath);
-        this.log("debug", `[${this.clientId}] RPC <- fs.createDirectory: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.fsService.release(params.cwd);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.createDirectory failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.createDirectory failed: ${err}`);
-    }
-  }
-  // ==========================================================================
-  // Git Methods
-  // ==========================================================================
-  async handleGitStatus(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.status: ${params.cwd}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { status: null }
-        });
-        return;
-      }
-      try {
-        const status = await provider.getStatus();
-        const serialized = serializeGitStatus(status);
-        this.log("debug", `[${this.clientId}] RPC <- git.status: ${status.branch}, ${status.files.size} files`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { status: serialized }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.status failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.status failed: ${err}`);
-    }
-  }
-  async handleGitFileStatus(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.filePath) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or filePath parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.fileStatus: ${params.filePath}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { status: null }
-        });
-        return;
-      }
-      try {
-        const status = await provider.getFileStatus(params.filePath);
-        this.log("debug", `[${this.clientId}] RPC <- git.fileStatus: ${status?.status ?? "not found"}`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { status }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.fileStatus failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.fileStatus failed: ${err}`);
-    }
-  }
-  async handleGitBranch(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.branch: ${params.cwd}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { branch: null }
-        });
-        return;
-      }
-      try {
-        const branch = await provider.getCurrentBranch();
-        this.log("debug", `[${this.clientId}] RPC <- git.branch: ${branch}`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { branch }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.branch failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.branch failed: ${err}`);
-    }
-  }
-  async handleGitBranches(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.branches: ${params.cwd}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { branches: [] }
-        });
-        return;
-      }
-      try {
-        const branches = await provider.getBranches();
-        this.log("debug", `[${this.clientId}] RPC <- git.branches: ${branches.length} branches`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { branches }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.branches failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.branches failed: ${err}`);
-    }
-  }
-  async handleGitFileDiff(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.filePath) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or filePath parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.fileDiff: ${params.filePath} (staged: ${params.staged ?? false})`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { diff: null }
-        });
-        return;
-      }
-      try {
-        const diff = await provider.getFileDiff(params.filePath, params.staged);
-        this.log("debug", `[${this.clientId}] RPC <- git.fileDiff: ${diff.length} chars`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { diff }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.fileDiff failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.fileDiff failed: ${err}`);
-    }
-  }
-  async handleGitFileAtRef(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.filePath || !params?.ref) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd, filePath, or ref parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.fileAtRef: ${params.filePath} at ${params.ref}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { content: null }
-        });
-        return;
-      }
-      try {
-        const content = await provider.getFileAtRef(params.filePath, params.ref);
-        this.log("debug", `[${this.clientId}] RPC <- git.fileAtRef: ${content.length} chars`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { content }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.fileAtRef failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.fileAtRef failed: ${err}`);
-    }
-  }
-  async handleGitHasUncommittedChanges(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.hasUncommittedChanges: ${params.cwd}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { hasChanges: false }
-        });
-        return;
-      }
-      try {
-        const hasChanges = await provider.hasUncommittedChanges();
-        this.log("debug", `[${this.clientId}] RPC <- git.hasUncommittedChanges: ${hasChanges}`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { hasChanges }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.hasUncommittedChanges failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.hasUncommittedChanges failed: ${err}`);
-    }
-  }
-  async handleGitHasUnpushedCommits(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.hasUnpushedCommits: ${params.cwd}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { hasUnpushed: false }
-        });
-        return;
-      }
-      try {
-        const hasUnpushed = await provider.hasUnpushedCommits();
-        this.log("debug", `[${this.clientId}] RPC <- git.hasUnpushedCommits: ${hasUnpushed}`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { hasUnpushed }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.hasUnpushedCommits failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.hasUnpushedCommits failed: ${err}`);
-    }
-  }
-  async handleGitUncommittedDiffStats(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.uncommittedDiffStats: ${params.cwd}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { stats: null }
-        });
-        return;
-      }
-      try {
-        const stats = await provider.getUncommittedDiffStats();
-        this.log("debug", `[${this.clientId}] RPC <- git.uncommittedDiffStats: +${stats.added} -${stats.removed}`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { stats }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.uncommittedDiffStats failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.uncommittedDiffStats failed: ${err}`);
-    }
-  }
-  async handleGitPerFileDiffStats(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.perFileDiffStats: ${params.cwd}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { staged: {}, unstaged: {} }
-        });
-        return;
-      }
-      try {
-        const stats = await provider.getPerFileDiffStats();
-        this.log("debug", `[${this.clientId}] RPC <- git.perFileDiffStats: staged=${stats.staged.size} unstaged=${stats.unstaged.size}`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: {
-            staged: Object.fromEntries(stats.staged),
-            unstaged: Object.fromEntries(stats.unstaged)
-          }
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.perFileDiffStats failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.perFileDiffStats failed: ${err}`);
-    }
-  }
-  async handleGitFindRoot(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.findRoot: ${params.cwd}`);
-    try {
-      const gitRoot = await findGitRoot(params.cwd);
-      this.log("debug", `[${this.clientId}] RPC <- git.findRoot: ${gitRoot ?? "not found"}`);
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result: { gitRoot }
-      });
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.findRoot failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.findRoot failed: ${err}`);
-    }
-  }
-  async handleGitIsAvailable(request) {
-    this.log("debug", `[${this.clientId}] RPC -> git.isAvailable`);
-    try {
-      const available = await isGitAvailable();
-      this.log("debug", `[${this.clientId}] RPC <- git.isAvailable: ${available}`);
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result: { available }
-      });
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.isAvailable failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.isAvailable failed: ${err}`);
-    }
-  }
-  // ==========================================================================
-  // Filesystem Subscription Handlers
-  // ==========================================================================
-  async handleFsSubscribe(request) {
-    const params = request.params;
-    const cwd = params?.cwd ?? this.defaultCwd;
-    const type = params?.type ?? "all";
-    const filterPath = params?.path;
-    this.log("debug", `[${this.clientId}] RPC -> fs.subscribe (cwd: ${cwd}, type: ${type}, path: ${filterPath ?? "all"})`);
-    try {
-      const provider = await this.fsService.retain(cwd);
-      const currentCount = this.fsSubscriptionCwds.get(cwd) ?? 0;
-      this.fsSubscriptionCwds.set(cwd, currentCount + 1);
-      const subscriptionId = `fs-${this.clientId}-${this.nextSubscriptionId++}`;
-      const forwardEvent = (eventType, event) => {
-        if (type === "directory" && eventType !== "directoryChanged") return;
-        if (type === "file" && eventType === "directoryChanged") return;
-        if (filterPath) {
-          const eventPath = event.path ?? event.oldPath ?? event.newPath ?? "";
-          if (!eventPath.startsWith(filterPath) && eventPath !== filterPath) return;
-        }
-        this.sendToClient({
-          jsonrpc: "2.0",
-          method: `fs.${eventType}`,
-          params: {
-            subscriptionId,
-            type: eventType,
-            ...event
-          }
-        });
-      };
-      const disposables = [
-        provider.onDirectoryListingChanged((e) => forwardEvent("directoryChanged", e)),
-        provider.onFileContentChanged((e) => forwardEvent("fileChanged", e)),
-        provider.onFileRenamed((e) => forwardEvent("fileRenamed", e)),
-        provider.onFileDeleted((e) => forwardEvent("fileDeleted", e))
-      ];
-      const cleanup = () => {
-        disposables.forEach((d) => d.dispose());
-        const count = this.fsSubscriptionCwds.get(cwd) ?? 0;
-        if (count <= 1) {
-          this.fsSubscriptionCwds.delete(cwd);
-          this.fsService.release(cwd);
-        } else {
-          this.fsSubscriptionCwds.set(cwd, count - 1);
-        }
-      };
-      this.fsSubscriptions.set(subscriptionId, {
-        cwd,
-        type,
-        path: filterPath,
-        cleanup
-      });
-      this.log("debug", `[${this.clientId}] RPC <- fs.subscribe: ${subscriptionId}`);
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result: { subscriptionId }
-      });
-    } catch (err) {
-      this.log("error", `[${this.clientId}] fs.subscribe failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `fs.subscribe failed: ${err}`);
-    }
-  }
-  async handleFsUnsubscribe(request) {
-    const params = request.params;
-    const subscriptionId = params?.subscriptionId;
-    this.log("debug", `[${this.clientId}] RPC -> fs.unsubscribe (${subscriptionId})`);
-    if (!subscriptionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing subscriptionId parameter");
-      return;
-    }
-    const subscription = this.fsSubscriptions.get(subscriptionId);
-    if (!subscription) {
-      this.sendErrorResponse(request.id, -32602, `Unknown subscription: ${subscriptionId}`);
-      return;
-    }
-    subscription.cleanup();
-    this.fsSubscriptions.delete(subscriptionId);
-    this.log("debug", `[${this.clientId}] RPC <- fs.unsubscribe: success`);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: null
-    });
-  }
-  // ==========================================================================
-  // Git Subscription Handlers
-  // ==========================================================================
-  async handleGitSubscribe(request) {
-    const params = request.params;
-    const cwd = params?.cwd ?? this.defaultCwd;
-    this.log("debug", `[${this.clientId}] RPC -> git.subscribe (cwd: ${cwd})`);
-    try {
-      const provider = await this.gitService.retain(cwd);
-      if (!provider) {
-        this.log("debug", `[${this.clientId}] RPC <- git.subscribe: not a git repo`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: { subscriptionId: null, gitRoot: null }
-        });
-        return;
-      }
-      const gitRoot = provider.gitRoot;
-      const subscriptionId = `git-${this.clientId}-${this.nextSubscriptionId++}`;
-      const forwardEvent = (eventType, event) => {
-        this.sendToClient({
-          jsonrpc: "2.0",
-          method: `git.${eventType}`,
-          params: {
-            subscriptionId,
-            type: eventType,
-            gitRoot,
-            ...event
-          }
-        });
-      };
-      const disposables = [
-        provider.onStatusChanged((e) => forwardEvent("statusChanged", {
-          ...e,
-          status: serializeGitStatus(e.status)
-        })),
-        provider.onBranchChanged((e) => forwardEvent("branchChanged", e)),
-        provider.onCommitCreated((e) => forwardEvent("commitCreated", e)),
-        provider.onHeadChanged((e) => forwardEvent("headChanged", e))
-      ];
-      const cleanup = () => {
-        disposables.forEach((d) => d.dispose());
-        this.gitService.release(gitRoot);
-      };
-      this.gitSubscriptions.set(subscriptionId, {
-        gitRoot,
-        cleanup
-      });
-      this.log("debug", `[${this.clientId}] RPC <- git.subscribe: ${subscriptionId} (gitRoot: ${gitRoot})`);
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result: { subscriptionId, gitRoot }
-      });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const logLevel = message.includes("Not a git repository") ? "debug" : "error";
-      this.log(logLevel, `[${this.clientId}] git.subscribe failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.subscribe failed: ${err}`);
-    }
-  }
-  async handleGitUnsubscribe(request) {
-    const params = request.params;
-    const subscriptionId = params?.subscriptionId;
-    this.log("debug", `[${this.clientId}] RPC -> git.unsubscribe (${subscriptionId})`);
-    if (!subscriptionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing subscriptionId parameter");
-      return;
-    }
-    const subscription = this.gitSubscriptions.get(subscriptionId);
-    if (!subscription) {
-      this.sendErrorResponse(request.id, -32602, `Unknown subscription: ${subscriptionId}`);
-      return;
-    }
-    subscription.cleanup();
-    this.gitSubscriptions.delete(subscriptionId);
-    this.log("debug", `[${this.clientId}] RPC <- git.unsubscribe: success`);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: null
-    });
-  }
-  // ==========================================================================
-  // Git Write Methods
-  // ==========================================================================
-  async handleGitStage(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.files || !Array.isArray(params.files)) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or files parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.stage: ${params.files.length} files`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.stage(params.files);
-        this.log("debug", `[${this.clientId}] RPC <- git.stage: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.stage failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.stage failed: ${err}`);
-    }
-  }
-  async handleGitUnstage(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.files || !Array.isArray(params.files)) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or files parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.unstage: ${params.files.length} files`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.unstage(params.files);
-        this.log("debug", `[${this.clientId}] RPC <- git.unstage: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.unstage failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.unstage failed: ${err}`);
-    }
-  }
-  async handleGitRevert(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.files || !Array.isArray(params.files)) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or files parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.revert: ${params.files.length} files`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.revert(params.files);
-        this.log("debug", `[${this.clientId}] RPC <- git.revert: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.revert failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.revert failed: ${err}`);
-    }
-  }
-  async handleGitCommit(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.message) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or message parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.commit: "${params.message.substring(0, 50)}..."`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        const result = await provider.commit(params.message, params.options);
-        this.log("debug", `[${this.clientId}] RPC <- git.commit: ${result.hash}`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.commit failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.commit failed: ${err}`);
-    }
-  }
-  async handleGitCheckout(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.ref) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or ref parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.checkout: ${params.ref}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.checkout(params.ref, { force: params.force ?? false });
-        this.log("debug", `[${this.clientId}] RPC <- git.checkout: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.checkout failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.checkout failed: ${err}`);
-    }
-  }
-  async handleGitCreateBranch(request) {
-    const params = request.params;
-    if (!params?.cwd || !params?.branchName) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd or branchName parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.createBranch: ${params.branchName}`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.createBranch(params.branchName, params.checkout ?? false, params.startPoint);
-        this.log("debug", `[${this.clientId}] RPC <- git.createBranch: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.createBranch failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.createBranch failed: ${err}`);
-    }
-  }
-  async handleGitPush(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.push (force: ${params.force ?? false})`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.push(params.force ?? false, params.setUpstream ?? false);
-        this.log("debug", `[${this.clientId}] RPC <- git.push: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.push failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.push failed: ${err}`);
-    }
-  }
-  async handleGitPull(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.pull (rebase: ${params.rebase ?? false})`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.pull(params.rebase ?? false);
-        this.log("debug", `[${this.clientId}] RPC <- git.pull: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.pull failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.pull failed: ${err}`);
-    }
-  }
-  async handleGitStash(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.stash`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.stash(params.message);
-        this.log("debug", `[${this.clientId}] RPC <- git.stash: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.stash failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.stash failed: ${err}`);
-    }
-  }
-  async handleGitStashPop(request) {
-    const params = request.params;
-    if (!params?.cwd) {
-      this.sendErrorResponse(request.id, -32602, "Missing cwd parameter");
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> git.stashPop`);
-    try {
-      const provider = await this.gitService.retain(params.cwd);
-      if (!provider) {
-        this.sendErrorResponse(request.id, -32603, "Not a git repository");
-        return;
-      }
-      try {
-        await provider.stashPop();
-        this.log("debug", `[${this.clientId}] RPC <- git.stashPop: success`);
-        this.sendToClient({
-          jsonrpc: "2.0",
-          id: request.id,
-          result: null
-        });
-      } finally {
-        this.gitService.release(provider.gitRoot);
-      }
-    } catch (err) {
-      this.log("error", `[${this.clientId}] git.stashPop failed: ${err}`);
-      this.sendErrorResponse(request.id, -32603, `git.stashPop failed: ${err}`);
-    }
-  }
-  // ==========================================================================
-  // Model Selection
-  // ==========================================================================
-  async handleModelsList(request) {
-    this.log("debug", `[${this.clientId}] RPC -> models.list`);
-    const response = {
-      models: SUPPORTED_MODELS,
-      defaultModel: DEFAULT_MODEL
-      // currentModel could be tracked per-session if needed
-    };
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: response
-    });
-  }
-  // ==========================================================================
-  // Session Methods
-  // ==========================================================================
-  async handleSessionSend(request) {
-    const params = request.params;
-    const sessionId = params?.sessionId;
-    const prompt = params?.prompt;
-    if (!sessionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
-      return;
-    }
-    if (!prompt) {
-      this.sendErrorResponse(request.id, -32602, "Missing prompt parameter");
-      return;
-    }
-    const cli = this.sessionClis.get(sessionId);
-    if (!cli) {
-      this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
-      return;
-    }
-    const truncatedPrompt = prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt;
-    this.log("info", `Prompt received: "${truncatedPrompt}" (cwd: ${this.sessionCwds.get(sessionId) ?? this.defaultCwd})`);
-    await cli.sendRequest("session.send", {
-      sessionId,
-      prompt,
-      mode: params?.mode
-    });
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: {}
-    });
-  }
-  async handleSessionSendAndWait(request) {
-    const params = request.params;
-    const sessionId = params?.sessionId;
-    const prompt = params?.prompt;
-    if (!sessionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
-      return;
-    }
-    if (!prompt) {
-      this.sendErrorResponse(request.id, -32602, "Missing prompt parameter");
-      return;
-    }
-    const cli = this.sessionClis.get(sessionId);
-    if (!cli) {
-      this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
-      return;
-    }
-    const truncatedPrompt = prompt.length > 50 ? `${prompt.substring(0, 50)}...` : prompt;
-    this.log("info", `Prompt received (sendAndWait): "${truncatedPrompt}" (cwd: ${this.sessionCwds.get(sessionId) ?? this.defaultCwd})`);
-    const timeout = params?.timeout ?? 3e5;
-    const events = [];
-    const waitForIdle = new Promise((resolve8, reject) => {
-      const timeoutId = setTimeout(() => {
-        cleanup();
-        reject(new Error("session.sendAndWait timeout"));
-      }, timeout);
-      const handler = (notification) => {
-        if (notification.method === "session.event") {
-          const eventParams = notification.params;
-          if (eventParams.sessionId === sessionId) {
-            events.push(eventParams.event);
-            if (eventParams.event.type === "session.idle") {
-              cleanup();
-              resolve8(events);
-            }
-          }
-        }
-      };
-      const cleanup = () => {
-        clearTimeout(timeoutId);
-        cli.off("notification", handler);
-      };
-      cli.on("notification", handler);
-    });
-    await cli.sendRequest("session.send", {
-      sessionId,
-      prompt,
-      mode: params?.mode
-    });
-    try {
-      const collectedEvents = await waitForIdle;
-      const assistantMessage = [...collectedEvents].reverse().find((e) => e.type === "assistant.message");
-      this.sendToClient({
-        jsonrpc: "2.0",
-        id: request.id,
-        result: assistantMessage ?? null
-      });
-    } catch (err) {
-      this.sendErrorResponse(request.id, -32603, `sendAndWait failed: ${err}`);
-    }
-  }
-  async handleSessionGetMessages(request) {
-    const params = request.params;
-    const sessionId = params?.sessionId;
-    if (!sessionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
-      return;
-    }
-    const cli = this.sessionClis.get(sessionId);
-    if (!cli) {
-      this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> session.getMessages: ${sessionId}`);
-    const result = await cli.sendRequest("session.getMessages", { sessionId });
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: result.events ?? []
-    });
-  }
-  async handleSessionAbort(request) {
-    const params = request.params;
-    const sessionId = params?.sessionId;
-    if (!sessionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
-      return;
-    }
-    const cli = this.sessionClis.get(sessionId);
-    if (!cli) {
-      this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
-      return;
-    }
-    this.log("debug", `[${this.clientId}] RPC -> session.abort: ${sessionId}`);
-    await cli.sendRequest("session.abort", { sessionId });
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: null
-    });
-  }
-  async handleSessionDestroy(request) {
-    const params = request.params;
-    const sessionId = params?.sessionId;
-    if (!sessionId) {
-      this.sendErrorResponse(request.id, -32602, "Missing sessionId parameter");
-      return;
-    }
-    const cli = this.sessionClis.get(sessionId);
-    if (!cli) {
-      this.sendErrorResponse(request.id, -32600, `Session not found: ${sessionId}`);
-      return;
-    }
-    this.log("info", `Session ended: ${sessionId}`);
-    await cli.sendRequest("session.destroy", { sessionId });
-    this.sessionIds.delete(sessionId);
-    this.sessionCwds.delete(sessionId);
-    this.sessionClis.delete(sessionId);
-    this.sessionTools.delete(sessionId);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: request.id,
-      result: null
-    });
-  }
-  // ==========================================================================
-  // Event Forwarding
-  // ==========================================================================
-  forwardSessionEvent(sessionId, event) {
-    this.log("debug", `[${this.clientId}] \u2190 session.event (${sessionId}): ${event.type}`);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      method: "session.event",
-      params: {
-        sessionId,
-        event
-      }
-    });
-  }
-  // ==========================================================================
-  // Callback Handling (CLI -> Client)
-  // ==========================================================================
-  async handleToolCall(sessionId, toolCallId, toolName, args) {
-    const callbackId = String(this.nextCallbackId++);
-    this.log("debug", `[${this.clientId}] RPC -> tool.call: ${toolName}`);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: callbackId,
-      method: "tool.call",
-      params: {
-        sessionId,
-        toolCallId,
-        toolName,
-        arguments: args
-      }
-    });
-    return new Promise((resolve8, reject) => {
-      const timeout = setTimeout(() => {
-        this.pendingToolCallRequests.delete(callbackId);
-        reject(new Error("Tool call request timeout"));
-      }, 3e5);
-      this.pendingToolCallRequests.set(callbackId, {
-        resolve: (result) => {
-          clearTimeout(timeout);
-          resolve8(result);
-        },
-        reject: (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        }
-      });
-    });
-  }
-  async handlePermissionRequest(request, sessionId) {
-    const callbackId = String(this.nextCallbackId++);
-    this.log("debug", `[${this.clientId}] RPC -> permission.request: ${request.kind}`);
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id: callbackId,
-      method: "permission.request",
-      params: {
-        sessionId,
-        permissionRequest: request
-      }
-    });
-    return new Promise((resolve8, reject) => {
-      const timeout = setTimeout(() => {
-        this.pendingPermissionRequests.delete(callbackId);
-        reject(new Error("Permission request timeout"));
-      }, 6e4);
-      this.pendingPermissionRequests.set(callbackId, {
-        resolve: (result) => {
-          clearTimeout(timeout);
-          resolve8(result);
-        },
-        reject: (error) => {
-          clearTimeout(timeout);
-          reject(error);
-        }
-      });
-    });
-  }
-  // ==========================================================================
-  // Utilities
-  // ==========================================================================
-  sendErrorResponse(id, code, message) {
-    this.sendToClient({
-      jsonrpc: "2.0",
-      id,
-      error: { code, message }
-    });
-  }
-  sendToClient(message) {
-    if (this.clientStream.destroyed) return;
-    const encoded = encodeJsonRpcMessageToBuffer(message);
-    this.clientStream.write(encoded);
-  }
-};
-var JsonRpcProxyHost = class {
-  clients = /* @__PURE__ */ new Map();
-  options;
-  cliPoolManager;
-  fsService;
-  gitService;
-  constructor(options = {}) {
-    this.options = options;
-    this.cliPoolManager = new CliPoolManager({
-      cliPath: options.cliPath,
-      cliLogLevel: options.cliLogLevel,
-      gracePeriodMs: options.cliGracePeriodMs,
-      copilotToken: options.copilotToken,
-      log: options.onLog
-    });
-    this.fsService = new FileSystemProviderService({
-      log: options.onLog
-    });
-    this.gitService = new GitProviderService({
-      log: options.onLog
-    });
-  }
-  /**
-   * Handle a new client connection from the tunnel.
-   */
-  async handleClient(stream, clientId) {
-    const connection = new ClientConnection(stream, clientId, this.cliPoolManager, this.fsService, this.gitService, this.options);
-    this.clients.set(clientId, connection);
-    await connection.start();
-  }
-  /**
-   * Handle client disconnection.
-   */
-  handleClientDisconnect(clientId) {
-    const connection = this.clients.get(clientId);
-    if (connection) {
-      connection.stop();
-      this.clients.delete(clientId);
-    }
-  }
-  /**
-   * Stop all client connections and dispose of CLI pool.
-   */
-  async stop() {
-    await this.cliPoolManager.dispose();
-    await this.fsService.dispose();
-    await this.gitService.dispose();
-    for (const connection of this.clients.values()) {
-      connection.stop(true);
-    }
-    this.clients.clear();
-  }
-  /**
-   * Get current CLI pool statistics (for debugging/monitoring).
-   */
-  getCliPoolStats() {
-    return this.cliPoolManager.getStats();
+    return { success: true, result };
   }
 };
 
-// src/logger.ts
-var LOG_LEVEL_PRIORITY = {
-  debug: 0,
-  info: 1,
-  warn: 2,
-  error: 3
+// src/search/file-search-service.ts
+var import_promises2 = require("fs/promises");
+var import_node_path6 = require("path");
+
+// ../../node_modules/fdir/dist/index.mjs
+var import_module = require("module");
+var import_path = require("path");
+var nativeFs = __toESM(require("fs"), 1);
+var __require = /* @__PURE__ */ (0, import_module.createRequire)(__bundled_import_meta_url);
+function cleanPath(path14) {
+  let normalized = (0, import_path.normalize)(path14);
+  if (normalized.length > 1 && normalized[normalized.length - 1] === import_path.sep) normalized = normalized.substring(0, normalized.length - 1);
+  return normalized;
+}
+var SLASHES_REGEX = /[\\/]/g;
+function convertSlashes(path14, separator) {
+  return path14.replace(SLASHES_REGEX, separator);
+}
+var WINDOWS_ROOT_DIR_REGEX = /^[a-z]:[\\/]$/i;
+function isRootDirectory(path14) {
+  return path14 === "/" || WINDOWS_ROOT_DIR_REGEX.test(path14);
+}
+function normalizePath3(path14, options) {
+  const { resolvePaths, normalizePath: normalizePath$1, pathSeparator } = options;
+  const pathNeedsCleaning = process.platform === "win32" && path14.includes("/") || path14.startsWith(".");
+  if (resolvePaths) path14 = (0, import_path.resolve)(path14);
+  if (normalizePath$1 || pathNeedsCleaning) path14 = cleanPath(path14);
+  if (path14 === ".") return "";
+  const needsSeperator = path14[path14.length - 1] !== pathSeparator;
+  return convertSlashes(needsSeperator ? path14 + pathSeparator : path14, pathSeparator);
+}
+function joinPathWithBasePath(filename, directoryPath) {
+  return directoryPath + filename;
+}
+function joinPathWithRelativePath(root, options) {
+  return function(filename, directoryPath) {
+    const sameRoot = directoryPath.startsWith(root);
+    if (sameRoot) return directoryPath.slice(root.length) + filename;
+    else return convertSlashes((0, import_path.relative)(root, directoryPath), options.pathSeparator) + options.pathSeparator + filename;
+  };
+}
+function joinPath(filename) {
+  return filename;
+}
+function joinDirectoryPath(filename, directoryPath, separator) {
+  return directoryPath + filename + separator;
+}
+function build$7(root, options) {
+  const { relativePaths, includeBasePath } = options;
+  return relativePaths && root ? joinPathWithRelativePath(root, options) : includeBasePath ? joinPathWithBasePath : joinPath;
+}
+function pushDirectoryWithRelativePath(root) {
+  return function(directoryPath, paths) {
+    paths.push(directoryPath.substring(root.length) || ".");
+  };
+}
+function pushDirectoryFilterWithRelativePath(root) {
+  return function(directoryPath, paths, filters) {
+    const relativePath = directoryPath.substring(root.length) || ".";
+    if (filters.every((filter) => filter(relativePath, true))) paths.push(relativePath);
+  };
+}
+var pushDirectory = (directoryPath, paths) => {
+  paths.push(directoryPath || ".");
 };
-function formatTimestamp() {
-  const now = /* @__PURE__ */ new Date();
-  const hours = String(now.getHours()).padStart(2, "0");
-  const minutes = String(now.getMinutes()).padStart(2, "0");
-  const seconds = String(now.getSeconds()).padStart(2, "0");
-  return `${hours}:${minutes}:${seconds}`;
+var pushDirectoryFilter = (directoryPath, paths, filters) => {
+  const path14 = directoryPath || ".";
+  if (filters.every((filter) => filter(path14, true))) paths.push(path14);
+};
+var empty$2 = () => {
+};
+function build$6(root, options) {
+  const { includeDirs, filters, relativePaths } = options;
+  if (!includeDirs) return empty$2;
+  if (relativePaths) return filters && filters.length ? pushDirectoryFilterWithRelativePath(root) : pushDirectoryWithRelativePath(root);
+  return filters && filters.length ? pushDirectoryFilter : pushDirectory;
 }
-function formatLevel(level) {
-  return level.toUpperCase().padEnd(5);
+var pushFileFilterAndCount = (filename, _paths, counts, filters) => {
+  if (filters.every((filter) => filter(filename, false))) counts.files++;
+};
+var pushFileFilter = (filename, paths, _counts, filters) => {
+  if (filters.every((filter) => filter(filename, false))) paths.push(filename);
+};
+var pushFileCount = (_filename, _paths, counts, _filters) => {
+  counts.files++;
+};
+var pushFile = (filename, paths) => {
+  paths.push(filename);
+};
+var empty$1 = () => {
+};
+function build$5(options) {
+  const { excludeFiles, filters, onlyCounts } = options;
+  if (excludeFiles) return empty$1;
+  if (filters && filters.length) return onlyCounts ? pushFileFilterAndCount : pushFileFilter;
+  else if (onlyCounts) return pushFileCount;
+  else return pushFile;
 }
-function createLogger2(options) {
-  const minLevel = options.level;
-  const minPriority = LOG_LEVEL_PRIORITY[minLevel];
-  function shouldLog(level) {
-    return LOG_LEVEL_PRIORITY[level] >= minPriority;
+var getArray = (paths) => {
+  return paths;
+};
+var getArrayGroup = () => {
+  return [""].slice(0, 0);
+};
+function build$4(options) {
+  return options.group ? getArrayGroup : getArray;
+}
+var groupFiles = (groups, directory, files) => {
+  groups.push({
+    directory,
+    files,
+    dir: directory
+  });
+};
+var empty = () => {
+};
+function build$3(options) {
+  return options.group ? groupFiles : empty;
+}
+var resolveSymlinksAsync = function(path14, state, callback$1) {
+  const { queue, fs: fs10, options: { suppressErrors } } = state;
+  queue.enqueue();
+  fs10.realpath(path14, (error, resolvedPath) => {
+    if (error) return queue.dequeue(suppressErrors ? null : error, state);
+    fs10.stat(resolvedPath, (error$1, stat3) => {
+      if (error$1) return queue.dequeue(suppressErrors ? null : error$1, state);
+      if (stat3.isDirectory() && isRecursive(path14, resolvedPath, state)) return queue.dequeue(null, state);
+      callback$1(stat3, resolvedPath);
+      queue.dequeue(null, state);
+    });
+  });
+};
+var resolveSymlinks = function(path14, state, callback$1) {
+  const { queue, fs: fs10, options: { suppressErrors } } = state;
+  queue.enqueue();
+  try {
+    const resolvedPath = fs10.realpathSync(path14);
+    const stat3 = fs10.statSync(resolvedPath);
+    if (stat3.isDirectory() && isRecursive(path14, resolvedPath, state)) return;
+    callback$1(stat3, resolvedPath);
+  } catch (e) {
+    if (!suppressErrors) throw e;
   }
-  function log(level, message) {
-    if (!shouldLog(level)) return;
-    const timestamp = formatTimestamp();
-    const levelStr = formatLevel(level);
-    if (message.includes("\n")) {
-      const lines = message.split("\n");
-      for (const line of lines) {
-        console.log(`[${timestamp}] [${levelStr}] ${line}`);
+};
+function build$2(options, isSynchronous) {
+  if (!options.resolveSymlinks || options.excludeSymlinks) return null;
+  return isSynchronous ? resolveSymlinks : resolveSymlinksAsync;
+}
+function isRecursive(path14, resolved, state) {
+  if (state.options.useRealPaths) return isRecursiveUsingRealPaths(resolved, state);
+  let parent = (0, import_path.dirname)(path14);
+  let depth = 1;
+  while (parent !== state.root && depth < 2) {
+    const resolvedPath = state.symlinks.get(parent);
+    const isSameRoot = !!resolvedPath && (resolvedPath === resolved || resolvedPath.startsWith(resolved) || resolved.startsWith(resolvedPath));
+    if (isSameRoot) depth++;
+    else parent = (0, import_path.dirname)(parent);
+  }
+  state.symlinks.set(path14, resolved);
+  return depth > 1;
+}
+function isRecursiveUsingRealPaths(resolved, state) {
+  return state.visited.includes(resolved + state.options.pathSeparator);
+}
+var onlyCountsSync = (state) => {
+  return state.counts;
+};
+var groupsSync = (state) => {
+  return state.groups;
+};
+var defaultSync = (state) => {
+  return state.paths;
+};
+var limitFilesSync = (state) => {
+  return state.paths.slice(0, state.options.maxFiles);
+};
+var onlyCountsAsync = (state, error, callback$1) => {
+  report(error, callback$1, state.counts, state.options.suppressErrors);
+  return null;
+};
+var defaultAsync = (state, error, callback$1) => {
+  report(error, callback$1, state.paths, state.options.suppressErrors);
+  return null;
+};
+var limitFilesAsync = (state, error, callback$1) => {
+  report(error, callback$1, state.paths.slice(0, state.options.maxFiles), state.options.suppressErrors);
+  return null;
+};
+var groupsAsync = (state, error, callback$1) => {
+  report(error, callback$1, state.groups, state.options.suppressErrors);
+  return null;
+};
+function report(error, callback$1, output, suppressErrors) {
+  if (error && !suppressErrors) callback$1(error, output);
+  else callback$1(null, output);
+}
+function build$1(options, isSynchronous) {
+  const { onlyCounts, group, maxFiles } = options;
+  if (onlyCounts) return isSynchronous ? onlyCountsSync : onlyCountsAsync;
+  else if (group) return isSynchronous ? groupsSync : groupsAsync;
+  else if (maxFiles) return isSynchronous ? limitFilesSync : limitFilesAsync;
+  else return isSynchronous ? defaultSync : defaultAsync;
+}
+var readdirOpts = { withFileTypes: true };
+var walkAsync = (state, crawlPath, directoryPath, currentDepth, callback$1) => {
+  state.queue.enqueue();
+  if (currentDepth < 0) return state.queue.dequeue(null, state);
+  const { fs: fs10 } = state;
+  state.visited.push(crawlPath);
+  state.counts.directories++;
+  fs10.readdir(crawlPath || ".", readdirOpts, (error, entries = []) => {
+    callback$1(entries, directoryPath, currentDepth);
+    state.queue.dequeue(state.options.suppressErrors ? null : error, state);
+  });
+};
+var walkSync = (state, crawlPath, directoryPath, currentDepth, callback$1) => {
+  const { fs: fs10 } = state;
+  if (currentDepth < 0) return;
+  state.visited.push(crawlPath);
+  state.counts.directories++;
+  let entries = [];
+  try {
+    entries = fs10.readdirSync(crawlPath || ".", readdirOpts);
+  } catch (e) {
+    if (!state.options.suppressErrors) throw e;
+  }
+  callback$1(entries, directoryPath, currentDepth);
+};
+function build(isSynchronous) {
+  return isSynchronous ? walkSync : walkAsync;
+}
+var Queue = class {
+  count = 0;
+  constructor(onQueueEmpty) {
+    this.onQueueEmpty = onQueueEmpty;
+  }
+  enqueue() {
+    this.count++;
+    return this.count;
+  }
+  dequeue(error, output) {
+    if (this.onQueueEmpty && (--this.count <= 0 || error)) {
+      this.onQueueEmpty(error, output);
+      if (error) {
+        output.controller.abort();
+        this.onQueueEmpty = void 0;
       }
-    } else {
-      console.log(`[${timestamp}] [${levelStr}] ${message}`);
+    }
+  }
+};
+var Counter = class {
+  _files = 0;
+  _directories = 0;
+  set files(num) {
+    this._files = num;
+  }
+  get files() {
+    return this._files;
+  }
+  set directories(num) {
+    this._directories = num;
+  }
+  get directories() {
+    return this._directories;
+  }
+  /**
+  * @deprecated use `directories` instead
+  */
+  /* c8 ignore next 3 */
+  get dirs() {
+    return this._directories;
+  }
+};
+var Aborter = class {
+  aborted = false;
+  abort() {
+    this.aborted = true;
+  }
+};
+var Walker = class {
+  root;
+  isSynchronous;
+  state;
+  joinPath;
+  pushDirectory;
+  pushFile;
+  getArray;
+  groupFiles;
+  resolveSymlink;
+  walkDirectory;
+  callbackInvoker;
+  constructor(root, options, callback$1) {
+    this.isSynchronous = !callback$1;
+    this.callbackInvoker = build$1(options, this.isSynchronous);
+    this.root = normalizePath3(root, options);
+    this.state = {
+      root: isRootDirectory(this.root) ? this.root : this.root.slice(0, -1),
+      paths: [""].slice(0, 0),
+      groups: [],
+      counts: new Counter(),
+      options,
+      queue: new Queue((error, state) => this.callbackInvoker(state, error, callback$1)),
+      symlinks: /* @__PURE__ */ new Map(),
+      visited: [""].slice(0, 0),
+      controller: new Aborter(),
+      fs: options.fs || nativeFs
+    };
+    this.joinPath = build$7(this.root, options);
+    this.pushDirectory = build$6(this.root, options);
+    this.pushFile = build$5(options);
+    this.getArray = build$4(options);
+    this.groupFiles = build$3(options);
+    this.resolveSymlink = build$2(options, this.isSynchronous);
+    this.walkDirectory = build(this.isSynchronous);
+  }
+  start() {
+    this.pushDirectory(this.root, this.state.paths, this.state.options.filters);
+    this.walkDirectory(this.state, this.root, this.root, this.state.options.maxDepth, this.walk);
+    return this.isSynchronous ? this.callbackInvoker(this.state, null) : null;
+  }
+  walk = (entries, directoryPath, depth) => {
+    const { paths, options: { filters, resolveSymlinks: resolveSymlinks$1, excludeSymlinks, exclude, maxFiles, signal, useRealPaths, pathSeparator }, controller } = this.state;
+    if (controller.aborted || signal && signal.aborted || maxFiles && paths.length > maxFiles) return;
+    const files = this.getArray(this.state.paths);
+    for (let i = 0; i < entries.length; ++i) {
+      const entry = entries[i];
+      if (entry.isFile() || entry.isSymbolicLink() && !resolveSymlinks$1 && !excludeSymlinks) {
+        const filename = this.joinPath(entry.name, directoryPath);
+        this.pushFile(filename, files, this.state.counts, filters);
+      } else if (entry.isDirectory()) {
+        let path14 = joinDirectoryPath(entry.name, directoryPath, this.state.options.pathSeparator);
+        if (exclude && exclude(entry.name, path14)) continue;
+        this.pushDirectory(path14, paths, filters);
+        this.walkDirectory(this.state, path14, path14, depth - 1, this.walk);
+      } else if (this.resolveSymlink && entry.isSymbolicLink()) {
+        let path14 = joinPathWithBasePath(entry.name, directoryPath);
+        this.resolveSymlink(path14, this.state, (stat3, resolvedPath) => {
+          if (stat3.isDirectory()) {
+            resolvedPath = normalizePath3(resolvedPath, this.state.options);
+            if (exclude && exclude(entry.name, useRealPaths ? resolvedPath : path14 + pathSeparator)) return;
+            this.walkDirectory(this.state, resolvedPath, useRealPaths ? resolvedPath : path14 + pathSeparator, depth - 1, this.walk);
+          } else {
+            resolvedPath = useRealPaths ? resolvedPath : path14;
+            const filename = (0, import_path.basename)(resolvedPath);
+            const directoryPath$1 = normalizePath3((0, import_path.dirname)(resolvedPath), this.state.options);
+            resolvedPath = this.joinPath(filename, directoryPath$1);
+            this.pushFile(resolvedPath, files, this.state.counts, filters);
+          }
+        });
+      }
+    }
+    this.groupFiles(this.state.groups, directoryPath, files);
+  };
+};
+function promise(root, options) {
+  return new Promise((resolve$1, reject) => {
+    callback(root, options, (err, output) => {
+      if (err) return reject(err);
+      resolve$1(output);
+    });
+  });
+}
+function callback(root, options, callback$1) {
+  let walker = new Walker(root, options, callback$1);
+  walker.start();
+}
+function sync(root, options) {
+  const walker = new Walker(root, options);
+  return walker.start();
+}
+var APIBuilder = class {
+  constructor(root, options) {
+    this.root = root;
+    this.options = options;
+  }
+  withPromise() {
+    return promise(this.root, this.options);
+  }
+  withCallback(cb) {
+    callback(this.root, this.options, cb);
+  }
+  sync() {
+    return sync(this.root, this.options);
+  }
+};
+var pm = null;
+try {
+  __require.resolve("picomatch");
+  pm = __require("picomatch");
+} catch {
+}
+var Builder = class {
+  globCache = {};
+  options = {
+    maxDepth: Infinity,
+    suppressErrors: true,
+    pathSeparator: import_path.sep,
+    filters: []
+  };
+  globFunction;
+  constructor(options) {
+    this.options = {
+      ...this.options,
+      ...options
+    };
+    this.globFunction = this.options.globFunction;
+  }
+  group() {
+    this.options.group = true;
+    return this;
+  }
+  withPathSeparator(separator) {
+    this.options.pathSeparator = separator;
+    return this;
+  }
+  withBasePath() {
+    this.options.includeBasePath = true;
+    return this;
+  }
+  withRelativePaths() {
+    this.options.relativePaths = true;
+    return this;
+  }
+  withDirs() {
+    this.options.includeDirs = true;
+    return this;
+  }
+  withMaxDepth(depth) {
+    this.options.maxDepth = depth;
+    return this;
+  }
+  withMaxFiles(limit) {
+    this.options.maxFiles = limit;
+    return this;
+  }
+  withFullPaths() {
+    this.options.resolvePaths = true;
+    this.options.includeBasePath = true;
+    return this;
+  }
+  withErrors() {
+    this.options.suppressErrors = false;
+    return this;
+  }
+  withSymlinks({ resolvePaths = true } = {}) {
+    this.options.resolveSymlinks = true;
+    this.options.useRealPaths = resolvePaths;
+    return this.withFullPaths();
+  }
+  withAbortSignal(signal) {
+    this.options.signal = signal;
+    return this;
+  }
+  normalize() {
+    this.options.normalizePath = true;
+    return this;
+  }
+  filter(predicate) {
+    this.options.filters.push(predicate);
+    return this;
+  }
+  onlyDirs() {
+    this.options.excludeFiles = true;
+    this.options.includeDirs = true;
+    return this;
+  }
+  exclude(predicate) {
+    this.options.exclude = predicate;
+    return this;
+  }
+  onlyCounts() {
+    this.options.onlyCounts = true;
+    return this;
+  }
+  crawl(root) {
+    return new APIBuilder(root || ".", this.options);
+  }
+  withGlobFunction(fn) {
+    this.globFunction = fn;
+    return this;
+  }
+  /**
+  * @deprecated Pass options using the constructor instead:
+  * ```ts
+  * new fdir(options).crawl("/path/to/root");
+  * ```
+  * This method will be removed in v7.0
+  */
+  /* c8 ignore next 4 */
+  crawlWithOptions(root, options) {
+    this.options = {
+      ...this.options,
+      ...options
+    };
+    return new APIBuilder(root || ".", this.options);
+  }
+  glob(...patterns) {
+    if (this.globFunction) return this.globWithOptions(patterns);
+    return this.globWithOptions(patterns, ...[{ dot: true }]);
+  }
+  globWithOptions(patterns, ...options) {
+    const globFn = this.globFunction || pm;
+    if (!globFn) throw new Error("Please specify a glob function to use glob matching.");
+    var isMatch = this.globCache[patterns.join("\0")];
+    if (!isMatch) {
+      isMatch = globFn(patterns, ...options);
+      this.globCache[patterns.join("\0")] = isMatch;
+    }
+    this.options.filters.push((path14) => isMatch(path14));
+    return this;
+  }
+};
+
+// src/search/file-search-service.ts
+var import_picomatch = __toESM(require_picomatch2(), 1);
+var ALWAYS_IGNORED_DIRS = [
+  "node_modules",
+  ".git",
+  "dist",
+  "build",
+  ".next",
+  "coverage",
+  "__pycache__",
+  ".cache",
+  ".turbo",
+  ".parcel-cache",
+  "out",
+  ".svn",
+  ".hg",
+  "vendor",
+  ".venv",
+  "venv",
+  ".tox"
+];
+var ALWAYS_IGNORED_PATTERNS = [
+  "*.pyc",
+  "*.pyo",
+  "*.class",
+  "*.o",
+  "*.obj",
+  "*.swp",
+  "*.swo",
+  "*~",
+  ".DS_Store",
+  "Thumbs.db",
+  "*.log",
+  "*.tmp",
+  "*.lock",
+  "package-lock.json",
+  "yarn.lock",
+  "pnpm-lock.yaml"
+];
+function fuzzyMatch(query, target) {
+  const lowerQuery = query.toLowerCase();
+  const lowerTarget = target.toLowerCase();
+  let queryIdx = 0;
+  let score = 0;
+  let consecutiveMatches = 0;
+  let lastMatchIdx = -1;
+  for (let i = 0; i < lowerTarget.length && queryIdx < lowerQuery.length; i++) {
+    if (lowerTarget[i] === lowerQuery[queryIdx]) {
+      if (lastMatchIdx === i - 1) {
+        consecutiveMatches++;
+        score += consecutiveMatches * 2;
+      } else {
+        consecutiveMatches = 1;
+        score += 1;
+      }
+      if (i === 0 || lowerTarget[i - 1] === "/" || lowerTarget[i - 1] === "-" || lowerTarget[i - 1] === "_" || lowerTarget[i - 1] === ".") {
+        score += 5;
+      }
+      lastMatchIdx = i;
+      queryIdx++;
     }
   }
   return {
-    debug: (message) => log("debug", message),
-    info: (message) => log("info", message),
-    warn: (message) => log("warn", message),
-    error: (message) => log("error", message),
-    log,
-    blank: () => console.log(""),
-    getLevel: () => minLevel
+    match: queryIdx === lowerQuery.length,
+    score
   };
 }
-function createLogCallback(logger) {
-  return (level, message) => logger.log(level, message);
+var FileSearchService = class {
+  indexes = /* @__PURE__ */ new Map();
+  cacheTtl;
+  constructor(options = {}) {
+    this.cacheTtl = options.cacheTtl ?? 5 * 60 * 1e3;
+  }
+  /**
+   * Search for files matching a query.
+   */
+  async search(request) {
+    const { query, cwd, maxResults = 50, includeDirs = false } = request;
+    const { files, freshIndex } = await this.getIndex(cwd, includeDirs);
+    const results = await this.performSearch(files, query, maxResults);
+    return {
+      results,
+      totalIndexed: files.length,
+      freshIndex
+    };
+  }
+  /**
+   * Force refresh index for a working directory.
+   */
+  invalidate(cwd) {
+    for (const key of this.indexes.keys()) {
+      if (key.startsWith(cwd)) {
+        this.indexes.delete(key);
+      }
+    }
+  }
+  // ===========================================================================
+  // Private Methods
+  // ===========================================================================
+  async getIndex(cwd, includeDirs) {
+    const key = `${cwd}:${includeDirs}`;
+    const cached = this.indexes.get(key);
+    if (cached && Date.now() - cached.createdAt < this.cacheTtl) {
+      return { files: cached.files, freshIndex: false };
+    }
+    const files = await this.buildIndex(cwd, includeDirs);
+    this.indexes.set(key, { files, createdAt: Date.now() });
+    return { files, freshIndex: true };
+  }
+  async buildIndex(cwd, includeDirs) {
+    const ignorePatterns = await this.loadIgnorePatterns(cwd);
+    const allIgnorePatterns = [...ALWAYS_IGNORED_PATTERNS, ...ignorePatterns];
+    const isIgnoredFile = (0, import_picomatch.default)(allIgnorePatterns, { dot: true });
+    const ignoredDirSet = new Set(ALWAYS_IGNORED_DIRS);
+    const crawler = new Builder().withRelativePaths().exclude((dirName) => {
+      return ignoredDirSet.has(dirName);
+    });
+    if (includeDirs) {
+      crawler.withDirs();
+    }
+    const allPaths = await crawler.crawl(cwd).withPromise();
+    const filteredFiles = allPaths.filter((filePath) => {
+      const fileName = (0, import_node_path6.basename)(filePath);
+      return !isIgnoredFile(fileName);
+    });
+    return filteredFiles;
+  }
+  async loadIgnorePatterns(cwd) {
+    const patterns = [];
+    try {
+      const gitignorePath = (0, import_node_path6.join)(cwd, ".gitignore");
+      const content = await (0, import_promises2.readFile)(gitignorePath, "utf-8");
+      const lines = content.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
+      patterns.push(...lines);
+    } catch {
+    }
+    return patterns;
+  }
+  async performSearch(files, query, maxResults) {
+    if (!query) {
+      return files.slice().sort((a, b) => a.length - b.length).slice(0, maxResults).map((path14) => ({
+        path: path14,
+        type: this.getType(path14),
+        score: 0
+      }));
+    }
+    if (query.includes("*") || query.includes("?")) {
+      const matcher = (0, import_picomatch.default)(query, { nocase: true, dot: true });
+      return files.filter((f) => matcher(f)).slice(0, maxResults).map((path14) => ({
+        path: path14,
+        type: this.getType(path14),
+        score: 1
+      }));
+    }
+    const results = [];
+    for (const filePath of files) {
+      const { match, score: fuzzyScore } = fuzzyMatch(query, filePath);
+      if (match) {
+        const totalScore = this.calculateScore(filePath, query, fuzzyScore);
+        results.push({ path: filePath, score: totalScore });
+      }
+    }
+    return results.sort((a, b) => b.score - a.score).slice(0, maxResults).map(({ path: path14, score }) => ({
+      path: path14,
+      type: this.getType(path14),
+      score
+    }));
+  }
+  calculateScore(filePath, query, fuzzyScore) {
+    const lowerPath = filePath.toLowerCase();
+    const lowerQuery = query.toLowerCase();
+    const filename = (0, import_node_path6.basename)(filePath).toLowerCase();
+    if (lowerPath === lowerQuery) {
+      return 1e3 + fuzzyScore;
+    }
+    if (filename === lowerQuery) {
+      return 800 + fuzzyScore;
+    }
+    if (filename.startsWith(lowerQuery)) {
+      return 600 + fuzzyScore;
+    }
+    if (lowerPath.includes("/" + lowerQuery) || lowerPath.includes(lowerQuery + "/")) {
+      return 500 + fuzzyScore;
+    }
+    if (lowerPath.includes(lowerQuery)) {
+      return 400 + fuzzyScore;
+    }
+    return fuzzyScore;
+  }
+  getType(filePath) {
+    return filePath.endsWith("/") ? "directory" : "file";
+  }
+};
+
+// src/file-logger.ts
+var import_node_fs3 = require("fs");
+var import_node_path7 = require("path");
+var import_node_os2 = require("os");
+var DEFAULT_LOG_DIR = (0, import_node_path7.join)((0, import_node_os2.homedir)(), ".copilot", "agent-tunnels", "logs");
+var FileLogger = class _FileLogger {
+  filePath;
+  stream;
+  constructor(path14) {
+    this.filePath = path14 ?? _FileLogger.defaultFilePath();
+    (0, import_node_fs3.mkdirSync)((0, import_node_path7.dirname)(this.filePath), { recursive: true });
+    this.stream = (0, import_node_fs3.createWriteStream)(this.filePath, { flags: "a" });
+  }
+  write(level, message) {
+    const ts = (/* @__PURE__ */ new Date()).toISOString();
+    this.stream.write(`[${ts}] [${level.toUpperCase().padEnd(5)}] ${message}
+`);
+  }
+  close() {
+    this.stream.end();
+  }
+  static defaultFilePath() {
+    const ts = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
+    return (0, import_node_path7.join)(DEFAULT_LOG_DIR, `session-${ts}.log`);
+  }
+};
+
+// src/version-check.ts
+var RELEASE_REPO_URL = "https://raw.githubusercontent.com/avanderhoorn/tunnel-proxy-release/main/package.json";
+var UPDATE_COMMAND = "npm install -g github:avanderhoorn/tunnel-proxy-release";
+var RED = "\x1B[31m";
+var GREEN = "\x1B[32m";
+var YELLOW = "\x1B[33m";
+var DIM = "\x1B[2m";
+var RESET = "\x1B[0m";
+var BOLD = "\x1B[1m";
+function parseSemVer(version) {
+  const [major, minor, patch] = version.split(".").map(Number);
+  return { major, minor, patch };
+}
+function compareSemVer(a, b) {
+  if (a.major !== b.major) return a.major - b.major;
+  if (a.minor !== b.minor) return a.minor - b.minor;
+  return a.patch - b.patch;
+}
+async function fetchLatestVersion() {
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5e3);
+    const response = await fetch(RELEASE_REPO_URL, {
+      signal: controller.signal
+    });
+    clearTimeout(timeout);
+    if (!response.ok) return null;
+    const pkg = await response.json();
+    return pkg.version;
+  } catch {
+    return null;
+  }
+}
+async function checkForUpdates() {
+  if (CURRENT_VERSION.startsWith("__")) return;
+  const latestVersion = await fetchLatestVersion();
+  if (!latestVersion) return;
+  const current = parseSemVer(CURRENT_VERSION);
+  const latest = parseSemVer(latestVersion);
+  if (compareSemVer(current, latest) < 0) {
+    console.log(
+      `  ${BOLD}${YELLOW}Update available:${RESET} ${RED}${CURRENT_VERSION}${RESET} \u2192 ${GREEN}${latestVersion}${RESET}`
+    );
+    console.log(`  ${DIM}Run: ${UPDATE_COMMAND}${RESET}`);
+    console.log();
+  }
 }
 
-// src/banner.ts
+// src/cli.ts
 var GREEN2 = "\x1B[32m";
 var CYAN = "\x1B[36m";
 var MAGENTA = "\x1B[35m";
@@ -66740,242 +70400,264 @@ function printBanner() {
   const titleLine = `${MAGENTA}${BOLD2}GitHub Copilot Tunnel Host${RESET2}  ${DIM2}${version}${RESET2}`;
   const descLine = `${DIM2}Making your sessions available online.${RESET2}`;
   const urlLine = `${DIM2}See ${RESET2}${CYAN}${url}${RESET2}`;
-  const line1 = `  ${iconL1}`;
-  const line2 = `  ${iconL2}  ${titleLine}`;
-  const line3 = `  ${iconL3}  ${descLine}`;
-  const line4 = `   ${iconL4}   ${urlLine}`;
   console.log();
-  console.log(line1);
-  console.log(line2);
-  console.log(line3);
-  console.log(line4);
+  console.log(`  ${iconL1}`);
+  console.log(`  ${iconL2}  ${titleLine}`);
+  console.log(`  ${iconL3}  ${descLine}`);
+  console.log(`   ${iconL4}   ${urlLine}`);
   console.log();
 }
-
-// src/sdk-proxy.ts
-var GITHUB_CLIENT_ID2 = "Iv1.e7b89e013f801f03";
-var GITHUB_TOKEN_URL2 = "https://github.com/login/oauth/access_token";
-var program2 = new Command();
-program2.name("remote-sdk-host").description("Host a Remote SDK session via Dev Tunnels").version(CURRENT_VERSION).option("-d, --debug", "Enable verbose debug logging").option("-p, --port <number>", "Port for local SDK connection", "0").action(runHost);
-program2.command("logout").description("Clear stored GitHub credentials").action(runLogout);
-var tunnelCmd = program2.command("tunnel").description("Manage stored tunnel configuration").action(runTunnelInfo);
-tunnelCmd.command("clear").description("Clear stored tunnel configuration").action(runTunnelClear);
-tunnelCmd.command("regenerate").option("-d, --debug", "Enable verbose debug logging").option("-p, --port <number>", "Port for local SDK connection", "0").description("Clear stored tunnel and create a fresh one").action(runTunnelRegenerate);
-program2.parse();
+var GITHUB_CLIENT_ID = "Iv1.e7b89e013f801f03";
+var GITHUB_SCOPES = "read:user,read:org";
+var TUNNEL_LABEL = "copilot-tunnel-session";
+function formatTimestamp() {
+  const now = /* @__PURE__ */ new Date();
+  const h = String(now.getHours()).padStart(2, "0");
+  const m = String(now.getMinutes()).padStart(2, "0");
+  const s = String(now.getSeconds()).padStart(2, "0");
+  return `${h}:${m}:${s}`;
+}
+function createLog2(debug2, fileLogger) {
+  return (level, message) => {
+    const shouldConsole = level !== "debug" || debug2;
+    const ts = formatTimestamp();
+    const lvl = level.toUpperCase().padEnd(5);
+    const lines = message.includes("\n") ? message.split("\n") : [message];
+    for (const line of lines) {
+      const formatted = `[${ts}] [${lvl}] ${line}`;
+      if (shouldConsole) console.log(formatted);
+      fileLogger?.write(level, line);
+    }
+  };
+}
 async function runHost(options) {
+  const debug2 = options.debug ?? false;
+  let fileLogger;
+  if (options.logFile !== void 0) {
+    const path14 = typeof options.logFile === "string" ? options.logFile : void 0;
+    fileLogger = new FileLogger(path14);
+  }
+  const log = createLog2(debug2, fileLogger);
   printBanner();
   checkForUpdates().catch(() => {
   });
-  const logLevel = options.debug ? "debug" : "info";
-  const port = parseInt(options.port || "0", 10);
-  const logger = createLogger2({ level: logLevel });
-  const logCallback = createLogCallback(logger);
-  const proxyHost = new JsonRpcProxyHost({
-    cliPath: "copilot",
-    cwd: process.cwd(),
-    cliLogLevel: "info",
-    logLevel,
-    onLog: logCallback
-  });
-  const tunnelAdapter = createTunnelHostAdapter({
-    port,
-    logLevel,
-    onLog: logCallback,
-    onStatusChange: (status) => {
+  if (fileLogger) {
+    console.log(`  Log file: ${fileLogger.filePath}`);
+    console.log("");
+  }
+  const tokenStorage = new KeychainTokenStorage();
+  const authGateway = new DirectAuthGateway();
+  const tokenVerifier = new DirectTokenVerifier();
+  const tunnelGateway = new MgmtApiTunnelGateway();
+  const tunnelConfigStore = new FileTunnelConfigStore();
+  const tokenManager = new TokenManager({
+    storage: tokenStorage,
+    gateway: authGateway,
+    clientId: GITHUB_CLIENT_ID,
+    scopes: GITHUB_SCOPES,
+    tokenVerifier,
+    onDiagnostic: (msg) => log("debug", `[auth] ${msg}`),
+    onAuthRequired: (info) => {
+      console.log("");
+      console.log(`  To sign in, open: ${info.verificationUri}`);
+      console.log(`  Enter code:       ${info.userCode}`);
+      console.log("");
     },
-    onAuth: (message, uri, userCode) => {
-      logger.blank();
-      logger.info("=== GitHub Authentication ===");
-      logger.info(`Visit: ${uri}`);
-      logger.info(`Enter code: ${userCode}`);
-      logger.blank();
-    }
-  });
-  tunnelAdapter.onClientConnected((stream, clientId) => {
-    logger.info(`Client connected: ${clientId}`);
-    proxyHost.handleClient(stream, clientId).catch((error) => {
-      logger.error(`Error handling client ${clientId}: ${error}`);
-    });
-  });
-  tunnelAdapter.onClientDisconnected((clientId) => {
-    proxyHost.handleClientDisconnect(clientId);
-  });
-  logger.debug("Starting tunnel...");
-  let tunnelInfo;
-  try {
-    tunnelInfo = await tunnelAdapter.start();
-  } catch (error) {
-    logger.error(`Failed to start tunnel: ${error}`);
-    process.exit(1);
-  }
-  if (tunnelInfo.username) {
-    logger.info(`Using stored credentials (${tunnelInfo.username})`);
-    logger.info("To switch accounts, run: remote-sdk-host logout");
-  }
-  logger.blank();
-  logger.info("=== Tunnel Ready ===");
-  logger.info(`Tunnel ID: ${tunnelInfo.tunnelId}`);
-  logger.info(`Cluster:   ${tunnelInfo.clusterId}`);
-  logger.info(`Port:      ${tunnelInfo.port}`);
-  logger.blank();
-  let isShuttingDown = false;
-  const shutdown = async () => {
-    if (isShuttingDown) return;
-    isShuttingDown = true;
-    logger.blank();
-    logger.info("Shutting down...");
-    const ignoreShutdownErrors = (err) => {
-      if (err.message?.includes("stream was destroyed") || err.message?.includes("ERR_STREAM_DESTROYED")) {
-        return;
+    onTokenUpdated: async (tokenData) => {
+      if (!tokenData.username) {
+        try {
+          const result = await tokenVerifier.verifyToken(tokenData.accessToken);
+          if (result.valid && result.username) {
+            tokenData.username = result.username;
+            await tokenStorage.save(tokenData);
+          }
+        } catch {
+        }
       }
-      logger.warn(`Shutdown error: ${err.message}`);
-    };
-    process.on("uncaughtException", ignoreShutdownErrors);
-    process.on("unhandledRejection", ignoreShutdownErrors);
-    try {
-      await proxyHost.stop();
-    } catch {
     }
-    try {
-      await tunnelAdapter.stop();
-    } catch {
+  });
+  const tunnelResolver = new TunnelResolver({
+    gateway: tunnelGateway,
+    configStore: tunnelConfigStore,
+    label: TUNNEL_LABEL
+  });
+  const connectivityMonitor = new NodeConnectivityMonitor();
+  connectivityMonitor.start();
+  const hostRelay = new HostRelay({
+    tokenProvider: async () => {
+      const result = await tokenManager.getValidToken();
+      if (result.success) return result.accessToken;
+      if (result.error.type === "refresh_token_invalid" || result.error.type === "refresh_token_expired") {
+        throw new AuthRequiredError(
+          result.error.type === "refresh_token_expired" ? "Refresh token expired" : "Refresh token invalid"
+        );
+      }
+      return null;
+    },
+    connectivityMonitor,
+    onLog: log
+  });
+  const tunnelHost = new TunnelHost({
+    tokenManager,
+    tunnelResolver,
+    hostRelay,
+    preferredPort: options.port,
+    onLog: log
+  });
+  const tokenResolver = new DefaultCopilotTokenResolver();
+  const githubToken = await tokenResolver.resolve();
+  if (githubToken) {
+    log("info", "Copilot SDK using resolved GitHub token");
+  } else {
+    log("info", "Copilot SDK will handle authentication");
+  }
+  const gitService = new GitService({
+    createProvider: (gitRoot) => new DiskGitProvider(gitRoot, gitRoot),
+    onLog: log
+  });
+  const services = {
+    copilot: new CopilotService({
+      createClient: (cwd) => new SdkCopilotClient({
+        cwd,
+        logLevel: debug2 ? "debug" : "error",
+        githubToken,
+        env: {
+          COPILOT_SWE_AGENT_UNIFIED_TASK_TOOL: "true",
+          COPILOT_SWE_AGENT_BACKGROUND_AGENTS: "true"
+        }
+      }),
+      onLog: log
+    }),
+    fileSystem: new FileSystemService({
+      createProvider: (cwd) => new DiskFileSystemProvider(cwd),
+      onLog: log
+    }),
+    git: gitService,
+    skills: new SkillService({ onLog: log }),
+    fileSearch: new FileSearchService()
+  };
+  const router = new MethodRouter();
+  registerAllHandlers(router);
+  log("debug", `Registered ${router.methods().length} RPC methods`);
+  const app = new ApplicationHost({ tunnelHost, services, router, onLog: log });
+  process.on("uncaughtException", (err) => {
+    if (err.message?.includes("stream was destroyed") || err.message?.includes("ERR_STREAM_DESTROYED")) {
+      log("warn", `Stream error (suppressed): ${err.message}`);
+      return;
     }
+    throw err;
+  });
+  let stopping = false;
+  const shutdown = async () => {
+    if (stopping) return;
+    stopping = true;
+    console.log("\nShutting down...");
+    connectivityMonitor.stop();
+    await app.stop();
+    fileLogger?.close();
     process.exit(0);
   };
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
-}
-async function runLogout() {
+  const storedToken = await tokenStorage.load();
+  if (storedToken) {
+    try {
+      const verification = await tokenVerifier.verifyToken(storedToken.accessToken);
+      if (verification.valid && verification.username) {
+        log("info", `Signed in as ${verification.username}`);
+      }
+    } catch {
+    }
+  }
   try {
-    await clearTokenData();
-    console.log("Credentials cleared.");
-  } catch (error) {
-    console.error(`Failed to clear credentials: ${error}`);
+    const info = await app.start();
+    log("info", "=== Tunnel Ready ===");
+    log("info", `Tunnel ID: ${info.tunnelId}`);
+    log("info", `Cluster:   ${info.clusterId}`);
+    log("info", `Port:      ${info.port}`);
+  } catch (err) {
+    console.error(`Failed to start: ${err}`);
     process.exit(1);
   }
 }
-async function runTunnelInfo() {
-  const configPath = getConfigPath();
-  console.log(`Config file: ${configPath}`);
-  console.log();
-  try {
-    const config = await loadTunnelConfig();
+function createCli() {
+  const program3 = new Command();
+  const version = CURRENT_VERSION.startsWith("__") ? "0.0.0-dev" : CURRENT_VERSION;
+  program3.name("remote-sdk-host").description("Copilot tunnel host \u2014 exposes Copilot SDK over Dev Tunnels").version(version, "-v, --version").option("-d, --debug", "Enable debug logging").option("-p, --port <number>", "TCP port to listen on", parseInt).option("-l, --log-file [path]", "Log all output to file (default: ~/.copilot/agent-tunnels/logs/)").action(async (options) => {
+    await runHost(options);
+  });
+  program3.command("logout").description("Clear stored credentials").action(async () => {
+    const storage = new KeychainTokenStorage();
+    await storage.clear();
+    console.log("Credentials cleared.");
+  });
+  program3.command("tunnel").description("Show stored tunnel configuration").action(async () => {
+    const store = new FileTunnelConfigStore();
+    const config = store.load();
+    console.log(`Config file: ${store.filePath}`);
+    console.log("");
     if (config) {
       console.log("Stored tunnel configuration:");
       console.log(`  Tunnel ID: ${config.tunnelId}`);
       console.log(`  Cluster:   ${config.clusterId}`);
-      console.log(`  Created:   ${config.createdAt}`);
+      console.log(`  Saved:     ${config.savedAt}`);
     } else {
-      console.log("No stored tunnel configuration.");
+      console.log("No tunnel configuration stored.");
     }
-  } catch (error) {
-    console.error(`Failed to read tunnel config: ${error}`);
-    process.exit(1);
-  }
-}
-async function refreshAccessToken(refreshToken) {
-  const response = await fetch(GITHUB_TOKEN_URL2, {
-    method: "POST",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      client_id: GITHUB_CLIENT_ID2,
-      refresh_token: refreshToken,
-      grant_type: "refresh_token"
-    })
   });
-  if (!response.ok) {
-    throw new Error(`Failed to refresh token: ${response.statusText}`);
-  }
-  const token = await response.json();
-  if (token.error) {
-    throw new Error(`Token refresh error: ${token.error_description || token.error}`);
-  }
-  if (!token.access_token) {
-    throw new Error("Token refresh failed: no access token in response");
-  }
-  const now = Date.now();
-  return {
-    accessToken: token.access_token,
-    refreshToken: token.refresh_token || refreshToken,
-    expiresAt: now + (token.expires_in || 28800) * 1e3,
-    refreshExpiresAt: now + (token.refresh_token_expires_in || 15638400) * 1e3
-  };
-}
-async function getValidToken() {
-  let tokenData = await loadTokenData();
-  if (!tokenData) {
-    return null;
-  }
-  const now = Date.now();
-  const accessTokenExpired = tokenData.expiresAt < now + 5 * 60 * 1e3;
-  const refreshTokenExpired = tokenData.refreshExpiresAt < now + 5 * 60 * 1e3;
-  if (!accessTokenExpired) {
-    return tokenData.accessToken;
-  }
-  if (accessTokenExpired && !refreshTokenExpired && tokenData.refreshToken) {
-    try {
-      const oldUsername = tokenData.username;
-      tokenData = await refreshAccessToken(tokenData.refreshToken);
-      tokenData.username = oldUsername;
-      await saveTokenData(tokenData);
-      return tokenData.accessToken;
-    } catch {
-      return null;
-    }
-  }
-  return null;
-}
-async function runTunnelClear() {
-  try {
-    const githubToken = await getValidToken();
-    if (githubToken) {
-      console.log("Deleting tunnels from server...");
-      const managementClient = new import_dev_tunnels_management2.TunnelManagementHttpClient(
-        "RemoteSdkBridge/1.0",
-        import_dev_tunnels_management2.ManagementApiVersions.Version20230927preview,
-        () => Promise.resolve(`github ${githubToken}`)
-      );
-      const tunnels = await managementClient.listTunnels(
-        void 0,
-        // global search
-        void 0,
-        // default domain
-        { labels: [TUNNEL_LABEL] }
-      );
-      if (tunnels.length > 0) {
+  program3.command("tunnel:clear").description("Delete tunnels from server and clear stored configuration").action(async () => {
+    const store = new FileTunnelConfigStore();
+    const tokenStorage = new KeychainTokenStorage();
+    const authGateway = new DirectAuthGateway();
+    const tunnelGateway = new MgmtApiTunnelGateway();
+    const tokenManager = new TokenManager({
+      storage: tokenStorage,
+      gateway: authGateway,
+      clientId: GITHUB_CLIENT_ID,
+      scopes: GITHUB_SCOPES
+    });
+    const result = await tokenManager.getValidToken();
+    if (result.success) {
+      try {
+        const tunnels = await tunnelGateway.listByLabel(TUNNEL_LABEL, result.accessToken);
         for (const tunnel of tunnels) {
-          console.log(`  Deleting tunnel ${tunnel.tunnelId}...`);
-          await managementClient.deleteTunnel(tunnel);
+          console.log(`Deleting tunnel ${tunnel.tunnelId}...`);
+          await tunnelGateway.deleteTunnel(tunnel, result.accessToken);
         }
-        console.log(`Deleted ${tunnels.length} tunnel(s) from server.`);
-      } else {
-        console.log("No tunnels found with label.");
+        if (tunnels.length > 0) {
+          console.log(`Deleted ${tunnels.length} tunnel(s) from server.`);
+        } else {
+          console.log("No tunnels found on server.");
+        }
+      } catch (err) {
+        console.log(`Could not delete remote tunnels: ${err instanceof Error ? err.message : err}`);
       }
     } else {
-      console.log("No valid credentials found - only clearing local config.");
-      console.log("(Run the host first to authenticate if you want to delete remote tunnels.)");
+      console.log("No valid credentials \u2014 skipping remote tunnel deletion.");
     }
-    await clearTunnelConfig();
+    store.clear();
     console.log("Local tunnel configuration cleared.");
-  } catch (error) {
-    console.error(`Failed to clear tunnel config: ${error}`);
-    process.exit(1);
-  }
-}
-async function runTunnelRegenerate(options) {
-  try {
-    await clearTunnelConfig();
+  });
+  program3.command("tunnel:regenerate").description("Clear stored tunnel and start fresh").option("-d, --debug", "Enable debug logging").option("-p, --port <number>", "TCP port to listen on", parseInt).option("-l, --log-file [path]", "Log all output to file").action(async (options) => {
+    const store = new FileTunnelConfigStore();
+    store.clear();
     console.log("Cleared stored tunnel configuration.");
-    console.log();
-  } catch (error) {
-    console.error(`Failed to clear tunnel config: ${error}`);
-    process.exit(1);
-  }
-  await runHost(options);
+    console.log("");
+    await runHost(options);
+  });
+  return program3;
 }
+var isMainModule = process.argv[1]?.endsWith("cli.js") || process.argv[1]?.endsWith("cli.ts");
+if (isMainModule) {
+  createCli().parseAsync(process.argv);
+}
+
+// src/sdk-proxy.ts
+var program2 = createCli();
+program2.parseAsync(process.argv).catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
 /*! Bundled license information:
 
 mime-db/index.js:
