@@ -1,1 +1,64 @@
-IyBSZW1vdGUgU0RLIEhvc3QKCkhvc3QgYXBwbGljYXRpb24gdGhhdCBleHBvc2VzIHRoZSBHaXRIdWIgQ29waWxvdCBTREsgb3ZlciBNaWNyb3NvZnQgRGV2IFR1bm5lbHMsIGVuYWJsaW5nIGJyb3dzZXItYmFzZWQgY2xpZW50cyB0byBpbnRlcmFjdCB3aXRoIENvcGlsb3QuCgojIyBJbnN0YWxsYXRpb24KCmBgYGJhc2gKbnBtIGluc3RhbGwgLWcgZ2l0aHViOmF2YW5kZXJob29ybi90dW5uZWwtcHJveHktcmVsZWFzZQpgYGAKCioqUHJlcmVxdWlzaXRlczoqKgotIE5vZGUuanMgMjArCi0gKipMaW51eDoqKiBgbGlic2VjcmV0LTEtMGAgKHJlcXVpcmVkIGJ5IHRoZSBba2V5dGFyXShodHRwczovL2dpdGh1Yi5jb20vYXRvbS9ub2RlLWtleXRhcikgZGVwZW5kZW5jeSBmb3Igc2VjdXJlIGNyZWRlbnRpYWwgc3RvcmFnZSkKCiAgT24gVWJ1bnR1L0RlYmlhbjoKICBgYGBiYXNoCiAgc3VkbyBhcHQtZ2V0IGluc3RhbGwgLXkgbGlic2VjcmV0LTEtMAogIGBgYAoKICBPbiBtYWNPUyBhbmQgV2luZG93cywgdGhlIG5hdGl2ZSBrZXljaGFpbiBpcyB1c2VkIGFuZCBubyBleHRyYSBkZXBlbmRlbmNpZXMgYXJlIG5lZWRlZC4KCiMjIFVzYWdlCgpTdGFydCB0aGUgaG9zdDoKCmBgYGJhc2gKcmVtb3RlLXNkay1ob3N0CmBgYAoKT24gZmlyc3QgcnVuLCB5b3UnbGwgYmUgcHJvbXB0ZWQgdG8gYXV0aGVudGljYXRlIHdpdGggR2l0SHViIHZpYSBkZXZpY2UgZmxvdy4gVGhlIHR1bm5lbCBJRCBhbmQgY2x1c3RlciB3aWxsIGJlIGRpc3BsYXllZCDigJQgdXNlIHRoZXNlIHRvIGNvbm5lY3QgZnJvbSB0aGUgd2ViIGNsaWVudC4KCiMjIyBDb21tYW5kcwoKYGBgYmFzaApyZW1vdGUtc2RrLWhvc3QgICAgICAgICAgICAgICMgU3RhcnQgdGhlIHR1bm5lbCBob3N0CnJlbW90ZS1zZGstaG9zdCBsb2dvdXQgICAgICAgIyBDbGVhciBzdG9yZWQgR2l0SHViIGNyZWRlbnRpYWxzCnJlbW90ZS1zZGstaG9zdCB0dW5uZWwgICAgICAgIyBTaG93IHN0b3JlZCB0dW5uZWwgY29uZmlndXJhdGlvbgpyZW1vdGUtc2RrLWhvc3QgdHVubmVsIGNsZWFyICMgQ2xlYXIgc3RvcmVkIHR1bm5lbCBjb25maWd1cmF0aW9uCmBgYAoKIyMjIE9wdGlvbnMKCmBgYGJhc2gKLWQsIC0tZGVidWcgICAgRW5hYmxlIHZlcmJvc2UgZGVidWcgbG9nZ2luZwotcCwgLS1wb3J0ICAgICBQb3J0IGZvciBsb2NhbCBTREsgY29ubmVjdGlvbiAoZGVmYXVsdDogYXV0bykKLVYsIC0tdmVyc2lvbiAgU2hvdyB2ZXJzaW9uIG51bWJlcgotaCwgLS1oZWxwICAgICBTaG93IGhlbHAKYGBgCgojIyBXZWIgQ2xpZW50CgpDb25uZWN0IHRvIHlvdXIgcnVubmluZyBob3N0IHVzaW5nIHRoZSB3ZWIgY2xpZW50OgoKKipodHRwczovL2doLmlvL2NvcGlsb3QtdHVubmVsKioKCkVudGVyIHRoZSB0dW5uZWwgSUQgYW5kIGNsdXN0ZXIgZGlzcGxheWVkIGJ5IHRoZSBob3N0IHRvIGVzdGFibGlzaCBhIGNvbm5lY3Rpb24uCgojIyBVcGRhdGluZwoKVG8gdXBkYXRlIHRvIHRoZSBsYXRlc3QgdmVyc2lvbjoKCmBgYGJhc2gKbnBtIGluc3RhbGwgLWcgZ2l0aHViOmF2YW5kZXJob29ybi90dW5uZWwtcHJveHktcmVsZWFzZQpgYGAK
+# Remote SDK Host
+
+Host application that exposes the GitHub Copilot SDK over Microsoft Dev Tunnels, enabling browser-based clients to interact with Copilot.
+
+## Installation
+
+```bash
+npm install -g github:avanderhoorn/tunnel-proxy-release
+```
+
+**Prerequisites:**
+- Node.js 20+
+- **Linux:** `libsecret-1-0` (required by the [keytar](https://github.com/atom/node-keytar) dependency for secure credential storage)
+
+  On Ubuntu/Debian:
+  ```bash
+  sudo apt-get install -y libsecret-1-0
+  ```
+
+  On macOS and Windows, the native keychain is used and no extra dependencies are needed.
+
+## Usage
+
+Start the host:
+
+```bash
+remote-sdk-host
+```
+
+On first run, you'll be prompted to authenticate with GitHub via device flow. The tunnel ID and cluster will be displayed — use these to connect from the web client.
+
+### Commands
+
+```bash
+remote-sdk-host              # Start the tunnel host
+remote-sdk-host logout       # Clear stored GitHub credentials
+remote-sdk-host tunnel       # Show stored tunnel configuration
+remote-sdk-host tunnel clear # Clear stored tunnel configuration
+```
+
+### Options
+
+```bash
+-d, --debug    Enable verbose debug logging
+-p, --port     Port for local SDK connection (default: auto)
+-V, --version  Show version number
+-h, --help     Show help
+```
+
+## Web Client
+
+Connect to your running host using the web client:
+
+**https://gh.io/copilot-tunnel**
+
+Enter the tunnel ID and cluster displayed by the host to establish a connection.
+
+## Updating
+
+To update to the latest version:
+
+```bash
+npm install -g github:avanderhoorn/tunnel-proxy-release
+```
