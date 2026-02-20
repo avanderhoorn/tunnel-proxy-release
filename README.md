@@ -17,7 +17,7 @@ npm install -g github:avanderhoorn/tunnel-proxy-release
   sudo apt-get install -y libsecret-1-0
   ```
 
-  On macOS and Windows, the native keychain is used and no extra dependencies are needed.
+  On macOS, the native keychain is used and no extra dependencies are needed.
 
 ## Usage
 
