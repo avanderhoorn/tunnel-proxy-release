@@ -53071,7 +53071,16 @@ var TunnelResolver = class {
     }
     const tunnels = await this.gateway.listByLabel(this.label, token);
     if (tunnels.length === 0) return null;
-    return { tunnel: pickNewest(tunnels) };
+    const tunnel = pickNewest(tunnels);
+    if (tunnel.hostConnectionCount > 0 && tunnel.ports.length === 0) {
+      const enriched = await this.gateway.getTunnel(
+        tunnel.tunnelId,
+        tunnel.clusterId,
+        token
+      );
+      if (enriched) return enriched;
+    }
+    return { tunnel };
   }
   validateHostConnected(tunnel) {
     if (tunnel.hostConnectionCount === 0) {
@@ -54940,34 +54949,6 @@ var ApplicationHost = class {
   }
 };
 
-// src/session/discover-cwd.ts
-var import_promises = require("fs/promises");
-var import_node_path = require("path");
-var import_node_os = require("os");
-async function discoverSessionCwd(sessionId) {
-  const sessionDir = (0, import_node_path.join)((0, import_node_os.homedir)(), ".copilot", "session-state", sessionId);
-  try {
-    const yaml = await (0, import_promises.readFile)((0, import_node_path.join)(sessionDir, "workspace.yaml"), "utf-8");
-    const match = yaml.match(/^cwd:\s*(.+)$/m);
-    if (match) {
-      return match[1].trim();
-    }
-  } catch {
-  }
-  try {
-    const content = await (0, import_promises.readFile)((0, import_node_path.join)(sessionDir, "events.jsonl"), "utf-8");
-    const firstLine = content.slice(0, content.indexOf("\n"));
-    if (firstLine.startsWith('{"type":"session.start"')) {
-      const cwdMatch = firstLine.match(/"cwd":"([^"]+)"/);
-      if (cwdMatch) {
-        return cwdMatch[1];
-      }
-    }
-  } catch {
-  }
-  return void 0;
-}
-
 // src/handlers/session.ts
 async function buildBridgedConfig(ctx, cwd, params) {
   let skillDirectories = params.skillDirectories;
@@ -55043,7 +55024,7 @@ var resumeSession = async (params, context) => {
     ctx.log?.("info", `[${ctx.clientLabel}] session.resume: already tracked, returning`);
     return { sessionId: p.sessionId };
   }
-  const cwd = p.cwd || ctx.session.getCwdForSession(p.sessionId) || await discoverSessionCwd(p.sessionId) || process.cwd();
+  const cwd = p.cwd || ctx.session.getCwdForSession(p.sessionId) || process.cwd();
   ctx.log?.("info", `[${ctx.clientLabel}] session.resume: resolved cwd=${cwd}`);
   const client = await ctx.services.copilot.retain(cwd);
   try {
@@ -55173,16 +55154,13 @@ var listSessions = async (params, context) => {
     }
     ctx.log?.("info", `[${ctx.clientLabel}] session.list: calling client.listSessions()...`);
     const sdkSessions = await client.listSessions();
-    const results = await Promise.allSettled(
-      sdkSessions.map(async (meta) => {
-        const trackedCwd = ctx.session.getCwdForSession(meta.sessionId);
-        const metaCwd = meta.cwd ?? meta.context?.cwd;
-        const cwd2 = trackedCwd ?? metaCwd ?? await discoverSessionCwd(meta.sessionId);
-        ctx.log?.("debug", `[${ctx.clientLabel}] session.list: session ${meta.sessionId} trackedCwd=${trackedCwd} meta.cwd=${meta.cwd} context.cwd=${meta.context?.cwd} resolved=${cwd2}`);
-        return { ...meta, cwd: cwd2 };
-      })
-    );
-    const enriched = results.filter((r) => r.status === "fulfilled").map((r) => r.value);
+    const enriched = sdkSessions.map((meta) => {
+      const trackedCwd = ctx.session.getCwdForSession(meta.sessionId);
+      const cwd2 = trackedCwd ?? meta.context?.cwd ?? meta.cwd;
+      const branch = meta.context?.branch ?? null;
+      ctx.log?.("debug", `[${ctx.clientLabel}] session.list: session ${meta.sessionId} trackedCwd=${trackedCwd} meta.cwd=${meta.cwd} context.cwd=${meta.context?.cwd} branch=${branch} resolved=${cwd2}`);
+      return { ...meta, cwd: cwd2, branch };
+    });
     ctx.log?.("info", `[${ctx.clientLabel}] session.list: returning ${enriched.length} enriched session(s)`);
     return { sessions: enriched };
   } catch (err) {
@@ -55228,13 +55206,13 @@ var sessionHandlers = {
 };
 
 // src/handlers/filesystem.ts
-var import_node_path2 = require("path");
+var import_node_path = require("path");
 function getCtx(context) {
   return context;
 }
 function safePath(cwd, filePath) {
-  const base = (0, import_node_path2.resolve)(cwd);
-  const resolved = (0, import_node_path2.resolve)(cwd, filePath);
+  const base = (0, import_node_path.resolve)(cwd);
+  const resolved = (0, import_node_path.resolve)(cwd, filePath);
   if (resolved !== base && !resolved.startsWith(base + "/")) {
     throw new Error("Path traversal blocked: path escapes working directory");
   }
@@ -55626,6 +55604,61 @@ var gitPerFileDiffStats = async (params, context) => {
     ctx.services.git.release(result.gitRoot);
   }
 };
+var gitBatchBranch = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwds) throw new Error("Missing cwds parameter");
+  const branches = {};
+  const results = await Promise.allSettled(
+    p.cwds.map(async (cwd) => {
+      let result;
+      try {
+        result = await ctx.services.git.retain(cwd);
+      } catch {
+        return { cwd, branch: null };
+      }
+      try {
+        const branch = await result.provider.getCurrentBranch();
+        return { cwd, branch };
+      } finally {
+        ctx.services.git.release(result.gitRoot);
+      }
+    })
+  );
+  for (const r of results) {
+    if (r.status === "fulfilled") {
+      branches[r.value.cwd] = r.value.branch;
+    }
+  }
+  return { branches };
+};
+var defaultBranchCache = /* @__PURE__ */ new Map();
+var gitDefaultBranch = async (params, context) => {
+  const ctx = getCtx2(context);
+  const p = params;
+  if (!p?.cwd) throw new Error("Missing cwd parameter");
+  let result;
+  try {
+    result = await ctx.services.git.retain(p.cwd);
+  } catch {
+    return { defaultBranch: null };
+  }
+  try {
+    const cached = defaultBranchCache.get(result.gitRoot);
+    if (cached !== void 0) {
+      return { defaultBranch: cached };
+    }
+    const tracked = await result.provider.getTrackedBranches();
+    const baseName = tracked.base?.name ?? null;
+    const defaultBranch = baseName ? baseName.replace(/^[^/]+\//, "") : null;
+    if (defaultBranch) {
+      defaultBranchCache.set(result.gitRoot, defaultBranch);
+    }
+    return { defaultBranch };
+  } finally {
+    ctx.services.git.release(result.gitRoot);
+  }
+};
 var gitFindRoot = async (params, context) => {
   const ctx = getCtx2(context);
   const p = params;
@@ -55819,6 +55852,8 @@ var gitHandlers = {
   status: gitStatus,
   fileStatus: gitFileStatus,
   branch: gitBranch,
+  batchBranch: gitBatchBranch,
+  defaultBranch: gitDefaultBranch,
   branches: gitBranches,
   fileDiff: gitFileDiff,
   fileAtRef: gitFileAtRef,
@@ -55843,7 +55878,7 @@ var gitHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.5.5";
+var CURRENT_VERSION = "0.6.0";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
@@ -56243,7 +56278,7 @@ function tryGhCliToken() {
 var import_node_child_process2 = require("child_process");
 var import_node_fs = require("fs");
 var import_node_net = require("net");
-var import_node_path3 = require("path");
+var import_node_path2 = require("path");
 var import_node_url = require("url");
 var import_node = __toESM(require_node3(), 1);
 
@@ -56695,7 +56730,7 @@ function toJsonSchema(parameters) {
 function getBundledCliPath() {
   const sdkUrl = __bundled_import_meta_resolve("@github/copilot/sdk");
   const sdkPath = (0, import_node_url.fileURLToPath)(sdkUrl);
-  return (0, import_node_path3.join)((0, import_node_path3.dirname)((0, import_node_path3.dirname)(sdkPath)), "index.js");
+  return (0, import_node_path2.join)((0, import_node_path2.dirname)((0, import_node_path2.dirname)(sdkPath)), "index.js");
 }
 var CopilotClient = class {
   cliProcess = null;
@@ -58342,7 +58377,7 @@ var GitIgnoreCache = new GitIgnoreCacheImpl();
 // src/fs/parcel-file-watcher.ts
 var import_watcher = __toESM(require("@parcel/watcher"), 1);
 var import_node_fs2 = __toESM(require("fs"), 1);
-var import_node_path4 = __toESM(require("path"), 1);
+var import_node_path3 = __toESM(require("path"), 1);
 var DEFAULT_IGNORED_PATTERNS = [
   "**/node_modules/**",
   "**/.git/**",
@@ -58382,13 +58417,13 @@ var RenameDetector = class {
     }, this.correlationWindow);
   }
   matchCreateWithDelete(newPath) {
-    const newDirNormalized = this.normalizePath(import_node_path4.default.dirname(newPath));
+    const newDirNormalized = this.normalizePath(import_node_path3.default.dirname(newPath));
     const newPathNormalized = this.normalizePath(newPath);
     const now = Date.now();
     for (const [oldPathNormalized, entry] of this.pendingDeletes.entries()) {
       if (now - entry.timestamp > this.correlationWindow) continue;
       const oldDirNormalized = this.normalizePath(
-        import_node_path4.default.dirname(entry.originalPath)
+        import_node_path3.default.dirname(entry.originalPath)
       );
       if (oldDirNormalized !== newDirNormalized) continue;
       if (oldPathNormalized === newPathNormalized) continue;
@@ -58398,13 +58433,13 @@ var RenameDetector = class {
     return null;
   }
   matchDeleteWithCreate(oldPath) {
-    const oldDirNormalized = this.normalizePath(import_node_path4.default.dirname(oldPath));
+    const oldDirNormalized = this.normalizePath(import_node_path3.default.dirname(oldPath));
     const oldPathNormalized = this.normalizePath(oldPath);
     const now = Date.now();
     for (const [newPathNormalized, entry] of this.pendingCreates.entries()) {
       if (now - entry.timestamp > this.correlationWindow) continue;
       const newDirNormalized = this.normalizePath(
-        import_node_path4.default.dirname(entry.originalPath)
+        import_node_path3.default.dirname(entry.originalPath)
       );
       if (newDirNormalized !== oldDirNormalized) continue;
       if (oldPathNormalized === newPathNormalized) continue;
@@ -58441,7 +58476,7 @@ var ParcelFileWatcher = class {
     try {
       this.realPath = import_node_fs2.default.realpathSync(watchPath);
     } catch {
-      this.realPath = import_node_path4.default.resolve(watchPath);
+      this.realPath = import_node_path3.default.resolve(watchPath);
     }
   }
   async watch() {
@@ -59159,7 +59194,7 @@ var import_file_exists = __toESM(require_dist(), 1);
 var import_debug = __toESM(require_src(), 1);
 var import_child_process = require("child_process");
 var import_promise_deferred = __toESM(require_dist2(), 1);
-var import_node_path5 = require("path");
+var import_node_path4 = require("path");
 var import_promise_deferred2 = __toESM(require_dist2(), 1);
 var import_node_events = require("events");
 var __defProp2 = Object.defineProperty;
@@ -62467,7 +62502,7 @@ var init_branch = __esm({
 });
 function toPath(input) {
   const path14 = input.trim().replace(/^["']|["']$/g, "");
-  return path14 && (0, import_node_path5.normalize)(path14);
+  return path14 && (0, import_node_path4.normalize)(path14);
 }
 var parseCheckIgnore;
 var init_CheckIgnore = __esm({
@@ -69673,8 +69708,8 @@ User arguments: ${args}` : skill.content;
 };
 
 // src/search/file-search-service.ts
-var import_promises2 = require("fs/promises");
-var import_node_path6 = require("path");
+var import_promises = require("fs/promises");
+var import_node_path5 = require("path");
 
 // ../../node_modules/fdir/dist/index.mjs
 var import_module = require("module");
@@ -70307,7 +70342,7 @@ var FileSearchService = class {
     }
     const allPaths = await crawler.crawl(cwd).withPromise();
     const filteredFiles = allPaths.filter((filePath) => {
-      const fileName = (0, import_node_path6.basename)(filePath);
+      const fileName = (0, import_node_path5.basename)(filePath);
       return !isIgnoredFile(fileName);
     });
     return filteredFiles;
@@ -70315,8 +70350,8 @@ var FileSearchService = class {
   async loadIgnorePatterns(cwd) {
     const patterns = [];
     try {
-      const gitignorePath = (0, import_node_path6.join)(cwd, ".gitignore");
-      const content = await (0, import_promises2.readFile)(gitignorePath, "utf-8");
+      const gitignorePath = (0, import_node_path5.join)(cwd, ".gitignore");
+      const content = await (0, import_promises.readFile)(gitignorePath, "utf-8");
       const lines = content.split("\n").map((line) => line.trim()).filter((line) => line && !line.startsWith("#"));
       patterns.push(...lines);
     } catch {
@@ -70356,7 +70391,7 @@ var FileSearchService = class {
   calculateScore(filePath, query, fuzzyScore) {
     const lowerPath = filePath.toLowerCase();
     const lowerQuery = query.toLowerCase();
-    const filename = (0, import_node_path6.basename)(filePath).toLowerCase();
+    const filename = (0, import_node_path5.basename)(filePath).toLowerCase();
     if (lowerPath === lowerQuery) {
       return 1e3 + fuzzyScore;
     }
@@ -70381,15 +70416,15 @@ var FileSearchService = class {
 
 // src/file-logger.ts
 var import_node_fs3 = require("fs");
-var import_node_path7 = require("path");
-var import_node_os2 = require("os");
-var DEFAULT_LOG_DIR = (0, import_node_path7.join)((0, import_node_os2.homedir)(), ".copilot", "agent-tunnels", "logs");
+var import_node_path6 = require("path");
+var import_node_os = require("os");
+var DEFAULT_LOG_DIR = (0, import_node_path6.join)((0, import_node_os.homedir)(), ".copilot", "agent-tunnels", "logs");
 var FileLogger = class _FileLogger {
   filePath;
   stream;
   constructor(path14) {
     this.filePath = path14 ?? _FileLogger.defaultFilePath();
-    (0, import_node_fs3.mkdirSync)((0, import_node_path7.dirname)(this.filePath), { recursive: true });
+    (0, import_node_fs3.mkdirSync)((0, import_node_path6.dirname)(this.filePath), { recursive: true });
     this.stream = (0, import_node_fs3.createWriteStream)(this.filePath, { flags: "a" });
   }
   write(level, message) {
@@ -70402,7 +70437,7 @@ var FileLogger = class _FileLogger {
   }
   static defaultFilePath() {
     const ts = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
-    return (0, import_node_path7.join)(DEFAULT_LOG_DIR, `session-${ts}.log`);
+    return (0, import_node_path6.join)(DEFAULT_LOG_DIR, `session-${ts}.log`);
   }
 };
 
