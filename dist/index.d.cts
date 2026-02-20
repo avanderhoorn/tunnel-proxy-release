@@ -170,6 +170,12 @@ declare class HostRelay {
     onClientStream(handler: (stream: ByteStream, clientId: string) => void): Disposable;
     onClientDisconnected(handler: (clientId: string) => void): Disposable;
     onRelayStatusChanged(handler: (status: ConnectionStatus, context?: string) => void): Disposable;
+    /**
+     * Request that the relay force a reconnection cycle.
+     * Used by TunnelHost when post-reconnect operations (e.g., port
+     * re-registration) fail and require a fresh relay connection.
+     */
+    requestReconnect(context: string): void;
     private createServer;
     private connectWithTimeout;
     private wireHostEvents;
@@ -2262,6 +2268,8 @@ declare class TunnelHost {
     private registeredPort;
     /** Tracks whether the initial relay connection has been established. */
     private initialConnectDone;
+    /** Consecutive re-registration failures — circuit breaker for reconnect loops. */
+    private reRegistrationAttempts;
     private readonly _clientConnected;
     private readonly _clientDisconnected;
     private readonly _statusChanged;

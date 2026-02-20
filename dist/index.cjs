@@ -53067,6 +53067,23 @@ var TunnelResolver = class {
     };
   }
   /**
+   * Look up an existing tunnel without client-side validation (host-side).
+   *
+   * Like findTunnel(), but does NOT validate hostConnectionCount or ports.
+   * Used by the host for port re-registration after reconnect, where the host
+   * IS the host and the management API may not yet reflect the new connection.
+   *
+   * @throws {TunnelNotFoundError} if no tunnel can be found
+   */
+  async lookupTunnel(token) {
+    const result = await this.resolve(token);
+    if (!result) {
+      throw new TunnelNotFoundError();
+    }
+    this.saveConfig(result.tunnel);
+    return result.tunnel;
+  }
+  /**
    * Find or create a tunnel (host-side).
    *
    * Tries stored config, then label discovery, then creates a new one.
@@ -54017,6 +54034,14 @@ var HostRelay = class {
   }
   onRelayStatusChanged(handler) {
     return this._relayStatusChanged.on(handler);
+  }
+  /**
+   * Request that the relay force a reconnection cycle.
+   * Used by TunnelHost when post-reconnect operations (e.g., port
+   * re-registration) fail and require a fresh relay connection.
+   */
+  requestReconnect(context) {
+    this.connectionGuard?.forceReconnecting(context);
   }
   // ---------------------------------------------------------------------------
   // Private: TCP Server
@@ -62902,7 +62927,7 @@ var gitHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.5.4";
+var CURRENT_VERSION = "0.5.5";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
@@ -68389,6 +68414,7 @@ var FileSearchService = class {
 };
 
 // src/tunnel-host.ts
+var MAX_RE_REGISTRATION_ATTEMPTS = 3;
 var TunnelHost = class {
   tokenManager;
   tunnelResolver;
@@ -68404,6 +68430,8 @@ var TunnelHost = class {
   registeredPort = null;
   /** Tracks whether the initial relay connection has been established. */
   initialConnectDone = false;
+  /** Consecutive re-registration failures — circuit breaker for reconnect loops. */
+  reRegistrationAttempts = 0;
   _clientConnected = createEventSource();
   _clientDisconnected = createEventSource();
   _statusChanged = createEventSource();
@@ -68445,6 +68473,7 @@ var TunnelHost = class {
     }
   }
   async stop() {
+    this.reRegistrationAttempts = 0;
     for (const [, session] of this.sessions) {
       session.close();
     }
@@ -68489,6 +68518,9 @@ var TunnelHost = class {
     );
     this.subscriptions.push(
       this.hostRelay.onRelayStatusChanged((status, context) => {
+        if (status === "reconnecting" && context !== "port_registration_failed") {
+          this.reRegistrationAttempts = 0;
+        }
         if (status === "connected" && this.registeredTunnelId) {
           if (!this.initialConnectDone) {
             this.initialConnectDone = true;
@@ -68504,22 +68536,39 @@ var TunnelHost = class {
   }
   async reRegisterPort() {
     if (!this.registeredTunnelId || !this.registeredPort) return;
-    this.log("info", "Re-registering port after relay reconnect");
+    this.reRegistrationAttempts++;
+    const attempt = this.reRegistrationAttempts;
+    this.log("info", `Re-registering port after relay reconnect (attempt ${attempt}/${MAX_RE_REGISTRATION_ATTEMPTS})`);
     try {
-      const resolved = await this.tokenManager.withAuth(
-        (token) => this.tunnelResolver.findTunnel(token)
+      const tunnel = await this.tokenManager.withAuth(
+        (token) => this.tunnelResolver.lookupTunnel(token)
       );
       await this.tokenManager.withAuth(
-        (token) => this.tunnelResolver.registerPort(resolved.tunnel, this.registeredPort, token)
+        (token) => this.tunnelResolver.registerPort(tunnel, this.registeredPort, token)
       );
-      this.log("info", "Port re-registration successful");
+      this.log("info", `Port re-registration successful (attempt ${attempt})`);
+      this.reRegistrationAttempts = 0;
     } catch (err) {
       if (err instanceof TunnelNotFoundError) {
-        this.log("error", "Tunnel no longer exists \u2014 emitting fatal disconnect");
+        this.reRegistrationAttempts = 0;
+        this.log("error", "Tunnel was deleted \u2014 unable to re-register port (the tunnel service provider may be having issues). Restart the host to create a new tunnel.");
         this._statusChanged.fire("disconnected", "fatal: tunnel_deleted");
         return;
       }
-      throw err;
+      if (err instanceof AuthRequiredError) {
+        this.reRegistrationAttempts = 0;
+        this.log("error", "Authentication expired \u2014 unable to re-register port. Restart the host to re-authenticate.");
+        this._statusChanged.fire("disconnected", "fatal: auth_expired");
+        return;
+      }
+      if (attempt >= MAX_RE_REGISTRATION_ATTEMPTS) {
+        this.reRegistrationAttempts = 0;
+        this.log("error", `Failed to re-register port after ${MAX_RE_REGISTRATION_ATTEMPTS} attempts (${err.message}). The tunnel API may be unreachable. Restart the host to reconnect.`);
+        this._statusChanged.fire("disconnected", "fatal: port_registration_exhausted");
+        return;
+      }
+      this.log("warn", `Port re-registration attempt ${attempt}/${MAX_RE_REGISTRATION_ATTEMPTS} failed: ${err.message} \u2014 requesting reconnect`);
+      this.hostRelay.requestReconnect("port_registration_failed");
     }
   }
 };
