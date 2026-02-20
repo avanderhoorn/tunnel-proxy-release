@@ -19,6 +19,30 @@ npm install -g github:avanderhoorn/tunnel-proxy-release
 
   On macOS, the native keychain is used and no extra dependencies are needed.
 
+### Codespaces / Dev Containers
+
+Running in a container (e.g. GitHub Codespaces) requires additional setup because there is no D-Bus session bus or secret service available by default.
+
+1. Install dependencies:
+
+   ```bash
+   sudo apt-get install -y libsecret-1-0 dbus gnome-keyring
+   ```
+
+2. Generate a machine ID and start the D-Bus system daemon:
+
+   ```bash
+   sudo bash -c 'dbus-uuidgen > /etc/machine-id'
+   sudo mkdir -p /run/dbus
+   sudo dbus-daemon --system --fork
+   ```
+
+3. Run `remote-sdk-host` inside a D-Bus session with an unlocked keyring:
+
+   ```bash
+   dbus-run-session -- bash -c 'echo "" | gnome-keyring-daemon --unlock && remote-sdk-host'
+   ```
+
 ## Usage
 
 Start the host:
@@ -26,6 +50,8 @@ Start the host:
 ```bash
 remote-sdk-host
 ```
+
+> **Note:** In Codespaces/containers, use the `dbus-run-session` wrapper shown above instead.
 
 On first run, you'll be prompted to authenticate with GitHub via device flow. The tunnel ID and cluster will be displayed — use these to connect from the web client.
 
