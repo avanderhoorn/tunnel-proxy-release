@@ -54477,11 +54477,13 @@ var MethodRouter = class {
 var CallbackChannel = class {
   send;
   _notify;
+  log;
   disposed = false;
   pending = /* @__PURE__ */ new Set();
   constructor(config) {
     this.send = config.send;
     this._notify = config.notify;
+    this.log = config.log;
   }
   /**
    * Send a request to the tunnel client and await a response.
@@ -54493,20 +54495,26 @@ var CallbackChannel = class {
     }
     let timer;
     let entry;
+    this.log?.("debug", `[CallbackChannel] request \u2192 ${method}`);
     try {
       const result = await Promise.race([
         this.send(method, params).then((res) => {
+          this.log?.("debug", `[CallbackChannel] response \u2190 ${method}`);
           return res;
         }),
         new Promise((_, reject) => {
           entry = { reject };
           this.pending.add(entry);
           timer = setTimeout(() => {
+            this.log?.("warn", `[CallbackChannel] timeout: ${method} (${timeoutMs}ms)`);
             reject(new Error(`Callback timeout: ${method} (${timeoutMs}ms)`));
           }, timeoutMs);
         })
       ]);
       return result;
+    } catch (err) {
+      this.log?.("warn", `[CallbackChannel] error in ${method}: ${err.message}`);
+      throw err;
     } finally {
       if (timer) clearTimeout(timer);
       if (entry) this.pending.delete(entry);
@@ -54518,6 +54526,7 @@ var CallbackChannel = class {
    */
   notify(method, params) {
     if (this.disposed || !this._notify) return;
+    this.log?.("debug", `[CallbackChannel] notify \u2192 ${method}`);
     this._notify(method, params);
   }
   /** Reject all in-flight requests and prevent new ones. */
@@ -62070,7 +62079,12 @@ async function buildBridgedConfig(ctx, cwd, params) {
 }
 function subscribeSessionEvents(ctx, session, sessionId) {
   if (typeof session.on !== "function") return void 0;
+  ctx.log?.("info", `[${ctx.clientLabel}] subscribeSessionEvents: listening on ${sessionId}`);
   return session.on((event) => {
+    const e = event;
+    const eventType = e?.type ?? "unknown";
+    const toolCallId = e?.data?.toolCallId;
+    ctx.log?.("debug", `[${ctx.clientLabel}] session.event ${sessionId}: type=${eventType}${toolCallId ? ` toolCallId=${toolCallId}` : ""}`);
     ctx.callbacks.notify("session.event", { sessionId, event });
   });
 }
@@ -62098,10 +62112,13 @@ var resumeSession = async (params, context) => {
   const ctx = context;
   const p = params;
   if (!p.sessionId) throw new Error("session.resume requires sessionId");
+  ctx.log?.("info", `[${ctx.clientLabel}] session.resume: sessionId=${p.sessionId}, cwd=${p.cwd ?? "auto"}`);
   if (ctx.session.getSessionForId(p.sessionId)) {
+    ctx.log?.("info", `[${ctx.clientLabel}] session.resume: already tracked, returning`);
     return { sessionId: p.sessionId };
   }
   const cwd = p.cwd || ctx.session.getCwdForSession(p.sessionId) || await discoverSessionCwd(p.sessionId) || process.cwd();
+  ctx.log?.("info", `[${ctx.clientLabel}] session.resume: resolved cwd=${cwd}`);
   const client = await ctx.services.copilot.retain(cwd);
   try {
     if (!client.resumeSession) {
@@ -62110,12 +62127,15 @@ var resumeSession = async (params, context) => {
     const config = await buildBridgedConfig(ctx, cwd, p);
     delete config.sessionId;
     delete config.cwd;
+    ctx.log?.("info", `[${ctx.clientLabel}] session.resume: calling SDK resumeSession, configKeys=${Object.keys(config).join(",")}`);
     const session = await client.resumeSession(p.sessionId, config);
     const sessionId = session.sessionId ?? session.id ?? p.sessionId;
+    ctx.log?.("info", `[${ctx.clientLabel}] session.resume: SDK returned sessionId=${sessionId}`);
     const unsubscribeEvents = subscribeSessionEvents(ctx, session, sessionId);
     ctx.session.trackSession(sessionId, cwd, client, session, unsubscribeEvents);
     return { sessionId };
   } catch (err) {
+    ctx.log?.("warn", `[${ctx.clientLabel}] session.resume: failed: ${err.message}`);
     ctx.services.copilot.release(cwd);
     throw err;
   }
@@ -62882,7 +62902,7 @@ var gitHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.5.3";
+var CURRENT_VERSION = "0.5.4";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
@@ -68601,7 +68621,8 @@ var ApplicationHost = class {
     const subscriptions = new SubscriptionSet();
     const callbacks = new CallbackChannel({
       send: (method, params) => clientSession.request(method, params),
-      notify: (method, params) => clientSession.notify(method, params)
+      notify: (method, params) => clientSession.notify(method, params),
+      log: this.log
     });
     const disposables = [];
     const clientState = {

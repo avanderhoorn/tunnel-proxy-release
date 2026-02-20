@@ -1525,6 +1525,8 @@ interface CallbackChannelConfig {
     send: (method: string, params: unknown) => Promise<unknown>;
     /** Function to send a fire-and-forget notification (e.g. ClientSession.notify()). */
     notify?: (method: string, params: unknown) => void;
+    /** Optional logger for debugging callback flow. */
+    log?: (level: string, message: string) => void;
 }
 /**
  * Manages host-initiated requests to the tunnel client.
@@ -1536,6 +1538,7 @@ interface CallbackChannelConfig {
 declare class CallbackChannel {
     private readonly send;
     private readonly _notify?;
+    private readonly log?;
     private disposed;
     private readonly pending;
     constructor(config: CallbackChannelConfig);
