@@ -52645,7 +52645,10 @@ var SocketByteStream = class {
   }
   write(data) {
     if (!this.socket.destroyed) {
-      this.socket.write(data);
+      try {
+        this.socket.write(data);
+      } catch {
+      }
     }
   }
   onData(handler) {
@@ -53808,6 +53811,7 @@ var ConnectionGuard = class {
       if (this._status === "disconnected") {
         this.setStatus("connecting");
       } else if (this._status === "connected") {
+        this._settlingAfterRecovery = false;
         this.clearUptimeTimer();
         if (this._disconnectedSince === null) {
           this._disconnectedSince = Date.now();
@@ -54688,9 +54692,13 @@ var EventEmitter = class {
 // src/copilot/copilot-service.ts
 var CopilotService = class {
   pool;
+  lifecycleHandlers = [];
+  clientUnsubs = /* @__PURE__ */ new Map();
   constructor(config) {
     const log = config.onLog;
     const MAX_ATTEMPTS = 3;
+    const lifecycleHandlers = this.lifecycleHandlers;
+    const clientUnsubs = this.clientUnsubs;
     const factory = {
       async create(cwd) {
         let lastError;
@@ -54702,6 +54710,12 @@ var CopilotService = class {
             const state = client.getState();
             log?.("debug", `[copilot] CopilotClient started (state=${state})`);
             await client.ping();
+            if (client.on) {
+              const unsub = client.on((event) => {
+                for (const h of [...lifecycleHandlers]) h(event);
+              });
+              clientUnsubs.set(client, unsub);
+            }
             return client;
           } catch (err) {
             lastError = err;
@@ -54718,6 +54732,11 @@ var CopilotService = class {
         throw lastError ?? new Error("CopilotClient failed to start");
       },
       async destroy(client) {
+        const unsub = clientUnsubs.get(client);
+        if (unsub) {
+          unsub();
+          clientUnsubs.delete(client);
+        }
         await client.stop();
       },
       isHealthy(client) {
@@ -54742,8 +54761,21 @@ var CopilotService = class {
   get(cwd) {
     return this.pool.get(cwd);
   }
+  /**
+   * Subscribe to lifecycle events from ALL pooled CopilotClients.
+   * Events are forwarded as each client emits them — no extra retain is held.
+   * Returns an unsubscribe function.
+   */
+  onLifecycleEvent(handler) {
+    this.lifecycleHandlers.push(handler);
+    return () => {
+      const idx = this.lifecycleHandlers.indexOf(handler);
+      if (idx >= 0) this.lifecycleHandlers.splice(idx, 1);
+    };
+  }
   /** Stop all clients immediately. */
   async dispose() {
+    this.lifecycleHandlers.length = 0;
     return this.pool.dispose();
   }
 };
@@ -61968,43 +62000,58 @@ function deserializeGitStatus(serialized) {
 var SessionTracker = class {
   sessions = /* @__PURE__ */ new Map();
   copilotService;
+  sessionEventBroker;
+  clientId;
+  callbacks;
   log;
   constructor(config) {
     this.copilotService = config.copilotService;
+    this.sessionEventBroker = config.sessionEventBroker;
+    this.clientId = config.clientId;
+    this.callbacks = config.callbacks;
     this.log = config.onLog ?? (() => {
     });
   }
   /**
    * Track a new session. Called after session.create / session.resume.
    */
-  trackSession(sessionId, cwd, client, session, unsubscribeEvents) {
+  trackSession(sessionId, cwd, client, session) {
     if (this.sessions.has(sessionId)) {
       this.log("warn", `Session ${sessionId} already tracked, replacing`);
       this.untrackSession(sessionId);
     }
-    this.sessions.set(sessionId, { sessionId, cwd, client, session, unsubscribeEvents });
+    this.sessions.set(sessionId, { sessionId, cwd, client, session });
+    this.sessionEventBroker.register(sessionId, this.clientId, session, this.callbacks);
     this.log("info", `Tracking session ${sessionId} (cwd: ${cwd})`);
   }
   /**
-   * Stop tracking a session. Unsubscribes events but does NOT destroy
-   * the session or release the CopilotClient — that's the handler's job.
+   * Stop tracking a session. Unregisters from the event broker but does
+   * NOT destroy the session or release the CopilotClient — that's the
+   * handler's job.
    */
   untrackSession(sessionId) {
     const entry = this.sessions.get(sessionId);
     if (!entry) return;
-    if (entry.unsubscribeEvents) {
-      entry.unsubscribeEvents();
-    }
+    this.sessionEventBroker.unregister(sessionId, this.clientId);
     this.sessions.delete(sessionId);
     this.log("info", `Untracked session ${sessionId}`);
+  }
+  /** Check if this client is tracking a session (without resolving the object). */
+  isTracking(sessionId) {
+    return this.sessions.has(sessionId);
   }
   /** Get the CopilotClient for a session. */
   getClientForSession(sessionId) {
     return this.sessions.get(sessionId)?.client;
   }
-  /** Get the CopilotSession for a session. */
+  /**
+   * Get the CopilotSession for a session.
+   *
+   * Prefers the broker's session object — it has the latest instance when
+   * another client resumed the same session on a shared CopilotClient.
+   */
   getSessionForId(sessionId) {
-    return this.sessions.get(sessionId)?.session;
+    return this.sessionEventBroker.getSession(sessionId) ?? this.sessions.get(sessionId)?.session;
   }
   /** Get the cwd for a session. */
   getCwdForSession(sessionId) {
@@ -62027,12 +62074,7 @@ var SessionTracker = class {
     const entries = Array.from(this.sessions.values());
     this.sessions.clear();
     for (const entry of entries) {
-      if (entry.unsubscribeEvents) {
-        try {
-          entry.unsubscribeEvents();
-        } catch {
-        }
-      }
+      this.sessionEventBroker.unregister(entry.sessionId, this.clientId);
       try {
         await entry.session.destroy();
       } catch (err) {
@@ -62078,21 +62120,13 @@ async function buildBridgedConfig(ctx, cwd, params) {
     onPermissionRequest: async (req) => {
       return ctx.callbacks.request("permission.request", req, 6e4);
     },
-    onUserInputRequest: async (req) => {
-      return ctx.callbacks.request("userInput.request", req, 6e4);
+    onUserInputRequest: async (req, invocation) => {
+      return ctx.callbacks.request("userInput.request", {
+        ...req,
+        sessionId: invocation?.sessionId
+      }, 6e4);
     }
   };
-}
-function subscribeSessionEvents(ctx, session, sessionId) {
-  if (typeof session.on !== "function") return void 0;
-  ctx.log?.("info", `[${ctx.clientLabel}] subscribeSessionEvents: listening on ${sessionId}`);
-  return session.on((event) => {
-    const e = event;
-    const eventType = e?.type ?? "unknown";
-    const toolCallId = e?.data?.toolCallId;
-    ctx.log?.("debug", `[${ctx.clientLabel}] session.event ${sessionId}: type=${eventType}${toolCallId ? ` toolCallId=${toolCallId}` : ""}`);
-    ctx.callbacks.notify("session.event", { sessionId, event });
-  });
 }
 var createSession = async (params, context) => {
   const ctx = context;
@@ -62100,14 +62134,14 @@ var createSession = async (params, context) => {
   const cwd = p.cwd;
   if (!cwd) throw new Error("session.create requires cwd");
   ctx.log?.("info", `[${ctx.clientLabel}] session.create: cwd=${cwd}, model=${JSON.stringify(p.model)}, paramKeys=${Object.keys(p).join(",")}`);
+  ctx.log?.("info", `[${ctx.clientLabel}] session.create: process.cwd()=${process.cwd()}, session cwd=${cwd}, sameClient=${process.cwd() === cwd}`);
   const client = await ctx.services.copilot.retain(cwd);
   try {
     const config = await buildBridgedConfig(ctx, cwd, p);
     ctx.log?.("info", `[${ctx.clientLabel}] session.create: calling SDK createSession, configKeys=${Object.keys(config).join(",")}, model=${JSON.stringify(config.model)}`);
     const session = await client.createSession(config);
     const sessionId = session.sessionId ?? session.id ?? `session-${Date.now()}`;
-    const unsubscribeEvents = subscribeSessionEvents(ctx, session, sessionId);
-    ctx.session.trackSession(sessionId, cwd, client, session, unsubscribeEvents);
+    ctx.session.trackSession(sessionId, cwd, client, session);
     return { sessionId };
   } catch (err) {
     ctx.services.copilot.release(cwd);
@@ -62119,7 +62153,7 @@ var resumeSession = async (params, context) => {
   const p = params;
   if (!p.sessionId) throw new Error("session.resume requires sessionId");
   ctx.log?.("info", `[${ctx.clientLabel}] session.resume: sessionId=${p.sessionId}, cwd=${p.cwd ?? "auto"}`);
-  if (ctx.session.getSessionForId(p.sessionId)) {
+  if (ctx.session.isTracking(p.sessionId)) {
     ctx.log?.("info", `[${ctx.clientLabel}] session.resume: already tracked, returning`);
     return { sessionId: p.sessionId };
   }
@@ -62137,8 +62171,7 @@ var resumeSession = async (params, context) => {
     const session = await client.resumeSession(p.sessionId, config);
     const sessionId = session.sessionId ?? session.id ?? p.sessionId;
     ctx.log?.("info", `[${ctx.clientLabel}] session.resume: SDK returned sessionId=${sessionId}`);
-    const unsubscribeEvents = subscribeSessionEvents(ctx, session, sessionId);
-    ctx.session.trackSession(sessionId, cwd, client, session, unsubscribeEvents);
+    ctx.session.trackSession(sessionId, cwd, client, session);
     return { sessionId };
   } catch (err) {
     ctx.log?.("warn", `[${ctx.clientLabel}] session.resume: failed: ${err.message}`);
@@ -62257,8 +62290,9 @@ var listSessions = async (params, context) => {
       const trackedCwd = ctx.session.getCwdForSession(meta.sessionId);
       const cwd2 = trackedCwd ?? meta.context?.cwd ?? meta.cwd;
       const branch = meta.context?.branch ?? null;
-      ctx.log?.("debug", `[${ctx.clientLabel}] session.list: session ${meta.sessionId} trackedCwd=${trackedCwd} meta.cwd=${meta.cwd} context.cwd=${meta.context?.cwd} branch=${branch} resolved=${cwd2}`);
-      return { ...meta, cwd: cwd2, branch };
+      const isProcessing = ctx.services.sessionEventBroker.isProcessing(meta.sessionId);
+      ctx.log?.("debug", `[${ctx.clientLabel}] session.list: session ${meta.sessionId} trackedCwd=${trackedCwd} meta.cwd=${meta.cwd} context.cwd=${meta.context?.cwd} branch=${branch} resolved=${cwd2} isProcessing=${isProcessing}`);
+      return { ...meta, cwd: cwd2, branch, isProcessing };
     });
     ctx.log?.("info", `[${ctx.clientLabel}] session.list: returning ${enriched.length} enriched session(s)`);
     return { sessions: enriched };
@@ -62962,7 +62996,7 @@ var gitHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.6.0";
+var CURRENT_VERSION = "0.6.1";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
@@ -68610,9 +68644,10 @@ var TunnelHost = class {
 
 // src/infra/lifecycle-throttle.ts
 var LifecycleThrottle = class {
-  constructor(flush, windowMs = 1e3) {
+  constructor(flush, windowMs = 1e3, onLog) {
     this.flush = flush;
     this.windowMs = windowMs;
+    this.onLog = onLog;
   }
   pending = /* @__PURE__ */ new Map();
   disposed = false;
@@ -68628,6 +68663,7 @@ var LifecycleThrottle = class {
       const entry = this.pending.get(key);
       if (entry) {
         this.pending.delete(key);
+        this.onLog?.("info", `[lifecycle-throttle] Flushing: ${entry.event.type} sessionId=${entry.event.sessionId}`);
         this.flush(entry.event);
       }
     }, this.windowMs);
@@ -68672,6 +68708,24 @@ var ApplicationHost = class {
         this.handleClientDisconnected(clientId);
       })
     );
+    this.hostDisposables.push(
+      this.services.sessionEventBroker.onProcessingChange((sessionId, isProcessing) => {
+        let cwd;
+        for (const [, state] of this.clients) {
+          cwd = state.session.getCwdForSession(sessionId);
+          if (cwd) break;
+        }
+        this.log("info", `[ApplicationHost] Broadcasting session.processing: ${sessionId} isProcessing=${isProcessing} to ${this.clients.size} client(s)`);
+        for (const [, clientState] of this.clients) {
+          clientState.callbacks.notify("session.lifecycle", {
+            type: "session.processing",
+            sessionId,
+            isProcessing,
+            ...cwd ? { cwd } : {}
+          });
+        }
+      })
+    );
     this._tunnelInfo = await this.tunnelHost.start();
     this.log("info", `Tunnel started: ${this._tunnelInfo.tunnelId}`);
     return this._tunnelInfo;
@@ -68685,6 +68739,7 @@ var ApplicationHost = class {
       d.dispose();
     }
     this.hostDisposables.length = 0;
+    this.services.sessionEventBroker.dispose();
     await this.services.copilot.dispose();
     await this.services.fileSystem.dispose();
     await this.services.git.dispose();
@@ -68698,15 +68753,18 @@ var ApplicationHost = class {
   handleClientConnected(clientSession) {
     const clientId = clientSession.clientId;
     this.log("info", `Client connected: ${clientId}`);
-    const sessionTracker = new SessionTracker({
-      copilotService: this.services.copilot,
-      onLog: this.log
-    });
     const subscriptions = new SubscriptionSet();
     const callbacks = new CallbackChannel({
       send: (method, params) => clientSession.request(method, params),
       notify: (method, params) => clientSession.notify(method, params),
       log: this.log
+    });
+    const sessionTracker = new SessionTracker({
+      copilotService: this.services.copilot,
+      sessionEventBroker: this.services.sessionEventBroker,
+      clientId,
+      callbacks,
+      onLog: this.log
     });
     const disposables = [];
     const clientState = {
@@ -68742,7 +68800,13 @@ var ApplicationHost = class {
         }
       })
     );
-    this.wireLifecycleEvents(callbacks, disposables, this.services.copilot);
+    this.wireLifecycleEvents(callbacks, disposables, this.services.copilot, (sessionId) => {
+      for (const [, state] of this.clients) {
+        const cwd = state.session.getCwdForSession(sessionId);
+        if (cwd) return cwd;
+      }
+      return void 0;
+    });
     this.clients.set(clientId, clientState);
   }
   handleClientDisconnected(clientId) {
@@ -68763,75 +68827,44 @@ var ApplicationHost = class {
     this.log("info", `Client identified: ${label}${version} (${clientId})`);
   }
   /**
-   * Subscribe to lifecycle events on the first retained CopilotClient and
-   * forward them (throttled) to the tunnel client via callbacks.notify.
-   *
-   * Deduplication: only one CopilotClient carries the lifecycle subscription
-   * per tunnel client. If the subscribed client's cwd is fully released,
-   * the subscription migrates to another active client in the pool.
+   * Subscribe to lifecycle events from ALL pooled CopilotClients and forward
+   * them (throttled) to this tunnel client. Also retains a dedicated client
+   * for process.cwd() so events are generated even when no sessions are active.
    */
-  wireLifecycleEvents(callbacks, disposables, copilotService) {
+  wireLifecycleEvents(callbacks, disposables, copilotService, lookupSessionCwd) {
     const throttle = new LifecycleThrottle((event) => {
-      callbacks.notify("session.lifecycle", event);
-    });
+      const cwd2 = lookupSessionCwd?.(event.sessionId);
+      const enriched = cwd2 ? { ...event, cwd: cwd2 } : event;
+      this.log("info", `[lifecycle] Notifying client: ${enriched.type} sessionId=${enriched.sessionId} cwd=${cwd2 ?? "unknown"}`);
+      callbacks.notify("session.lifecycle", enriched);
+    }, 1e3, (level, msg) => this.log(level, msg));
     disposables.push({ dispose: () => throttle.dispose() });
-    let lifecycleUnsub = null;
-    let subscribedCwd = null;
     let disposed = false;
-    const cwdRefCounts = /* @__PURE__ */ new Map();
-    const subscribe = (client, cwd) => {
+    const unsubLifecycle = copilotService.onLifecycleEvent((event) => {
       if (disposed) return;
-      if (client.on) {
-        lifecycleUnsub = client.on((event) => throttle.push(event));
-        subscribedCwd = cwd;
-        this.log("debug", `Lifecycle subscription attached to CopilotClient (cwd: ${cwd})`);
+      this.log("info", `[lifecycle] SDK event received: ${event.type} sessionId=${event.sessionId}`);
+      throttle.push(event);
+    });
+    let dedicatedCwd = null;
+    const cwd = process.cwd();
+    this.log("info", `[lifecycle] Retaining dedicated CopilotClient for lifecycle events (cwd: ${cwd})`);
+    copilotService.retain(cwd).then(() => {
+      if (disposed) {
+        copilotService.release(cwd);
+        return;
       }
-    };
-    const unsubscribe = () => {
-      if (lifecycleUnsub) {
-        lifecycleUnsub();
-        lifecycleUnsub = null;
-      }
-      subscribedCwd = null;
-    };
-    const originalRetain = copilotService.retain.bind(copilotService);
-    const wrappedRetain = async (cwd) => {
-      const client = await originalRetain(cwd);
-      cwdRefCounts.set(cwd, (cwdRefCounts.get(cwd) ?? 0) + 1);
-      if (!lifecycleUnsub) {
-        subscribe(client, cwd);
-      }
-      return client;
-    };
-    copilotService.retain = wrappedRetain;
-    const originalRelease = copilotService.release.bind(copilotService);
-    const wrappedRelease = (cwd) => {
-      originalRelease(cwd);
-      const count = cwdRefCounts.get(cwd) ?? 0;
-      if (count <= 1) {
-        cwdRefCounts.delete(cwd);
-      } else {
-        cwdRefCounts.set(cwd, count - 1);
-      }
-      if (cwd === subscribedCwd && !cwdRefCounts.has(cwd)) {
-        unsubscribe();
-        for (const activeCwd of cwdRefCounts.keys()) {
-          const activeClient = copilotService.get(activeCwd);
-          if (activeClient) {
-            subscribe(activeClient, activeCwd);
-            break;
-          }
-        }
-      }
-    };
-    copilotService.release = wrappedRelease;
+      dedicatedCwd = cwd;
+    }).catch((err) => {
+      this.log("warn", `Failed to retain dedicated lifecycle client: ${err.message}`);
+    });
     disposables.push({
       dispose: () => {
         disposed = true;
-        unsubscribe();
-        cwdRefCounts.clear();
-        copilotService.retain = originalRetain;
-        copilotService.release = originalRelease;
+        unsubLifecycle();
+        if (dedicatedCwd) {
+          copilotService.release(dedicatedCwd);
+          dedicatedCwd = null;
+        }
       }
     });
   }
@@ -68839,6 +68872,7 @@ var ApplicationHost = class {
     const state = this.clients.get(clientId);
     if (!state) return;
     this.clients.delete(clientId);
+    this.services.sessionEventBroker.unregisterClient(clientId);
     state.callbacks.dispose();
     state.subscriptions.dispose();
     await state.session.dispose();
@@ -70515,6 +70549,128 @@ var SdkCopilotClient = class {
   }
 };
 
+// src/infra/session-event-broker.ts
+var PROCESSING_START_EVENTS = /* @__PURE__ */ new Set(["turn.start", "assistant.turn_start"]);
+var PROCESSING_STOP_EVENTS = /* @__PURE__ */ new Set(["turn.end", "assistant.turn_end", "session.idle", "session.error", "abort"]);
+var SessionEventBroker = class {
+  sessions = /* @__PURE__ */ new Map();
+  log;
+  processingChangeHandlers = [];
+  /** Tracks current processing state per session for deduplication and queries. */
+  processingState = /* @__PURE__ */ new Map();
+  constructor(onLog) {
+    this.log = onLog ?? (() => {
+    });
+  }
+  /**
+   * Register a client's interest in a session's events.
+   *
+   * If another client already registered for this session with a different
+   * session object (e.g. the SDK created a new one on resume), the broker
+   * re-subscribes on the new object so all clients continue receiving events.
+   */
+  register(sessionId, clientId, session, callbacks) {
+    const existing = this.sessions.get(sessionId);
+    if (existing) {
+      existing.clients.set(clientId, callbacks);
+      if (existing.session !== session) {
+        this.log("info", `[SessionEventBroker] Session object changed for ${sessionId}, re-subscribing`);
+        existing.unsubscribe?.();
+        existing.session = session;
+        existing.unsubscribe = this.subscribe(sessionId, session);
+      }
+    } else {
+      const clients = /* @__PURE__ */ new Map();
+      clients.set(clientId, callbacks);
+      const unsubscribe = this.subscribe(sessionId, session);
+      this.sessions.set(sessionId, { session, unsubscribe, clients });
+    }
+    const count = this.sessions.get(sessionId).clients.size;
+    this.log("info", `[SessionEventBroker] Registered ${clientId} for ${sessionId} (${count} client(s))`);
+  }
+  /** Unregister a single client from a specific session. */
+  unregister(sessionId, clientId) {
+    const entry = this.sessions.get(sessionId);
+    if (!entry) return;
+    entry.clients.delete(clientId);
+    if (entry.clients.size === 0) {
+      entry.unsubscribe?.();
+      this.sessions.delete(sessionId);
+      this.processingState.delete(sessionId);
+      this.log("info", `[SessionEventBroker] Unsubscribed from ${sessionId} (no more clients)`);
+    }
+  }
+  /** Unregister a client from ALL sessions (called on client disconnect). */
+  unregisterClient(clientId) {
+    for (const sessionId of [...this.sessions.keys()]) {
+      this.unregister(sessionId, clientId);
+    }
+  }
+  /** Get the current session object for a session ID. */
+  getSession(sessionId) {
+    return this.sessions.get(sessionId)?.session;
+  }
+  /** Check if a session is currently processing (last known state). */
+  isProcessing(sessionId) {
+    return this.processingState.get(sessionId) ?? false;
+  }
+  /**
+   * Subscribe to processing state changes across ALL sessions.
+   * Fires when turn.start, turn.end, session.idle, session.error, or abort
+   * events are detected. Used by ApplicationHost to broadcast processing
+   * state to all connected clients (not just those registered for a session).
+   */
+  onProcessingChange(handler) {
+    this.processingChangeHandlers.push(handler);
+    return {
+      dispose: () => {
+        const idx = this.processingChangeHandlers.indexOf(handler);
+        if (idx !== -1) this.processingChangeHandlers.splice(idx, 1);
+      }
+    };
+  }
+  subscribe(sessionId, session) {
+    if (typeof session.on !== "function") return void 0;
+    return session.on((event) => {
+      this.dispatch(sessionId, event);
+    });
+  }
+  dispatch(sessionId, event) {
+    const entry = this.sessions.get(sessionId);
+    if (!entry) return;
+    for (const [, callbacks] of entry.clients) {
+      callbacks.notify("session.event", { sessionId, event });
+    }
+    this.emitProcessingChange(sessionId, event);
+  }
+  emitProcessingChange(sessionId, event) {
+    const eventType = event?.type;
+    if (typeof eventType !== "string") return;
+    let isProcessing;
+    if (PROCESSING_START_EVENTS.has(eventType)) {
+      isProcessing = true;
+    } else if (PROCESSING_STOP_EVENTS.has(eventType)) {
+      isProcessing = false;
+    }
+    if (isProcessing === void 0) return;
+    const current = this.processingState.get(sessionId) ?? false;
+    if (current === isProcessing) return;
+    this.processingState.set(sessionId, isProcessing);
+    this.log("info", `[SessionEventBroker] Processing: ${sessionId} isProcessing=${isProcessing} (event=${eventType})`);
+    for (const handler of this.processingChangeHandlers) {
+      handler(sessionId, isProcessing);
+    }
+  }
+  dispose() {
+    for (const entry of this.sessions.values()) {
+      entry.unsubscribe?.();
+    }
+    this.sessions.clear();
+    this.processingState.clear();
+    this.processingChangeHandlers.length = 0;
+  }
+};
+
 // src/file-logger.ts
 var import_node_fs3 = require("fs");
 var import_node_path6 = require("path");
@@ -70591,6 +70747,11 @@ async function checkForUpdates() {
 }
 
 // src/cli.ts
+function isKnownSdkError(err) {
+  if (!err || typeof err !== "object") return false;
+  const e = err;
+  return e.name === "ObjectDisposedError" || e.constructor?.name === "ObjectDisposedError";
+}
 var GREEN2 = "\x1B[32m";
 var CYAN = "\x1B[36m";
 var MAGENTA = "\x1B[35m";
@@ -70741,7 +70902,8 @@ async function runHost(options) {
     }),
     git: gitService,
     skills: new SkillService({ onLog: log }),
-    fileSearch: new FileSearchService()
+    fileSearch: new FileSearchService(),
+    sessionEventBroker: new SessionEventBroker(log)
   };
   const router = new MethodRouter();
   registerAllHandlers(router);
@@ -70752,7 +70914,18 @@ async function runHost(options) {
       log("warn", `Stream error (suppressed): ${err.message}`);
       return;
     }
+    if (isKnownSdkError(err)) {
+      log("warn", `SDK error (suppressed): ${err.message}`);
+      return;
+    }
     throw err;
+  });
+  process.on("unhandledRejection", (reason) => {
+    if (isKnownSdkError(reason)) {
+      log("warn", `SDK rejection (suppressed): ${reason?.message ?? reason}`);
+      return;
+    }
+    throw reason;
   });
   let stopping = false;
   const shutdown = async () => {

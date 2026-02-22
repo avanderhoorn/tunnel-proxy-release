@@ -280,6 +280,16 @@ declare class ResourcePool<K, R> {
 
 /** State reported by CopilotClient.getState(). */
 type CopilotClientState = 'disconnected' | 'connecting' | 'connected' | 'error';
+/** Shape of lifecycle events emitted by CopilotClient.on(). */
+interface CopilotLifecycleEvent {
+    type: string;
+    sessionId: string;
+    metadata?: {
+        startTime: string;
+        modifiedTime: string;
+        summary?: string;
+    };
+}
 /**
  * Interface for a CopilotClient instance.
  * Maps to the @github/copilot-sdk CopilotClient API surface.
@@ -307,15 +317,7 @@ interface CopilotClient {
             }>;
         };
     };
-    on?(handler: (event: {
-        type: string;
-        sessionId: string;
-        metadata?: {
-            startTime: string;
-            modifiedTime: string;
-            summary?: string;
-        };
-    }) => void): () => void;
+    on?(handler: (event: CopilotLifecycleEvent) => void): () => void;
 }
 interface CopilotServiceConfig {
     /**
@@ -339,6 +341,8 @@ interface CopilotServiceConfig {
  */
 declare class CopilotService {
     private readonly pool;
+    private readonly lifecycleHandlers;
+    private readonly clientUnsubs;
     constructor(config: CopilotServiceConfig);
     /** Acquire a reference to a CopilotClient for the given cwd. */
     retain(cwd: string): Promise<CopilotClient>;
@@ -346,6 +350,12 @@ declare class CopilotService {
     release(cwd: string): void;
     /** Read-only access without affecting refCount. */
     get(cwd: string): CopilotClient | undefined;
+    /**
+     * Subscribe to lifecycle events from ALL pooled CopilotClients.
+     * Events are forwarded as each client emits them — no extra retain is held.
+     * Returns an unsubscribe function.
+     */
+    onLifecycleEvent(handler: (event: CopilotLifecycleEvent) => void): () => void;
     /** Stop all clients immediately. */
     dispose(): Promise<void>;
 }
@@ -1563,6 +1573,61 @@ declare class CallbackChannel {
     get isDisposed(): boolean;
 }
 
+/**
+ * SessionEventBroker — manages session event subscriptions across multiple
+ * tunnel clients that may share the same Copilot SDK session.
+ *
+ * Problem: When CopilotClients are pooled by cwd, two tunnel clients can
+ * resume the same session on the same CopilotClient. The SDK creates a new
+ * session object on each resume, replacing the old one in its internal map.
+ * The first client's `session.on()` subscription becomes dead because events
+ * are dispatched to the new object.
+ *
+ * Solution: This broker maintains a single SDK `session.on()` subscription
+ * per session and fans out events to all registered CallbackChannels. When a
+ * new session object is registered for the same sessionId (from another
+ * client's resume), it re-subscribes on the new object automatically.
+ */
+
+type ProcessingChangeHandler = (sessionId: string, isProcessing: boolean) => void;
+declare class SessionEventBroker {
+    private readonly sessions;
+    private readonly log;
+    private readonly processingChangeHandlers;
+    /** Tracks current processing state per session for deduplication and queries. */
+    private readonly processingState;
+    constructor(onLog?: (level: string, message: string) => void);
+    /**
+     * Register a client's interest in a session's events.
+     *
+     * If another client already registered for this session with a different
+     * session object (e.g. the SDK created a new one on resume), the broker
+     * re-subscribes on the new object so all clients continue receiving events.
+     */
+    register(sessionId: string, clientId: string, session: CopilotSession, callbacks: CallbackChannel): void;
+    /** Unregister a single client from a specific session. */
+    unregister(sessionId: string, clientId: string): void;
+    /** Unregister a client from ALL sessions (called on client disconnect). */
+    unregisterClient(clientId: string): void;
+    /** Get the current session object for a session ID. */
+    getSession(sessionId: string): CopilotSession | undefined;
+    /** Check if a session is currently processing (last known state). */
+    isProcessing(sessionId: string): boolean;
+    /**
+     * Subscribe to processing state changes across ALL sessions.
+     * Fires when turn.start, turn.end, session.idle, session.error, or abort
+     * events are detected. Used by ApplicationHost to broadcast processing
+     * state to all connected clients (not just those registered for a session).
+     */
+    onProcessingChange(handler: ProcessingChangeHandler): {
+        dispose: () => void;
+    };
+    private subscribe;
+    private dispatch;
+    private emitProcessingChange;
+    dispose(): void;
+}
+
 type SubscriptionType = 'fs' | 'git';
 interface Subscription {
     id: string;
@@ -1599,6 +1664,12 @@ declare class SubscriptionSet {
 interface SessionTrackerConfig {
     /** CopilotService for releasing client references on dispose. */
     copilotService: CopilotService;
+    /** Shared broker for coordinating session event subscriptions. */
+    sessionEventBroker: SessionEventBroker;
+    /** The tunnel client ID that owns this tracker. */
+    clientId: string;
+    /** The tunnel client's callback channel for event delivery. */
+    callbacks: CallbackChannel;
     /** Optional logging callback. */
     onLog?: (level: string, message: string) => void;
 }
@@ -1614,20 +1685,31 @@ interface SessionTrackerConfig {
 declare class SessionTracker {
     private readonly sessions;
     private readonly copilotService;
+    private readonly sessionEventBroker;
+    private readonly clientId;
+    private readonly callbacks;
     private readonly log;
     constructor(config: SessionTrackerConfig);
     /**
      * Track a new session. Called after session.create / session.resume.
      */
-    trackSession(sessionId: string, cwd: string, client: CopilotClient, session: CopilotSession, unsubscribeEvents?: () => void): void;
+    trackSession(sessionId: string, cwd: string, client: CopilotClient, session: CopilotSession): void;
     /**
-     * Stop tracking a session. Unsubscribes events but does NOT destroy
-     * the session or release the CopilotClient — that's the handler's job.
+     * Stop tracking a session. Unregisters from the event broker but does
+     * NOT destroy the session or release the CopilotClient — that's the
+     * handler's job.
      */
     untrackSession(sessionId: string): void;
+    /** Check if this client is tracking a session (without resolving the object). */
+    isTracking(sessionId: string): boolean;
     /** Get the CopilotClient for a session. */
     getClientForSession(sessionId: string): CopilotClient | undefined;
-    /** Get the CopilotSession for a session. */
+    /**
+     * Get the CopilotSession for a session.
+     *
+     * Prefers the broker's session object — it has the latest instance when
+     * another client resumed the same session on a shared CopilotClient.
+     */
     getSessionForId(sessionId: string): CopilotSession | undefined;
     /** Get the cwd for a session. */
     getCwdForSession(sessionId: string): string | undefined;
@@ -1653,6 +1735,8 @@ interface ServiceContainer {
     git: GitService;
     skills: SkillService;
     fileSearch: FileSearchService;
+    /** Shared broker for session event fan-out across multiple tunnel clients. */
+    sessionEventBroker: SessionEventBroker;
 }
 /**
  * Context passed to every RPC handler invocation.
@@ -2317,12 +2401,9 @@ declare class ApplicationHost {
     private handleClientDisconnected;
     private handleClientIdentify;
     /**
-     * Subscribe to lifecycle events on the first retained CopilotClient and
-     * forward them (throttled) to the tunnel client via callbacks.notify.
-     *
-     * Deduplication: only one CopilotClient carries the lifecycle subscription
-     * per tunnel client. If the subscribed client's cwd is fully released,
-     * the subscription migrates to another active client in the pool.
+     * Subscribe to lifecycle events from ALL pooled CopilotClients and forward
+     * them (throttled) to this tunnel client. Also retains a dedicated client
+     * for process.cwd() so events are generated even when no sessions are active.
      */
     private wireLifecycleEvents;
     private disposeClient;
