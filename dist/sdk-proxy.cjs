@@ -53731,7 +53731,19 @@ var ConnectionGuard = class {
       }
       if (this._settlingAfterRecovery) {
         this._settlingAfterRecovery = false;
-        this.log("debug", `SDK disconnected ignored \u2014 settling after recovery (${e.disconnectError?.message ?? "no error"})`);
+        const message = e.disconnectError?.message ?? "";
+        const isSpurious = !e.disconnectError || /already connected/i.test(message);
+        if (isSpurious) {
+          this.log("debug", `SDK disconnected ignored \u2014 settling after recovery (${message || "no error"})`);
+          return;
+        }
+        this.log("info", `Post-recovery disconnect is real (${message}) \u2014 scheduling recovery`);
+        this.clearUptimeTimer();
+        if (this._disconnectedSince === null) {
+          this._disconnectedSince = Date.now();
+        }
+        this.setStatus("reconnecting", message);
+        this.recoveryLoop?.notifyExhausted();
         return;
       }
       this.clearUptimeTimer();
@@ -55884,7 +55896,7 @@ var gitHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.6.1";
+var CURRENT_VERSION = "0.6.2";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
