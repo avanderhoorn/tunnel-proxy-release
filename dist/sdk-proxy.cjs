@@ -53867,6 +53867,15 @@ function withTimeout(fn, ms, message) {
     );
   });
 }
+var UNACKED_HIGH_WATER = 1e5;
+var UNACKED_LOW_WATER = 5e3;
+var CLIENT_UNACKED_CAP = 512e3;
+var BATCH_INTERVAL_MS = 5;
+var MAX_BATCH_SIZE = 65536;
+var DRAIN_TIMEOUT_MS = 250;
+var DRAIN_MAX_MS = 5e3;
+var SCROLLBACK_MAX_LENGTH = 102400;
+var DISCONNECT_GRACE_MS = 6e4;
 
 // src/connection/socket-byte-stream.ts
 var SocketByteStream = class {
@@ -54779,6 +54788,12 @@ var ApplicationHost = class {
   clients = /* @__PURE__ */ new Map();
   hostDisposables = [];
   _tunnelInfo = null;
+  /**
+   * Per-client active-session viewing state, reported by clients via
+   * session.reportActiveState notifications. Used to make needsAttention
+   * decisions when processing ends.
+   */
+  clientActiveState = /* @__PURE__ */ new Map();
   constructor(config) {
     this.tunnelHost = config.tunnelHost;
     this.services = config.services;
@@ -54807,14 +54822,35 @@ var ApplicationHost = class {
           cwd = state.session.getCwdForSession(sessionId);
           if (cwd) break;
         }
-        this.log("info", `[ApplicationHost] Broadcasting session.processing: ${sessionId} isProcessing=${isProcessing} to ${this.clients.size} client(s)`);
-        for (const [, clientState] of this.clients) {
+        if (isProcessing) {
+          this.log("info", `[ApplicationHost] Broadcasting session.processing: ${sessionId} isProcessing=true to ${this.clients.size} client(s)`);
+          for (const [, clientState] of this.clients) {
+            clientState.callbacks.notify("session.lifecycle", {
+              type: "session.processing",
+              sessionId,
+              isProcessing: true,
+              ...cwd ? { cwd } : {}
+            });
+          }
+          return;
+        }
+        const isViewed = this.isSessionViewedByAnyClient(sessionId);
+        this.log("info", `[ApplicationHost] Broadcasting session.processing: ${sessionId} isProcessing=false viewedByClient=${isViewed} to ${this.clients.size} client(s)`);
+        for (const [clientId, clientState] of this.clients) {
           clientState.callbacks.notify("session.lifecycle", {
             type: "session.processing",
             sessionId,
-            isProcessing,
-            ...cwd ? { cwd } : {}
+            isProcessing: false,
+            ...cwd ? { cwd } : {},
+            // Only include needsAttention when no client is viewing
+            ...!isViewed ? { needsAttention: true } : {}
           });
+          if (isViewed && !this.isClientViewingSession(clientId, sessionId)) {
+            clientState.callbacks.notify("session.lifecycle", {
+              type: "session.viewed",
+              sessionId
+            });
+          }
         }
       })
     );
@@ -54889,6 +54925,29 @@ var ApplicationHost = class {
       clientSession.onNotification((method, params) => {
         if (method === "client.identify") {
           this.handleClientIdentify(clientId, params);
+          return;
+        }
+        if (method === "session.markViewed") {
+          this.handleSessionMarkViewed(clientId, params);
+          return;
+        }
+        if (method === "session.reportActiveState") {
+          this.handleReportActiveState(clientId, params);
+          return;
+        }
+        if (method.startsWith("terminal.")) {
+          const context = {
+            clientId,
+            clientLabel: clientState.clientLabel,
+            session: sessionTracker,
+            subscriptions,
+            callbacks,
+            services: this.services,
+            log: this.log
+          };
+          this.router.dispatch(method, params, context).catch((err) => {
+            this.log("warn", `[${clientState.clientLabel}] notification ${method} failed: ${err.message}`);
+          });
         }
       })
     );
@@ -54905,6 +54964,7 @@ var ApplicationHost = class {
     const state = this.clients.get(clientId);
     const label = state?.clientLabel ?? clientId;
     this.log("info", `Client disconnected: ${label}`);
+    this.services.terminalManager.handleClientDisconnected(clientId);
     this.disposeClient(clientId).catch((err) => {
       this.log("error", `Error disposing client ${clientId}: ${err}`);
     });
@@ -54917,6 +54977,51 @@ var ApplicationHost = class {
     state.clientLabel = label;
     const version = params.clientVersion ? ` [v${params.clientVersion}]` : "";
     this.log("info", `Client identified: ${label}${version} (${clientId})`);
+  }
+  /**
+   * Broadcast a session.viewed lifecycle event to all clients except the sender.
+   * This allows other clients to clear their blue dot (needsAttention) indicator.
+   */
+  handleSessionMarkViewed(senderClientId, params) {
+    const { sessionId } = params;
+    if (!sessionId) return;
+    this.log("info", `[ApplicationHost] session.markViewed: ${sessionId} from ${senderClientId}, broadcasting to ${this.clients.size - 1} other client(s)`);
+    for (const [clientId, clientState] of this.clients) {
+      if (clientId === senderClientId) continue;
+      clientState.callbacks.notify("session.lifecycle", {
+        type: "session.viewed",
+        sessionId
+      });
+    }
+  }
+  /**
+   * Update the tracked viewing state for a client.
+   * Each notification fully replaces the previous state for that client.
+   */
+  handleReportActiveState(clientId, params) {
+    this.clientActiveState.set(clientId, {
+      sessionIds: params.sessionIds ?? [],
+      tabVisible: params.tabVisible ?? false
+    });
+    this.log("debug", `[ApplicationHost] reportActiveState from ${clientId}: sessions=[${params.sessionIds?.join(",")}] tabVisible=${params.tabVisible}`);
+  }
+  /**
+   * Check if ANY connected client with a visible tab is viewing the given session.
+   */
+  isSessionViewedByAnyClient(sessionId) {
+    for (const [, state] of this.clientActiveState) {
+      if (state.tabVisible && state.sessionIds.includes(sessionId)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  /**
+   * Check if a specific client is viewing the given session (with visible tab).
+   */
+  isClientViewingSession(clientId, sessionId) {
+    const state = this.clientActiveState.get(clientId);
+    return !!state && state.tabVisible && state.sessionIds.includes(sessionId);
   }
   /**
    * Subscribe to lifecycle events from ALL pooled CopilotClients and forward
@@ -54964,6 +55069,7 @@ var ApplicationHost = class {
     const state = this.clients.get(clientId);
     if (!state) return;
     this.clients.delete(clientId);
+    this.clientActiveState.delete(clientId);
     this.services.sessionEventBroker.unregisterClient(clientId);
     state.callbacks.dispose();
     state.subscriptions.dispose();
@@ -55895,8 +56001,95 @@ var gitHandlers = {
   unsubscribe: gitUnsubscribe
 };
 
+// src/handlers/terminal.ts
+var createTerminal = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.cols || !p.rows) throw new Error("terminal.create requires cols and rows");
+  ctx.log?.("info", `[${ctx.clientLabel}] terminal.create: cols=${p.cols}, rows=${p.rows}`);
+  const result = ctx.services.terminalManager.create(p, ctx.clientId);
+  const session = ctx.services.terminalManager.getSession(result.terminalId);
+  if (session) {
+    session.clients.set(ctx.clientId, {
+      notify: (method, notifyParams) => {
+        ctx.callbacks.notify(method, notifyParams);
+      },
+      cols: p.cols,
+      rows: p.rows,
+      lastAckedSeq: 0,
+      unackedCharCount: 0
+    });
+  }
+  return result;
+};
+var attachTerminal = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.terminalId) throw new Error("terminal.attach requires terminalId");
+  ctx.log?.("info", `[${ctx.clientLabel}] terminal.attach: terminalId=${p.terminalId}`);
+  return ctx.services.terminalManager.attach(
+    p.terminalId,
+    ctx.clientId,
+    (method, notifyParams) => {
+      ctx.callbacks.notify(method, notifyParams);
+    }
+  );
+};
+var listTerminals = async (_params, context) => {
+  const ctx = context;
+  ctx.log?.("info", `[${ctx.clientLabel}] terminal.list`);
+  return ctx.services.terminalManager.list();
+};
+var detachTerminal = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.terminalId) throw new Error("terminal.detach requires terminalId");
+  ctx.log?.("info", `[${ctx.clientLabel}] terminal.detach: terminalId=${p.terminalId}`);
+  ctx.services.terminalManager.detach(p.terminalId, ctx.clientId);
+  return null;
+};
+var destroyTerminal = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.terminalId) throw new Error("terminal.destroy requires terminalId");
+  ctx.log?.("info", `[${ctx.clientLabel}] terminal.destroy: terminalId=${p.terminalId}`);
+  ctx.services.terminalManager.destroy(p.terminalId);
+  return null;
+};
+var inputTerminal = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.terminalId || typeof p.data !== "string") return null;
+  ctx.services.terminalManager.input(p.terminalId, p.data);
+  return null;
+};
+var resizeTerminal = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.terminalId || !p.cols || !p.rows) return null;
+  ctx.services.terminalManager.resize(p.terminalId, p.cols, p.rows, ctx.clientId);
+  return null;
+};
+var ackTerminal = async (params, context) => {
+  const ctx = context;
+  const p = params;
+  if (!p.terminalId) return null;
+  ctx.services.terminalManager.handleAck(p.terminalId, p.seq, p.charCount, ctx.clientId);
+  return null;
+};
+var terminalHandlers = {
+  create: createTerminal,
+  attach: attachTerminal,
+  detach: detachTerminal,
+  list: listTerminals,
+  destroy: destroyTerminal,
+  input: inputTerminal,
+  resize: resizeTerminal,
+  ack: ackTerminal
+};
+
 // src/version.ts
-var CURRENT_VERSION = "0.6.2";
+var CURRENT_VERSION = "0.6.3";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
@@ -56054,6 +56247,7 @@ function registerAllHandlers(router) {
   router.registerNamespace("session", sessionHandlers);
   router.registerNamespace("fs", filesystemHandlers);
   router.registerNamespace("git", gitHandlers);
+  router.registerNamespace("terminal", terminalHandlers);
   router.register("getLastSessionId", getLastSessionIdHandler);
   router.register("getModels", modelsListHandler);
   router.register("createSession", sessionHandlers.create);
@@ -70582,18 +70776,695 @@ var SessionEventBroker = class {
   }
 };
 
-// src/file-logger.ts
+// src/terminal/host-terminal-manager.ts
+var pty = __toESM(require("node-pty"), 1);
+var import_node_crypto = require("crypto");
+
+// src/terminal/scrollback-buffer.ts
+var ScrollbackBuffer = class {
+  buffer = [];
+  totalLength = 0;
+  maxLength;
+  constructor(maxLength = SCROLLBACK_MAX_LENGTH) {
+    this.maxLength = maxLength;
+  }
+  /**
+   * Append data to the scrollback buffer. Trims oldest chunks
+   * when totalLength exceeds maxLength.
+   */
+  append(data) {
+    this.buffer.push(data);
+    this.totalLength += data.length;
+    this.trim();
+  }
+  /**
+   * Get the current buffer contents as a single string.
+   */
+  getSnapshot() {
+    return this.buffer.join("");
+  }
+  /**
+   * Current total length of buffered data.
+   */
+  get length() {
+    return this.totalLength;
+  }
+  trim() {
+    while (this.totalLength > this.maxLength && this.buffer.length > 1) {
+      const removed = this.buffer.shift();
+      this.totalLength -= removed.length;
+    }
+  }
+};
+
+// src/terminal/terminal-session.ts
+var TerminalSession = class {
+  terminalId;
+  shell;
+  _state = "running";
+  _pty;
+  /** Attached clients */
+  clients = /* @__PURE__ */ new Map();
+  /** Output buffering */
+  outputBuffer = "";
+  flushTimer = null;
+  seq = 0;
+  /** Flow control (character-count based, aligned with VS Code) */
+  unackedCharCount = 0;
+  paused = false;
+  /** Scrollback buffer for attach/reconnection (§5.7) */
+  scrollbackBuffer = new ScrollbackBuffer();
+  /** Dimensions */
+  currentCols;
+  currentRows;
+  /** Lifecycle tracking */
+  title = "";
+  exitCode;
+  exitSignal;
+  exitedAt;
+  /** Current working directory (updated via OSC 7 from shell integration) */
+  currentCwd = "";
+  /** Drain lifecycle (§5.6) */
+  drainTimer = null;
+  drainStartedAt = 0;
+  pendingExitCode = 0;
+  pendingExitSignal;
+  /** Grace period timer for orphaned terminals (no attached clients) */
+  graceTimer = null;
+  /** Event subscriptions for cleanup */
+  dataDisposable;
+  exitDisposable;
+  constructor(terminalId, pty2, shell, cols, rows, onData, onExit) {
+    this.terminalId = terminalId;
+    this._pty = pty2;
+    this.shell = shell;
+    this.currentCols = cols;
+    this.currentRows = rows;
+    this.dataDisposable = pty2.onData((data) => {
+      this.parseOscSequences(data);
+      onData(data);
+    });
+    this.exitDisposable = pty2.onExit(onExit);
+  }
+  get state() {
+    return this._state;
+  }
+  get pty() {
+    return this._pty;
+  }
+  get pid() {
+    return this._pty?.pid ?? 0;
+  }
+  setState(state) {
+    this._state = state;
+  }
+  /**
+   * Write user input to the PTY. Only accepted while running.
+   */
+  handleInput(data) {
+    if (this._state !== "running") return;
+    this._pty?.write(data);
+  }
+  /**
+   * Handle PTY data output. Buffers output and flushes on a 5ms timer
+   * or immediately when the buffer exceeds 64KB.
+   * During drain phase, extends the drain window (see §5.6).
+   * See docs/terminal-design.md §5.4.
+   */
+  handlePtyData(data) {
+    if (this._state === "draining") {
+      this.handlePtyDataDuringDrain(data);
+      return;
+    }
+    if (this._state !== "running") return;
+    this.outputBuffer += data;
+    if (this.outputBuffer.length >= MAX_BATCH_SIZE) {
+      this.flush();
+      return;
+    }
+    if (!this.flushTimer) {
+      this.flushTimer = setTimeout(() => this.flush(), BATCH_INTERVAL_MS);
+    }
+  }
+  /**
+   * Flush buffered output to all attached clients.
+   * Updates per-client and global unackedCharCount, checks flow control.
+   */
+  flush() {
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
+    if (this.outputBuffer.length === 0) return;
+    const data = this.outputBuffer;
+    this.outputBuffer = "";
+    this.seq++;
+    this.scrollbackBuffer.append(data);
+    for (const [, client] of this.clients) {
+      client.notify("terminal.output", {
+        terminalId: this.terminalId,
+        data,
+        seq: this.seq
+      });
+    }
+    for (const [, client] of this.clients) {
+      client.unackedCharCount += data.length;
+    }
+    this.unackedCharCount += data.length;
+    this.checkFlowControl();
+    this.checkClientCaps();
+  }
+  /**
+   * Check if PTY should be paused due to high unacked character count.
+   */
+  checkFlowControl() {
+    if (!this.paused && this.unackedCharCount > UNACKED_HIGH_WATER) {
+      this._pty?.pause();
+      this.paused = true;
+    }
+  }
+  /**
+   * Check per-client unacked caps. Force-detaches any client exceeding
+   * CLIENT_UNACKED_CAP (512K) to prevent one slow client from stalling
+   * the terminal for everyone in a shared session.
+   * Called after each flush.
+   */
+  checkClientCaps() {
+    const toRemove = [];
+    for (const [clientId, client] of this.clients) {
+      if (client.unackedCharCount > CLIENT_UNACKED_CAP) {
+        client.notify("terminal.detached", {
+          terminalId: this.terminalId,
+          reason: "client_too_slow"
+        });
+        toRemove.push(clientId);
+      }
+    }
+    if (toRemove.length === 0) return;
+    for (const clientId of toRemove) {
+      this.clients.delete(clientId);
+    }
+    this.unackedCharCount = 0;
+    for (const [, c] of this.clients) {
+      this.unackedCharCount = Math.max(this.unackedCharCount, c.unackedCharCount);
+    }
+    if (this.paused && this.unackedCharCount < UNACKED_LOW_WATER) {
+      this._pty?.resume();
+      this.paused = false;
+    }
+  }
+  /**
+   * Handle flow control acknowledgment from a client.
+   * Decrements per-client unackedCharCount, recalculates global,
+   * and resumes PTY if below low water mark.
+   */
+  handleAck(seq, charCount, clientId) {
+    const client = this.clients.get(clientId);
+    if (!client) return;
+    client.lastAckedSeq = seq;
+    client.unackedCharCount = Math.max(client.unackedCharCount - charCount, 0);
+    this.unackedCharCount = 0;
+    for (const [, c] of this.clients) {
+      this.unackedCharCount = Math.max(this.unackedCharCount, c.unackedCharCount);
+    }
+    if (this.paused && this.unackedCharCount < UNACKED_LOW_WATER) {
+      this._pty?.resume();
+      this.paused = false;
+    }
+  }
+  /**
+   * Handle PTY exit. Transitions to draining state and starts drain timer.
+   * See docs/terminal-design.md §5.6.
+   */
+  handlePtyExit(exitCode, signal) {
+    if (this._state !== "running") return;
+    this._state = "draining";
+    this.drainStartedAt = Date.now();
+    this.pendingExitCode = exitCode;
+    this.pendingExitSignal = signal;
+    this.scheduleDrainFlush();
+  }
+  /**
+   * Handle PTY data arriving during drain phase. Appends to buffer and
+   * resets the drain timer if under the hard cap.
+   */
+  handlePtyDataDuringDrain(data) {
+    this.outputBuffer += data;
+    if (Date.now() - this.drainStartedAt < DRAIN_MAX_MS) {
+      this.scheduleDrainFlush();
+    }
+  }
+  /**
+   * Schedule (or reschedule) the drain flush timer. When it fires,
+   * flushes remaining output, transitions to exited, and notifies clients.
+   */
+  scheduleDrainFlush() {
+    if (this.drainTimer) clearTimeout(this.drainTimer);
+    this.drainTimer = setTimeout(() => {
+      this.drainTimer = null;
+      this.flush();
+      this._state = "exited";
+      this.exitCode = this.pendingExitCode;
+      this.exitSignal = this.pendingExitSignal;
+      this.exitedAt = Date.now();
+      for (const [, client] of this.clients) {
+        client.notify("terminal.exited", {
+          terminalId: this.terminalId,
+          exitCode: this.pendingExitCode,
+          signal: this.pendingExitSignal,
+          finalSeq: this.seq
+        });
+      }
+      this.destroyPty();
+    }, DRAIN_TIMEOUT_MS);
+  }
+  /**
+   * Pause the flush timer. Used during atomic attach to prevent
+   * output from being sent between snapshot capture and client addition.
+   */
+  pauseFlushTimer() {
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
+  }
+  /**
+   * Resume the flush timer if there is buffered output waiting.
+   * Called after atomic attach to resume normal output flow.
+   */
+  resumeFlushTimer() {
+    if (this.outputBuffer.length > 0 && !this.flushTimer) {
+      this.flushTimer = setTimeout(() => this.flush(), BATCH_INTERVAL_MS);
+    }
+  }
+  /**
+   * Parse OSC 7 (file:// URI) sequences from PTY output to track CWD.
+   * Format: ESC ] 7 ; file://hostname/path BEL
+   */
+  parseOscSequences(data) {
+    const osc7Re = /\x1b\]7;file:\/\/[^/]*(\/[^\x07]*)\x07/g;
+    let match;
+    while ((match = osc7Re.exec(data)) !== null) {
+      const cwd = decodeURIComponent(match[1]);
+      if (cwd && cwd !== this.currentCwd) {
+        this.currentCwd = cwd;
+        for (const [, client] of this.clients) {
+          client.notify("terminal.cwdChanged", {
+            terminalId: this.terminalId,
+            cwd
+          });
+        }
+      }
+    }
+  }
+  /**
+   * Start grace period when last client disconnects from a running terminal.
+   * On expiry, calls the provided callback and destroys the session.
+   */
+  startGracePeriod(onExpired) {
+    if (this.graceTimer) return;
+    this.graceTimer = setTimeout(() => {
+      this.graceTimer = null;
+      onExpired();
+      this.destroy();
+    }, DISCONNECT_GRACE_MS);
+  }
+  /**
+   * Cancel grace period (e.g., when a client re-attaches).
+   */
+  cancelGracePeriod() {
+    if (this.graceTimer) {
+      clearTimeout(this.graceTimer);
+      this.graceTimer = null;
+    }
+  }
+  /**
+   * Destroy the PTY and all resources.
+   */
+  destroy() {
+    if (this.flushTimer) {
+      clearTimeout(this.flushTimer);
+      this.flushTimer = null;
+    }
+    if (this.drainTimer) {
+      clearTimeout(this.drainTimer);
+      this.drainTimer = null;
+    }
+    if (this.graceTimer) {
+      clearTimeout(this.graceTimer);
+      this.graceTimer = null;
+    }
+    this._state = "destroyed";
+    this.dataDisposable.dispose();
+    this.exitDisposable.dispose();
+    if (this._pty) {
+      this._pty.kill();
+      this._pty = null;
+    }
+  }
+  /**
+   * Release PTY resources without changing state (used after drain → exited).
+   */
+  destroyPty() {
+    this.dataDisposable.dispose();
+    this.exitDisposable.dispose();
+    if (this._pty) {
+      this._pty.kill();
+      this._pty = null;
+    }
+  }
+};
+
+// src/terminal/shell-integration.ts
 var import_node_fs3 = require("fs");
-var import_node_path6 = require("path");
 var import_node_os = require("os");
-var DEFAULT_LOG_DIR = (0, import_node_path6.join)((0, import_node_os.homedir)(), ".copilot", "agent-tunnels", "logs");
+var import_node_path6 = require("path");
+var BASH_SCRIPT = `# tunnels shell integration for bash \u2014 CWD tracking via OSC 7
+# Used as --rcfile to inject hooks while preserving user config
+
+# Source user's bashrc first
+if [ -f "$HOME/.bashrc" ]; then
+  . "$HOME/.bashrc"
+fi
+
+# Emit OSC 7 (CWD) after each command
+__tunnels_precmd() {
+  printf '\\033]7;file://%s%s\\a' "$(hostname)" "$PWD"
+}
+
+PROMPT_COMMAND="__tunnels_precmd\${PROMPT_COMMAND:+;$PROMPT_COMMAND}"
+`;
+var ZSH_ENV_SCRIPT = `# tunnels shell integration for zsh \u2014 CWD tracking via OSC 7
+# Loaded via ZDOTDIR override; restores original then adds hooks
+
+# Restore original ZDOTDIR
+if [[ -n "$_TUNNELS_ORIGINAL_ZDOTDIR" ]]; then
+  export ZDOTDIR="$_TUNNELS_ORIGINAL_ZDOTDIR"
+  unset _TUNNELS_ORIGINAL_ZDOTDIR
+else
+  unset ZDOTDIR
+fi
+
+# Source user's .zshenv if it exists
+[[ -f "\${ZDOTDIR:-$HOME}/.zshenv" ]] && source "\${ZDOTDIR:-$HOME}/.zshenv"
+
+# Register precmd hook \u2014 emit OSC 7
+__tunnels_precmd() {
+  printf '\\033]7;file://%s%s\\a' "$HOST" "$PWD"
+}
+
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd __tunnels_precmd
+add-zsh-hook chpwd __tunnels_precmd
+`;
+var FISH_SCRIPT = `# tunnels shell integration for fish \u2014 CWD tracking via OSC 7
+
+function __tunnels_emit_cwd --on-variable PWD
+    printf '\\033]7;file://%s%s\\a' (hostname) $PWD
+end
+
+# Emit initial CWD
+__tunnels_emit_cwd
+`;
+var integrationDir = null;
+function ensureShellIntegrationDir() {
+  if (integrationDir && (0, import_node_fs3.existsSync)(integrationDir)) return integrationDir;
+  integrationDir = (0, import_node_fs3.mkdtempSync)((0, import_node_path6.join)((0, import_node_os.tmpdir)(), "tunnels-shell-"));
+  (0, import_node_fs3.writeFileSync)((0, import_node_path6.join)(integrationDir, "tunnels.bash"), BASH_SCRIPT, { mode: 420 });
+  (0, import_node_fs3.writeFileSync)((0, import_node_path6.join)(integrationDir, ".zshenv"), ZSH_ENV_SCRIPT, { mode: 420 });
+  (0, import_node_fs3.writeFileSync)((0, import_node_path6.join)(integrationDir, "tunnels.fish"), FISH_SCRIPT, { mode: 420 });
+  return integrationDir;
+}
+function getShellName(shellPath) {
+  return (0, import_node_path6.basename)(shellPath);
+}
+function getShellArgs(shellName, dir) {
+  switch (shellName) {
+    case "bash":
+    case "sh":
+      return {
+        args: ["--rcfile", (0, import_node_path6.join)(dir, "tunnels.bash")],
+        env: {}
+      };
+    case "zsh":
+      return {
+        args: [],
+        env: {
+          _TUNNELS_ORIGINAL_ZDOTDIR: process.env.ZDOTDIR ?? "",
+          ZDOTDIR: dir
+        }
+      };
+    case "fish":
+      return {
+        args: ["--init-command", `source ${(0, import_node_path6.join)(dir, "tunnels.fish")}`],
+        env: {}
+      };
+    default:
+      return { args: [], env: {} };
+  }
+}
+
+// src/terminal/host-terminal-manager.ts
+var HostTerminalManager = class {
+  terminals = /* @__PURE__ */ new Map();
+  EXITED_TTL_MS = 6e4;
+  /**
+   * Create a new terminal session by spawning a PTY process.
+   */
+  create(params, clientId) {
+    const terminalId = (0, import_node_crypto.randomUUID)();
+    const shell = process.env.SHELL || (process.platform === "win32" ? "powershell.exe" : "bash");
+    const shellName = getShellName(shell);
+    let shellArgs = [];
+    let shellEnv = {};
+    try {
+      const dir = ensureShellIntegrationDir();
+      const integration = getShellArgs(shellName, dir);
+      shellArgs = integration.args;
+      shellEnv = integration.env;
+    } catch {
+    }
+    const ptyProcess = pty.spawn(shell, shellArgs, {
+      name: "xterm-256color",
+      cols: params.cols,
+      rows: params.rows,
+      cwd: params.cwd || process.env.HOME,
+      env: {
+        ...process.env,
+        ...shellEnv,
+        ...params.env,
+        TERM: "xterm-256color",
+        COLORTERM: "truecolor"
+      }
+    });
+    const session = new TerminalSession(
+      terminalId,
+      ptyProcess,
+      shell,
+      params.cols,
+      params.rows,
+      (data) => this.handlePtyData(terminalId, data),
+      (exitInfo) => this.handlePtyExit(terminalId, exitInfo)
+    );
+    this.terminals.set(terminalId, session);
+    return {
+      terminalId,
+      pid: ptyProcess.pid,
+      shell
+    };
+  }
+  /**
+   * Destroy a terminal session.
+   */
+  destroy(terminalId) {
+    const session = this.terminals.get(terminalId);
+    if (!session) return;
+    session.destroy();
+    this.terminals.delete(terminalId);
+  }
+  /**
+   * Write user input to a terminal.
+   */
+  input(terminalId, data) {
+    const session = this.terminals.get(terminalId);
+    if (!session) return;
+    session.handleInput(data);
+  }
+  /**
+   * Atomically attach a client to an existing terminal session.
+   *
+   * This is synchronous — no await between snapshot capture and client addition.
+   * The flush timer is paused to prevent output from being sent during the gap.
+   * See docs/terminal-design.md §5.7 for design.
+   */
+  attach(terminalId, clientId, notify) {
+    const session = this.terminals.get(terminalId);
+    if (!session || session.state !== "running") {
+      throw new Error("Terminal not found or not running");
+    }
+    session.cancelGracePeriod();
+    session.pauseFlushTimer();
+    const snapshot = session.scrollbackBuffer.getSnapshot();
+    const snapshotSeq = session.seq;
+    session.clients.set(clientId, {
+      notify,
+      cols: 0,
+      // Client will send terminal.resize immediately after attach
+      rows: 0,
+      lastAckedSeq: snapshotSeq,
+      unackedCharCount: 0
+    });
+    session.resumeFlushTimer();
+    return {
+      cols: session.currentCols,
+      rows: session.currentRows,
+      pid: session.pid,
+      shell: session.shell,
+      snapshot,
+      snapshotSeq
+    };
+  }
+  /**
+   * List all terminals. Includes exited entries with status and exitCode.
+   * Lazily cleans up exited entries older than 60s.
+   */
+  list() {
+    const now = Date.now();
+    const staleIds = [];
+    const terminals = [];
+    for (const [terminalId, session] of this.terminals) {
+      if (session.state === "exited" && session.exitedAt && now - session.exitedAt > this.EXITED_TTL_MS) {
+        staleIds.push(terminalId);
+        continue;
+      }
+      terminals.push({
+        terminalId,
+        pid: session.pid,
+        shell: session.shell,
+        cols: session.currentCols,
+        rows: session.currentRows,
+        title: session.title,
+        clientCount: session.clients.size,
+        status: session.state === "running" || session.state === "draining" ? "running" : "exited",
+        ...session.state === "exited" ? { exitCode: session.exitCode } : {}
+      });
+    }
+    for (const id of staleIds) {
+      this.terminals.delete(id);
+    }
+    return { terminals };
+  }
+  /**
+   * Detach a single client from a terminal session.
+   * If the last client detaches from a running terminal, a grace period
+   * starts to allow reconnection. The terminal is destroyed if no client
+   * re-attaches within the grace window.
+   */
+  detach(terminalId, clientId) {
+    const session = this.terminals.get(terminalId);
+    if (!session) return;
+    if (!session.clients.has(clientId)) return;
+    session.clients.delete(clientId);
+    if (session.clients.size === 0 && session.state === "running") {
+      session.startGracePeriod(() => {
+        this.terminals.delete(terminalId);
+      });
+    }
+  }
+  /**
+   * Get a terminal session by ID.
+   */
+  getSession(terminalId) {
+    return this.terminals.get(terminalId);
+  }
+  /**
+   * Get all terminal sessions.
+   */
+  getAllSessions() {
+    return this.terminals;
+  }
+  /**
+   * Resize a terminal. Updates per-client dimensions, applies last-resize-wins
+   * policy, flushes buffered output before resize, and notifies other clients.
+   * See docs/terminal-design.md §5.8.
+   */
+  resize(terminalId, cols, rows, clientId) {
+    const session = this.terminals.get(terminalId);
+    if (!session || !session.pty) return;
+    const client = session.clients.get(clientId);
+    if (client) {
+      client.cols = cols;
+      client.rows = rows;
+    }
+    if (cols !== session.currentCols || rows !== session.currentRows) {
+      session.flush();
+      session.currentCols = cols;
+      session.currentRows = rows;
+      session.pty.resize(cols, rows);
+      for (const [cid, c] of session.clients) {
+        if (cid === clientId) continue;
+        c.notify("terminal.resized", {
+          terminalId,
+          cols,
+          rows
+        });
+      }
+    }
+  }
+  /**
+   * Handle a flow control ack for a terminal from a specific client.
+   */
+  handleAck(terminalId, seq, charCount, clientId) {
+    const session = this.terminals.get(terminalId);
+    if (!session) return;
+    session.handleAck(seq, charCount, clientId);
+  }
+  /**
+   * Handle a client disconnecting. Removes the client from all terminal sessions.
+   * If the last client detaches from a running terminal, a grace period starts.
+   */
+  handleClientDisconnected(clientId) {
+    for (const [terminalId, session] of this.terminals) {
+      if (!session.clients.has(clientId)) continue;
+      session.clients.delete(clientId);
+      if (session.clients.size === 0 && session.state === "running") {
+        session.startGracePeriod(() => {
+          this.terminals.delete(terminalId);
+        });
+      }
+    }
+  }
+  /**
+   * Handle PTY data output. Delegates to session's batching logic.
+   */
+  handlePtyData(terminalId, data) {
+    const session = this.terminals.get(terminalId);
+    if (!session) return;
+    session.handlePtyData(data);
+  }
+  /**
+   * Handle PTY process exit. Delegates to session's drain lifecycle.
+   * See docs/terminal-design.md §5.6.
+   */
+  handlePtyExit(terminalId, exitInfo) {
+    const session = this.terminals.get(terminalId);
+    if (!session) return;
+    session.handlePtyExit(exitInfo.exitCode, exitInfo.signal);
+  }
+};
+
+// src/file-logger.ts
+var import_node_fs4 = require("fs");
+var import_node_path7 = require("path");
+var import_node_os2 = require("os");
+var DEFAULT_LOG_DIR = (0, import_node_path7.join)((0, import_node_os2.homedir)(), ".copilot", "agent-tunnels", "logs");
 var FileLogger = class _FileLogger {
   filePath;
   stream;
   constructor(path14) {
     this.filePath = path14 ?? _FileLogger.defaultFilePath();
-    (0, import_node_fs3.mkdirSync)((0, import_node_path6.dirname)(this.filePath), { recursive: true });
-    this.stream = (0, import_node_fs3.createWriteStream)(this.filePath, { flags: "a" });
+    (0, import_node_fs4.mkdirSync)((0, import_node_path7.dirname)(this.filePath), { recursive: true });
+    this.stream = (0, import_node_fs4.createWriteStream)(this.filePath, { flags: "a" });
   }
   write(level, message) {
     const ts = (/* @__PURE__ */ new Date()).toISOString();
@@ -70605,7 +71476,7 @@ var FileLogger = class _FileLogger {
   }
   static defaultFilePath() {
     const ts = (/* @__PURE__ */ new Date()).toISOString().replace(/[:.]/g, "-");
-    return (0, import_node_path6.join)(DEFAULT_LOG_DIR, `session-${ts}.log`);
+    return (0, import_node_path7.join)(DEFAULT_LOG_DIR, `session-${ts}.log`);
   }
 };
 
@@ -70814,7 +71685,8 @@ async function runHost(options) {
     git: gitService,
     skills: new SkillService({ onLog: log }),
     fileSearch: new FileSearchService(),
-    sessionEventBroker: new SessionEventBroker(log)
+    sessionEventBroker: new SessionEventBroker(log),
+    terminalManager: new HostTerminalManager()
   };
   const router = new MethodRouter();
   registerAllHandlers(router);

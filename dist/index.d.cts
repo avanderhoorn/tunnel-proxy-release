@@ -1,6 +1,7 @@
-import { TokenStorage, TokenData, AuthGateway, DeviceCodeResponse, TokenResponse, TunnelGateway, TunnelLookupResult, Tunnel, TunnelConfigStore, TunnelConfig, ConnectivityMonitor, Disposable, ByteStream, ConnectionStatus, RequestHandler, NotificationHandler, TokenManager, TunnelResolver } from 'remote-sdk-common';
+import { TokenStorage, TokenData, AuthGateway, DeviceCodeResponse, TokenResponse, TunnelGateway, TunnelLookupResult, Tunnel, TunnelConfigStore, TunnelConfig, ConnectivityMonitor, Disposable, ByteStream, ConnectionStatus, RequestHandler, NotificationHandler, TerminalCreateParams, TerminalCreateResult, TerminalAttachResult, TerminalListResult, TokenManager, TunnelResolver } from 'remote-sdk-common';
 export { ConnectionStatus, Disposable } from 'remote-sdk-common';
 import { Socket } from 'node:net';
+import { IPty } from 'node-pty';
 import { Command } from 'commander';
 
 /**
@@ -1726,6 +1727,252 @@ declare class SessionTracker {
 }
 
 /**
+ * ScrollbackBuffer - Rolling buffer of terminal output chunks.
+ *
+ * Keeps the last N characters of output (default 100KB) for replay
+ * when a client attaches to an existing terminal session.
+ * See docs/terminal-design.md §5.7.
+ */
+declare class ScrollbackBuffer {
+    private buffer;
+    private totalLength;
+    private readonly maxLength;
+    constructor(maxLength?: number);
+    /**
+     * Append data to the scrollback buffer. Trims oldest chunks
+     * when totalLength exceeds maxLength.
+     */
+    append(data: string): void;
+    /**
+     * Get the current buffer contents as a single string.
+     */
+    getSnapshot(): string;
+    /**
+     * Current total length of buffered data.
+     */
+    get length(): number;
+    private trim;
+}
+
+/**
+ * TerminalSession - Wraps a single node-pty IPty instance with a lifecycle state machine.
+ *
+ * State machine: running → draining → exited → destroyed
+ * See docs/terminal-design.md §5.2 for design.
+ */
+
+type TerminalState = 'running' | 'draining' | 'exited' | 'destroyed';
+interface AttachedClient {
+    /** Send notification to this client */
+    notify: (method: string, params: unknown) => void;
+    cols: number;
+    rows: number;
+    lastAckedSeq: number;
+    unackedCharCount: number;
+}
+declare class TerminalSession {
+    readonly terminalId: string;
+    readonly shell: string;
+    private _state;
+    private _pty;
+    /** Attached clients */
+    readonly clients: Map<string, AttachedClient>;
+    /** Output buffering */
+    outputBuffer: string;
+    flushTimer: ReturnType<typeof setTimeout> | null;
+    seq: number;
+    /** Flow control (character-count based, aligned with VS Code) */
+    unackedCharCount: number;
+    paused: boolean;
+    /** Scrollback buffer for attach/reconnection (§5.7) */
+    readonly scrollbackBuffer: ScrollbackBuffer;
+    /** Dimensions */
+    currentCols: number;
+    currentRows: number;
+    /** Lifecycle tracking */
+    title: string;
+    exitCode?: number;
+    exitSignal?: number;
+    exitedAt?: number;
+    /** Current working directory (updated via OSC 7 from shell integration) */
+    currentCwd: string;
+    /** Drain lifecycle (§5.6) */
+    drainTimer: ReturnType<typeof setTimeout> | null;
+    private drainStartedAt;
+    private pendingExitCode;
+    private pendingExitSignal?;
+    /** Grace period timer for orphaned terminals (no attached clients) */
+    graceTimer: ReturnType<typeof setTimeout> | null;
+    /** Event subscriptions for cleanup */
+    private dataDisposable;
+    private exitDisposable;
+    constructor(terminalId: string, pty: IPty, shell: string, cols: number, rows: number, onData: (data: string) => void, onExit: (exitInfo: {
+        exitCode: number;
+        signal?: number;
+    }) => void);
+    get state(): TerminalState;
+    get pty(): IPty | null;
+    get pid(): number;
+    setState(state: TerminalState): void;
+    /**
+     * Write user input to the PTY. Only accepted while running.
+     */
+    handleInput(data: string): void;
+    /**
+     * Handle PTY data output. Buffers output and flushes on a 5ms timer
+     * or immediately when the buffer exceeds 64KB.
+     * During drain phase, extends the drain window (see §5.6).
+     * See docs/terminal-design.md §5.4.
+     */
+    handlePtyData(data: string): void;
+    /**
+     * Flush buffered output to all attached clients.
+     * Updates per-client and global unackedCharCount, checks flow control.
+     */
+    flush(): void;
+    /**
+     * Check if PTY should be paused due to high unacked character count.
+     */
+    private checkFlowControl;
+    /**
+     * Check per-client unacked caps. Force-detaches any client exceeding
+     * CLIENT_UNACKED_CAP (512K) to prevent one slow client from stalling
+     * the terminal for everyone in a shared session.
+     * Called after each flush.
+     */
+    checkClientCaps(): void;
+    /**
+     * Handle flow control acknowledgment from a client.
+     * Decrements per-client unackedCharCount, recalculates global,
+     * and resumes PTY if below low water mark.
+     */
+    handleAck(seq: number, charCount: number, clientId: string): void;
+    /**
+     * Handle PTY exit. Transitions to draining state and starts drain timer.
+     * See docs/terminal-design.md §5.6.
+     */
+    handlePtyExit(exitCode: number, signal?: number): void;
+    /**
+     * Handle PTY data arriving during drain phase. Appends to buffer and
+     * resets the drain timer if under the hard cap.
+     */
+    private handlePtyDataDuringDrain;
+    /**
+     * Schedule (or reschedule) the drain flush timer. When it fires,
+     * flushes remaining output, transitions to exited, and notifies clients.
+     */
+    private scheduleDrainFlush;
+    /**
+     * Pause the flush timer. Used during atomic attach to prevent
+     * output from being sent between snapshot capture and client addition.
+     */
+    pauseFlushTimer(): void;
+    /**
+     * Resume the flush timer if there is buffered output waiting.
+     * Called after atomic attach to resume normal output flow.
+     */
+    resumeFlushTimer(): void;
+    /**
+     * Parse OSC 7 (file:// URI) sequences from PTY output to track CWD.
+     * Format: ESC ] 7 ; file://hostname/path BEL
+     */
+    private parseOscSequences;
+    /**
+     * Start grace period when last client disconnects from a running terminal.
+     * On expiry, calls the provided callback and destroys the session.
+     */
+    startGracePeriod(onExpired: () => void): void;
+    /**
+     * Cancel grace period (e.g., when a client re-attaches).
+     */
+    cancelGracePeriod(): void;
+    /**
+     * Destroy the PTY and all resources.
+     */
+    destroy(): void;
+    /**
+     * Release PTY resources without changing state (used after drain → exited).
+     */
+    destroyPty(): void;
+}
+
+/**
+ * HostTerminalManager - Manages all terminal sessions on the host.
+ *
+ * Responsible for spawning PTY processes, routing input, and managing lifecycle.
+ * See docs/terminal-design.md §5.1 for design.
+ */
+
+declare class HostTerminalManager {
+    private terminals;
+    private readonly EXITED_TTL_MS;
+    /**
+     * Create a new terminal session by spawning a PTY process.
+     */
+    create(params: TerminalCreateParams, clientId: string): TerminalCreateResult;
+    /**
+     * Destroy a terminal session.
+     */
+    destroy(terminalId: string): void;
+    /**
+     * Write user input to a terminal.
+     */
+    input(terminalId: string, data: string): void;
+    /**
+     * Atomically attach a client to an existing terminal session.
+     *
+     * This is synchronous — no await between snapshot capture and client addition.
+     * The flush timer is paused to prevent output from being sent during the gap.
+     * See docs/terminal-design.md §5.7 for design.
+     */
+    attach(terminalId: string, clientId: string, notify: (method: string, params: unknown) => void): TerminalAttachResult;
+    /**
+     * List all terminals. Includes exited entries with status and exitCode.
+     * Lazily cleans up exited entries older than 60s.
+     */
+    list(): TerminalListResult;
+    /**
+     * Detach a single client from a terminal session.
+     * If the last client detaches from a running terminal, a grace period
+     * starts to allow reconnection. The terminal is destroyed if no client
+     * re-attaches within the grace window.
+     */
+    detach(terminalId: string, clientId: string): void;
+    /**
+     * Get a terminal session by ID.
+     */
+    getSession(terminalId: string): TerminalSession | undefined;
+    /**
+     * Get all terminal sessions.
+     */
+    getAllSessions(): Map<string, TerminalSession>;
+    /**
+     * Resize a terminal. Updates per-client dimensions, applies last-resize-wins
+     * policy, flushes buffered output before resize, and notifies other clients.
+     * See docs/terminal-design.md §5.8.
+     */
+    resize(terminalId: string, cols: number, rows: number, clientId: string): void;
+    /**
+     * Handle a flow control ack for a terminal from a specific client.
+     */
+    handleAck(terminalId: string, seq: number, charCount: number, clientId: string): void;
+    /**
+     * Handle a client disconnecting. Removes the client from all terminal sessions.
+     * If the last client detaches from a running terminal, a grace period starts.
+     */
+    handleClientDisconnected(clientId: string): void;
+    /**
+     * Handle PTY data output. Delegates to session's batching logic.
+     */
+    private handlePtyData;
+    /**
+     * Handle PTY process exit. Delegates to session's drain lifecycle.
+     * See docs/terminal-design.md §5.6.
+     */
+    private handlePtyExit;
+}
+
+/**
  * Holder for shared service references. Created at application startup,
  * shared across all tunnel client connections.
  */
@@ -1737,6 +1984,8 @@ interface ServiceContainer {
     fileSearch: FileSearchService;
     /** Shared broker for session event fan-out across multiple tunnel clients. */
     sessionEventBroker: SessionEventBroker;
+    /** Shared terminal manager for PTY sessions. */
+    terminalManager: HostTerminalManager;
 }
 /**
  * Context passed to every RPC handler invocation.
@@ -2393,6 +2642,12 @@ declare class ApplicationHost {
     private readonly clients;
     private readonly hostDisposables;
     private _tunnelInfo;
+    /**
+     * Per-client active-session viewing state, reported by clients via
+     * session.reportActiveState notifications. Used to make needsAttention
+     * decisions when processing ends.
+     */
+    private readonly clientActiveState;
     constructor(config: ApplicationHostConfig);
     get tunnelInfo(): TunnelInfo | null;
     start(): Promise<TunnelInfo>;
@@ -2400,6 +2655,24 @@ declare class ApplicationHost {
     private handleClientConnected;
     private handleClientDisconnected;
     private handleClientIdentify;
+    /**
+     * Broadcast a session.viewed lifecycle event to all clients except the sender.
+     * This allows other clients to clear their blue dot (needsAttention) indicator.
+     */
+    private handleSessionMarkViewed;
+    /**
+     * Update the tracked viewing state for a client.
+     * Each notification fully replaces the previous state for that client.
+     */
+    private handleReportActiveState;
+    /**
+     * Check if ANY connected client with a visible tab is viewing the given session.
+     */
+    private isSessionViewedByAnyClient;
+    /**
+     * Check if a specific client is viewing the given session (with visible tab).
+     */
+    private isClientViewingSession;
     /**
      * Subscribe to lifecycle events from ALL pooled CopilotClients and forward
      * them (throttled) to this tunnel client. Also retains a dedicated client
@@ -2422,4 +2695,4 @@ declare class ApplicationHost {
 
 declare function createCli(): Command;
 
-export { ApplicationHost, type ApplicationHostConfig, CallbackChannel, type CallbackChannelConfig, ClientSession, type ClientSessionConfig, type CommitFile, type CommitHistoryResult, type CopilotClient, type CopilotClientState, CopilotService, type CopilotServiceConfig, type CopilotSession, type DeleteOptions, DirectAuthGateway, DirectoryCache, type DirectoryEntry, type DirectoryListingChangedEvent, DiskFileSystemProvider, DiskGitProvider, type Event, EventEmitter, type ExecuteSlashCommandResponse, type FileContentChangedEvent, type FileDeletedEvent, type FileDiffStat, type FileRenamedEvent, type FileSearchResult, FileSearchService, type FileStat, type FileSystemProvider, FileSystemService, type FileSystemServiceConfig, FileTunnelConfigStore, type FileWithTime, type GetCommitHistoryOptions, type GitBranch, type GitBranchChangedEvent, type GitCheckoutOptions, type GitCommit, type GitCommitCreatedEvent, type GitCommitOptions, type GitDiffStats, type GitFileStatus, type GitFileStatusCode, type GitHeadChangedEvent, GitIgnoreCache, type GitProvider, GitService, type GitServiceConfig, type GitStatus, type GitStatusChangedEvent, type HandlerContext, type HandlerFn, type HistoryCommit, HostRelay, type HostRelayConfig, KeychainTokenStorage, MethodNotFoundError, MethodRouter, MgmtApiTunnelGateway, NodeConnectivityMonitor, ParcelFileWatcher, type PerFileDiffStats, type ResourceFactory, ResourcePool, type ResourcePoolConfig, type SearchFilesRequest, type SearchFilesResponse, type SerializedGitStatus, type ServiceContainer, SessionTracker, type Skill, type SkillDirectorySource, type SkillLoadResult, SkillService, type SkillServiceConfig, type SkillSource, type SlashCommandCategory, type SlashCommandInfo, type SlashCommandResultPayload, SocketByteStream, type SplitPerFileDiffStats, type Subscription, SubscriptionSet, type SubscriptionType, type TrackedBranch, type TrackedBranchInfo, type TrackedBranchType, TunnelHost, type TunnelHostConfig, type TunnelInfo, abortSession, authStatusHandler, clearSkillsCache, createCli, createSession, deserializeGitStatus, destroySession, executeSlashCommandHandler, filesystemHandlers, findGitRoot, getCommandDirectories, getMessages, getPluginSkillSources, getSkillDirectories, getStateHandler, gitHandlers, isCaseInsensitiveFS, isGitAvailable, isPathOutside, listSessions, listSlashCommandsHandler, loadSkills, modelsListHandler, normalizePathForComparison, pathEquals, pathStartsWith, pingHandler, registerAllHandlers, safeRelativePath, searchFilesHandler, sendAndWait, sendMessage, serializeGitStatus, sessionHandlers };
+export { ApplicationHost, type ApplicationHostConfig, type AttachedClient, CallbackChannel, type CallbackChannelConfig, ClientSession, type ClientSessionConfig, type CommitFile, type CommitHistoryResult, type CopilotClient, type CopilotClientState, CopilotService, type CopilotServiceConfig, type CopilotSession, type DeleteOptions, DirectAuthGateway, DirectoryCache, type DirectoryEntry, type DirectoryListingChangedEvent, DiskFileSystemProvider, DiskGitProvider, type Event, EventEmitter, type ExecuteSlashCommandResponse, type FileContentChangedEvent, type FileDeletedEvent, type FileDiffStat, type FileRenamedEvent, type FileSearchResult, FileSearchService, type FileStat, type FileSystemProvider, FileSystemService, type FileSystemServiceConfig, FileTunnelConfigStore, type FileWithTime, type GetCommitHistoryOptions, type GitBranch, type GitBranchChangedEvent, type GitCheckoutOptions, type GitCommit, type GitCommitCreatedEvent, type GitCommitOptions, type GitDiffStats, type GitFileStatus, type GitFileStatusCode, type GitHeadChangedEvent, GitIgnoreCache, type GitProvider, GitService, type GitServiceConfig, type GitStatus, type GitStatusChangedEvent, type HandlerContext, type HandlerFn, type HistoryCommit, HostRelay, type HostRelayConfig, HostTerminalManager, KeychainTokenStorage, MethodNotFoundError, MethodRouter, MgmtApiTunnelGateway, NodeConnectivityMonitor, ParcelFileWatcher, type PerFileDiffStats, type ResourceFactory, ResourcePool, type ResourcePoolConfig, type SearchFilesRequest, type SearchFilesResponse, type SerializedGitStatus, type ServiceContainer, SessionTracker, type Skill, type SkillDirectorySource, type SkillLoadResult, SkillService, type SkillServiceConfig, type SkillSource, type SlashCommandCategory, type SlashCommandInfo, type SlashCommandResultPayload, SocketByteStream, type SplitPerFileDiffStats, type Subscription, SubscriptionSet, type SubscriptionType, TerminalSession, type TerminalState, type TrackedBranch, type TrackedBranchInfo, type TrackedBranchType, TunnelHost, type TunnelHostConfig, type TunnelInfo, abortSession, authStatusHandler, clearSkillsCache, createCli, createSession, deserializeGitStatus, destroySession, executeSlashCommandHandler, filesystemHandlers, findGitRoot, getCommandDirectories, getMessages, getPluginSkillSources, getSkillDirectories, getStateHandler, gitHandlers, isCaseInsensitiveFS, isGitAvailable, isPathOutside, listSessions, listSlashCommandsHandler, loadSkills, modelsListHandler, normalizePathForComparison, pathEquals, pathStartsWith, pingHandler, registerAllHandlers, safeRelativePath, searchFilesHandler, sendAndWait, sendMessage, serializeGitStatus, sessionHandlers };
