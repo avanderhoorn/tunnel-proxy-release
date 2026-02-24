@@ -10,38 +10,19 @@ npm install -g github:avanderhoorn/tunnel-proxy-release
 
 **Prerequisites:**
 - Node.js 20+
-- **Linux:** `libsecret-1-0` (required by the [keytar](https://github.com/atom/node-keytar) dependency for secure credential storage)
+- **macOS:** No extra dependencies are needed.
+- **Linux:** The following system packages are required:
+  - `libsecret-1-0` — for secure credential storage ([keytar](https://github.com/atom/node-keytar))
+  - `make`, `gcc`/`g++`, `python3` — for building [node-pty](https://github.com/nicknisi/node-pty) if prebuilt binaries are not available (used for remote terminal support)
 
   On Ubuntu/Debian:
   ```bash
-  sudo apt-get install -y libsecret-1-0
+  sudo apt-get install -y libsecret-1-0 make gcc g++ python3
   ```
-
-  On macOS, the native keychain is used and no extra dependencies are needed.
 
 ### Codespaces / Dev Containers
 
-Running in a container (e.g. GitHub Codespaces) requires additional setup because there is no D-Bus session bus or secret service available by default.
-
-1. Install dependencies:
-
-   ```bash
-   sudo apt-get install -y libsecret-1-0 dbus gnome-keyring
-   ```
-
-2. Generate a machine ID and start the D-Bus system daemon:
-
-   ```bash
-   sudo bash -c 'dbus-uuidgen > /etc/machine-id'
-   sudo mkdir -p /run/dbus
-   sudo dbus-daemon --system --fork
-   ```
-
-3. Run `remote-sdk-host` inside a D-Bus session with an unlocked keyring:
-
-   ```bash
-   dbus-run-session -- bash -c 'echo "" | gnome-keyring-daemon --unlock && remote-sdk-host'
-   ```
+Running in a container requires additional setup — see the [appendix](#appendix-codespaces--dev-containers) for instructions.
 
 ## Usage
 
@@ -51,7 +32,7 @@ Start the host:
 remote-sdk-host
 ```
 
-> **Note:** In Codespaces/containers, use the `dbus-run-session` wrapper shown above instead.
+> **Note:** In Codespaces/containers, use the `dbus-run-session` wrapper shown in the [appendix](#appendix-codespaces--dev-containers).
 
 On first run, you'll be prompted to authenticate with GitHub via device flow. The tunnel ID and cluster will be displayed — use these to connect from the web client.
 
@@ -88,3 +69,27 @@ To update to the latest version:
 ```bash
 npm install -g github:avanderhoorn/tunnel-proxy-release
 ```
+
+## Appendix: Codespaces / Dev Containers
+
+Running in a container (e.g. GitHub Codespaces) requires additional setup because there is no D-Bus session bus or secret service available by default.
+
+1. Install dependencies:
+
+   ```bash
+   sudo apt-get install -y libsecret-1-0 dbus gnome-keyring make gcc g++ python3
+   ```
+
+2. Generate a machine ID and start the D-Bus system daemon:
+
+   ```bash
+   sudo bash -c 'dbus-uuidgen > /etc/machine-id'
+   sudo mkdir -p /run/dbus
+   sudo dbus-daemon --system --fork
+   ```
+
+3. Run `remote-sdk-host` inside a D-Bus session with an unlocked keyring:
+
+   ```bash
+   dbus-run-session -- bash -c 'echo "" | gnome-keyring-daemon --unlock && remote-sdk-host'
+   ```
