@@ -63783,7 +63783,7 @@ var terminalHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.6.3";
+var CURRENT_VERSION = "0.7.0";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
