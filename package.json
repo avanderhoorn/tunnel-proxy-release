@@ -9,6 +9,6 @@
     "keytar": "^7.9.0",
     "@parcel/watcher": "^2.5.1",
     "@github/copilot": "^0.0.414",
-    "node-pty": "^1.1.0"
+    "node-pty": "^1.2.0-beta.11"
   }
 }
