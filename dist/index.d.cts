@@ -1566,9 +1566,9 @@ declare class CallbackChannel {
     request(method: string, params: unknown, timeoutMs: number): Promise<unknown>;
     /**
      * Send a fire-and-forget notification to the tunnel client.
-     * No response is awaited. Silently drops if disposed or no notify function configured.
+     * No response is awaited. Returns false if disposed or no notify function configured.
      */
-    notify(method: string, params: unknown): void;
+    notify(method: string, params: unknown): boolean;
     /** Reject all in-flight requests and prevent new ones. */
     dispose(): void;
     get isDisposed(): boolean;

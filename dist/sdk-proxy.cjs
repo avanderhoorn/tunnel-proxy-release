@@ -53247,15 +53247,19 @@ var RpcChannel = class {
       this.send(message);
     });
   }
-  /** Send a notification (no response expected). */
+  /** Send a notification (no response expected). Returns false if dropped. */
   notify(method, params) {
-    if (this._isClosed) return;
+    if (this._isClosed) {
+      console.debug(`[RpcChannel] notify dropped (channel closed): ${method}`);
+      return false;
+    }
     const message = {
       jsonrpc: "2.0",
       method,
       ...params !== void 0 && { params }
     };
     this.send(message);
+    return true;
   }
   // ---------------------------------------------------------------------------
   // Inbound handlers
@@ -53439,9 +53443,9 @@ var Heartbeat = class {
    * Check if the connection is likely stale.
    *
    * @param gracePeriod Extra time beyond 2 × interval before considering stale.
-   *   Default: 5000ms. Total threshold = (interval × 2) + gracePeriod.
+   *   Default: 2000ms. Total threshold = (interval × 2) + gracePeriod.
    */
-  isStale(gracePeriod = 5e3) {
+  isStale(gracePeriod = 2e3) {
     if (this.lastSuccessAt === null) return false;
     const elapsed = Date.now() - this.lastSuccessAt;
     return elapsed > this.interval * 2 + gracePeriod;
@@ -54576,12 +54580,16 @@ var CallbackChannel = class {
   }
   /**
    * Send a fire-and-forget notification to the tunnel client.
-   * No response is awaited. Silently drops if disposed or no notify function configured.
+   * No response is awaited. Returns false if disposed or no notify function configured.
    */
   notify(method, params) {
-    if (this.disposed || !this._notify) return;
+    if (this.disposed || !this._notify) {
+      this.log?.("debug", `[CallbackChannel] notify dropped (${this.disposed ? "disposed" : "no notify fn"}): ${method}`);
+      return false;
+    }
     this.log?.("debug", `[CallbackChannel] notify \u2192 ${method}`);
     this._notify(method, params);
+    return true;
   }
   /** Reject all in-flight requests and prevent new ones. */
   dispose() {
@@ -54824,20 +54832,25 @@ var ApplicationHost = class {
         }
         if (isProcessing) {
           this.log("info", `[ApplicationHost] Broadcasting session.processing: ${sessionId} isProcessing=true to ${this.clients.size} client(s)`);
-          for (const [, clientState] of this.clients) {
-            clientState.callbacks.notify("session.lifecycle", {
+          for (const [clientId, clientState] of this.clients) {
+            if (clientState.disposing) continue;
+            const sent = clientState.callbacks.notify("session.lifecycle", {
               type: "session.processing",
               sessionId,
               isProcessing: true,
               ...cwd ? { cwd } : {}
             });
+            if (!sent) {
+              this.log("warn", `[ApplicationHost] notify dropped for client ${clientId} (session.processing isProcessing=true)`);
+            }
           }
           return;
         }
         const isViewed = this.isSessionViewedByAnyClient(sessionId);
         this.log("info", `[ApplicationHost] Broadcasting session.processing: ${sessionId} isProcessing=false viewedByClient=${isViewed} to ${this.clients.size} client(s)`);
         for (const [clientId, clientState] of this.clients) {
-          clientState.callbacks.notify("session.lifecycle", {
+          if (clientState.disposing) continue;
+          const sent = clientState.callbacks.notify("session.lifecycle", {
             type: "session.processing",
             sessionId,
             isProcessing: false,
@@ -54845,11 +54858,17 @@ var ApplicationHost = class {
             // Only include needsAttention when no client is viewing
             ...!isViewed ? { needsAttention: true } : {}
           });
+          if (!sent) {
+            this.log("warn", `[ApplicationHost] notify dropped for client ${clientId} (session.processing isProcessing=false)`);
+          }
           if (isViewed && !this.isClientViewingSession(clientId, sessionId)) {
-            clientState.callbacks.notify("session.lifecycle", {
+            const viewedSent = clientState.callbacks.notify("session.lifecycle", {
               type: "session.viewed",
               sessionId
             });
+            if (!viewedSent) {
+              this.log("warn", `[ApplicationHost] notify dropped for client ${clientId} (session.viewed)`);
+            }
           }
         }
       })
@@ -54900,7 +54919,8 @@ var ApplicationHost = class {
       session: sessionTracker,
       subscriptions,
       callbacks,
-      disposables
+      disposables,
+      disposing: false
     };
     disposables.push(
       clientSession.onRequest((method, params) => {
@@ -54959,6 +54979,7 @@ var ApplicationHost = class {
       return void 0;
     });
     this.clients.set(clientId, clientState);
+    this.clientActiveState.set(clientId, { sessionIds: [], tabVisible: false });
   }
   handleClientDisconnected(clientId) {
     const state = this.clients.get(clientId);
@@ -54988,10 +55009,14 @@ var ApplicationHost = class {
     this.log("info", `[ApplicationHost] session.markViewed: ${sessionId} from ${senderClientId}, broadcasting to ${this.clients.size - 1} other client(s)`);
     for (const [clientId, clientState] of this.clients) {
       if (clientId === senderClientId) continue;
-      clientState.callbacks.notify("session.lifecycle", {
+      if (clientState.disposing) continue;
+      const sent = clientState.callbacks.notify("session.lifecycle", {
         type: "session.viewed",
         sessionId
       });
+      if (!sent) {
+        this.log("debug", `[ApplicationHost] notify dropped for client ${clientId} (session.viewed)`);
+      }
     }
   }
   /**
@@ -55009,7 +55034,9 @@ var ApplicationHost = class {
    * Check if ANY connected client with a visible tab is viewing the given session.
    */
   isSessionViewedByAnyClient(sessionId) {
-    for (const [, state] of this.clientActiveState) {
+    for (const [clientId, state] of this.clientActiveState) {
+      const client = this.clients.get(clientId);
+      if (!client || client.disposing) continue;
       if (state.tabVisible && state.sessionIds.includes(sessionId)) {
         return true;
       }
@@ -55033,7 +55060,10 @@ var ApplicationHost = class {
       const cwd2 = lookupSessionCwd?.(event.sessionId);
       const enriched = cwd2 ? { ...event, cwd: cwd2 } : event;
       this.log("info", `[lifecycle] Notifying client: ${enriched.type} sessionId=${enriched.sessionId} cwd=${cwd2 ?? "unknown"}`);
-      callbacks.notify("session.lifecycle", enriched);
+      const sent = callbacks.notify("session.lifecycle", enriched);
+      if (!sent) {
+        this.log("debug", `[lifecycle] notify dropped (${enriched.type} sessionId=${enriched.sessionId})`);
+      }
     }, 1e3, (level, msg) => this.log(level, msg));
     disposables.push({ dispose: () => throttle.dispose() });
     let disposed = false;
@@ -55067,9 +55097,8 @@ var ApplicationHost = class {
   }
   async disposeClient(clientId) {
     const state = this.clients.get(clientId);
-    if (!state) return;
-    this.clients.delete(clientId);
-    this.clientActiveState.delete(clientId);
+    if (!state || state.disposing) return;
+    state.disposing = true;
     this.services.sessionEventBroker.unregisterClient(clientId);
     state.callbacks.dispose();
     state.subscriptions.dispose();
@@ -55077,6 +55106,8 @@ var ApplicationHost = class {
     for (const d of state.disposables) {
       d.dispose();
     }
+    this.clients.delete(clientId);
+    this.clientActiveState.delete(clientId);
     this.log("debug", `Client state cleaned up: ${clientId}`);
   }
 };
@@ -56089,7 +56120,7 @@ var terminalHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.7.1";
+var CURRENT_VERSION = "0.8.0";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
