@@ -56120,7 +56120,7 @@ var terminalHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.8.0";
+var CURRENT_VERSION = "0.8.1";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
