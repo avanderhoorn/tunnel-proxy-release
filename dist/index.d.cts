@@ -62,7 +62,7 @@ declare class MgmtApiTunnelGateway implements TunnelGateway {
 declare class FileTunnelConfigStore implements TunnelConfigStore {
     private readonly configPath;
     private readonly configDir;
-    constructor(configDir?: string);
+    constructor(configDir?: string, label?: string);
     /** The full path to the config file on disk. */
     get filePath(): string;
     load(): TunnelConfig | null;
@@ -1591,12 +1591,16 @@ declare class CallbackChannel {
  */
 
 type ProcessingChangeHandler = (sessionId: string, isProcessing: boolean) => void;
+type SummaryChangeHandler = (sessionId: string, summary: string) => void;
 declare class SessionEventBroker {
     private readonly sessions;
     private readonly log;
     private readonly processingChangeHandlers;
+    private readonly summaryChangeHandlers;
     /** Tracks current processing state per session for deduplication and queries. */
     private readonly processingState;
+    /** Captured session summaries from assistant.message events. */
+    private readonly sessionSummaries;
     constructor(onLog?: (level: string, message: string) => void);
     /**
      * Register a client's interest in a session's events.
@@ -1623,9 +1627,19 @@ declare class SessionEventBroker {
     onProcessingChange(handler: ProcessingChangeHandler): {
         dispose: () => void;
     };
+    /** Get the captured summary for a session, if any. */
+    getSummary(sessionId: string): string | undefined;
+    /**
+     * Subscribe to summary changes across ALL sessions.
+     * Fires when a user.message event provides the first summary for a session.
+     */
+    onSummaryChanged(handler: SummaryChangeHandler): {
+        dispose: () => void;
+    };
     private subscribe;
     private dispatch;
     private emitProcessingChange;
+    private extractSummary;
     dispose(): void;
 }
 
