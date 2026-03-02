@@ -58392,7 +58392,7 @@ var terminalHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.8.3";
+var CURRENT_VERSION = "0.8.4";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
@@ -60360,7 +60360,7 @@ var SdkCopilotClient = class {
   constructor(config) {
     this.client = new CopilotClient({
       cwd: config.cwd,
-      useStdio: true,
+      useStdio: false,
       autoStart: false,
       autoRestart: true,
       logLevel: config.logLevel ?? "error",
@@ -72988,13 +72988,20 @@ var SessionEventBroker = class {
         this.log("info", `[SessionEventBroker] Session object changed for ${sessionId}, re-subscribing`);
         existing.unsubscribe?.();
         existing.session = session;
+        existing.eventBuffer = [];
         existing.unsubscribe = this.subscribe(sessionId, session);
+      }
+      if (existing.eventBuffer.length > 0) {
+        this.log("info", `[SessionEventBroker] Replaying ${existing.eventBuffer.length} buffered event(s) to ${clientId} for ${sessionId}`);
+        for (const event of existing.eventBuffer) {
+          callbacks.notify("session.event", { sessionId, event });
+        }
       }
     } else {
       const clients = /* @__PURE__ */ new Map();
       clients.set(clientId, callbacks);
       const unsubscribe = this.subscribe(sessionId, session);
-      this.sessions.set(sessionId, { session, unsubscribe, clients });
+      this.sessions.set(sessionId, { session, unsubscribe, clients, eventBuffer: [] });
     }
     const count = this.sessions.get(sessionId).clients.size;
     this.log("info", `[SessionEventBroker] Registered ${clientId} for ${sessionId} (${count} client(s))`);
@@ -73067,6 +73074,7 @@ var SessionEventBroker = class {
   dispatch(sessionId, event) {
     const entry = this.sessions.get(sessionId);
     if (!entry) return;
+    entry.eventBuffer.push(event);
     const eventType = event?.type;
     this.log("debug", `[SessionEventBroker] dispatch: sessionId=${sessionId} event=${eventType} clients=${entry.clients.size}`);
     for (const [clientId, callbacks] of entry.clients) {
@@ -73093,6 +73101,13 @@ var SessionEventBroker = class {
     for (const handler of this.processingChangeHandlers) {
       handler(sessionId, isProcessing);
     }
+    if (!isProcessing) {
+      const entry = this.sessions.get(sessionId);
+      if (entry) {
+        this.log("info", `[SessionEventBroker] Clearing replay buffer for ${sessionId} (${entry.eventBuffer.length} event(s))`);
+        entry.eventBuffer.length = 0;
+      }
+    }
   }
   extractSummary(sessionId, event) {
     const e = event;
@@ -73110,6 +73125,7 @@ var SessionEventBroker = class {
   dispose() {
     for (const entry of this.sessions.values()) {
       entry.unsubscribe?.();
+      entry.eventBuffer.length = 0;
     }
     this.sessions.clear();
     this.processingState.clear();

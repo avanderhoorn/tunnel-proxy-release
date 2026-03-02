@@ -324,7 +324,7 @@ interface CopilotServiceConfig {
     /**
      * Factory function that creates a new CopilotClient for a given cwd.
      * When wired to the real SDK, this would be:
-     *   (cwd) => new SdkCopilotClient({ cwd, useStdio: true, logLevel, autoRestart: true, githubToken })
+     *   (cwd) => new SdkCopilotClient({ cwd, logLevel, githubToken })
      */
     createClient: (cwd: string) => CopilotClient;
     /** Grace period before idle clients are stopped. Default: 5 minutes. */
