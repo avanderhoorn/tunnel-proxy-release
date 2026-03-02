@@ -64594,6 +64594,32 @@ function getShellArgs(shellName, dir) {
 }
 
 // src/terminal/host-terminal-manager.ts
+var SENSITIVE_ENV_PATTERN = /token|secret|key|password|credential|api_key|private/i;
+var SAFE_KEY_ALLOWLIST = /* @__PURE__ */ new Set([
+  "COLORTERM",
+  "TERM_PROGRAM_VERSION",
+  "TERM_PROGRAM",
+  "TERM_SESSION_ID",
+  "ITERM_SESSION_ID",
+  "SSH_AUTH_SOCK",
+  "GPG_AGENT_INFO"
+]);
+function filterSensitiveEnv(env) {
+  const filtered = {};
+  for (const [k, v] of Object.entries(env)) {
+    if (v === void 0) continue;
+    if (SENSITIVE_ENV_PATTERN.test(k) && !SAFE_KEY_ALLOWLIST.has(k)) continue;
+    filtered[k] = v;
+  }
+  return filtered;
+}
+var PROTECTED_ENV_KEYS = /* @__PURE__ */ new Set(["PATH", "HOME", "USER", "SHELL", "LOGNAME"]);
+function clampDimensions(cols, rows) {
+  return {
+    cols: Math.max(1, Math.min(Math.floor(cols), 500)),
+    rows: Math.max(1, Math.min(Math.floor(rows), 200))
+  };
+}
 var HostTerminalManager = class {
   terminals = /* @__PURE__ */ new Map();
   EXITED_TTL_MS = 6e4;
@@ -64602,6 +64628,7 @@ var HostTerminalManager = class {
    */
   create(params, clientId) {
     const terminalId = (0, import_node_crypto.randomUUID)();
+    const { cols, rows } = clampDimensions(params.cols, params.rows);
     const shell = process.env.SHELL || (process.platform === "win32" ? "powershell.exe" : "bash");
     const shellName = getShellName(shell);
     let shellArgs = [];
@@ -64613,15 +64640,22 @@ var HostTerminalManager = class {
       shellEnv = integration.env;
     } catch {
     }
+    const safeHostEnv = filterSensitiveEnv(process.env);
+    const clientEnv = {};
+    if (params.env) {
+      for (const [k, v] of Object.entries(params.env)) {
+        if (!PROTECTED_ENV_KEYS.has(k)) clientEnv[k] = v;
+      }
+    }
     const ptyProcess = pty.spawn(shell, shellArgs, {
       name: "xterm-256color",
-      cols: params.cols,
-      rows: params.rows,
+      cols,
+      rows,
       cwd: params.cwd || process.env.HOME,
       env: {
-        ...process.env,
+        ...safeHostEnv,
         ...shellEnv,
-        ...params.env,
+        ...clientEnv,
         TERM: "xterm-256color",
         COLORTERM: "truecolor"
       }
@@ -64630,8 +64664,8 @@ var HostTerminalManager = class {
       terminalId,
       ptyProcess,
       shell,
-      params.cols,
-      params.rows,
+      cols,
+      rows,
       (data) => this.handlePtyData(terminalId, data),
       (exitInfo) => this.handlePtyExit(terminalId, exitInfo)
     );
@@ -64757,9 +64791,10 @@ var HostTerminalManager = class {
    * policy, flushes buffered output before resize, and notifies other clients.
    * See docs/terminal-design.md §5.8.
    */
-  resize(terminalId, cols, rows, clientId) {
+  resize(terminalId, rawCols, rawRows, clientId) {
     const session = this.terminals.get(terminalId);
     if (!session || !session.pty) return;
+    const { cols, rows } = clampDimensions(rawCols, rawRows);
     const client = session.clients.get(clientId);
     if (client) {
       client.cols = cols;
@@ -66043,7 +66078,7 @@ var terminalHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.8.2";
+var CURRENT_VERSION = "0.8.3";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {

@@ -1965,7 +1965,7 @@ declare class HostTerminalManager {
      * policy, flushes buffered output before resize, and notifies other clients.
      * See docs/terminal-design.md §5.8.
      */
-    resize(terminalId: string, cols: number, rows: number, clientId: string): void;
+    resize(terminalId: string, rawCols: number, rawRows: number, clientId: string): void;
     /**
      * Handle a flow control ack for a terminal from a specific client.
      */
