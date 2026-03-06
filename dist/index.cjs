@@ -56070,7 +56070,7 @@ var DEFAULT_CONNECTION_TIMEOUT_MS = 3e4;
 var RECOVERY_TIMEOUT_MS = 3e4;
 var DEFAULT_SOCKET_TIMEOUT_MS = 6e4;
 var DEFAULT_GRACE_PERIOD_MS = 15e3;
-var HostRelay = class {
+var HostRelay = class _HostRelay {
   config;
   keepAliveSeconds;
   connectionTimeoutMs;
@@ -56164,7 +56164,11 @@ var HostRelay = class {
     }
     this.clients.clear();
     if (this.host) {
-      await this.host.dispose();
+      try {
+        await this.host.dispose();
+      } catch (err) {
+        this.log("debug", `Error disposing host (ignored during shutdown): ${err.message}`);
+      }
       this.host = null;
     }
     this.managementClient = null;
@@ -56341,8 +56345,18 @@ var HostRelay = class {
   // ---------------------------------------------------------------------------
   // Private: SDK exhaustion recovery
   // ---------------------------------------------------------------------------
+  // Maximum consecutive "another host connected" errors before treating as fatal.
+  // During wake-from-sleep, 1–2 of these are normal (competing reconnection
+  // attempts from the same process). A genuinely different host will produce
+  // many consecutive failures.
+  static MAX_ANOTHER_HOST_RETRIES = 5;
+  anotherHostFailureCount = 0;
   async attemptRecovery() {
     if (this.isDisposed || !this.host) return;
+    if (this.connectionGuard?.status === "connected") {
+      this.log("info", "Skipping recovery \u2014 already connected");
+      return;
+    }
     this.log("info", "Attempting recovery from SDK retry exhaustion");
     try {
       await withTimeout(
@@ -56350,8 +56364,22 @@ var HostRelay = class {
         RECOVERY_TIMEOUT_MS,
         `Recovery timeout after ${RECOVERY_TIMEOUT_MS}ms`
       );
+      this.anotherHostFailureCount = 0;
     } catch (err) {
-      this.log("warn", `Recovery attempt failed: ${err.message}`);
+      const error = err;
+      if (/another host.*connected/i.test(error.message)) {
+        this.anotherHostFailureCount++;
+        if (this.anotherHostFailureCount >= _HostRelay.MAX_ANOTHER_HOST_RETRIES) {
+          this.log("warn", `Recovery stopped \u2014 "another host connected" persisted after ${this.anotherHostFailureCount} attempts`);
+          this.anotherHostFailureCount = 0;
+          this.connectionGuard?.forceDisconnected("another_host_connected");
+          throw err;
+        }
+        this.log("warn", `Recovery attempt failed (another_host ${this.anotherHostFailureCount}/${_HostRelay.MAX_ANOTHER_HOST_RETRIES}): ${error.message}`);
+      } else {
+        this.anotherHostFailureCount = 0;
+        this.log("warn", `Recovery attempt failed: ${error.message}`);
+      }
     }
   }
   // ---------------------------------------------------------------------------
@@ -64858,7 +64886,17 @@ var HostTerminalManager = class {
 };
 
 // src/session/session-tracker.ts
-var SessionTracker = class {
+var SessionTracker = class _SessionTracker {
+  /** How long to wait for an in-flight turn to complete before aborting. */
+  static TURN_DRAIN_TIMEOUT_MS = 6e4;
+  /** Events that signal a turn has finished. */
+  static DRAIN_STOP_EVENTS = /* @__PURE__ */ new Set([
+    "turn.end",
+    "assistant.turn_end",
+    "session.idle",
+    "session.error",
+    "abort"
+  ]);
   sessions = /* @__PURE__ */ new Map();
   copilotService;
   sessionEventBroker;
@@ -64928,14 +64966,31 @@ var SessionTracker = class {
   }
   /**
    * Dispose all tracked sessions.
-   * Destroys each session, releases CopilotClient references,
-   * and clears the tracker.
+   * If a session has an active turn, waits for it to drain (up to 60s)
+   * so that events.jsonl retains complete turns. Falls back to abort
+   * on timeout.
    */
   async dispose() {
     const entries = Array.from(this.sessions.values());
+    const processing = new Set(
+      entries.filter((e) => this.sessionEventBroker.isProcessing(e.sessionId)).map((e) => e.sessionId)
+    );
     this.sessions.clear();
     for (const entry of entries) {
       this.sessionEventBroker.unregister(entry.sessionId, this.clientId);
+      if (processing.has(entry.sessionId)) {
+        this.log("info", `Session ${entry.sessionId} is processing, waiting for turn to drain...`);
+        const drained = await this.waitForTurnDrain(entry.session, entry.sessionId);
+        if (!drained) {
+          this.log("warn", `Turn drain timeout for ${entry.sessionId}, aborting`);
+          try {
+            await entry.session.abort();
+          } catch {
+          }
+        } else {
+          this.log("info", `Turn drained naturally for ${entry.sessionId}`);
+        }
+      }
       try {
         await entry.session.destroy();
       } catch (err) {
@@ -64948,6 +65003,41 @@ var SessionTracker = class {
       }
     }
     this.log("info", `Disposed ${entries.length} session(s)`);
+  }
+  /**
+   * Wait for a session's active turn to complete by subscribing directly
+   * to session events. Returns true if the turn drained naturally, false
+   * if the timeout expired.
+   */
+  waitForTurnDrain(session, sessionId) {
+    return new Promise((resolve10) => {
+      if (typeof session.on !== "function") {
+        this.log("debug", `Session ${sessionId} has no on() method, skipping drain`);
+        resolve10(false);
+        return;
+      }
+      let unsubscribe;
+      const timer = setTimeout(() => {
+        this.log("warn", `[SessionTracker] Turn drain timeout for ${sessionId} (${_SessionTracker.TURN_DRAIN_TIMEOUT_MS}ms)`);
+        try {
+          unsubscribe?.();
+        } catch {
+        }
+        resolve10(false);
+      }, _SessionTracker.TURN_DRAIN_TIMEOUT_MS);
+      unsubscribe = session.on((event) => {
+        const eventType = event?.type;
+        if (eventType && _SessionTracker.DRAIN_STOP_EVENTS.has(eventType)) {
+          this.log("info", `[SessionTracker] Turn drained for ${sessionId} (event=${eventType})`);
+          clearTimeout(timer);
+          try {
+            unsubscribe?.();
+          } catch {
+          }
+          resolve10(true);
+        }
+      });
+    });
   }
 };
 
@@ -66078,7 +66168,7 @@ var terminalHandlers = {
 };
 
 // src/version.ts
-var CURRENT_VERSION = "0.8.4";
+var CURRENT_VERSION = "0.8.5";
 
 // src/handlers/misc.ts
 var pingHandler = async (_params, context) => {
@@ -72093,10 +72183,10 @@ var ApplicationHost = class {
     const state = this.clients.get(clientId);
     if (!state || state.disposing) return;
     state.disposing = true;
-    this.services.sessionEventBroker.unregisterClient(clientId);
     state.callbacks.dispose();
     state.subscriptions.dispose();
     await state.session.dispose();
+    this.services.sessionEventBroker.unregisterClient(clientId);
     for (const d of state.disposables) {
       d.dispose();
     }

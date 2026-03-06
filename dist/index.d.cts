@@ -183,6 +183,8 @@ declare class HostRelay {
     private handleGuardStatusChange;
     private startGraceTimer;
     private clearGraceTimer;
+    private static readonly MAX_ANOTHER_HOST_RETRIES;
+    private anotherHostFailureCount;
     private attemptRecovery;
     private setupHostKeepAlive;
     private log;
@@ -1698,6 +1700,10 @@ interface SessionTrackerConfig {
  * five separate Maps. The SDK provides typed session objects directly.
  */
 declare class SessionTracker {
+    /** How long to wait for an in-flight turn to complete before aborting. */
+    static readonly TURN_DRAIN_TIMEOUT_MS = 60000;
+    /** Events that signal a turn has finished. */
+    private static readonly DRAIN_STOP_EVENTS;
     private readonly sessions;
     private readonly copilotService;
     private readonly sessionEventBroker;
@@ -1734,10 +1740,17 @@ declare class SessionTracker {
     get size(): number;
     /**
      * Dispose all tracked sessions.
-     * Destroys each session, releases CopilotClient references,
-     * and clears the tracker.
+     * If a session has an active turn, waits for it to drain (up to 60s)
+     * so that events.jsonl retains complete turns. Falls back to abort
+     * on timeout.
      */
     dispose(): Promise<void>;
+    /**
+     * Wait for a session's active turn to complete by subscribing directly
+     * to session events. Returns true if the turn drained naturally, false
+     * if the timeout expired.
+     */
+    private waitForTurnDrain;
 }
 
 /**
