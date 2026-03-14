@@ -156,6 +156,8 @@ declare class HostRelay {
     private hasEverConnected;
     private clientCounter;
     private disconnectedAt;
+    private tunnelId;
+    private clusterId;
     private readonly clients;
     private readonly disconnectedClients;
     private graceTimer;
@@ -185,7 +187,18 @@ declare class HostRelay {
     private clearGraceTimer;
     private static readonly MAX_ANOTHER_HOST_RETRIES;
     private anotherHostFailureCount;
+    private static readonly MAX_RELAY_AUTH_RETRIES;
+    private relayAuthFailureCount;
     private attemptRecovery;
+    /**
+     * Handles relay auth failures by re-fetching the tunnel from the management
+     * API to get fresh relay access tokens, then retrying connectTunnelSession()
+     * with the fresh tunnel data.
+     *
+     * Returns true if recovery succeeded, false if it failed (caller should let
+     * the normal backoff/retry continue or force disconnect).
+     */
+    private attemptRelayAuthRecovery;
     private setupHostKeepAlive;
     private log;
 }
